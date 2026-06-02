@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grange AI - The grants you need, written for you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   GRANGE AI - design tokens
+   Light theme, locked. One accent (warm vermilion from brand
+   gradient). Ink-on-paper UI. Bricolage Grotesque + Playfair italic.
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  /* primitives */
+  --paper:      #f5f4f1;
+  --surface:    #ffffff;
+  --surface-2:  #faf9f7;
+  --ink:        #1a1916;
+  --ink-soft:   #3a3833;
+  --ink-body:   #46443e;
+  --muted:      #6f6c64;
+  --line:       rgba(26,25,22,0.10);
+  --line-soft:  rgba(26,25,22,0.06);
+
+  --accent:     #d94f30;     /* vermilion, pulled from hero aurora */
+  --accent-press:#bf4123;
+  --accent-tint:#fbe9e2;
+  --accent-ink: #8a2c16;
+
+  --ok:         #2f7d4f;     /* semantic success only */
+  --ok-tint:    #e6f1ea;
+  --warn-ink:   #9a6a16;
+  --warn-tint:  #f7eed8;
+
+  /* type */
+  --display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --serif: 'Playfair Display', Georgia, serif;
+
+  /* radius - one scale: 14px cards, full pills for interactive */
+  --r-sm: 8px;
+  --r:    14px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  /* motion */
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* z-scale */
+  --z-nav: 100;
+  --z-modal: 1000;
+  --z-toast: 2000;
+}
+
+* , *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--paper);
+  color: var(--ink-body);
+  font-family: var(--display);
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+button { cursor: pointer; font-family: inherit; border: none; background: none; color: inherit; }
+h1,h2,h3,h4 { color: var(--ink); font-weight: 700; letter-spacing: -0.03em; line-height: 1.04; text-wrap: balance; }
+p { text-wrap: pretty; }
+em.s { font-family: var(--serif); font-style: italic; font-weight: 500; letter-spacing: 0; line-height: 1.1; }
+
+::selection { background: var(--accent-tint); color: var(--accent-ink); }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-thumb { background: rgba(26,25,22,0.18); border-radius: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ─── form controls ─────────────────────────────────────── */
+input, textarea, select {
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 11px 13px;
+  width: 100%;
+  outline: none;
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+input::placeholder, textarea::placeholder { color: #9b988f; }
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-tint);
+}
+textarea { resize: vertical; min-height: 92px; line-height: 1.55; }
+label.field-label {
+  display: block; font-size: 13px; font-weight: 600; color: var(--ink-soft);
+  margin-bottom: 7px;
+}
+
+/* ─── buttons ───────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--display); font-weight: 600; font-size: 15px;
+  padding: 12px 22px; border-radius: var(--r-pill);
+  white-space: nowrap; line-height: 1;
+  transition: transform 140ms var(--ease), background 160ms var(--ease), border-color 160ms var(--ease), color 160ms var(--ease);
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--ink); color: #fff; }
+.btn-primary:hover { background: #000; }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { background: var(--accent-press); }
+.btn-outline { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn-outline:hover { border-color: var(--ink); }
+.btn-ghost { background: transparent; color: var(--ink-soft); padding: 8px 14px; }
+.btn-ghost:hover { color: var(--ink); }
+.btn-sm { font-size: 13px; padding: 9px 16px; }
+.btn-block { width: 100%; }
+
+/* ─── badges / pills ────────────────────────────────────── */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 4px 11px; border-radius: var(--r-pill);
+  letter-spacing: 0;
+}
+.pill-ink  { background: rgba(26,25,22,0.06); color: var(--ink-soft); }
+.pill-acc  { background: var(--accent-tint); color: var(--accent-ink); }
+.pill-ok   { background: var(--ok-tint); color: var(--ok); }
+.pill-warn { background: var(--warn-tint); color: var(--warn-ink); }
+
+/* ═══════════════════════════════════════════════════════════
+   SCREEN SYSTEM
+   ═══════════════════════════════════════════════════════════ */
+.screen { display: none; }
+.screen.active { display: block; animation: screenIn 0.4s var(--ease) both; }
+@keyframes screenIn { from { opacity: 0; } to { opacity: 1; } }
+
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
+
+/* ─── load reveal ──────────────────────────────────────── */
+.rise { opacity: 0; transform: translateY(16px); animation: rise 0.7s var(--ease) forwards; }
+.d1 { animation-delay: 0.05s; } .d2 { animation-delay: 0.13s; }
+.d3 { animation-delay: 0.21s; } .d4 { animation-delay: 0.29s; } .d5 { animation-delay: 0.37s; }
+@keyframes rise { to { opacity: 1; transform: none; } }
+
+/* ═══════════════════════════════════════════════════════════
+   MARKETING NAV
+   ═══════════════════════════════════════════════════════════ */
+.nav {
+  position: sticky; top: 0; z-index: var(--z-nav);
+  height: 68px;
+  background: rgba(245,244,241,0.82);
+  backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.nav-inner { max-width: 1240px; margin: 0 auto; height: 100%; padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--display);
+  font-weight: 800; font-size: 20px; letter-spacing: -0.04em; color: var(--ink); }
+.brand-mark {
+  width: 26px; height: 26px; border-radius: 8px;
+  background: conic-gradient(from 210deg, #f0a64d, #e2533b, #c8508f, #f0a64d);
+  flex-shrink: 0;
+}
+.nav-links { display: flex; gap: 30px; }
+.nav-links a { font-size: 14.5px; font-weight: 500; color: var(--ink-soft);
+  transition: color 140ms var(--ease); }
+.nav-links a:hover { color: var(--ink); }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+
+/* ═══════════════════════════════════════════════════════════
+   HERO - asymmetric split
+   ═══════════════════════════════════════════════════════════ */
+.hero { padding: 76px 0 64px; }
+.hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; color: var(--accent-ink);
+  background: var(--accent-tint); padding: 5px 12px; border-radius: var(--r-pill); margin-bottom: 24px; }
+.hero h1 { font-size: clamp(2.6rem, 5.6vw, 5rem); letter-spacing: -0.035em; margin-bottom: 22px; }
+.hero h1 em.s { display: inline; }
+.hero-sub { font-size: 18px; line-height: 1.6; color: var(--ink-body);
+  max-width: 30rem; margin-bottom: 32px; }
+.hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.hero-trust { margin-top: 22px; font-size: 13.5px; color: var(--muted); }
+
+/* hero aurora asset */
+.hero-asset { position: relative; aspect-ratio: 5/5.4; border-radius: var(--r-lg); overflow: hidden;
+  box-shadow: 0 30px 70px -30px rgba(120,40,20,0.35); }
+.aurora { position: absolute; inset: 0; filter: blur(2px); }
+.aurora::before, .aurora::after, .aurora i {
+  content: ''; position: absolute; border-radius: 50%; filter: blur(36px); opacity: 0.92;
+}
+.aurora { background: linear-gradient(140deg, #fbe3c8 0%, #f7c9a3 45%, #efb6c0 100%); }
+.aurora::before { width: 70%; height: 70%; left: -8%; top: 4%;
+  background: radial-gradient(circle, #f0954b, transparent 70%); animation: drift1 14s var(--ease-soft) infinite alternate; }
+.aurora::after { width: 65%; height: 65%; right: -10%; top: 18%;
+  background: radial-gradient(circle, #e2533b, transparent 68%); animation: drift2 16s var(--ease-soft) infinite alternate; }
+.aurora i { width: 60%; height: 60%; left: 18%; bottom: -10%;
+  background: radial-gradient(circle, #c5588f, transparent 70%); animation: drift3 18s var(--ease-soft) infinite alternate; }
+@keyframes drift1 { to { transform: translate(14%, 10%) scale(1.12); } }
+@keyframes drift2 { to { transform: translate(-12%, 8%) scale(1.08); } }
+@keyframes drift3 { to { transform: translate(10%, -12%) scale(1.14); } }
+
+/* floating proposal card over the aurora */
+.float-card {
+  position: absolute; background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.7);
+  border-radius: var(--r); padding: 16px 18px;
+  box-shadow: 0 16px 40px -16px rgba(80,30,15,0.4);
+}
+.float-card.match { top: 26px; left: 24px; width: 220px; }
+.float-card.deadline { bottom: 26px; right: 22px; width: 210px; }
+.fc-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.fc-title { font-size: 14px; font-weight: 700; color: var(--ink); margin: 5px 0 9px; line-height: 1.25; }
+.fc-bar { height: 6px; background: rgba(26,25,22,0.08); border-radius: 6px; overflow: hidden; }
+.fc-bar > span { display: block; height: 100%; border-radius: 6px;
+  background: linear-gradient(90deg, #f0954b, #e2533b); }
+.fc-row { display: flex; align-items: center; justify-content: space-between; }
+
+/* ═══════════════════════════════════════════════════════════
+   STAT BAND - hairline figures, no cards
+   ═══════════════════════════════════════════════════════════ */
+.stat-band { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  background: var(--surface-2); }
+.stat-band .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
+.stat-cell { padding: 36px 28px; border-left: 1px solid var(--line); }
+.stat-cell:first-child { border-left: none; padding-left: 0; }
+.stat-cell .fig { font-family: var(--display); font-weight: 800; font-size: 40px;
+  color: var(--ink); letter-spacing: -0.04em; line-height: 1; }
+.stat-cell .cap { font-size: 13.5px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION scaffolding
+   ═══════════════════════════════════════════════════════════ */
+.section { padding: 96px 0; }
+.section-head { max-width: 40rem; margin-bottom: 56px; }
+.section-head h2 { font-size: clamp(2rem, 3.6vw, 3.1rem); letter-spacing: -0.035em; margin-bottom: 16px; }
+.section-head p { font-size: 17px; color: var(--ink-body); }
+
+/* ─── PROCESS: real numbered sequence, alternating ──────── */
+.process { display: flex; flex-direction: column; gap: 0; }
+.proc-step {
+  display: grid; grid-template-columns: 88px 1fr 1fr; gap: 32px; align-items: center;
+  padding: 40px 0; border-top: 1px solid var(--line);
+}
+.proc-step:last-child { border-bottom: 1px solid var(--line); }
+.proc-num { font-family: var(--display); font-weight: 800; font-size: 30px;
+  color: var(--accent); letter-spacing: -0.04em; }
+.proc-text h3 { font-size: 22px; margin-bottom: 8px; }
+.proc-text p { font-size: 15.5px; color: var(--ink-body); max-width: 30rem; }
+.proc-visual { font-size: 14px; color: var(--muted); }
+.proc-visual .mini {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 16px 18px; box-shadow: 0 10px 30px -22px rgba(26,25,22,0.4);
+}
+.mini-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+.mini-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.mini-line { flex: 1; height: 8px; border-radius: 6px; background: rgba(26,25,22,0.07); }
+
+/* ─── FEATURES: bento with rhythm ───────────────────────── */
+.bento { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 16px; }
+.cell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: 28px; transition: transform 200ms var(--ease), box-shadow 200ms var(--ease);
+  display: flex; flex-direction: column; }
+.cell:hover { transform: translateY(-3px); box-shadow: 0 24px 50px -30px rgba(26,25,22,0.35); }
+.cell.span2 { grid-column: span 2; }
+.cell.tall { grid-row: span 2; }
+.cell h3 { font-size: 20px; margin-bottom: 9px; letter-spacing: -0.025em; }
+.cell p { font-size: 14.5px; color: var(--ink-body); }
+.cell .ico { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
+  background: var(--accent-tint); color: var(--accent-ink); margin-bottom: 16px; }
+.cell.feature-img { padding: 0; overflow: hidden; position: relative; min-height: 220px; }
+.cell.feature-img img { width: 100%; height: 100%; object-fit: cover; }
+.cell.feature-img .cap { position: absolute; left: 22px; bottom: 20px; right: 22px;
+  color: #fff; }
+.cell.feature-img .cap h3 { color: #fff; }
+.cell.feature-img .cap p { color: rgba(255,255,255,0.86); }
+.cell.feature-img::after { content: ''; position: absolute; inset: 0;
+  background: linear-gradient(transparent 35%, rgba(20,12,8,0.72)); }
+.cell.feature-img .cap { z-index: 1; }
+.cell.gradient { background: linear-gradient(150deg, #fbe3c8, #f0a64d 60%, #e2533b);
+  color: #fff; border: none; }
+.cell.gradient h3 { color: #fff; }
+.cell.gradient p { color: rgba(255,255,255,0.9); }
+.cell.gradient .big { font-family: var(--display); font-weight: 800; font-size: 46px;
+  letter-spacing: -0.04em; line-height: 1; margin-bottom: 6px; }
+
+/* ─── TESTIMONIALS: two, editorial ──────────────────────── */
+.quotes { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.quote { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: 36px; }
+.quote .qt { font-family: var(--serif); font-style: italic; font-size: 23px; line-height: 1.4;
+  color: var(--ink); margin-bottom: 26px; letter-spacing: 0; font-weight: 500; }
+.quote .by { display: flex; align-items: center; gap: 13px; }
+.quote .by img { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; }
+.quote .by .nm { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.quote .by .rl { font-size: 13px; color: var(--muted); }
+
+/* ─── PRICING ───────────────────────────────────────────── */
+.pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
+.tier { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: 32px; display: flex; flex-direction: column; position: relative; }
+.tier.hot { border-color: var(--ink); box-shadow: 0 30px 60px -34px rgba(26,25,22,0.5); }
+.tier .badge-hot { position: absolute; top: -11px; left: 32px;
+  background: var(--accent); color: #fff; font-size: 12px; font-weight: 700;
+  padding: 4px 13px; border-radius: var(--r-pill); }
+.tier .nm { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 12px; }
+.tier .pr { font-family: var(--display); font-weight: 800; font-size: 46px; color: var(--ink);
+  letter-spacing: -0.04em; line-height: 1; }
+.tier .pr small { font-size: 15px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.tier .desc { font-size: 14px; color: var(--ink-body); margin: 10px 0 22px; padding-bottom: 22px;
+  border-bottom: 1px solid var(--line); min-height: 64px; }
+.tier ul { list-style: none; flex: 1; margin-bottom: 26px; }
+.tier li { display: flex; gap: 9px; font-size: 14px; color: var(--ink-body); padding: 6px 0; }
+.tier li svg { flex-shrink: 0; margin-top: 3px; color: var(--ok); }
+
+/* ─── CTA BAND ──────────────────────────────────────────── */
+.cta-band { position: relative; border-radius: var(--r-lg); overflow: hidden;
+  padding: 72px 64px; color: #fff; }
+.cta-band .aurora { filter: blur(0); }
+.cta-band-inner { position: relative; z-index: 1; display: flex; align-items: center;
+  justify-content: space-between; gap: 40px; flex-wrap: wrap; }
+.cta-band h2 { color: #fff; font-size: clamp(1.9rem, 3.2vw, 2.8rem); max-width: 24rem; }
+.cta-band p { color: rgba(255,255,255,0.9); margin-top: 12px; max-width: 26rem; font-size: 16px; }
+
+/* ─── FOOTER ────────────────────────────────────────────── */
+.footer { border-top: 1px solid var(--line); padding: 48px 0; }
+.footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+.footer .small { font-size: 13px; color: var(--muted); }
+.footer-links { display: flex; gap: 22px; }
+.footer-links a { font-size: 13px; color: var(--muted); transition: color 140ms var(--ease); }
+.footer-links a:hover { color: var(--ink); }
+
+/* ═══════════════════════════════════════════════════════════
+   LOGIN
+   ═══════════════════════════════════════════════════════════ */
+.login { display: grid; grid-template-columns: 1fr 480px; min-height: 100vh; }
+.login-left { position: relative; overflow: hidden; padding: 64px; display: flex; flex-direction: column; }
+.login-left .aurora { filter: blur(0); opacity: 1; }
+.login-left .ll-content { position: relative; z-index: 1; margin-top: auto; }
+.login-left .brand { color: #fff; }
+.login-left .brand .brand-mark { background: rgba(255,255,255,0.9); }
+.login-left h2 { color: #fff; font-size: 38px; letter-spacing: -0.035em; margin-bottom: 16px; max-width: 22rem; }
+.login-left p { color: rgba(255,255,255,0.92); font-size: 16px; max-width: 24rem; }
+.ll-list { margin-top: 32px; display: flex; flex-direction: column; gap: 12px; }
+.ll-list .it { display: flex; gap: 11px; align-items: flex-start; color: #fff; font-size: 14.5px; }
+.ll-list .it svg { flex-shrink: 0; margin-top: 3px; }
+.login-right { background: var(--surface); padding: 56px 52px; display: flex; flex-direction: column; justify-content: center; position: relative; }
+.login-right h3 { font-size: 26px; letter-spacing: -0.03em; margin-bottom: 7px; }
+.login-right .lr-sub { font-size: 14.5px; color: var(--muted); margin-bottom: 32px; }
+.fieldset { margin-bottom: 16px; }
+.lr-divider { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; margin: 22px 0; }
+.lr-divider::before, .lr-divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.lr-foot { text-align: center; font-size: 14px; color: var(--muted); margin-top: 24px; }
+.lr-foot a { color: var(--accent-ink); font-weight: 600; }
+.back-link { position: absolute; top: 24px; left: 28px; font-size: 14px; color: var(--muted);
+  display: inline-flex; gap: 6px; align-items: center; }
+.back-link:hover { color: var(--ink); }
+
+/* ═══════════════════════════════════════════════════════════
+   APP SHELL
+   ═══════════════════════════════════════════════════════════ */
+.app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+.side { background: var(--surface); border-right: 1px solid var(--line);
+  position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 22px 0; }
+.side-brand { padding: 0 22px 22px; }
+.side-nav { padding: 14px 14px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.side-nav a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r-sm);
+  font-size: 14.5px; font-weight: 500; color: var(--ink-soft);
+  transition: background 140ms var(--ease), color 140ms var(--ease); }
+.side-nav a svg { color: var(--muted); transition: color 140ms var(--ease); }
+.side-nav a:hover { background: var(--surface-2); color: var(--ink); }
+.side-nav a.on { background: var(--accent-tint); color: var(--accent-ink); }
+.side-nav a.on svg { color: var(--accent); }
+.side-foot { padding: 16px 18px 0; border-top: 1px solid var(--line); margin: 0 14px; }
+.org-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 12px 14px; margin-bottom: 12px; }
+.org-card .nm { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+.org-card .pl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.side-foot .links { display: flex; justify-content: space-between; }
+.side-foot .links a { font-size: 13px; color: var(--muted); }
+.side-foot .links a:hover { color: var(--ink); }
+
+.app-main { padding: 36px 44px 64px; max-width: 1180px; }
+.page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 32px; }
+.page-head h1 { font-size: 28px; letter-spacing: -0.03em; }
+.page-head .ps { font-size: 14.5px; color: var(--muted); margin-top: 5px; }
+
+/* ─── KPI strip (no cards: hairline) ────────────────────── */
+.kpi { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; margin-bottom: 28px; }
+.kpi .k { padding: 22px 24px; border-left: 1px solid var(--line); }
+.kpi .k:first-child { border-left: none; }
+.kpi .kl { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
+.kpi .kv { font-family: var(--display); font-weight: 800; font-size: 30px; color: var(--ink); letter-spacing: -0.04em; line-height: 1; }
+.kpi .kd { font-size: 12.5px; margin-top: 7px; color: var(--muted); }
+.kpi .kd.up { color: var(--ok); }
+
+.grid-2 { display: grid; grid-template-columns: 1.7fr 1fr; gap: 22px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px; }
+.panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.panel-head h3 { font-size: 17px; letter-spacing: -0.02em; }
+
+/* ─── grant rows (dashboard) ────────────────────────────── */
+.grow { display: flex; align-items: center; gap: 16px; padding: 15px 0; border-top: 1px solid var(--line-soft); }
+.grow:first-of-type { border-top: none; }
+.grow .gi { flex: 1; min-width: 0; }
+.grow .gi .gn { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+.grow .gi .gm { font-size: 12.5px; color: var(--muted); margin-top: 3px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+/* match ring */
+.ring { width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0; position: relative; }
+.ring span { position: relative; z-index: 1; }
+.ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(var(--rc, var(--accent)) calc(var(--p) * 1%), rgba(26,25,22,0.08) 0); }
+.ring::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--surface); }
+.ring.hi { --rc: #2f7d4f; color: #2f7d4f; }
+.ring.mid { --rc: #d98b2b; color: #b06d12; }
+
+/* deadlines */
+.dl { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--line-soft); }
+.dl:first-of-type { border-top: none; }
+.dl .dn { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.dl .dt { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.dl .dd { font-size: 13px; font-weight: 700; }
+.dd.red { color: var(--accent); } .dd.amber { color: var(--warn-ink); } .dd.green { color: var(--ok); }
+
+.bars { display: flex; flex-direction: column; gap: 14px; }
+.bar-row .bl { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: var(--ink-soft); }
+.track { height: 6px; background: rgba(26,25,22,0.08); border-radius: 6px; overflow: hidden; }
+.track > span { display: block; height: 100%; border-radius: 6px; background: var(--accent);
+  transition: width 0.8s var(--ease); }
+.track > span.ok { background: var(--ok); }
+
+/* ─── DISCOVERY ─────────────────────────────────────────── */
+.filters { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; margin-bottom: 24px; }
+.filters .search { max-width: 260px; }
+.chip { font-size: 13px; font-weight: 500; padding: 8px 15px; border-radius: var(--r-pill);
+  border: 1px solid var(--line); color: var(--ink-soft); background: var(--surface);
+  transition: all 140ms var(--ease); }
+.chip:hover { border-color: var(--ink); }
+.chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+.gcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: 24px; display: grid; grid-template-columns: 64px 1fr 150px; gap: 22px; align-items: start;
+  margin-bottom: 14px; transition: border-color 180ms var(--ease), transform 180ms var(--ease); cursor: pointer; }
+.gcard:hover { border-color: var(--ink); transform: translateY(-2px); }
+.gcard.saved { border-color: var(--accent); }
+.gc-ring { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.gc-ring .lbl { font-size: 10.5px; color: var(--muted); }
+.gc-body .funder { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.gc-body .ttl { font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; margin-bottom: 9px; }
+.gc-body .dsc { font-size: 14px; color: var(--ink-body); margin-bottom: 13px; max-width: 44rem; }
+.gc-body .tags { display: flex; gap: 7px; flex-wrap: wrap; }
+.gc-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.gc-meta .amt { font-family: var(--display); font-weight: 800; font-size: 21px; color: var(--ink); letter-spacing: -0.03em; }
+.gc-meta .due { font-size: 12px; color: var(--muted); }
+.gc-meta .acts { display: flex; flex-direction: column; gap: 6px; width: 100%; align-items: stretch; margin-top: 4px; }
+
+/* ─── GENERATOR ─────────────────────────────────────────── */
+.steps { display: flex; gap: 8px; margin-bottom: 30px; }
+.stp { flex: 1; padding: 13px 16px; border-radius: var(--r); background: var(--surface);
+  border: 1px solid var(--line); font-size: 13px; color: var(--muted);
+  display: flex; align-items: center; gap: 9px; }
+.stp.done { color: var(--ink-soft); }
+.stp.now { border-color: var(--ink); color: var(--ink); font-weight: 600; }
+.stp .sn { width: 21px; height: 21px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 11px; font-weight: 700; background: rgba(26,25,22,0.08); color: var(--ink-soft); flex-shrink: 0; }
+.stp.done .sn { background: var(--ok); color: #fff; }
+.stp.now .sn { background: var(--ink); color: #fff; }
+
+.gen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+.out { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: 0; position: relative; overflow: hidden; min-height: 560px; position: sticky; top: 24px; }
+.out-head { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px;
+  border-bottom: 1px solid var(--line); }
+.out-head .oh-l .ol1 { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.out-head .oh-l .ol2 { font-size: 15px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+.out-body { padding: 26px 28px; }
+.out-empty { display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 10px; min-height: 480px; color: var(--muted); padding: 40px; }
+.out-empty .oe-ico { width: 54px; height: 54px; border-radius: 14px; background: var(--accent-tint);
+  color: var(--accent-ink); display: grid; place-items: center; margin-bottom: 6px; }
+.out-empty h4 { font-size: 16px; color: var(--ink); }
+.gen-progress { position: absolute; top: 0; left: 0; right: 0; height: 3px; overflow: hidden; display: none; }
+.gen-progress::before { content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: sweep 1.2s linear infinite; }
+@keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+.doc h4 { font-size: 13.5px; color: var(--ink); margin: 18px 0 7px; letter-spacing: -0.01em; }
+.doc h4:first-child { margin-top: 0; }
+.doc p { font-size: 13.5px; line-height: 1.75; color: var(--ink-body); margin-bottom: 10px; }
+.cursor { display: inline-block; width: 2px; height: 1em; background: var(--accent);
+  vertical-align: text-bottom; margin-left: 1px; animation: blink 1s step-end infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ─── PROFILE ───────────────────────────────────────────── */
+.complete { display: flex; align-items: center; gap: 22px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px 26px; margin-bottom: 28px; }
+.complete .cring { width: 64px; height: 64px; flex-shrink: 0; }
+.complete .cring { --p: 72; }
+.complete .msg { font-size: 14.5px; color: var(--ink-body); }
+.complete .msg strong { color: var(--ink); }
+.pform { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.pform .full { grid-column: 1 / -1; }
+.divider { grid-column: 1 / -1; display: flex; align-items: center; gap: 13px;
+  font-size: 12.5px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase;
+  letter-spacing: 0.06em; margin-top: 10px; }
+.divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.upl { border: 1.5px dashed var(--line); border-radius: var(--r); padding: 22px; text-align: center;
+  color: var(--muted); font-size: 13.5px; transition: border-color 160ms var(--ease), background 160ms var(--ease); cursor: pointer; }
+.upl:hover { border-color: var(--accent); background: var(--surface-2); }
+.upl.has { border-style: solid; }
+.upl .fn { font-weight: 600; color: var(--ink); font-size: 14px; margin-bottom: 3px; }
+.upl .ok { color: var(--ok); font-size: 12.5px; }
+.tags-input { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; }
+.tg { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-tint);
+  color: var(--accent-ink); padding: 5px 11px; border-radius: var(--r-pill); font-size: 13px; font-weight: 500; }
+.tg button { color: var(--accent-ink); opacity: 0.6; font-size: 13px; line-height: 1; }
+.tg button:hover { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL
+   ═══════════════════════════════════════════════════════════ */
+.overlay { position: fixed; inset: 0; z-index: var(--z-modal); background: rgba(26,25,22,0.4);
+  backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; padding: 24px; }
+.overlay.open { display: flex; }
+.modal { background: var(--surface); border-radius: var(--r-lg); width: 100%; max-width: 580px;
+  max-height: 88vh; overflow-y: auto; padding: 32px;
+  transform: scale(0.96); opacity: 0; transition: transform 220ms var(--ease), opacity 220ms var(--ease);
+  transform-origin: center; }
+.overlay.open .modal { transform: scale(1); opacity: 1; }
+.modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
+.modal-head .mt { font-size: 21px; letter-spacing: -0.03em; }
+.modal-head .mf { font-size: 12.5px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
+.x { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+  color: var(--muted); transition: background 140ms var(--ease), color 140ms var(--ease); flex-shrink: 0; }
+.x:hover { background: var(--surface-2); color: var(--ink); }
+.mini-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
+.mini-stat { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; text-align: center; }
+.mini-stat .l { font-size: 11.5px; color: var(--muted); margin-bottom: 5px; }
+.mini-stat .v { font-family: var(--display); font-weight: 800; font-size: 18px; color: var(--ink); letter-spacing: -0.03em; }
+.check-list { display: flex; flex-direction: column; gap: 9px; margin: 8px 0 24px; }
+.check-list .ci { display: flex; gap: 9px; font-size: 14px; color: var(--ink-body); align-items: flex-start; }
+.check-list .ci svg { flex-shrink: 0; margin-top: 2px; }
+
+/* ═══════════════════════════════════════════════════════════
+   TOAST
+   ═══════════════════════════════════════════════════════════ */
+.toast { position: fixed; bottom: 28px; right: 28px; z-index: var(--z-toast);
+  background: var(--ink); color: #fff; border-radius: var(--r); padding: 13px 18px;
+  font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 18px 40px -16px rgba(26,25,22,0.5);
+  transform: translateY(120%); opacity: 0; transition: transform 360ms var(--ease), opacity 360ms var(--ease);
+  pointer-events: none; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast svg { color: #6fe39a; }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 1080px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+  .hero-asset { max-width: 480px; }
+  .bento { grid-template-columns: repeat(2, 1fr); }
+  .cell.tall { grid-row: span 1; }
+  .gen-grid { grid-template-columns: 1fr; }
+  .out { position: static; }
+}
+@media (max-width: 860px) {
+  .nav-links { display: none; }
+  .stat-band .wrap { grid-template-columns: 1fr 1fr; }
+  .stat-cell { border-left: none; padding: 24px 0; border-top: 1px solid var(--line); }
+  .stat-cell:nth-child(-n+2) { border-top: none; }
+  .proc-step { grid-template-columns: 1fr; gap: 14px; }
+  .proc-visual { display: none; }
+  .quotes, .pricing { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .login { grid-template-columns: 1fr; }
+  .login-left { display: none; }
+  .app { grid-template-columns: 1fr; }
+  .side { display: none; }
+  .pform { grid-template-columns: 1fr; }
+  .kpi { grid-template-columns: 1fr 1fr; }
+  .kpi .k:nth-child(odd) { border-left: none; }
+  .gcard { grid-template-columns: 1fr; }
+  .gc-meta { text-align: left; align-items: flex-start; }
+}
+@media (max-width: 560px) {
+  .wrap, .nav-inner { padding: 0 20px; }
+  .app-main { padding: 24px 20px 48px; }
+  .section { padding: 64px 0; }
+  .bento { grid-template-columns: 1fr; }
+  .cell.span2 { grid-column: span 1; }
+  .cta-band { padding: 44px 28px; }
+  .kpi { grid-template-columns: 1fr; }
+  .kpi .k { border-left: none; border-top: 1px solid var(--line); }
+  .kpi .k:first-child { border-top: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  .rise { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════ LANDING ════════════════════════ -->
+<div id="landing" class="screen active">
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#" onclick="go('landing')"><span class="brand-mark"></span>Grange</a>
+      <nav class="nav-links">
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#" onclick="go('dashboard')">Demo</a>
+      </nav>
+      <div class="nav-right">
+        <button class="btn btn-ghost" onclick="go('login')">Sign in</button>
+        <button class="btn btn-primary btn-sm" onclick="go('login')">Start free</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="hero-eyebrow rise d1">For nonprofits under $1M a year</span>
+        <h1 class="rise d2">The grants you need,<br><em class="s">written for you.</em></h1>
+        <p class="hero-sub rise d3">Grange AI finds the grants your nonprofit qualifies for and drafts fundable proposals in minutes, not weeks.</p>
+        <div class="hero-actions rise d4">
+          <button class="btn btn-accent" onclick="go('login')">Start free</button>
+          <button class="btn btn-outline" onclick="go('dashboard')">Watch the 2-minute demo</button>
+        </div>
+        <p class="hero-trust rise d5">No card required. 14-day trial. Setup takes about 20 minutes.</p>
+      </div>
+
+      <div class="hero-asset rise d3">
+        <div class="aurora"><i></i></div>
+        <div class="float-card match">
+          <div class="fc-label">Match score</div>
+          <div class="fc-title">Weingart Foundation, Youth Development</div>
+          <div class="fc-row" style="margin-bottom:6px;"><span style="font-size:12px;color:var(--muted)">Mission fit</span><strong style="font-size:13px;color:var(--ok)">94%</strong></div>
+          <div class="fc-bar"><span style="width:94%"></span></div>
+        </div>
+        <div class="float-card deadline">
+          <div class="fc-label">Next deadline</div>
+          <div class="fc-title">DHHS Healthy Communities</div>
+          <div class="fc-row"><span style="font-size:13px;color:var(--ink-soft)">Full proposal</span><span class="pill pill-acc">14 days</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAT BAND -->
+  <section class="stat-band">
+    <div class="wrap">
+      <div class="stat-cell"><div class="fig">143:1</div><div class="cap">Nonprofits for every working grant writer in the US</div></div>
+      <div class="stat-cell"><div class="fig">88%</div><div class="cap">Run on budgets under $500,000, most without a grant writer</div></div>
+      <div class="stat-cell"><div class="fig">80-200</div><div class="cap">Hours a single federal application takes to write by hand</div></div>
+      <div class="stat-cell"><div class="fig">$3K-$15K</div><div class="cap">What a professional charges per proposal</div></div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>From searching to submitting,<br>in three steps.</h2>
+        <p>Set up your organization once. Grange does the research, the writing, and the deadline-watching from there.</p>
+      </div>
+      <div class="process">
+        <div class="proc-step">
+          <div class="proc-num">01</div>
+          <div class="proc-text">
+            <h3>Build your profile once</h3>
+            <p>Upload your 990, mission, and program numbers. Grange turns them into a reusable organizational profile that feeds every proposal.</p>
+          </div>
+          <div class="proc-visual">
+            <div class="mini">
+              <div class="mini-row"><span class="mini-dot" style="background:var(--ok)"></span><span style="font-size:13px;color:var(--ink-soft)">Form 990 (2024)</span></div>
+              <div class="mini-row"><span class="mini-dot" style="background:var(--ok)"></span><span style="font-size:13px;color:var(--ink-soft)">Mission &amp; NTEE code</span></div>
+              <div class="mini-row"><span class="mini-dot" style="background:var(--warn-ink)"></span><span style="font-size:13px;color:var(--ink-soft)">Logic model (in progress)</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="proc-step">
+          <div class="proc-num">02</div>
+          <div class="proc-text">
+            <h3>See the grants you actually qualify for</h3>
+            <p>Grange scans Grants.gov, Candid, and foundation databases every day, then scores each opportunity against your mission, NTEE code, and eligibility.</p>
+          </div>
+          <div class="proc-visual">
+            <div class="mini">
+              <div class="mini-row"><div class="ring hi" style="--p:94;width:34px;height:34px;font-size:11px"><span>94</span></div><div class="mini-line"></div></div>
+              <div class="mini-row"><div class="ring hi" style="--p:88;width:34px;height:34px;font-size:11px"><span>88</span></div><div class="mini-line" style="width:80%"></div></div>
+              <div class="mini-row"><div class="ring mid" style="--p:76;width:34px;height:34px;font-size:11px"><span>76</span></div><div class="mini-line" style="width:62%"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="proc-step">
+          <div class="proc-num">03</div>
+          <div class="proc-text">
+            <h3>Generate a tailored draft</h3>
+            <p>Grange reads the funder's RFP, pulls from your profile, and writes a full narrative: needs statement, theory of change, KPIs, and evaluation plan. You review and submit.</p>
+          </div>
+          <div class="proc-visual">
+            <div class="mini">
+              <div class="mini-line" style="width:100%;margin-bottom:8px"></div>
+              <div class="mini-line" style="width:92%;margin-bottom:8px"></div>
+              <div class="mini-line" style="width:78%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES BENTO -->
+  <section class="section" id="features" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>A development office,<br>at a fraction of the cost.</h2>
+        <p>Everything a paid grant writer would do for you, running quietly in the background.</p>
+      </div>
+      <div class="bento">
+        <div class="cell">
+          <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+          <h3>Match scoring</h3>
+          <p>Every grant gets a fit score based on your mission, NTEE code, geography, and budget range. Skip the ones you'd lose.</p>
+        </div>
+        <div class="cell gradient span2">
+          <div class="big">4 min</div>
+          <h3>From blank page to first draft</h3>
+          <p>A full grant narrative, written from your profile and the funder's own language. The same draft would take a person 30 to 50 hours.</p>
+        </div>
+        <div class="cell feature-img tall">
+          <img src="https://picsum.photos/seed/grange-community-youth/640/900" alt="Community youth program staff working together">
+          <div class="cap">
+            <h3>Built for the work that matters</h3>
+            <p>So your team spends time with the community, not the paperwork.</p>
+          </div>
+        </div>
+        <div class="cell">
+          <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
+          <h3>Deadline tracking</h3>
+          <p>Reminders at 30, 14, and 7 days. Synced to your calendar so nothing slips.</p>
+        </div>
+        <div class="cell">
+          <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <h3>Eligibility checks</h3>
+          <p>501(c)(3), SAM.gov status, and allowable costs verified before you invest a single hour.</p>
+        </div>
+        <div class="cell">
+          <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div>
+          <h3>Document library</h3>
+          <p>990s, audits, your IRS letter, and board resolutions, ready for the next application.</p>
+        </div>
+        <div class="cell">
+          <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+          <h3>Reporting drafts</h3>
+          <p>Interim and final reports built from your outcome data. Keep funders happy, keep renewals coming.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Run by people doing<br>the work of twenty.</h2>
+      </div>
+      <div class="quotes">
+        <div class="quote">
+          <p class="qt">"Our director used to write proposals every Sunday. Grange found a foundation we'd never heard of and drafted the application in an afternoon. We won it."</p>
+          <div class="by">
+            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Maria Reyes">
+            <div><div class="nm">Maria Reyes</div><div class="rl">Executive Director, Bright Futures LA</div></div>
+          </div>
+        </div>
+        <div class="quote">
+          <p class="qt">"Three grants in our first sixty days. The math is not close: Grange costs less per month than one hour of a grant writer's time."</p>
+          <div class="by">
+            <img src="https://randomuser.me/api/portraits/men/52.jpg" alt="James Thornton">
+            <div><div class="nm">James Thornton</div><div class="rl">Development Director, Eastside Food Bank</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Honest pricing.<br>No enterprise contracts.</h2>
+        <p>A professional charges $3,000 to $15,000 for one proposal. Grange runs $199 a month for as many as you can submit.</p>
+      </div>
+      <div class="pricing">
+        <div class="tier">
+          <div class="nm">Starter</div>
+          <div class="pr">$79<small>/mo</small></div>
+          <p class="desc">For organizations writing their first few grants.</p>
+          <ul>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>5 proposals a month</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Up to 50 grant matches</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Deadline tracking</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>1 user, 2GB library</li>
+          </ul>
+          <button class="btn btn-outline btn-block" onclick="go('login')">Start free</button>
+        </div>
+        <div class="tier hot">
+          <div class="badge-hot">Most chosen</div>
+          <div class="nm">Growth</div>
+          <div class="pr">$199<small>/mo</small></div>
+          <p class="desc">For nonprofits building a real grant portfolio.</p>
+          <ul>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Unlimited proposals</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Full grant database</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>LOIs and full narratives</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Eligibility screening</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>3 users, calendar sync</li>
+          </ul>
+          <button class="btn btn-accent btn-block" onclick="go('login')">Start free</button>
+        </div>
+        <div class="tier">
+          <div class="nm">Scale</div>
+          <div class="pr">$399<small>/mo</small></div>
+          <p class="desc">For multi-program portfolios and federal work.</p>
+          <ul>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Everything in Growth</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Unlimited users</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Federal grants (SAM.gov)</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Reporting automation</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Dedicated account manager</li>
+          </ul>
+          <button class="btn btn-outline btn-block" onclick="go('login')">Start free</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BAND -->
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="cta-band">
+        <div class="aurora"><i></i></div>
+        <div class="cta-band-inner">
+          <div>
+            <h2>The funding is there.<br>Go get your share.</h2>
+            <p>Nine in ten nonprofits already use AI somewhere. The ones who move first will fund the next decade of their mission.</p>
+          </div>
+          <button class="btn btn-primary" style="background:#fff;color:var(--ink)" onclick="go('login')">Start free</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <a class="brand" href="#" onclick="go('landing')"><span class="brand-mark"></span>Grange</a>
+      <div class="small">Built for the nonprofits doing the most with the least.</div>
+      <div class="footer-links">
+        <a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a><a href="#">Contact</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ════════════════════════ LOGIN ════════════════════════ -->
+<div id="login" class="screen">
+  <div class="login">
+    <div class="login-left">
+      <div class="aurora"><i></i></div>
+      <div class="ll-content">
+        <a class="brand" href="#" onclick="go('landing')" style="margin-bottom:auto;position:relative;z-index:1"><span class="brand-mark"></span>Grange</a>
+        <h2>Every nonprofit deserves a fighting chance at funding.</h2>
+        <p>Join the organizations who stopped missing grants and started winning them.</p>
+        <div class="ll-list">
+          <div class="it"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M5 12l5 5L20 6"/></svg>Setup in about 20 minutes, just upload your 990</div>
+          <div class="it"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M5 12l5 5L20 6"/></svg>First drafts in minutes, not 30 to 50 hours</div>
+          <div class="it"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M5 12l5 5L20 6"/></svg>No card required, cancel any time</div>
+        </div>
+      </div>
+    </div>
+    <div class="login-right">
+      <a class="back-link" href="#" onclick="go('landing')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
+      <h3>Create your account</h3>
+      <p class="lr-sub">Start your 14-day trial. No card required.</p>
+      <div class="fieldset"><label class="field-label">Organization name</label><input type="text" placeholder="Eastside Youth Foundation"></div>
+      <div class="fieldset"><label class="field-label">Work email</label><input type="email" placeholder="you@yourorg.org"></div>
+      <div class="fieldset"><label class="field-label">Password</label><input type="password" placeholder="At least 8 characters"></div>
+      <div class="fieldset"><label class="field-label">Annual operating budget</label>
+        <select><option>Under $100,000</option><option>$100K to $250K</option><option selected>$250K to $500K</option><option>$500K to $1M</option></select></div>
+      <button class="btn btn-accent btn-block" style="padding:13px" onclick="go('profile')">Create account</button>
+      <div class="lr-divider">or</div>
+      <button class="btn btn-outline btn-block" style="padding:12px">Continue with Google</button>
+      <p class="lr-foot">Already have an account? <a href="#" onclick="go('dashboard')">Sign in</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ APP: DASHBOARD ════════════════════════ -->
+<div id="dashboard" class="screen">
+  <div class="app">
+    <aside class="side" id="side-dashboard"></aside>
+    <main class="app-main">
+      <div class="page-head">
+        <div>
+          <h1>Good morning, Maria</h1>
+          <div class="ps">3 deadlines in the next 30 days and 12 new matches this week.</div>
+        </div>
+        <button class="btn btn-accent" onclick="go('generator')">New proposal</button>
+      </div>
+
+      <div class="kpi">
+        <div class="k"><div class="kl">Grants discovered</div><div class="kv">47</div><div class="kd up">12 new this week</div></div>
+        <div class="k"><div class="kl">Proposals drafted</div><div class="kv">9</div><div class="kd">3 in progress</div></div>
+        <div class="k"><div class="kl">Submitted</div><div class="kv">6</div><div class="kd up">2 this month</div></div>
+        <div class="k"><div class="kl">Awarded</div><div class="kv">$142K</div><div class="kd up">2 grants won</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><h3>Grant pipeline</h3><button class="btn btn-ghost btn-sm" onclick="go('discovery')">View all</button></div>
+          <div class="grow">
+            <div class="ring hi" style="--p:94"><span>94</span></div>
+            <div class="gi"><div class="gn">DHHS Healthy Communities Initiative</div><div class="gm">Federal &middot; up to $250,000 <span class="pill pill-acc">Due Jun 15</span></div></div>
+            <button class="btn btn-primary btn-sm" onclick="go('generator')">Draft</button>
+          </div>
+          <div class="grow">
+            <div class="ring hi" style="--p:88"><span>88</span></div>
+            <div class="gi"><div class="gn">Weingart Foundation, Youth Development</div><div class="gm">Foundation &middot; $50K-$150K <span class="pill pill-warn">Due Jul 1</span></div></div>
+            <button class="btn btn-outline btn-sm" onclick="openGrant()">Details</button>
+          </div>
+          <div class="grow">
+            <div class="ring mid" style="--p:76"><span>76</span></div>
+            <div class="gi"><div class="gn">California Community Foundation</div><div class="gm">Foundation &middot; up to $75,000 <span class="pill pill-ok">Due Aug 30</span></div></div>
+            <button class="btn btn-outline btn-sm" onclick="go('generator')">Draft</button>
+          </div>
+          <div class="grow">
+            <div class="ring mid" style="--p:71"><span>71</span></div>
+            <div class="gi"><div class="gn">21st Century Community Learning Centers</div><div class="gm">Federal &middot; up to $150,000 <span class="pill pill-ink">LOI submitted</span></div></div>
+            <button class="btn btn-ghost btn-sm">View LOI</button>
+          </div>
+          <div class="grow">
+            <div class="ring hi" style="--p:91"><span>91</span></div>
+            <div class="gi"><div class="gn">Robert Wood Johnson Foundation</div><div class="gm">Foundation &middot; $75K-$200K <span class="pill pill-ink">Under review</span></div></div>
+            <span class="ps">Submitted</span>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <div class="panel">
+            <div class="panel-head"><h3>Upcoming deadlines</h3></div>
+            <div class="dl"><div><div class="dn">DHHS Healthy Communities</div><div class="dt">Full proposal</div></div><div class="dd red">14 days</div></div>
+            <div class="dl"><div><div class="dn">Weingart Foundation</div><div class="dt">Letter of inquiry</div></div><div class="dd amber">30 days</div></div>
+            <div class="dl"><div><div class="dn">CA Community Foundation</div><div class="dt">Full proposal</div></div><div class="dd green">90 days</div></div>
+            <div class="dl"><div><div class="dn">RWJ Foundation</div><div class="dt">Final report</div></div><div class="dd green">105 days</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Profile strength</h3></div>
+            <p class="ps" style="margin-bottom:16px">A complete profile gets 3.4&times; more matches.</p>
+            <div class="bars">
+              <div class="bar-row"><div class="bl"><span>Mission &amp; NTEE</span><span style="color:var(--ok)">Done</span></div><div class="track"><span class="ok" style="width:100%"></span></div></div>
+              <div class="bar-row"><div class="bl"><span>Financial documents</span><span>67%</span></div><div class="track"><span style="width:67%"></span></div></div>
+              <div class="bar-row"><div class="bl"><span>Logic model</span><span>40%</span></div><div class="track"><span style="width:40%"></span></div></div>
+            </div>
+            <button class="btn btn-outline btn-sm btn-block" style="margin-top:18px" onclick="go('profile')">Complete profile</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ════════════════════════ APP: DISCOVERY ════════════════════════ -->
+<div id="discovery" class="screen">
+  <div class="app">
+    <aside class="side" id="side-discovery"></aside>
+    <main class="app-main">
+      <div class="page-head">
+        <div><h1>Grant discovery</h1><div class="ps">47 opportunities matched to your profile, updated daily.</div></div>
+        <button class="btn btn-accent" onclick="go('generator')">New proposal</button>
+      </div>
+      <div class="filters">
+        <input class="search" type="text" placeholder="Search grants">
+        <button class="chip on">All</button>
+        <button class="chip">Federal</button>
+        <button class="chip">Foundation</button>
+        <button class="chip">State &amp; local</button>
+        <button class="chip">Under $50K</button>
+        <button class="chip">Over $150K</button>
+        <button class="chip">Saved</button>
+      </div>
+
+      <div class="gcard" onclick="openGrant()">
+        <div class="gc-ring"><div class="ring hi" style="--p:94;width:58px;height:58px;font-size:15px"><span>94%</span></div><span class="lbl">match</span></div>
+        <div class="gc-body">
+          <div class="funder">U.S. Department of Health &amp; Human Services</div>
+          <div class="ttl">Healthy Communities Initiative, Youth Wellness</div>
+          <div class="dsc">Supports community organizations providing health, education, and social services to underserved youth. Strong preference for proven outcome measurement.</div>
+          <div class="tags"><span class="pill pill-ink">Federal</span><span class="pill pill-ink">Youth development</span><span class="pill pill-ink">501(c)(3) required</span></div>
+        </div>
+        <div class="gc-meta"><div class="amt">$250K</div><div class="due">Due Jun 15, 2026</div>
+          <div class="acts"><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();go('generator')">Draft</button><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();toast('Saved to your list')">Save</button></div>
+        </div>
+      </div>
+
+      <div class="gcard saved">
+        <div class="gc-ring"><div class="ring hi" style="--p:91;width:58px;height:58px;font-size:15px"><span>91%</span></div><span class="lbl">match</span></div>
+        <div class="gc-body">
+          <div class="funder">Robert Wood Johnson Foundation</div>
+          <div class="ttl">Building Healthy Communities, Education &amp; Opportunity</div>
+          <div class="dsc">Investments in organizations giving children an equitable chance to reach their potential, with a focus on educational achievement.</div>
+          <div class="tags"><span class="pill pill-ink">Foundation</span><span class="pill pill-ink">Youth development</span><span class="pill pill-ink">Health equity</span></div>
+        </div>
+        <div class="gc-meta"><div class="amt">$200K</div><div class="due">Due Aug 1, 2026</div>
+          <div class="acts"><span class="pill pill-ink" style="justify-content:center">Submitted</span><button class="btn btn-outline btn-sm" onclick="toast('Opening proposal')">View</button></div>
+        </div>
+      </div>
+
+      <div class="gcard" onclick="openGrant()">
+        <div class="gc-ring"><div class="ring hi" style="--p:88;width:58px;height:58px;font-size:15px"><span>88%</span></div><span class="lbl">match</span></div>
+        <div class="gc-body">
+          <div class="funder">Weingart Foundation</div>
+          <div class="ttl">Youth Development, Expanded Opportunity</div>
+          <div class="dsc">Grants for nonprofits strengthening pathways for low-income youth in Los Angeles through education, mentorship, and leadership. LOI required first.</div>
+          <div class="tags"><span class="pill pill-ink">Foundation</span><span class="pill pill-ink">Los Angeles</span><span class="pill pill-ink">LOI first</span></div>
+        </div>
+        <div class="gc-meta"><div class="amt">$75K-$150K</div><div class="due">LOI Jul 1, 2026</div>
+          <div class="acts"><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();go('generator')">Draft LOI</button><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();toast('Saved to your list')">Save</button></div>
+        </div>
+      </div>
+
+      <div class="gcard" onclick="openGrant()">
+        <div class="gc-ring"><div class="ring hi" style="--p:84;width:58px;height:58px;font-size:15px"><span>84%</span></div><span class="lbl">match</span></div>
+        <div class="gc-body">
+          <div class="funder">The California Endowment</div>
+          <div class="ttl">Building Healthy Communities, 2026 Cohort</div>
+          <div class="dsc">Long-term investment in California communities most affected by health inequities. Funds organizations with deep roots in underserved neighborhoods.</div>
+          <div class="tags"><span class="pill pill-ink">Foundation</span><span class="pill pill-ink">California</span><span class="pill pill-ink">Multi-year</span></div>
+        </div>
+        <div class="gc-meta"><div class="amt">$100K/yr</div><div class="due">Rolling</div>
+          <div class="acts"><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();go('generator')">Draft</button><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();toast('Saved to your list')">Save</button></div>
+        </div>
+      </div>
+
+      <div class="gcard" onclick="openGrant()">
+        <div class="gc-ring"><div class="ring mid" style="--p:76;width:58px;height:58px;font-size:15px"><span>76%</span></div><span class="lbl">match</span></div>
+        <div class="gc-body">
+          <div class="funder">California Community Foundation</div>
+          <div class="ttl">Education &amp; Youth Development Grants, 2026</div>
+          <div class="dsc">Supports LA nonprofits improving educational outcomes and economic mobility for young people in historically underinvested communities.</div>
+          <div class="tags"><span class="pill pill-ink">Foundation</span><span class="pill pill-ink">Education</span><span class="pill pill-ink">Los Angeles</span></div>
+        </div>
+        <div class="gc-meta"><div class="amt">$75K</div><div class="due">Due Aug 30, 2026</div>
+          <div class="acts"><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();go('generator')">Draft</button><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();toast('Saved to your list')">Save</button></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ════════════════════════ APP: GENERATOR ════════════════════════ -->
+<div id="generator" class="screen">
+  <div class="app">
+    <aside class="side" id="side-generator"></aside>
+    <main class="app-main">
+      <div class="page-head"><div><h1>Proposal generator</h1><div class="ps">A tailored draft in minutes. You review, refine, and submit.</div></div></div>
+
+      <div class="steps">
+        <div class="stp done"><span class="sn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span>Select grant</div>
+        <div class="stp now"><span class="sn">2</span>Configure</div>
+        <div class="stp"><span class="sn">3</span>Generate</div>
+        <div class="stp"><span class="sn">4</span>Review &amp; export</div>
+      </div>
+
+      <div class="gen-grid">
+        <div>
+          <div class="panel" style="margin-bottom:18px">
+            <div class="panel-head"><h3>Grant</h3></div>
+            <div style="background:var(--accent-tint);border-radius:var(--r);padding:14px 16px;margin-bottom:18px">
+              <div style="font-size:14.5px;font-weight:700;color:var(--ink)">DHHS Healthy Communities Initiative</div>
+              <div style="font-size:13px;color:var(--accent-ink);margin-top:3px">Federal &middot; up to $250,000 &middot; Due Jun 15, 2026 &middot; 94% match</div>
+            </div>
+            <div class="fieldset"><label class="field-label">Proposal type</label>
+              <select><option>Full grant narrative</option><option>Letter of inquiry</option><option>Concept paper</option><option>Progress report</option></select></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="fieldset" style="margin:0"><label class="field-label">Requested amount</label><input type="text" value="$175,000"></div>
+              <div class="fieldset" style="margin:0"><label class="field-label">Project period</label><input type="text" value="Jan-Dec 2027"></div>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-bottom:18px">
+            <div class="panel-head"><h3>Program focus</h3></div>
+            <div class="fieldset"><label class="field-label">Program to fund</label>
+              <select><option>After-school tutoring</option><option>College prep track</option><option>Mentorship program</option><option>Summer academy</option></select></div>
+            <div class="fieldset"><label class="field-label">Population served</label><input type="text" value="Youth ages 8 to 18 in Boyle Heights and East LA"></div>
+            <div class="fieldset" style="margin:0"><label class="field-label">What this funds</label>
+              <textarea>Year three of our after-school tutoring and mentorship program, expanding capacity by 60 youth and adding workforce readiness for the 16 to 18 cohort.</textarea></div>
+          </div>
+
+          <div class="panel" style="margin-bottom:18px">
+            <div class="panel-head"><h3>Tone</h3></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="fieldset" style="margin:0"><label class="field-label">Voice</label>
+                <select><option>Data-driven</option><option selected>Community-centered</option><option>Formal federal</option></select></div>
+              <div class="fieldset" style="margin:0"><label class="field-label">Emphasis</label>
+                <select><option selected>Need &amp; equity</option><option>Outcomes</option><option>Capacity</option></select></div>
+            </div>
+          </div>
+
+          <button class="btn btn-accent btn-block" style="padding:14px" onclick="generate()" id="gen-btn">Generate proposal</button>
+        </div>
+
+        <div class="out">
+          <div class="gen-progress" id="prog"></div>
+          <div id="out-empty" class="out-empty">
+            <div class="oe-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
+            <h4>Your draft appears here</h4>
+            <p style="max-width:24rem">Fill in the details and generate a tailored proposal in under a minute.</p>
+          </div>
+          <div id="out-doc" style="display:none">
+            <div class="out-head">
+              <div class="oh-l"><div class="ol1">Draft, full grant narrative</div><div class="ol2">DHHS Healthy Communities</div></div>
+              <div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="toast('Copied to clipboard')">Copy</button><button class="btn btn-accent btn-sm" onclick="toast('Exporting as .docx')">Export</button></div>
+            </div>
+            <div class="out-body"><div class="doc" id="doc-content"></div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ════════════════════════ APP: PROFILE ════════════════════════ -->
+<div id="profile" class="screen">
+  <div class="app">
+    <aside class="side" id="side-profile"></aside>
+    <main class="app-main">
+      <div class="page-head">
+        <div><h1>Organization profile</h1><div class="ps">Your profile powers every match and every proposal.</div></div>
+        <button class="btn btn-accent" onclick="toast('Profile saved')">Save changes</button>
+      </div>
+
+      <div class="complete">
+        <div class="ring hi cring"><span>72%</span></div>
+        <div class="msg"><strong>Your profile is 72% complete.</strong> Add your program descriptions and logic model to unlock higher match scores. Complete profiles see 3.4&times; more matches.</div>
+      </div>
+
+      <div class="pform">
+        <div class="divider">Basics</div>
+        <div class="fieldset"><label class="field-label">Legal name</label><input type="text" value="Eastside Youth Foundation"></div>
+        <div class="fieldset"><label class="field-label">EIN</label><input type="text" value="47-1234567"></div>
+        <div class="fieldset full"><label class="field-label">Mission statement</label>
+          <textarea style="min-height:100px">Eastside Youth Foundation gives underserved youth in East Los Angeles a path to opportunity through after-school programming, mentorship, and college preparation.</textarea></div>
+        <div class="fieldset"><label class="field-label">Primary NTEE code</label>
+          <select><option>B20, Elementary &amp; Secondary Education</option><option selected>O50, Youth Development</option><option>P20, Human Services</option></select></div>
+        <div class="fieldset"><label class="field-label">Annual budget</label><input type="text" value="$342,000"></div>
+
+        <div class="divider">Programs</div>
+        <div class="fieldset full"><label class="field-label">Programs &amp; services</label>
+          <div class="tags-input">
+            <span class="tg">After-school tutoring <button onclick="this.parentElement.remove()">&times;</button></span>
+            <span class="tg">College prep <button onclick="this.parentElement.remove()">&times;</button></span>
+            <span class="tg">Mentorship <button onclick="this.parentElement.remove()">&times;</button></span>
+            <span class="tg">Summer camps <button onclick="this.parentElement.remove()">&times;</button></span>
+          </div>
+          <textarea placeholder="Describe your main program: who you serve, where, and the numbers.">We serve 340 youth a year (ages 8 to 18) in Boyle Heights and East LA, five days a week, year round. 94% of our seniors enroll in college, against a 67% district average.</textarea></div>
+
+        <div class="divider">Financial documents</div>
+        <div class="fieldset"><label class="field-label">IRS Form 990</label>
+          <div class="upl has"><div class="fn">990_EYF_2024.pdf</div><div class="ok">Uploaded Jan 15, 2026</div></div></div>
+        <div class="fieldset"><label class="field-label">IRS determination letter</label>
+          <div class="upl" onclick="toast('File picker would open')">Drop a file or click to upload</div></div>
+        <div class="fieldset"><label class="field-label">Audited financials</label>
+          <div class="upl has"><div class="fn">Audit_2024_EYF.pdf</div><div class="ok">Uploaded Feb 3, 2026</div></div></div>
+        <div class="fieldset"><label class="field-label">SAM.gov registration</label>
+          <div class="upl" onclick="toast('File picker would open')">Required for federal grants</div></div>
+
+        <div class="divider">Logic model</div>
+        <div class="fieldset"><label class="field-label">Inputs</label><textarea>6 staff, 22 trained volunteers, a 3,400 sq ft center, and an evidence-based curriculum.</textarea></div>
+        <div class="fieldset"><label class="field-label">Activities</label><textarea>Daily tutoring, weekly mentor sessions, college counseling, and monthly parent workshops.</textarea></div>
+        <div class="fieldset"><label class="field-label">Outputs</label><textarea>340 youth served, 5,200 contact hours, 85 seniors in the college prep track.</textarea></div>
+        <div class="fieldset"><label class="field-label">Outcomes</label><textarea>94% college enrollment, 89% grade-level reading, 78% year-over-year retention.</textarea></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ════════════════════════ GRANT MODAL ════════════════════════ -->
+<div class="overlay" id="grant-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="mf">Weingart Foundation</div><div class="mt">Youth Development, Expanded Opportunity</div></div>
+      <button class="x" onclick="closeGrant()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:20px">
+      <span class="pill pill-ink">Foundation</span><span class="pill pill-ink">Youth development</span>
+      <span class="pill pill-ok" style="margin-left:auto">88% match</span>
+    </div>
+    <div class="mini-stats">
+      <div class="mini-stat"><div class="l">Award range</div><div class="v">$75K-$150K</div></div>
+      <div class="mini-stat"><div class="l">LOI deadline</div><div class="v" style="color:var(--warn-ink)">Jul 1</div></div>
+      <div class="mini-stat"><div class="l">Full proposal</div><div class="v">Aug 15</div></div>
+    </div>
+    <p style="font-size:14px;color:var(--ink-body);line-height:1.7;margin-bottom:18px">Weingart's Youth Development program supports nonprofits building pathways for low-income youth in Los Angeles. It favors organizations with deep community roots and real outcome data.</p>
+    <p style="font-size:14px;color:var(--ink);font-weight:600;margin-bottom:12px">Why you match</p>
+    <div class="check-list">
+      <div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>501(c)(3) status confirmed</div>
+      <div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Los Angeles County, your service area</div>
+      <div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>NTEE O50 youth-serving mission</div>
+      <div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--warn-ink)" stroke-width="2.4"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>LOI must come before the full proposal, 2-page limit</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-accent" style="flex:1" onclick="closeGrant();go('generator')">Draft the LOI</button>
+      <button class="btn btn-outline" onclick="toast('Saved to your list');closeGrant()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg>
+  <span id="toast-text"></span>
+</div>
+
+<script>
+/* ─── sidebar template ──────────────────────────────────── */
+const SIDE = (active) => `
+  <div class="side-brand"><a class="brand" href="#" onclick="go('landing')"><span class="brand-mark"></span>Grange</a></div>
+  <nav class="side-nav">
+    <a href="#" onclick="go('dashboard')" class="${active==='dashboard'?'on':''}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
+    <a href="#" onclick="go('discovery')" class="${active==='discovery'?'on':''}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Grant discovery</a>
+    <a href="#" onclick="go('generator')" class="${active==='generator'?'on':''}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Proposal generator</a>
+    <a href="#" onclick="go('profile')" class="${active==='profile'?'on':''}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Org profile</a>
+  </nav>
+  <div class="side-foot">
+    <div class="org-card"><div class="nm">Eastside Youth Foundation</div><div class="pl">Growth plan, trial</div></div>
+    <div class="links"><a href="#">Settings</a><a href="#" onclick="go('landing')">Sign out</a></div>
+  </div>`;
+['dashboard','discovery','generator','profile'].forEach(s => {
+  const el = document.getElementById('side-' + s);
+  if (el) el.innerHTML = SIDE(s);
+});
+
+/* ─── navigation ────────────────────────────────────────── */
+const SCREENS = ['landing','login','dashboard','discovery','generator','profile'];
+function go(id) {
+  SCREENS.forEach(s => document.getElementById(s)?.classList.remove('active'));
+  const t = document.getElementById(id);
+  if (t) { t.classList.add('active'); window.scrollTo(0,0); }
+}
+
+/* ─── modal ─────────────────────────────────────────────── */
+function openGrant(){ document.getElementById('grant-modal').classList.add('open'); }
+function closeGrant(){ document.getElementById('grant-modal').classList.remove('open'); }
+document.getElementById('grant-modal').addEventListener('click', e => {
+  if (e.target.id === 'grant-modal') closeGrant();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGrant(); });
+
+/* ─── toast ─────────────────────────────────────────────── */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ─── filter chips ──────────────────────────────────────── */
+document.querySelectorAll('.filters .chip').forEach(c => {
+  c.addEventListener('click', function(){
+    document.querySelectorAll('.filters .chip').forEach(x => x.classList.remove('on'));
+    this.classList.add('on');
+  });
+});
+
+/* ─── proposal generation ───────────────────────────────── */
+const DOC = `
+<h4>Executive summary</h4>
+<p>Eastside Youth Foundation requests $175,000 to fund year three of our after-school and mentorship program, serving 400 low-income youth ages 8 to 18 in Boyle Heights and East Los Angeles, two of the most under-resourced zip codes in the county.</p>
+<h4>Statement of need</h4>
+<p>In our service area, 78% of households earn below the poverty line and youth chronic absenteeism runs at 34%. Educational stability is a social determinant of health: young people who do not finish high school report poor adult health at far higher rates. Our program sits at that intersection.</p>
+<h4>Program design and theory of change</h4>
+<p><b>Inputs.</b> 6 staff, 22 trained mentors, an evidence-based curriculum, and a $342,000 operating budget across 14 funders.</p>
+<p><b>Activities.</b> Daily tutoring, weekly mentor sessions, college counseling, parent workshops, and campus visits.</p>
+<p><b>Outcomes.</b> 94% college enrollment against a 67% district average, 89% grade-level reading, 78% year-over-year retention.</p>
+<h4>Evaluation plan</h4>
+<p>We track attendance, GPA, and enrollment quarterly, paired with twice-yearly family surveys. Our external evaluator at Cal State LA reviews results and reports them to funders on this grant's schedule.</p>
+<h4>Organizational capacity</h4>
+<p>Founded in 2011, Eastside Youth Foundation is a 501(c)(3) with 15 years in Boyle Heights, an independently audited budget, and no material findings in five years.<span class="cursor"></span></p>`;
+
+let generating = false;
+function generate(){
+  if (generating) return;
+  generating = true;
+  const empty = document.getElementById('out-empty');
+  const doc = document.getElementById('out-doc');
+  const prog = document.getElementById('prog');
+  const btn = document.getElementById('gen-btn');
+  empty.style.display = 'none';
+  doc.style.display = 'none';
+  prog.style.display = 'block';
+  btn.textContent = 'Generating...';
+  toast('Reading the RFP and your profile');
+  setTimeout(() => {
+    prog.style.display = 'none';
+    doc.style.display = 'block';
+    document.getElementById('doc-content').innerHTML = DOC;
+    btn.textContent = 'Regenerate';
+    generating = false;
+    toast('Draft ready in 4.2 seconds');
+  }, 2800);
+}
+</script>
+</body>
+</html>
