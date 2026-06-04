@@ -263,20 +263,26 @@ label.field-label {
   background: var(--surface-2); }
 .stat-band .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
 
-/* stat band sitting on gradient hero */
+/* stat band continuing the gradient hero into the page */
 .stat-band-on-grad {
-  margin-top: -110px;
+  margin-top: -1px;
   position: relative;
   z-index: 2;
-  background: transparent;
-  border-top: 1px solid rgba(255,255,255,0.25);
+  border-top: none;
   border-bottom: none;
+  /* warm top blends with hero gradient bottom, fades to paper in the
+     bottom padding only so caption text stays on a saturated background */
+  background: linear-gradient(180deg,
+    #e2533b 0%,
+    #e85e40 58%,
+    #ec6e49 78%,
+    var(--paper) 100%);
 }
 .stat-band-on-grad .stat-cell {
-  border-left-color: rgba(255,255,255,0.20);
+  border-left-color: rgba(26,25,22,0.14);
 }
-.stat-band-on-grad .fig { color: #fff; }
-.stat-band-on-grad .cap { color: rgba(255,255,255,0.75); }
+.stat-band-on-grad .stat-cell .fig { color: var(--ink); }
+.stat-band-on-grad .stat-cell .cap { color: rgba(26,25,22,0.64); }
 .stat-cell { padding: 36px 28px; border-left: 1px solid var(--line); }
 .stat-cell:first-child { border-left: none; padding-left: 0; }
 .stat-cell .fig { font-family: var(--display); font-weight: 800; font-size: 40px;
@@ -1734,7 +1740,7 @@ label.field-label {
 
   <header class="nav">
     <div class="nav-inner">
-      <a class="brand" href="#" onclick="go('landing')"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+      <a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
       <div class="tl-wrap" id="tl-wrap">
         <div class="tl-bg"   id="tl-bg"></div>
         <div class="tl-glow" id="tl-glow"></div>
@@ -1781,7 +1787,6 @@ label.field-label {
     </div>
     <div class="scroll-hero-inner">
       <div class="scroll-hero-title">
-        <span class="hero-eyebrow rise d1">For nonprofits under $1M</span>
         <div class="hero-headline rise d2" aria-label="The grants you qualify for, written for you.">
           <span class="hero-hl-static">The grants you qualify for,</span>
           <div class="gooey-line-wrap">
