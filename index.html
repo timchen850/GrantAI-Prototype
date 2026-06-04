@@ -262,6 +262,21 @@ label.field-label {
 .stat-band { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
   background: var(--surface-2); }
 .stat-band .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
+
+/* stat band sitting on gradient hero */
+.stat-band-on-grad {
+  margin-top: -110px;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  border-top: 1px solid rgba(255,255,255,0.25);
+  border-bottom: none;
+}
+.stat-band-on-grad .stat-cell {
+  border-left-color: rgba(255,255,255,0.20);
+}
+.stat-band-on-grad .fig { color: #fff; }
+.stat-band-on-grad .cap { color: rgba(255,255,255,0.75); }
 .stat-cell { padding: 36px 28px; border-left: 1px solid var(--line); }
 .stat-cell:first-child { border-left: none; padding-left: 0; }
 .stat-cell .fig { font-family: var(--display); font-weight: 800; font-size: 40px;
@@ -1049,7 +1064,7 @@ label.field-label {
 
 /* ─── SCROLL HERO - hero introduction with tilt animation ── */
 .scroll-hero {
-  height: 1020px;
+  height: 1120px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -1057,7 +1072,7 @@ label.field-label {
   padding: 0 20px;
 }
 @media (min-width: 769px) {
-  .scroll-hero { height: 1200px; padding: 0 40px; }
+  .scroll-hero { height: 1320px; padding: 0 40px; }
 }
 .scroll-hero-inner {
   padding-top: 64px;
@@ -1798,7 +1813,7 @@ label.field-label {
   </section>
 
   <!-- STAT BAND -->
-  <section class="stat-band" style="margin-top:72px">
+  <section class="stat-band stat-band-on-grad">
     <div class="wrap reveal-group">
       <div class="stat-cell"><div class="fig" data-count="143" data-suffix=":1">143:1</div><div class="cap">Nonprofits per working grant writer in the US</div></div>
       <div class="stat-cell"><div class="fig" data-count="88" data-suffix="%">88%</div><div class="cap">Of nonprofits run on under $500K, most with no grant staff</div></div>
