@@ -1245,6 +1245,162 @@ label.field-label {
   margin-left: 1px; animation: blink 0.9s step-end infinite;
 }
 
+/* ─── DEMO PAGE SCREEN ──────────────────────────────────── */
+#demo { position: fixed; inset: 0; background: var(--paper); overflow-y: auto; overflow-x: hidden; }
+.dp-nav {
+  position: sticky; top: 0; z-index: 100;
+  height: 64px; display: flex; align-items: center; padding: 0 32px; gap: 16px;
+  background: rgba(245,244,241,0.88);
+  backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border-bottom: 1px solid var(--line-soft);
+}
+.dp-back {
+  margin-left: auto; padding: 7px 16px; border-radius: var(--r-pill);
+  border: 1px solid var(--line); background: var(--surface);
+  color: var(--ink-soft); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background 130ms;
+  display: flex; align-items: center; gap: 6px;
+}
+.dp-back:hover { background: var(--surface-2); }
+.dp-intro {
+  min-height: 70vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 80px 32px; position: relative; overflow: hidden;
+}
+.dp-intro-aurora { position: absolute; inset: 0; pointer-events: none; }
+.dp-intro-aurora::before { content: ''; position: absolute; width: 70%; height: 70%; left: -5%; top: 0;
+  background: radial-gradient(circle, rgba(240,149,75,0.30), transparent 65%);
+  animation: drift1 14s var(--ease-soft) infinite alternate; }
+.dp-intro-aurora::after { content: ''; position: absolute; width: 65%; height: 65%; right: -8%; top: 20%;
+  background: radial-gradient(circle, rgba(226,83,59,0.22), transparent 65%);
+  animation: drift2 16s var(--ease-soft) infinite alternate; }
+.dp-intro-content { position: relative; z-index: 1; }
+.dp-intro-eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12.5px; font-weight: 600; color: var(--accent-ink);
+  background: var(--accent-tint); padding: 5px 13px; border-radius: var(--r-pill);
+  margin-bottom: 24px;
+}
+.dp-intro-h1 { font-size: clamp(2.4rem, 6vw, 4.2rem); font-weight: 700; letter-spacing: -0.035em;
+  line-height: 1.06; color: var(--ink); margin-bottom: 18px; }
+.dp-intro-sub { font-size: 18px; color: var(--ink-body); line-height: 1.65; max-width: 36rem;
+  margin: 0 auto 40px; }
+.dp-scroll-hint { color: var(--muted); font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.dp-bounce { animation: dpBounce 1.6s ease-in-out infinite; }
+@keyframes dpBounce { 0%,100% { transform: translateY(0); } 55% { transform: translateY(6px); } }
+/* phase sections */
+.dp-phase {
+  min-height: 100vh; display: flex; align-items: center; padding: 80px 32px;
+}
+.dp-phase:nth-child(even) { background: var(--surface); }
+.dp-phase-inner {
+  max-width: 1100px; margin: 0 auto; width: 100%;
+  display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 72px; align-items: center;
+}
+.dp-step-tag { font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 0.07em;
+  text-transform: uppercase; margin-bottom: 14px; }
+.dp-headline { font-size: clamp(1.8rem, 3.2vw, 2.6rem); font-weight: 700; line-height: 1.1;
+  letter-spacing: -0.03em; color: var(--ink); margin-bottom: 14px; }
+.dp-desc { font-size: 16px; line-height: 1.7; color: var(--ink-body); max-width: 26rem; }
+/* mockup card */
+.dp-card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  box-shadow: 0 12px 40px -12px rgba(26,25,22,0.13); overflow: hidden;
+  opacity: 0; transform: translateY(22px);
+  transition: opacity 0.55s var(--ease-expo) 0.1s, transform 0.55s var(--ease-expo) 0.1s;
+}
+.dp-phase.dp-active .dp-card { opacity: 1; transform: none; }
+.dp-card-bar {
+  padding: 10px 14px; background: var(--surface-2); border-bottom: 1px solid var(--line-soft);
+  display: flex; align-items: center; gap: 5px;
+}
+.dp-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.dp-bar-label { font-size: 11px; font-weight: 600; color: var(--ink-soft); margin-left: 5px; flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dp-card-body { padding: 18px 20px; }
+/* phase 1 — profile fields */
+.dp-field { margin-bottom: 14px; opacity: 0; transform: translateX(-10px);
+  transition: opacity 0.38s ease, transform 0.38s ease; }
+.dp-field.vis { opacity: 1; transform: none; }
+.dp-flabel { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.05em; margin-bottom: 4px; }
+.dp-fval { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 6px;
+  opacity: 0; transform: translateY(4px); transition: opacity 0.3s ease 0.12s, transform 0.3s ease 0.12s; }
+.dp-field.vis .dp-fval { opacity: 1; transform: none; }
+.dp-fbar { height: 3px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.dp-fbar-fill { height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), #f0954b);
+  width: 0; transition: width 0.9s var(--ease) 0.18s; }
+.dp-field.vis .dp-fbar-fill { width: var(--w, 80%); }
+/* phase 2 — scan */
+.dp-scan-stat { display: flex; align-items: baseline; gap: 6px; margin-bottom: 10px; }
+.dp-scan-count { font-size: 28px; font-weight: 700; color: var(--ink); line-height: 1; }
+.dp-scan-sub { font-size: 11.5px; color: var(--muted); }
+.dp-prog-track { height: 5px; background: var(--line); border-radius: 5px; overflow: hidden; margin-bottom: 16px; }
+.dp-prog-bar { height: 100%; background: linear-gradient(90deg, #f0954b, #e2533b); border-radius: 5px; width: 0;
+  transition: width 3s cubic-bezier(0.23,1,0.32,1) 0.2s; }
+.dp-phase.dp-active .dp-prog-bar { width: 100%; }
+.dp-scan-items { display: flex; flex-direction: column; gap: 9px; }
+.dp-scan-row { font-size: 12px; color: var(--ink-body); display: flex; align-items: center; gap: 7px;
+  opacity: 0; transform: translateX(-8px); transition: opacity 0.32s ease, transform 0.32s ease; }
+.dp-scan-row.vis { opacity: 1; transform: none; }
+.dp-scan-tick { color: var(--ok); font-size: 11px; flex-shrink: 0; }
+.dp-scan-hl { color: var(--accent); font-weight: 600; }
+/* phase 3 — matches */
+.dp-grant-list { display: flex; flex-direction: column; gap: 7px; }
+.dp-grant-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface-2); border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm); padding: 10px 12px;
+  opacity: 0; transform: translateX(14px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.dp-grant-row.vis { opacity: 1; transform: none; }
+.dp-score-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; flex-shrink: 0; }
+.dp-score-hi  { background: var(--ok-tint);  color: var(--ok); }
+.dp-score-mid { background: var(--warn-tint); color: var(--warn-ink); }
+.dp-grant-info { flex: 1; min-width: 0; }
+.dp-grant-title { font-size: 11.5px; font-weight: 600; color: var(--ink); line-height: 1.25;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dp-grant-meta { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+.dp-grant-cta { font-size: 11px; font-weight: 600; color: var(--accent); flex-shrink: 0; }
+/* phase 4 — writing */
+.dp-write-top { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.dp-write-label { font-size: 12px; font-weight: 700; color: var(--ink); }
+.dp-ai-chip { font-size: 9.5px; font-weight: 700; background: linear-gradient(135deg,#f0a64d,#e2533b);
+  color: #fff; padding: 2px 8px; border-radius: 10px; }
+.dp-doc-section { margin-bottom: 12px; }
+.dp-doc-h { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 5px;
+  opacity: 0; transition: opacity 0.3s ease; }
+.dp-doc-h.vis { opacity: 1; }
+.dp-doc-p { font-size: 11.5px; line-height: 1.72; color: var(--ink-body); min-height: 2.8em; }
+/* phase 5 — checklist */
+.dp-checklist { display: flex; flex-direction: column; gap: 12px; }
+.dp-check { display: flex; align-items: flex-start; gap: 11px;
+  opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+.dp-check.vis { opacity: 1; transform: none; }
+.dp-check-circle {
+  width: 21px; height: 21px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+  background: var(--ok-tint); color: var(--ok);
+  display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;
+}
+.dp-check-body { font-size: 13px; line-height: 1.55; color: var(--ink-body); }
+.dp-check-body strong { color: var(--ink); }
+/* cta footer */
+.dp-cta-section {
+  min-height: 50vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; padding: 80px 32px;
+  background: var(--accent-tint);
+}
+.dp-cta-h2 { font-size: clamp(2rem, 4.5vw, 3.4rem); font-weight: 700; letter-spacing: -0.035em;
+  color: var(--ink); margin-bottom: 14px; line-height: 1.06; }
+.dp-cta-p { font-size: 17px; color: var(--ink-body); max-width: 30rem; margin: 0 auto 32px; line-height: 1.65; }
+@media (max-width: 768px) {
+  .dp-phase { padding: 60px 20px; min-height: auto; }
+  .dp-phase-inner { grid-template-columns: 1fr !important; gap: 36px; }
+  .dp-intro { padding: 60px 20px; }
+  .dp-nav { padding: 0 20px; }
+}
 /* ─── SIGN-IN SCREEN ────────────────────────────────────── */
 #signin { position: fixed; inset: 0; background: var(--paper); overflow: hidden; }
 #signin canvas { position: absolute; inset: 0; display: block; }
@@ -1449,7 +1605,7 @@ label.field-label {
       <div class="tl-wrap" id="tl-wrap">
         <div class="tl-bg"   id="tl-bg"></div>
         <div class="tl-glow" id="tl-glow"></div>
-        <a class="tl-item tl-active" data-section="home" href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">
+        <a class="tl-item tl-active" data-section="home" href="#" onclick="goHome();return false;">
           <svg class="tl-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           <span class="tl-label">Home</span>
         </a>
@@ -1465,7 +1621,7 @@ label.field-label {
           <svg class="tl-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
           <span class="tl-label">Pricing</span>
         </a>
-        <a class="tl-item" data-section="demo" href="#" onclick="go('dashboard');return false">
+        <a class="tl-item" data-section="demo" href="#" onclick="go('demo');return false">
           <svg class="tl-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           <span class="tl-label">Demo</span>
         </a>
@@ -1506,7 +1662,7 @@ label.field-label {
         <p class="hero-sub rise d3">Grange AI finds the grants your nonprofit qualifies for and drafts fundable proposals in minutes, not weeks.</p>
         <div class="hero-actions rise d4">
           <button class="btn btn-accent" onclick="go('login')">Start free</button>
-          <button class="btn btn-outline" onclick="go('dashboard')">Watch the 2-minute demo</button>
+          <button class="btn btn-outline" onclick="go('demo')">Watch the 2-minute demo</button>
         </div>
         <p class="hero-trust rise d5">No card required. 14-day trial. Setup takes about 20 minutes.</p>
       </div>
@@ -1867,8 +2023,7 @@ label.field-label {
       <div class="fieldset"><label class="field-label">Organization name</label><input type="text" placeholder="Eastside Youth Foundation"></div>
       <div class="fieldset"><label class="field-label">Work email</label><input type="email" placeholder="you@yourorg.org"></div>
       <div class="fieldset"><label class="field-label">Password</label><input type="password" placeholder="At least 8 characters"></div>
-      <div class="fieldset"><label class="field-label">Annual operating budget</label>
-        <select><option>Under $100,000</option><option>$100K to $250K</option><option selected>$250K to $500K</option><option>$500K to $1M</option></select></div>
+      <div class="fieldset"><label class="field-label">Confirm password</label><input type="password" placeholder="Re-enter your password"></div>
       <button class="btn btn-accent btn-block" style="padding:13px" onclick="go('profile')">Create account</button>
       <div class="lr-divider">or</div>
       <button class="btn btn-google btn-block" style="padding:12px" onclick="signInWithGoogle()" id="btn-google-signin">
@@ -1883,6 +2038,183 @@ label.field-label {
       <p class="lr-foot">Already have an account? <a href="#" onclick="go('dashboard')">Sign in</a></p>
     </div>
   </div>
+</div>
+
+<!-- ════════════════════════ DEMO PAGE ════════════════════════ -->
+<div id="demo" class="screen">
+
+  <nav class="dp-nav">
+    <a class="brand" href="#" onclick="go('landing')"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+    <button class="dp-back" onclick="go('landing')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back
+    </button>
+  </nav>
+
+  <!-- intro -->
+  <section class="dp-intro">
+    <div class="dp-intro-aurora"></div>
+    <div class="dp-intro-content">
+      <span class="dp-intro-eyebrow">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Live walkthrough
+      </span>
+      <h1 class="dp-intro-h1">From 990 to funded<br>in five steps</h1>
+      <p class="dp-intro-sub">Watch Grange AI go from a document upload to a submission-ready grant proposal — no grant writer needed.</p>
+      <div class="dp-scroll-hint">
+        <span>Scroll to see how it works</span>
+        <span class="dp-bounce"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12l7 7 7-7"/></svg></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 1: Profile -->
+  <section class="dp-phase" id="dp-phase-1">
+    <div class="dp-phase-inner">
+      <div>
+        <div class="dp-step-tag">Step 01 &middot; Profile</div>
+        <h2 class="dp-headline">We read your whole<br>organization</h2>
+        <p class="dp-desc">Upload your 990 or paste your mission statement. Grange AI extracts programs, geography, NTEE code, and budget — building a deep profile that matches you to the right grants.</p>
+      </div>
+      <div>
+        <div class="dp-card">
+          <div class="dp-card-bar">
+            <span class="dp-dot" style="background:#ff5f56"></span><span class="dp-dot" style="background:#ffbe2e"></span><span class="dp-dot" style="background:#27c93f"></span>
+            <span class="dp-bar-label">Reading 990 — Eastside Youth Foundation.pdf</span>
+          </div>
+          <div class="dp-card-body">
+            <div class="dp-field" data-delay="250"><div class="dp-flabel">Organization</div><div class="dp-fval">Eastside Youth Foundation</div><div class="dp-fbar"><div class="dp-fbar-fill" style="--w:100%"></div></div></div>
+            <div class="dp-field" data-delay="600"><div class="dp-flabel">Mission &amp; focus area</div><div class="dp-fval">Youth education &amp; health equity · Los Angeles</div><div class="dp-fbar"><div class="dp-fbar-fill" style="--w:94%"></div></div></div>
+            <div class="dp-field" data-delay="950"><div class="dp-flabel">NTEE Classification</div><div class="dp-fval">B94 · Youth Development Programs</div><div class="dp-fbar"><div class="dp-fbar-fill" style="--w:88%"></div></div></div>
+            <div class="dp-field" data-delay="1300"><div class="dp-flabel">Budget &amp; eligibility</div><div class="dp-fval">$250K–$500K operating · 501(c)(3) confirmed</div><div class="dp-fbar"><div class="dp-fbar-fill" style="--w:100%"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 2: Scan -->
+  <section class="dp-phase" id="dp-phase-2">
+    <div class="dp-phase-inner">
+      <div>
+        <div class="dp-step-tag">Step 02 &middot; Discovery</div>
+        <h2 class="dp-headline">Scanning 3 million+<br>grants in real time</h2>
+        <p class="dp-desc">Every day Grange AI indexes Grants.gov, Candid, state portals, and hundreds of private foundations — scoring each opportunity against your mission, geography, and budget.</p>
+      </div>
+      <div>
+        <div class="dp-card">
+          <div class="dp-card-bar">
+            <span class="dp-dot" style="background:#ff5f56"></span><span class="dp-dot" style="background:#ffbe2e"></span><span class="dp-dot" style="background:#27c93f"></span>
+            <span class="dp-bar-label">Grant discovery · running daily</span>
+            <span class="demo-spinner" style="margin-left:auto;flex-shrink:0"></span>
+          </div>
+          <div class="dp-card-body">
+            <div class="dp-scan-stat">
+              <span class="dp-scan-count" id="dp-scan-n">0</span>
+              <span class="dp-scan-sub">grants scored today</span>
+            </div>
+            <div class="dp-prog-track"><div class="dp-prog-bar"></div></div>
+            <div class="dp-scan-items">
+              <div class="dp-scan-row" data-delay="400"><span class="dp-scan-tick">✓</span><span>Grants.gov — <span class="dp-scan-hl">1,247 matched</span></span></div>
+              <div class="dp-scan-row" data-delay="900"><span class="dp-scan-tick">✓</span><span>Candid Foundation — <span class="dp-scan-hl">834 matched</span></span></div>
+              <div class="dp-scan-row" data-delay="1400"><span class="dp-scan-tick">✓</span><span>California Grants Portal — <span class="dp-scan-hl">312 matched</span></span></div>
+              <div class="dp-scan-row" data-delay="1900" style="color:var(--accent);font-weight:600"><span style="color:var(--accent);font-size:13px">→</span><span>Scoring against your profile…</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 3: Matching -->
+  <section class="dp-phase" id="dp-phase-3">
+    <div class="dp-phase-inner">
+      <div>
+        <div class="dp-step-tag">Step 03 &middot; Matching</div>
+        <h2 class="dp-headline">Your top matches,<br>ranked by mission fit</h2>
+        <p class="dp-desc">Grange AI scores every grant 0–100 against your mission, geography, and eligibility. You only see grants you can actually win — no more wasted hours on dead ends.</p>
+      </div>
+      <div>
+        <div class="dp-card">
+          <div class="dp-card-bar">
+            <span class="dp-dot" style="background:#ff5f56"></span><span class="dp-dot" style="background:#ffbe2e"></span><span class="dp-dot" style="background:#27c93f"></span>
+            <span class="dp-bar-label">12 new matches this week</span>
+          </div>
+          <div class="dp-card-body">
+            <div class="dp-grant-list">
+              <div class="dp-grant-row" data-delay="200"><span class="dp-score-badge dp-score-hi">94%</span><div class="dp-grant-info"><div class="dp-grant-title">DHHS Healthy Communities Initiative</div><div class="dp-grant-meta">Federal · up to $250,000 · Due Jun 15</div></div><span class="dp-grant-cta">Draft →</span></div>
+              <div class="dp-grant-row" data-delay="500"><span class="dp-score-badge dp-score-hi">91%</span><div class="dp-grant-info"><div class="dp-grant-title">Robert Wood Johnson Foundation</div><div class="dp-grant-meta">Foundation · $75K–$200K · Due Aug 1</div></div><span class="dp-grant-cta">Draft →</span></div>
+              <div class="dp-grant-row" data-delay="800"><span class="dp-score-badge dp-score-hi">88%</span><div class="dp-grant-info"><div class="dp-grant-title">Weingart Foundation, Youth Dev</div><div class="dp-grant-meta">Foundation · $50K–$150K · LOI Jul 1</div></div><span class="dp-grant-cta">Draft →</span></div>
+              <div class="dp-grant-row" data-delay="1100"><span class="dp-score-badge dp-score-mid">76%</span><div class="dp-grant-info"><div class="dp-grant-title">California Community Foundation</div><div class="dp-grant-meta">Foundation · up to $75,000 · Due Aug 30</div></div><span class="dp-grant-cta">Draft →</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 4: Writing -->
+  <section class="dp-phase" id="dp-phase-4">
+    <div class="dp-phase-inner">
+      <div>
+        <div class="dp-step-tag">Step 04 &middot; Drafting</div>
+        <h2 class="dp-headline">Full proposal drafted<br>in minutes</h2>
+        <p class="dp-desc">Click "Draft" and Grange AI writes every section — executive summary, statement of need, theory of change, evaluation plan — pulling evidence directly from your 990 and profile.</p>
+      </div>
+      <div>
+        <div class="dp-card">
+          <div class="dp-card-bar">
+            <span class="dp-dot" style="background:#ff5f56"></span><span class="dp-dot" style="background:#ffbe2e"></span><span class="dp-dot" style="background:#27c93f"></span>
+            <span class="dp-bar-label">Drafting · DHHS Healthy Communities</span>
+            <span class="dp-ai-chip" style="margin-left:auto;flex-shrink:0">AI writing</span>
+          </div>
+          <div class="dp-card-body">
+            <div class="dp-doc-section"><div class="dp-doc-h" id="dp-doc-h1">Statement of Need</div><div class="dp-doc-p" id="dp-doc-p1"></div></div>
+            <div class="dp-doc-section"><div class="dp-doc-h" id="dp-doc-h2">Theory of Change</div><div class="dp-doc-p" id="dp-doc-p2"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 5: Done -->
+  <section class="dp-phase" id="dp-phase-5">
+    <div class="dp-phase-inner">
+      <div>
+        <div class="dp-step-tag">Step 05 &middot; Submit</div>
+        <h2 class="dp-headline">Ready to submit<br>in under 5 minutes</h2>
+        <p class="dp-desc">Review, tweak, and submit. Every draft is formatted for the funder's portal. Grange AI tracks deadlines and reminds you when it's time to follow up.</p>
+      </div>
+      <div>
+        <div class="dp-card">
+          <div class="dp-card-bar">
+            <span class="dp-dot" style="background:#ff5f56"></span><span class="dp-dot" style="background:#ffbe2e"></span><span class="dp-dot" style="background:#27c93f"></span>
+            <span class="dp-bar-label">DHHS Healthy Communities · ready to submit</span>
+          </div>
+          <div class="dp-card-body">
+            <div class="dp-checklist">
+              <div class="dp-check" data-delay="200"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Executive summary</strong> — 3 paragraphs, under 500 words</div></div>
+              <div class="dp-check" data-delay="500"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Statement of need</strong> — local data &amp; citations included</div></div>
+              <div class="dp-check" data-delay="800"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Program design &amp; theory of change</strong></div></div>
+              <div class="dp-check" data-delay="1100"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Budget narrative</strong> — aligned with your 990</div></div>
+              <div class="dp-check" data-delay="1400"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Evaluation plan</strong> — metrics matched to funder priorities</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA footer -->
+  <section class="dp-cta-section">
+    <h2 class="dp-cta-h2">The funding is there.<br>Go get your share.</h2>
+    <p class="dp-cta-p">Nine in ten nonprofits already use AI somewhere. The ones who move first will fund the next decade of their mission.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+      <button class="btn btn-accent" style="padding:14px 28px;font-size:15px" onclick="go('login')">Start free — no card required</button>
+      <button class="btn btn-outline" style="padding:14px 28px;font-size:15px;background:rgba(255,255,255,0.6)" onclick="go('landing')">Back to site</button>
+    </div>
+  </section>
+
 </div>
 
 <!-- ═══════════════════ SIGN-IN (animated flow) ═══════════════════ -->
@@ -2335,13 +2667,26 @@ const SIDE = (active) => `
 });
 
 /* ─── navigation ────────────────────────────────────────── */
-const SCREENS = ['landing','login','signin','dashboard','discovery','generator','profile'];
+const SCREENS = ['landing','login','signin','demo','dashboard','discovery','generator','profile'];
 function go(id) {
   SCREENS.forEach(s => document.getElementById(s)?.classList.remove('active'));
   const t = document.getElementById(id);
   if (t) { t.classList.add('active'); window.scrollTo(0,0); }
   if (id === 'landing') requestAnimationFrame(() => window._tlActivateHome?.());
   if (id === 'signin')  requestAnimationFrame(() => window._siInit?.());
+  if (id === 'demo')    requestAnimationFrame(() => { const d = document.getElementById('demo'); if(d) d.scrollTop = 0; });
+}
+function goHome() {
+  go('landing');
+  const title = document.querySelector('.scroll-hero-title');
+  const card  = document.getElementById('scroll-hero-card');
+  if (title) title.style.transform = '';
+  if (card)  card.style.transform  = '';
+  document.querySelectorAll('#landing .rise').forEach(el => {
+    el.style.animationName = 'none';
+    void el.offsetHeight;
+    el.style.animationName = '';
+  });
 }
 
 /* ─── modal ─────────────────────────────────────────────── */
@@ -2799,6 +3144,64 @@ function handleGoogleCredential(response) {
     requestAnimationFrame(animate);
   }
   requestAnimationFrame(animate);
+})();
+
+/* ─── DEMO PAGE ANIMATIONS ─────────────────────────────── */
+(function(){
+  const DP_T1 = 'In Boyle Heights and East Los Angeles, 78% of households earn below the poverty line and youth chronic absenteeism runs at 34%. Educational stability is a social determinant of health — our program sits at that intersection.';
+  const DP_T2 = 'Inputs: 6 staff, 22 mentors, and a $342K operating budget. Activities: daily tutoring, mentor sessions, and college counseling. Outcomes: 94% college enrollment against a 67% district average.';
+  let dpTyped = false;
+
+  function dpType(el, text, spd, cb) {
+    if (!el) return;
+    el.innerHTML = '';
+    const tn = document.createTextNode('');
+    const cur = document.createElement('span'); cur.className = 'demo-cursor';
+    el.appendChild(tn); el.appendChild(cur);
+    let i = 0;
+    (function tick(){ if(i>text.length){cb&&cb();return;} tn.nodeValue=text.slice(0,i++); setTimeout(tick,spd+(Math.random()>.88?55:0)); })();
+  }
+
+  function dpActivate(sec) {
+    sec.classList.add('dp-active');
+    sec.querySelectorAll('[data-delay]').forEach(el => {
+      setTimeout(() => el.classList.add('vis'), parseInt(el.dataset.delay)||0);
+    });
+    if (sec.id === 'dp-phase-2') {
+      const counter = document.getElementById('dp-scan-n');
+      if (counter && !counter._counted) {
+        counter._counted = true;
+        const target=2549, dur=3000, t0=performance.now();
+        (function tick(now){ const p=Math.min((now-t0)/dur,1); counter.textContent=Math.round(target*(1-Math.pow(1-p,3))); if(p<1)requestAnimationFrame(tick); })(performance.now());
+      }
+    }
+    if (sec.id === 'dp-phase-4' && !dpTyped) {
+      dpTyped = true;
+      const h1=document.getElementById('dp-doc-h1'), p1=document.getElementById('dp-doc-p1');
+      const h2=document.getElementById('dp-doc-h2'), p2=document.getElementById('dp-doc-p2');
+      if(h1) h1.classList.add('vis');
+      dpType(p1, DP_T1, 15, () => setTimeout(() => { if(h2)h2.classList.add('vis'); dpType(p2,DP_T2,15,()=>{}); }, 350));
+    }
+  }
+
+  function dpDeactivate(sec) {
+    sec.classList.remove('dp-active');
+    sec.querySelectorAll('[data-delay]').forEach(el => el.classList.remove('vis'));
+    if (sec.id === 'dp-phase-4') {
+      dpTyped = false;
+      ['dp-doc-h1','dp-doc-h2'].forEach(id => { const e=document.getElementById(id); if(e) e.classList.remove('vis'); });
+      ['dp-doc-p1','dp-doc-p2'].forEach(id => { const e=document.getElementById(id); if(e) e.innerHTML=''; });
+    }
+    if (sec.id === 'dp-phase-2') {
+      const c=document.getElementById('dp-scan-n'); if(c){c.textContent='0';c._counted=false;}
+    }
+  }
+
+  if (!('IntersectionObserver' in window)) return;
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) dpActivate(e.target); else dpDeactivate(e.target); });
+  }, { threshold: 0.3, root: document.getElementById('demo') });
+  document.querySelectorAll('.dp-phase').forEach(s => obs.observe(s));
 })();
 
 /* ─── SIGN-IN FLOW ──────────────────────────────────────── */
