@@ -1246,7 +1246,7 @@ label.field-label {
 }
 
 /* ─── DEMO PAGE SCREEN ──────────────────────────────────── */
-#demo { position: fixed; inset: 0; background: var(--paper); overflow-y: auto; overflow-x: hidden; }
+#demo { position: fixed; inset: 0; background: var(--paper); overflow: hidden; }
 .dp-nav {
   position: sticky; top: 0; z-index: 100;
   height: 64px; display: flex; align-items: center; padding: 0 32px; gap: 16px;
@@ -1263,16 +1263,22 @@ label.field-label {
 }
 .dp-back:hover { background: var(--surface-2); }
 .dp-intro {
-  min-height: 70vh; display: flex; flex-direction: column;
+  position: absolute; inset: 0; min-height: unset;
+  display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  text-align: center; padding: 80px 32px; position: relative; overflow: hidden;
+  text-align: center; padding: 0 32px 72px; overflow: hidden;
+}
+.dp-intro::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 36%; background: linear-gradient(to bottom, transparent, var(--paper));
+  pointer-events: none; z-index: 0;
 }
 .dp-intro-aurora { position: absolute; inset: 0; pointer-events: none; }
-.dp-intro-aurora::before { content: ''; position: absolute; width: 70%; height: 70%; left: -5%; top: 0;
-  background: radial-gradient(circle, rgba(240,149,75,0.30), transparent 65%);
+.dp-intro-aurora::before { content: ''; position: absolute; width: 92%; height: 115%; left: -10%; top: -12%;
+  background: radial-gradient(ellipse at 45% 45%, rgba(240,149,75,0.52), transparent 60%);
   animation: drift1 14s var(--ease-soft) infinite alternate; }
-.dp-intro-aurora::after { content: ''; position: absolute; width: 65%; height: 65%; right: -8%; top: 20%;
-  background: radial-gradient(circle, rgba(226,83,59,0.22), transparent 65%);
+.dp-intro-aurora::after { content: ''; position: absolute; width: 88%; height: 115%; right: -10%; top: -5%;
+  background: radial-gradient(ellipse at 55% 45%, rgba(226,83,59,0.40), transparent 58%);
   animation: drift2 16s var(--ease-soft) infinite alternate; }
 .dp-intro-content { position: relative; z-index: 1; }
 .dp-intro-eyebrow {
@@ -1290,9 +1296,10 @@ label.field-label {
 @keyframes dpBounce { 0%,100% { transform: translateY(0); } 55% { transform: translateY(6px); } }
 /* phase sections */
 .dp-phase {
-  min-height: 100vh; display: flex; align-items: center; padding: 80px 32px;
+  position: absolute; inset: 0; min-height: unset;
+  display: flex; align-items: center; padding: 0 32px 72px;
 }
-.dp-phase:nth-child(even) { background: var(--surface); }
+.dp-phase:nth-child(even) { background: var(--paper); }
 .dp-phase-inner {
   max-width: 1100px; margin: 0 auto; width: 100%;
   display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 72px; align-items: center;
@@ -1388,19 +1395,79 @@ label.field-label {
 .dp-check-body strong { color: var(--ink); }
 /* cta footer */
 .dp-cta-section {
-  min-height: 50vh; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; text-align: center; padding: 80px 32px;
-  background: var(--accent-tint);
+  position: absolute; inset: 0; min-height: unset;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; padding: 0 32px;
+  background: var(--paper);
 }
 .dp-cta-h2 { font-size: clamp(2rem, 4.5vw, 3.4rem); font-weight: 700; letter-spacing: -0.035em;
   color: var(--ink); margin-bottom: 14px; line-height: 1.06; }
 .dp-cta-p { font-size: 17px; color: var(--ink-body); max-width: 30rem; margin: 0 auto 32px; line-height: 1.65; }
 @media (max-width: 768px) {
-  .dp-phase { padding: 60px 20px; min-height: auto; }
-  .dp-phase-inner { grid-template-columns: 1fr !important; gap: 36px; }
-  .dp-intro { padding: 60px 20px; }
+  .dp-phase { padding: 0 20px 80px; }
+  .dp-phase-inner { grid-template-columns: 1fr !important; gap: 28px; overflow-y: auto; max-height: 100%; }
+  .dp-intro { padding: 0 20px 80px; }
   .dp-nav { padding: 0 20px; }
 }
+
+/* ─── DEMO: scroll-jack viewport & components ───────────── */
+.dp-viewport {
+  position: absolute; top: 64px; left: 0; right: 0; bottom: 0;
+  overflow: hidden;
+}
+/* Default hidden state + transition for all stackable screens */
+.dp-intro, .dp-phase, .dp-cta-section {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(28px);
+  transition: opacity 0.52s cubic-bezier(0.16,1,0.3,1),
+              transform 0.52s cubic-bezier(0.16,1,0.3,1);
+}
+/* Transition states – JS-toggled */
+.dp-screen-current {
+  opacity: 1 !important; transform: translateY(0) !important;
+  pointer-events: auto !important; z-index: 2;
+}
+.dp-screen-above { opacity: 0 !important; transform: translateY(-28px) !important; z-index: 1; }
+.dp-screen-below { opacity: 0 !important; transform: translateY(28px)  !important; z-index: 1; }
+
+/* Step progress dots (5 dots = 5 steps) */
+.dp-stepper {
+  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 20; display: flex; align-items: center; gap: 5px;
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.dp-stepper.vis { opacity: 1; }
+.dp-step-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(26,25,22,0.18);
+  transition: background 0.3s ease, width 0.3s ease, border-radius 0.3s ease;
+}
+.dp-step-dot.active { background: var(--accent); width: 18px; border-radius: 3px; }
+.dp-step-dot.done   { background: rgba(217,79,48,0.38); }
+
+/* Animation progress bar — full-width strip at top of viewport */
+.dp-lock-bar {
+  position: absolute; top: 0; left: 0; right: 0; bottom: auto;
+  z-index: 30; width: 100%; height: 2px;
+  background: rgba(26,25,22,0.08); overflow: hidden;
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.dp-lock-bar.vis { opacity: 1; }
+.dp-lock-bar-fill {
+  height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--accent), #f0a64d);
+}
+
+/* "Scroll to continue" hint – sits above the stepper dots */
+.dp-cont-hint {
+  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+  z-index: 20; font-size: 10.5px; color: var(--muted);
+  display: flex; align-items: center; gap: 4px; white-space: nowrap;
+  opacity: 0; transition: opacity 0.4s ease; pointer-events: none;
+}
+.dp-cont-hint.vis { opacity: 1; }
+
 /* ─── SIGN-IN SCREEN ────────────────────────────────────── */
 #signin { position: fixed; inset: 0; background: var(--paper); overflow: hidden; }
 #signin canvas { position: absolute; inset: 0; display: block; }
@@ -1648,9 +1715,9 @@ label.field-label {
     </div>
     <div class="scroll-hero-inner">
       <div class="scroll-hero-title">
-        <span class="hero-eyebrow rise d1">For nonprofits under $1M a year</span>
-        <div class="hero-headline rise d2" aria-label="The grants you need, written for you.">
-          <span class="hero-hl-static">The grants you need,</span>
+        <span class="hero-eyebrow rise d1">For nonprofits under $1M</span>
+        <div class="hero-headline rise d2" aria-label="The grants you qualify for, written for you.">
+          <span class="hero-hl-static">The grants you qualify for,</span>
           <div class="gooey-line-wrap">
             <svg class="gooey-svg" aria-hidden="true"><defs><filter id="goo-threshold"><feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 255 -140"/></filter></defs></svg>
             <div class="gooey-inner" style="filter:url(#goo-threshold)">
@@ -1659,12 +1726,12 @@ label.field-label {
             </div>
           </div>
         </div>
-        <p class="hero-sub rise d3">Grange AI finds the grants your nonprofit qualifies for and drafts fundable proposals in minutes, not weeks.</p>
+        <p class="hero-sub rise d3">Grange AI scans 3 million grants daily, scores each one against your mission, and drafts the full proposal. Setup takes 20 minutes.</p>
         <div class="hero-actions rise d4">
           <button class="btn btn-accent" onclick="go('login')">Start free</button>
-          <button class="btn btn-outline" onclick="go('demo')">Watch the 2-minute demo</button>
+          <button class="btn btn-outline" onclick="go('demo')">See a 2-minute demo</button>
         </div>
-        <p class="hero-trust rise d5">No card required. 14-day trial. Setup takes about 20 minutes.</p>
+        <p class="hero-trust rise d5">No card required. 14-day trial.</p>
       </div>
       <div class="scroll-hero-card" id="scroll-hero-card">
         <div class="scroll-hero-card-inner">
@@ -1729,10 +1796,10 @@ label.field-label {
   <!-- STAT BAND -->
   <section class="stat-band">
     <div class="wrap reveal-group">
-      <div class="stat-cell"><div class="fig" data-count="143" data-suffix=":1">143:1</div><div class="cap">Nonprofits for every working grant writer in the US</div></div>
-      <div class="stat-cell"><div class="fig" data-count="88" data-suffix="%">88%</div><div class="cap">Run on budgets under $500,000, most without a grant writer</div></div>
-      <div class="stat-cell"><div class="fig">80-200</div><div class="cap">Hours a single federal application takes to write by hand</div></div>
-      <div class="stat-cell"><div class="fig">$3K-$15K</div><div class="cap">What a professional charges per proposal</div></div>
+      <div class="stat-cell"><div class="fig" data-count="143" data-suffix=":1">143:1</div><div class="cap">Nonprofits per working grant writer in the US</div></div>
+      <div class="stat-cell"><div class="fig" data-count="88" data-suffix="%">88%</div><div class="cap">Of nonprofits run on under $500K, most with no grant staff</div></div>
+      <div class="stat-cell"><div class="fig">80-200</div><div class="cap">Hours one federal application takes to write by hand</div></div>
+      <div class="stat-cell"><div class="fig">$3K-$15K</div><div class="cap">What a grant writer charges per proposal</div></div>
     </div>
   </section>
 
@@ -1742,13 +1809,13 @@ label.field-label {
       <div class="dc-split">
         <div class="reveal">
           <div class="section-head" style="margin-bottom:28px">
-            <h2>Never miss<br>another deadline.</h2>
-            <p>Grant deadlines, LOI windows, calendar tasks, and match alerts — Grange AI tracks everything so you don't have to.</p>
+            <h2>No more missed<br>deadlines.</h2>
+            <p>Grange AI watches your grant calendar and alerts you before anything slips.</p>
           </div>
           <ul style="display:flex;flex-direction:column;gap:14px;list-style:none">
             <li style="display:flex;gap:10px;font-size:15px;color:var(--ink-body);align-items:flex-start">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.4" style="flex-shrink:0;margin-top:2px"><path d="M5 12l5 5L20 6"/></svg>
-              Reminders at 30, 14, and 7 days before every deadline
+              Reminders at 30, 14, and 7 days out
             </li>
             <li style="display:flex;gap:10px;font-size:15px;color:var(--ink-body);align-items:flex-start">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.4" style="flex-shrink:0;margin-top:2px"><path d="M5 12l5 5L20 6"/></svg>
@@ -1801,14 +1868,14 @@ label.field-label {
     <div class="wrap">
       <div class="section-head reveal">
         <h2>From searching to submitting,<br>in three steps.</h2>
-        <p>Set up your organization once. Grange AI does the research, the writing, and the deadline-watching from there.</p>
+        <p>Set up your organization once. Grange AI handles the research, the writing, and the deadline tracking.</p>
       </div>
       <div class="process reveal-group">
         <div class="proc-step">
           <div class="proc-num">01</div>
           <div class="proc-text">
             <h3>Build your profile once</h3>
-            <p>Upload your 990, mission, and program numbers. Grange AI turns them into a reusable organizational profile that feeds every proposal.</p>
+            <p>Upload your 990, mission statement, and program numbers. Grange AI builds an org profile that feeds every proposal you write.</p>
           </div>
           <div class="proc-visual">
             <div class="mini">
@@ -1821,8 +1888,8 @@ label.field-label {
         <div class="proc-step">
           <div class="proc-num">02</div>
           <div class="proc-text">
-            <h3>See the grants you actually qualify for</h3>
-            <p>Grange AI scans Grants.gov, Candid, and foundation databases every day, then scores each opportunity against your mission, NTEE code, and eligibility.</p>
+            <h3>See the grants you qualify for</h3>
+            <p>Grange AI scans Grants.gov, Candid, and foundation databases daily, scoring each opportunity against your mission, NTEE code, and eligibility.</p>
           </div>
           <div class="proc-visual">
             <div class="mini">
@@ -1835,8 +1902,8 @@ label.field-label {
         <div class="proc-step">
           <div class="proc-num">03</div>
           <div class="proc-text">
-            <h3>Generate a tailored draft</h3>
-            <p>Grange AI reads the funder's RFP, pulls from your profile, and writes a full narrative: needs statement, theory of change, KPIs, and evaluation plan. You review and submit.</p>
+            <h3>Get a full draft, ready to edit</h3>
+            <p>Grange AI reads the funder's RFP, pulls from your profile, and writes the full narrative: needs statement, theory of change, KPIs, and evaluation plan. You review and submit.</p>
           </div>
           <div class="proc-visual">
             <div class="mini">
@@ -1855,35 +1922,35 @@ label.field-label {
     <div class="wrap">
       <div class="section-head reveal">
         <h2>A development office,<br>at a fraction of the cost.</h2>
-        <p>Everything a paid grant writer would do for you, running quietly in the background.</p>
+        <p>Everything a grant writer does for you, running in the background.</p>
       </div>
       <div class="bento reveal-group">
         <div class="cell">
           <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
           <h3>Match scoring</h3>
-          <p>Every grant gets a fit score based on your mission, NTEE code, geography, and budget range. Skip the ones you'd lose.</p>
+          <p>Every grant gets a fit score based on your mission, NTEE code, geography, and budget range. You only see the ones worth applying for.</p>
         </div>
         <div class="cell gradient span2">
           <div class="big">4 min</div>
-          <h3>From blank page to first draft</h3>
-          <p>A full grant narrative, written from your profile and the funder's own language. The same draft would take a person 30 to 50 hours.</p>
+          <h3>Blank page to first draft in 4 minutes</h3>
+          <p>A full grant narrative pulled from your profile and the funder's own RFP language. A person would take 30 to 50 hours to write the same thing.</p>
         </div>
         <div class="cell feature-img tall">
           <img src="https://picsum.photos/seed/grange-community-youth/640/900" alt="Community youth program staff working together">
           <div class="cap">
-            <h3>Built for the work that matters</h3>
-            <p>So your team spends time with the community, not the paperwork.</p>
+            <h3>Time with your community, not your inbox</h3>
+            <p>Your team does the work. Grange AI handles the paperwork.</p>
           </div>
         </div>
         <div class="cell">
           <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
           <h3>Deadline tracking</h3>
-          <p>Reminders at 30, 14, and 7 days. Synced to your calendar so nothing slips.</p>
+          <p>Reminders at 30, 14, and 7 days, synced to your calendar.</p>
         </div>
         <div class="cell">
           <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
           <h3>Eligibility checks</h3>
-          <p>501(c)(3), SAM.gov status, and allowable costs verified before you invest a single hour.</p>
+          <p>501(c)(3) status, SAM.gov registration, and allowable costs confirmed before you write a word.</p>
         </div>
         <div class="cell">
           <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div>
@@ -1893,7 +1960,7 @@ label.field-label {
         <div class="cell">
           <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
           <h3>Reporting drafts</h3>
-          <p>Interim and final reports built from your outcome data. Keep funders happy, keep renewals coming.</p>
+          <p>Interim and final reports written from your outcome data. Funders get what they need, you keep the renewal.</p>
         </div>
       </div>
     </div>
@@ -1903,7 +1970,7 @@ label.field-label {
   <section class="section" style="padding-top:0">
     <div class="wrap">
       <div class="section-head reveal">
-        <h2>Run by people doing<br>the work of twenty.</h2>
+        <h2>From people running<br>lean nonprofits.</h2>
       </div>
       <div class="voices">
         <figure class="voice lead reveal">
@@ -1927,13 +1994,13 @@ label.field-label {
     <div class="wrap">
       <div class="section-head reveal">
         <h2>Honest pricing.<br>No enterprise contracts.</h2>
-        <p>A professional charges $3,000 to $15,000 for one proposal. Grange AI starts free — and grows with you from $19.99 a month.</p>
+        <p>A grant writer charges $3,000 to $15,000 per proposal. Grange AI starts free and grows with you from $19.99 a month.</p>
       </div>
       <div class="pricing reveal-group">
         <div class="tier">
           <div class="nm">Starter</div>
           <div class="pr">Free<small> forever</small></div>
-          <p class="desc">For organizations writing their first few grants.</p>
+          <p class="desc">For organizations applying to their first few grants.</p>
           <ul>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>5 proposals a month</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Up to 50 grant matches</li>
@@ -1946,7 +2013,7 @@ label.field-label {
           <div class="badge-hot">Most chosen</div>
           <div class="nm">Growth</div>
           <div class="pr">$19.99<small>/mo</small></div>
-          <p class="desc">For nonprofits building a real grant portfolio.</p>
+          <p class="desc">For nonprofits building a consistent grant portfolio.</p>
           <ul>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Unlimited proposals</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Full grant database</li>
@@ -1959,7 +2026,7 @@ label.field-label {
         <div class="tier">
           <div class="nm">Scale</div>
           <div class="pr">$39.99<small>/mo</small></div>
-          <p class="desc">For multi-program portfolios and federal work.</p>
+          <p class="desc">For multi-program organizations and federal applications.</p>
           <ul>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Everything in Growth</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Unlimited users</li>
@@ -1980,8 +2047,8 @@ label.field-label {
         <div class="aurora"><i></i></div>
         <div class="cta-band-inner">
           <div>
-            <h2>The funding is there.<br>Go get your share.</h2>
-            <p>Nine in ten nonprofits already use AI somewhere. The ones who move first will fund the next decade of their mission.</p>
+            <h2>Your next grant<br>is out there right now.</h2>
+            <p>Most nonprofits never find it because they don't have a grant writer. Now you do.</p>
           </div>
           <button class="btn btn-primary" style="background:#fff;color:var(--ink)" onclick="go('login')">Start free</button>
         </div>
@@ -1992,7 +2059,7 @@ label.field-label {
   <footer class="footer">
     <div class="wrap footer-inner">
       <a class="brand" href="#" onclick="go('landing')"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
-      <div class="small">Built for the nonprofits doing the most with the least.</div>
+      <div class="small">Built for nonprofits that don't have a grant writer on staff.</div>
       <div class="footer-links">
         <a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a><a href="#">Contact</a>
       </div>
@@ -2007,11 +2074,11 @@ label.field-label {
       <div class="aurora"><i></i></div>
       <div class="ll-content">
         <a class="brand" href="#" onclick="go('landing')" style="margin-bottom:auto;position:relative;z-index:1"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
-        <h2>Every nonprofit deserves a fighting chance at funding.</h2>
-        <p>Join the organizations who stopped missing grants and started winning them.</p>
+        <h2>Stop leaving grants on the table.</h2>
+        <p>Your mission qualifies for more funding than you're applying for. Grange AI helps you find it and write for it.</p>
         <div class="ll-list">
-          <div class="it"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M5 12l5 5L20 6"/></svg>Setup in about 20 minutes, just upload your 990</div>
-          <div class="it"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M5 12l5 5L20 6"/></svg>First drafts in minutes, not 30 to 50 hours</div>
+          <div class="it"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M5 12l5 5L20 6"/></svg>Setup in 20 minutes, just upload your 990</div>
+          <div class="it"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M5 12l5 5L20 6"/></svg>First draft in minutes, not 30 to 50 hours</div>
           <div class="it"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M5 12l5 5L20 6"/></svg>No card required, cancel any time</div>
         </div>
       </div>
@@ -2051,6 +2118,8 @@ label.field-label {
     </button>
   </nav>
 
+  <div class="dp-viewport">
+
   <!-- intro -->
   <section class="dp-intro">
     <div class="dp-intro-aurora"></div>
@@ -2060,7 +2129,7 @@ label.field-label {
         Live walkthrough
       </span>
       <h1 class="dp-intro-h1">From 990 to funded<br>in five steps</h1>
-      <p class="dp-intro-sub">Watch Grange AI go from a document upload to a submission-ready grant proposal — no grant writer needed.</p>
+      <p class="dp-intro-sub">Watch Grange AI turn a document upload into a submission-ready grant proposal. No grant writer needed.</p>
       <div class="dp-scroll-hint">
         <span>Scroll to see how it works</span>
         <span class="dp-bounce"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12l7 7 7-7"/></svg></span>
@@ -2074,7 +2143,7 @@ label.field-label {
       <div>
         <div class="dp-step-tag">Step 01 &middot; Profile</div>
         <h2 class="dp-headline">We read your whole<br>organization</h2>
-        <p class="dp-desc">Upload your 990 or paste your mission statement. Grange AI extracts programs, geography, NTEE code, and budget — building a deep profile that matches you to the right grants.</p>
+        <p class="dp-desc">Upload your 990 or paste your mission statement. Grange AI pulls your programs, geography, NTEE code, and budget into a profile that drives every match and draft.</p>
       </div>
       <div>
         <div class="dp-card">
@@ -2098,8 +2167,8 @@ label.field-label {
     <div class="dp-phase-inner">
       <div>
         <div class="dp-step-tag">Step 02 &middot; Discovery</div>
-        <h2 class="dp-headline">Scanning 3 million+<br>grants in real time</h2>
-        <p class="dp-desc">Every day Grange AI indexes Grants.gov, Candid, state portals, and hundreds of private foundations — scoring each opportunity against your mission, geography, and budget.</p>
+        <h2 class="dp-headline">Scanning 3 million+<br>grants right now</h2>
+        <p class="dp-desc">Grange AI indexes Grants.gov, Candid, state portals, and hundreds of private foundations every day, scoring each opportunity against your mission, geography, and budget.</p>
       </div>
       <div>
         <div class="dp-card">
@@ -2131,8 +2200,8 @@ label.field-label {
     <div class="dp-phase-inner">
       <div>
         <div class="dp-step-tag">Step 03 &middot; Matching</div>
-        <h2 class="dp-headline">Your top matches,<br>ranked by mission fit</h2>
-        <p class="dp-desc">Grange AI scores every grant 0–100 against your mission, geography, and eligibility. You only see grants you can actually win — no more wasted hours on dead ends.</p>
+        <h2 class="dp-headline">Your top matches,<br>ranked by fit</h2>
+        <p class="dp-desc">Every grant gets a score from 0 to 100 based on your mission, geography, and eligibility. You only see the ones worth your time.</p>
       </div>
       <div>
         <div class="dp-card">
@@ -2159,7 +2228,7 @@ label.field-label {
       <div>
         <div class="dp-step-tag">Step 04 &middot; Drafting</div>
         <h2 class="dp-headline">Full proposal drafted<br>in minutes</h2>
-        <p class="dp-desc">Click "Draft" and Grange AI writes every section — executive summary, statement of need, theory of change, evaluation plan — pulling evidence directly from your 990 and profile.</p>
+        <p class="dp-desc">Click Draft and Grange AI writes every section: executive summary, statement of need, theory of change, evaluation plan. Each sentence pulls from your 990 and profile.</p>
       </div>
       <div>
         <div class="dp-card">
@@ -2183,7 +2252,7 @@ label.field-label {
       <div>
         <div class="dp-step-tag">Step 05 &middot; Submit</div>
         <h2 class="dp-headline">Ready to submit<br>in under 5 minutes</h2>
-        <p class="dp-desc">Review, tweak, and submit. Every draft is formatted for the funder's portal. Grange AI tracks deadlines and reminds you when it's time to follow up.</p>
+        <p class="dp-desc">Review, edit, and submit. Every draft is formatted for the funder's portal. Grange AI tracks the deadline and reminds you to follow up.</p>
       </div>
       <div>
         <div class="dp-card">
@@ -2193,11 +2262,11 @@ label.field-label {
           </div>
           <div class="dp-card-body">
             <div class="dp-checklist">
-              <div class="dp-check" data-delay="200"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Executive summary</strong> — 3 paragraphs, under 500 words</div></div>
-              <div class="dp-check" data-delay="500"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Statement of need</strong> — local data &amp; citations included</div></div>
-              <div class="dp-check" data-delay="800"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Program design &amp; theory of change</strong></div></div>
-              <div class="dp-check" data-delay="1100"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Budget narrative</strong> — aligned with your 990</div></div>
-              <div class="dp-check" data-delay="1400"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Evaluation plan</strong> — metrics matched to funder priorities</div></div>
+              <div class="dp-check" data-delay="200"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Executive summary</strong>, 3 paragraphs, under 500 words</div></div>
+              <div class="dp-check" data-delay="500"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Statement of need</strong> with local data and citations</div></div>
+              <div class="dp-check" data-delay="800"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Program design and theory of change</strong></div></div>
+              <div class="dp-check" data-delay="1100"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Budget narrative</strong> aligned to your 990</div></div>
+              <div class="dp-check" data-delay="1400"><div class="dp-check-circle">✓</div><div class="dp-check-body"><strong>Evaluation plan</strong> with metrics matched to funder priorities</div></div>
             </div>
           </div>
         </div>
@@ -2207,13 +2276,35 @@ label.field-label {
 
   <!-- CTA footer -->
   <section class="dp-cta-section">
-    <h2 class="dp-cta-h2">The funding is there.<br>Go get your share.</h2>
-    <p class="dp-cta-p">Nine in ten nonprofits already use AI somewhere. The ones who move first will fund the next decade of their mission.</p>
+    <h2 class="dp-cta-h2">Your next grant<br>is out there right now.</h2>
+    <p class="dp-cta-p">Most nonprofits never find it because they don't have a grant writer. Now you do.</p>
     <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
-      <button class="btn btn-accent" style="padding:14px 28px;font-size:15px" onclick="go('login')">Start free — no card required</button>
+      <button class="btn btn-accent" style="padding:14px 28px;font-size:15px" onclick="go('login')">Start free, no card required</button>
       <button class="btn btn-outline" style="padding:14px 28px;font-size:15px;background:rgba(255,255,255,0.6)" onclick="go('landing')">Back to site</button>
     </div>
   </section>
+
+  <!-- Step progress dots -->
+  <div class="dp-stepper" id="dp-stepper">
+    <div class="dp-step-dot" data-step="1"></div>
+    <div class="dp-step-dot" data-step="2"></div>
+    <div class="dp-step-dot" data-step="3"></div>
+    <div class="dp-step-dot" data-step="4"></div>
+    <div class="dp-step-dot" data-step="5"></div>
+  </div>
+
+  <!-- Animation lock bar -->
+  <div class="dp-lock-bar" id="dp-lock-bar">
+    <div class="dp-lock-bar-fill" id="dp-lock-bar-fill"></div>
+  </div>
+
+  <!-- "Scroll to continue" hint -->
+  <div class="dp-cont-hint" id="dp-cont-hint">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    Scroll to continue
+  </div>
+
+  </div><!-- /dp-viewport -->
 
 </div>
 
@@ -2239,8 +2330,8 @@ label.field-label {
 
       <!-- step 1: email -->
       <div class="si-step" id="si-email">
-        <div class="si-h1">Welcome to Grange AI</div>
-        <div class="si-sub">Sign in or create your account</div>
+        <div class="si-h1">Sign in to Grange AI</div>
+        <div class="si-sub">Enter your email to continue</div>
 
         <button class="si-btn-g" onclick="signInWithGoogle()">
           <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
@@ -2674,7 +2765,7 @@ function go(id) {
   if (t) { t.classList.add('active'); window.scrollTo(0,0); }
   if (id === 'landing') requestAnimationFrame(() => window._tlActivateHome?.());
   if (id === 'signin')  requestAnimationFrame(() => window._siInit?.());
-  if (id === 'demo')    requestAnimationFrame(() => { const d = document.getElementById('demo'); if(d) d.scrollTop = 0; });
+  if (id === 'demo')    requestAnimationFrame(() => window._dpReset?.());
 }
 function goHome() {
   go('landing');
@@ -2986,7 +3077,7 @@ function handleGoogleCredential(response) {
   function $(id){ return document.getElementById(id); }
 
   const TEXT1 = 'Eastside Youth Foundation requests $175,000 to fund year three of our after-school program serving 400 low-income youth ages 8–18 in Boyle Heights and East LA.';
-  const TEXT2 = 'Through daily tutoring, weekly mentorship, and college counseling our theory of change links consistent adult support to 94% college enrollment — nearly 30 points above the district average.';
+  const TEXT2 = 'Through daily tutoring, weekly mentorship, and college counseling, our theory of change links consistent adult support to 94% college enrollment. That is nearly 30 points above the district average.';
 
   const SCAN_DUR  = 4600;
   const MATCH_DUR = 5200;
@@ -3148,26 +3239,48 @@ function handleGoogleCredential(response) {
 
 /* ─── DEMO PAGE ANIMATIONS ─────────────────────────────── */
 (function(){
-  const DP_T1 = 'In Boyle Heights and East Los Angeles, 78% of households earn below the poverty line and youth chronic absenteeism runs at 34%. Educational stability is a social determinant of health — our program sits at that intersection.';
+  const DP_T1 = 'In Boyle Heights and East Los Angeles, 78% of households earn below the poverty line and youth chronic absenteeism runs at 34%. Educational stability is a social determinant of health, and our program addresses both.';
   const DP_T2 = 'Inputs: 6 staff, 22 mentors, and a $342K operating budget. Activities: daily tutoring, mentor sessions, and college counseling. Outcomes: 94% college enrollment against a 67% district average.';
+
+
+  // ms until scroll unlocks per screen (0=intro,1-5=phases,6=cta)
+  const UNLOCK_MS = [1400, 2200, 3800, 1900, 6200, 2500, 0];
+
+  const demoEl   = document.getElementById('demo');
+  if (!demoEl) return;
+
+  const intro    = demoEl.querySelector('.dp-intro');
+  const phases   = [...demoEl.querySelectorAll('.dp-phase')];
+  const ctaSec   = demoEl.querySelector('.dp-cta-section');
+  const all      = [intro, ...phases, ctaSec].filter(Boolean); // idx 0-6
+
+  const stepper     = document.getElementById('dp-stepper');
+  const stepDots    = stepper ? [...stepper.querySelectorAll('.dp-step-dot')] : [];
+  const lockBar     = document.getElementById('dp-lock-bar');
+  const lockFill    = document.getElementById('dp-lock-bar-fill');
+  const contHint    = document.getElementById('dp-cont-hint');
+
+  let cur = 0, locked = true, transitioning = false;
+  let unlockTimer = null;
   let dpTyped = false;
 
   function dpType(el, text, spd, cb) {
     if (!el) return;
     el.innerHTML = '';
     const tn = document.createTextNode('');
-    const cur = document.createElement('span'); cur.className = 'demo-cursor';
-    el.appendChild(tn); el.appendChild(cur);
+    const cursor = document.createElement('span'); cursor.className = 'demo-cursor';
+    el.appendChild(tn); el.appendChild(cursor);
     let i = 0;
     (function tick(){ if(i>text.length){cb&&cb();return;} tn.nodeValue=text.slice(0,i++); setTimeout(tick,spd+(Math.random()>.88?55:0)); })();
   }
 
-  function dpActivate(sec) {
-    sec.classList.add('dp-active');
-    sec.querySelectorAll('[data-delay]').forEach(el => {
+  function activatePhase(ph) {
+    if (!ph) return;
+    ph.classList.add('dp-active');
+    ph.querySelectorAll('[data-delay]').forEach(el => {
       setTimeout(() => el.classList.add('vis'), parseInt(el.dataset.delay)||0);
     });
-    if (sec.id === 'dp-phase-2') {
+    if (ph.id === 'dp-phase-2') {
       const counter = document.getElementById('dp-scan-n');
       if (counter && !counter._counted) {
         counter._counted = true;
@@ -3175,7 +3288,7 @@ function handleGoogleCredential(response) {
         (function tick(now){ const p=Math.min((now-t0)/dur,1); counter.textContent=Math.round(target*(1-Math.pow(1-p,3))); if(p<1)requestAnimationFrame(tick); })(performance.now());
       }
     }
-    if (sec.id === 'dp-phase-4' && !dpTyped) {
+    if (ph.id === 'dp-phase-4' && !dpTyped) {
       dpTyped = true;
       const h1=document.getElementById('dp-doc-h1'), p1=document.getElementById('dp-doc-p1');
       const h2=document.getElementById('dp-doc-h2'), p2=document.getElementById('dp-doc-p2');
@@ -3184,24 +3297,145 @@ function handleGoogleCredential(response) {
     }
   }
 
-  function dpDeactivate(sec) {
-    sec.classList.remove('dp-active');
-    sec.querySelectorAll('[data-delay]').forEach(el => el.classList.remove('vis'));
-    if (sec.id === 'dp-phase-4') {
+  function deactivatePhase(ph) {
+    if (!ph) return;
+    ph.classList.remove('dp-active');
+    ph.querySelectorAll('[data-delay]').forEach(el => el.classList.remove('vis'));
+    if (ph.id === 'dp-phase-4') {
       dpTyped = false;
       ['dp-doc-h1','dp-doc-h2'].forEach(id => { const e=document.getElementById(id); if(e) e.classList.remove('vis'); });
       ['dp-doc-p1','dp-doc-p2'].forEach(id => { const e=document.getElementById(id); if(e) e.innerHTML=''; });
     }
-    if (sec.id === 'dp-phase-2') {
+    if (ph.id === 'dp-phase-2') {
       const c=document.getElementById('dp-scan-n'); if(c){c.textContent='0';c._counted=false;}
     }
   }
 
-  if (!('IntersectionObserver' in window)) return;
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if(e.isIntersecting) dpActivate(e.target); else dpDeactivate(e.target); });
-  }, { threshold: 0.3, root: document.getElementById('demo') });
-  document.querySelectorAll('.dp-phase').forEach(s => obs.observe(s));
+  function updateDots(idx) {
+    const isStep = idx >= 1 && idx <= 5;
+    if (stepper) stepper.classList.toggle('vis', isStep);
+    stepDots.forEach((d, i) => {
+      d.classList.toggle('active', i === idx - 1);
+      d.classList.toggle('done', i < idx - 1);
+    });
+  }
+
+  function startUnlock(idx) {
+    if (contHint) contHint.classList.remove('vis');
+    const ms = UNLOCK_MS[idx] ?? 1200;
+    if (ms <= 0) { locked = false; if(lockBar) lockBar.classList.remove('vis'); return; }
+    if (lockFill && lockBar) {
+      lockBar.classList.add('vis');
+      lockFill.style.transition = 'none';
+      lockFill.style.width = '0';
+      requestAnimationFrame(() => {
+        lockFill.style.transition = `width ${ms}ms cubic-bezier(0.4,0,0.2,1)`;
+        lockFill.style.width = '100%';
+      });
+    }
+    clearTimeout(unlockTimer);
+    unlockTimer = setTimeout(() => {
+      locked = false;
+      if (lockBar) lockBar.classList.remove('vis');
+      if (idx > 0 && idx < all.length - 1 && contHint) contHint.classList.add('vis');
+    }, ms);
+  }
+
+  function goto(idx, dir) {
+    if (transitioning) return;
+    if (idx < 0 || idx >= all.length || idx === cur) return;
+
+    const prevEl = all[cur];
+    const nextEl = all[idx];
+
+    transitioning = true;
+    locked = true;
+    clearTimeout(unlockTimer);
+    if (contHint) contHint.classList.remove('vis');
+
+    // deactivate old phase
+    if (cur >= 1 && cur <= 5) deactivatePhase(phases[cur-1]);
+
+    // exit current
+    prevEl.classList.remove('dp-screen-current');
+    prevEl.classList.add(dir > 0 ? 'dp-screen-above' : 'dp-screen-below');
+
+    // reset & enter next
+    nextEl.classList.remove('dp-screen-above', 'dp-screen-below');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      nextEl.classList.add('dp-screen-current');
+      setTimeout(() => {
+        // settle previous screen into stable hidden state (below)
+        prevEl.classList.remove('dp-screen-above', 'dp-screen-below');
+        prevEl.classList.add('dp-screen-below');
+        transitioning = false;
+        if (idx >= 1 && idx <= 5) activatePhase(phases[idx-1]);
+        updateDots(idx);
+        startUnlock(idx);
+      }, 560);
+    }));
+
+    cur = idx;
+  }
+
+  // wheel
+  let wBuf = 0, wTimer = null;
+  demoEl.addEventListener('wheel', e => {
+    e.preventDefault();
+    wBuf += e.deltaY;
+    clearTimeout(wTimer);
+    wTimer = setTimeout(() => {
+      if (Math.abs(wBuf) > 20) {
+        if (wBuf > 0 && !locked && !transitioning) goto(cur + 1, 1);
+        else if (wBuf < 0 && !transitioning) goto(cur - 1, -1);
+      }
+      wBuf = 0;
+    }, 30);
+  }, { passive: false });
+
+  // keyboard
+  demoEl.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); if(!locked&&!transitioning) goto(cur+1,1); }
+    if (e.key === 'ArrowUp'   || e.key === 'PageUp')   { e.preventDefault(); if(!transitioning) goto(cur-1,-1); }
+  });
+
+  // touch
+  let tY0 = 0;
+  demoEl.addEventListener('touchstart', e => { tY0 = e.touches[0].clientY; }, {passive:true});
+  demoEl.addEventListener('touchend', e => {
+    const dy = tY0 - e.changedTouches[0].clientY;
+    if (dy > 50 && !locked && !transitioning) goto(cur+1, 1);
+    if (dy < -50 && !transitioning) goto(cur-1, -1);
+  });
+
+  // dot click
+  stepDots.forEach((d, i) => {
+    d.style.pointerEvents = 'auto';
+    d.style.cursor = 'pointer';
+    d.addEventListener('click', () => {
+      const target = i + 1;
+      if (target < cur && !transitioning) goto(target, -1);
+    });
+  });
+
+  // reset (called by go('demo'))
+  window._dpReset = function() {
+    cur = 0; locked = true; transitioning = false; dpTyped = false;
+    clearTimeout(unlockTimer); wBuf = 0;
+    all.forEach((s, i) => {
+      s.classList.remove('dp-screen-current','dp-screen-above','dp-screen-below');
+      s.classList.add(i === 0 ? 'dp-screen-current' : 'dp-screen-below');
+    });
+    phases.forEach(p => deactivatePhase(p));
+    updateDots(0);
+    if (lockFill) { lockFill.style.transition='none'; lockFill.style.width='0'; }
+    if (lockBar) lockBar.classList.remove('vis');
+    if (contHint) contHint.classList.remove('vis');
+    startUnlock(0);
+  };
+
+  // init
+  window._dpReset();
 })();
 
 /* ─── SIGN-IN FLOW ──────────────────────────────────────── */
