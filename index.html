@@ -973,8 +973,8 @@ label.field-label {
   display: grid;
   grid-template-areas: 'stack';
   place-items: center;
-  height: 300px;
-  padding-left: 60px;
+  height: 420px;
+  padding-left: 80px;
 }
 .dc {
   grid-area: stack;
@@ -1014,15 +1014,19 @@ label.field-label {
   transition: opacity 0.7s var(--ease);
 }
 .dc:nth-child(3)::before { display: none; }
+.dc:nth-child(4)::before { display: none; }
 .dc:nth-child(1) { filter: grayscale(1); }
-.dc:nth-child(2) { transform: skewY(-8deg) translate(4rem, 2.5rem); filter: grayscale(1); }
-.dc:nth-child(3) { transform: skewY(-8deg) translate(8rem, 5rem); }
+.dc:nth-child(2) { transform: skewY(-8deg) translate(3rem, 2.2rem); filter: grayscale(1); }
+.dc:nth-child(3) { transform: skewY(-8deg) translate(6rem, 4.4rem); filter: grayscale(0.4); }
+.dc:nth-child(4) { transform: skewY(-8deg) translate(9rem, 6.6rem); }
 @media (hover: hover) and (pointer: fine) {
   .dc:nth-child(1):hover { transform: skewY(-8deg) translateY(-40px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
   .dc:nth-child(1):hover::before { opacity: 0; }
-  .dc:nth-child(2):hover { transform: skewY(-8deg) translate(4rem, -4px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
+  .dc:nth-child(2):hover { transform: skewY(-8deg) translate(3rem, -4px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
   .dc:nth-child(2):hover::before { opacity: 0; }
-  .dc:nth-child(3):hover { transform: skewY(-8deg) translate(8rem, 2.5rem); }
+  .dc:nth-child(3):hover { transform: skewY(-8deg) translate(6rem, 2rem); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
+  .dc:nth-child(3):hover::before { opacity: 0; }
+  .dc:nth-child(4):hover { transform: skewY(-8deg) translate(9rem, 4.2rem); }
 }
 .dc-row { display: flex; align-items: center; gap: 8px; }
 .dc-icon {
@@ -1804,30 +1808,34 @@ label.field-label {
   </section>
 
   <!-- DISPLAY CARDS - deadline & calendar features -->
-  <section class="section" style="padding-top:0">
+  <section class="section" style="padding-top:88px">
     <div class="wrap">
       <div class="dc-split">
         <div class="reveal">
-          <div class="section-head" style="margin-bottom:28px">
+          <div class="section-head" style="margin-bottom:36px">
             <h2>No more missed<br>deadlines.</h2>
             <p>Grange AI watches your grant calendar and alerts you before anything slips.</p>
           </div>
-          <ul style="display:flex;flex-direction:column;gap:14px;list-style:none">
-            <li style="display:flex;gap:10px;font-size:15px;color:var(--ink-body);align-items:flex-start">
+          <ul style="display:flex;flex-direction:column;gap:18px;list-style:none">
+            <li style="display:flex;gap:12px;font-size:15px;color:var(--ink-body);align-items:flex-start">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.4" style="flex-shrink:0;margin-top:2px"><path d="M5 12l5 5L20 6"/></svg>
               Reminders at 30, 14, and 7 days out
             </li>
-            <li style="display:flex;gap:10px;font-size:15px;color:var(--ink-body);align-items:flex-start">
+            <li style="display:flex;gap:12px;font-size:15px;color:var(--ink-body);align-items:flex-start">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.4" style="flex-shrink:0;margin-top:2px"><path d="M5 12l5 5L20 6"/></svg>
               Calendar sync for proposals, LOIs, and reports
             </li>
-            <li style="display:flex;gap:10px;font-size:15px;color:var(--ink-body);align-items:flex-start">
+            <li style="display:flex;gap:12px;font-size:15px;color:var(--ink-body);align-items:flex-start">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.4" style="flex-shrink:0;margin-top:2px"><path d="M5 12l5 5L20 6"/></svg>
               Weekly digest of new matches, filtered to your profile
             </li>
+            <li style="display:flex;gap:12px;font-size:15px;color:var(--ink-body);align-items:flex-start">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.4" style="flex-shrink:0;margin-top:2px"><path d="M5 12l5 5L20 6"/></svg>
+              Auto-archive submitted grants with outcome tracking
+            </li>
           </ul>
         </div>
-        <div class="dc-grid reveal">
+        <div class="dc-grid reveal" style="height:380px;gap:18px">
           <div class="dc">
             <div class="dc-row">
               <span class="dc-icon" style="background:var(--accent-tint)">
@@ -1857,6 +1865,16 @@ label.field-label {
             </div>
             <p class="dc-desc">Review this week's grant pipeline</p>
             <p class="dc-date">Updated today · 12 total matches</p>
+          </div>
+          <div class="dc">
+            <div class="dc-row">
+              <span class="dc-icon" style="background:#eef2ff">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4f5fc4" stroke-width="2.4"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </span>
+              <span class="dc-title" style="color:#4f5fc4">Draft Ready</span>
+            </div>
+            <p class="dc-desc">Robert Wood Johnson — Health Equity</p>
+            <p class="dc-date">Proposal draft · 94% match · Review now</p>
           </div>
         </div>
       </div>
