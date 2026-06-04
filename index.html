@@ -263,26 +263,15 @@ label.field-label {
   background: var(--surface-2); }
 .stat-band .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
 
-/* stat band continuing the gradient hero into the page */
+/* stat band — clean white, below the hero with breathing room */
 .stat-band-on-grad {
-  margin-top: -1px;
+  margin-top: 72px;
   position: relative;
   z-index: 2;
-  border-top: none;
-  border-bottom: none;
-  /* warm top blends with hero gradient bottom, fades to paper in the
-     bottom padding only so caption text stays on a saturated background */
-  background: linear-gradient(180deg,
-    #e2533b 0%,
-    #e85e40 58%,
-    #ec6e49 78%,
-    var(--paper) 100%);
+  background: var(--surface-2);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
-.stat-band-on-grad .stat-cell {
-  border-left-color: rgba(26,25,22,0.14);
-}
-.stat-band-on-grad .stat-cell .fig { color: var(--ink); }
-.stat-band-on-grad .stat-cell .cap { color: rgba(26,25,22,0.64); }
 .stat-cell { padding: 36px 28px; border-left: 1px solid var(--line); }
 .stat-cell:first-child { border-left: none; padding-left: 0; }
 .stat-cell .fig { font-family: var(--display); font-weight: 800; font-size: 40px;
