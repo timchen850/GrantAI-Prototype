@@ -3079,9 +3079,9 @@ function handleGoogleCredential(response) {
   const TEXT1 = 'Eastside Youth Foundation requests $175,000 to fund year three of our after-school program serving 400 low-income youth ages 8–18 in Boyle Heights and East LA.';
   const TEXT2 = 'Through daily tutoring, weekly mentorship, and college counseling, our theory of change links consistent adult support to 94% college enrollment. That is nearly 30 points above the district average.';
 
-  const SCAN_DUR  = 4600;
-  const MATCH_DUR = 5200;
-  const WRITE_DUR = 6800;
+  const SCAN_DUR  = 2200;
+  const MATCH_DUR = 2600;
+  const WRITE_DUR = 3400;
 
   function showPhase(id) {
     ['dph-scan','dph-match','dph-write'].forEach(p => {
@@ -3244,7 +3244,7 @@ function handleGoogleCredential(response) {
 
 
   // ms until scroll unlocks per screen (0=intro,1-5=phases,6=cta)
-  const UNLOCK_MS = [1400, 2200, 3800, 1900, 6200, 2500, 0];
+  const UNLOCK_MS = [800, 1200, 2000, 1000, 3200, 1400, 0];
 
   const demoEl   = document.getElementById('demo');
   if (!demoEl) return;
@@ -3293,7 +3293,7 @@ function handleGoogleCredential(response) {
       const h1=document.getElementById('dp-doc-h1'), p1=document.getElementById('dp-doc-p1');
       const h2=document.getElementById('dp-doc-h2'), p2=document.getElementById('dp-doc-p2');
       if(h1) h1.classList.add('vis');
-      dpType(p1, DP_T1, 15, () => setTimeout(() => { if(h2)h2.classList.add('vis'); dpType(p2,DP_T2,15,()=>{}); }, 350));
+      dpType(p1, DP_T1, 7, () => setTimeout(() => { if(h2)h2.classList.add('vis'); dpType(p2,DP_T2,7,()=>{}); }, 200));
     }
   }
 
