@@ -1244,7 +1244,194 @@ label.field-label {
   background: #d94f30; vertical-align: text-bottom;
   margin-left: 1px; animation: blink 0.9s step-end infinite;
 }
+
+/* ─── SIGN-IN SCREEN ────────────────────────────────────── */
+#signin { position: fixed; inset: 0; background: var(--paper); overflow: hidden; }
+#signin canvas { position: absolute; inset: 0; display: block; }
+.si-overlay {
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+}
+.si-ov-center { background: radial-gradient(circle at center, rgba(245,244,241,0.78) 0%, transparent 68%); }
+.si-ov-top    { background: linear-gradient(to bottom, rgba(245,244,241,1) 0%, transparent 38%); }
+
+/* mini nav — matches tubelight glass */
+.si-nav {
+  position: absolute; top: 22px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex; align-items: center; gap: 14px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.55);
+  backdrop-filter: blur(24px) saturate(200%) brightness(1.06);
+  -webkit-backdrop-filter: blur(24px) saturate(200%) brightness(1.06);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.90), inset 0 -1px 0 rgba(0,0,0,0.03);
+  white-space: nowrap;
+}
+.si-brand {
+  display: flex; align-items: center; gap: 7px;
+  color: var(--ink); font-size: 14px; font-weight: 600;
+  cursor: pointer;
+}
+.si-brand img { width: 20px; height: 20px; border-radius: 3px; }
+.si-nav-sep { width: 1px; height: 15px; background: var(--line); }
+.si-nav-back {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.45);
+  color: var(--muted); font-size: 12.5px;
+  cursor: pointer; transition: color 130ms, background 130ms;
+}
+.si-nav-back:hover { color: var(--ink); background: rgba(255,255,255,0.75); }
+
+/* form layer */
+.si-body {
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: center;
+}
+.si-card {
+  width: 100%; max-width: 360px;
+  padding: 0 24px;
+  margin-top: 44px;
+}
+/* step transitions */
+@keyframes siInR  { from { opacity:0; transform:translateX(72px)  } to { opacity:1; transform:none } }
+@keyframes siInL  { from { opacity:0; transform:translateX(-72px) } to { opacity:1; transform:none } }
+.si-step { text-align: center; }
+.si-step.si-enter-fwd  { animation: siInR 0.38s cubic-bezier(0.23,1,0.32,1) both; }
+.si-step.si-enter-back { animation: siInL 0.38s cubic-bezier(0.23,1,0.32,1) both; }
+
+/* typography */
+.si-h1 {
+  font-size: clamp(1.85rem, 5vw, 2.25rem);
+  font-weight: 700; line-height: 1.1; letter-spacing: -0.03em;
+  color: var(--ink); margin-bottom: 6px;
+}
+.si-sub {
+  font-size: 1.1rem; font-weight: 300;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+/* google btn */
+.si-btn-g {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 13px 16px; border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-soft); font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: background 130ms, border-color 130ms;
+  box-shadow: 0 1px 4px rgba(26,25,22,0.06);
+}
+.si-btn-g:hover { background: var(--surface-2); border-color: rgba(26,25,22,0.16); }
+/* or divider */
+.si-or { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+.si-or-line { flex: 1; height: 1px; background: var(--line); }
+.si-or-txt  { color: var(--muted); font-size: 12px; }
+/* email row */
+.si-email-row { position: relative; }
+.si-email-input {
+  width: 100%; padding: 13px 50px 13px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink); font-size: 14px; text-align: center;
+  outline: none; transition: border-color 140ms, box-shadow 140ms;
+  box-shadow: 0 1px 4px rgba(26,25,22,0.06);
+}
+.si-email-input::placeholder { color: #9b988f; }
+.si-email-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+.si-email-arr {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--accent);
+  color: #fff; font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: none; transition: background 130ms;
+}
+.si-email-arr:hover:not(:disabled) { background: var(--accent-press); }
+.si-email-arr:disabled { background: var(--line); color: var(--muted); cursor: default; }
+/* OTP row */
+.si-otp-row {
+  display: flex; align-items: center; justify-content: center;
+  padding: 13px 14px; border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: 0 1px 4px rgba(26,25,22,0.06);
+  margin-bottom: 16px;
+}
+.si-otp-cell { position: relative; }
+.si-otp-in {
+  width: 34px; height: 38px;
+  background: transparent; border: none;
+  color: var(--ink); font-size: 20px; font-weight: 600;
+  text-align: center; outline: none;
+  caret-color: transparent; padding: 0;
+  position: relative; z-index: 1;
+}
+.si-otp-gh {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--line); font-size: 20px; font-weight: 400;
+  pointer-events: none;
+}
+.si-otp-sep { color: var(--line); font-size: 20px; margin: 0 1px; user-select: none; }
+.si-resend {
+  color: var(--muted); font-size: 13px;
+  cursor: pointer; display: inline-block; margin-bottom: 22px;
+  transition: color 130ms;
+}
+.si-resend:hover { color: var(--accent); }
+/* btn row */
+.si-btn-row { display: flex; gap: 10px; }
+.si-btn-back {
+  padding: 13px 26px; border-radius: 999px;
+  background: var(--surface); color: var(--ink-soft);
+  border: 1px solid var(--line); font-weight: 600; font-size: 14px;
+  cursor: pointer; transition: background 130ms, border-color 130ms;
+  box-shadow: 0 1px 4px rgba(26,25,22,0.06);
+}
+.si-btn-back:hover { background: var(--surface-2); border-color: rgba(26,25,22,0.16); }
+.si-btn-cont {
+  flex: 1; padding: 13px; border-radius: 999px;
+  font-weight: 600; font-size: 14px; cursor: not-allowed;
+  background: rgba(26,25,22,0.06); color: var(--muted);
+  border: 1px solid var(--line);
+  transition: background 200ms, color 200ms, border-color 200ms;
+}
+.si-btn-cont.si-ready {
+  background: var(--accent); color: #fff;
+  border-color: transparent; cursor: pointer;
+}
+.si-btn-cont.si-ready:hover { background: var(--accent-press); }
+/* success */
+.si-succ-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent) 0%, #f07240 100%);
+  display: flex; align-items: center; justify-content: center;
+  margin: 36px auto;
+  animation: siPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.35s both;
+}
+.si-btn-dash {
+  width: 100%; padding: 13px; border-radius: 999px;
+  background: var(--accent); color: #fff; font-weight: 600; font-size: 14px;
+  border: none; cursor: pointer; transition: background 130ms;
+  animation: siFadeUp 0.4s ease 0.85s both;
+}
+.si-btn-dash:hover { background: var(--accent-press); }
+/* terms */
+.si-terms {
+  font-size: 11px; color: var(--muted);
+  line-height: 1.7; margin-top: 22px;
+}
+.si-terms a { color: var(--muted); text-decoration: underline; }
+.si-terms a:hover { color: var(--accent); }
+@keyframes siPop    { from { transform:scale(0.65); opacity:0 } to { transform:scale(1); opacity:1 } }
+@keyframes siFadeUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 </head>
 <body>
 <script>
@@ -1284,7 +1471,7 @@ label.field-label {
         </a>
       </div>
       <div class="nav-right">
-        <button class="btn btn-ghost" onclick="go('login')">Sign in</button>
+        <button class="btn btn-ghost" onclick="go('signin')">Sign in</button>
         <button class="btn btn-primary btn-sm" onclick="go('login')">Start free</button>
       </div>
     </div>
@@ -1698,6 +1885,107 @@ label.field-label {
   </div>
 </div>
 
+<!-- ═══════════════════ SIGN-IN (animated flow) ═══════════════════ -->
+<div id="signin" class="screen">
+  <canvas id="si-canvas"></canvas>
+  <div class="si-overlay si-ov-center"></div>
+  <div class="si-overlay si-ov-top"></div>
+
+  <nav class="si-nav">
+    <span class="si-brand" onclick="go('landing')">
+      <img src="logo.png" alt="Grange AI logo">Grange AI
+    </span>
+    <div class="si-nav-sep"></div>
+    <button class="si-nav-back" onclick="go('landing')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back
+    </button>
+  </nav>
+
+  <div class="si-body">
+    <div class="si-card">
+
+      <!-- step 1: email -->
+      <div class="si-step" id="si-email">
+        <div class="si-h1">Welcome to Grange AI</div>
+        <div class="si-sub">Sign in or create your account</div>
+
+        <button class="si-btn-g" onclick="signInWithGoogle()">
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.33 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="si-or">
+          <div class="si-or-line"></div>
+          <span class="si-or-txt">or</span>
+          <div class="si-or-line"></div>
+        </div>
+
+        <div class="si-email-row">
+          <input type="email" id="si-email-input" class="si-email-input"
+            placeholder="you@yourorg.org"
+            oninput="siEmailInput(this)"
+            onkeydown="if(event.key==='Enter')siGoCode()">
+          <button class="si-email-arr" id="si-email-btn" disabled onclick="siGoCode()">→</button>
+        </div>
+
+        <p class="si-terms">
+          By continuing, you agree to our <a href="#">Terms</a>, <a href="#">Privacy Notice</a> and <a href="#">Cookie Policy</a>.
+        </p>
+      </div>
+
+      <!-- step 2: OTP code -->
+      <div class="si-step" id="si-code" style="display:none">
+        <div class="si-h1">Check your email</div>
+        <div class="si-sub">Enter the 6-digit code we sent</div>
+
+        <div class="si-otp-row">
+          <div class="si-otp-cell"><input class="si-otp-in" type="text" inputmode="numeric" maxlength="1" data-idx="0"><div class="si-otp-gh">0</div></div>
+          <span class="si-otp-sep">|</span>
+          <div class="si-otp-cell"><input class="si-otp-in" type="text" inputmode="numeric" maxlength="1" data-idx="1"><div class="si-otp-gh">0</div></div>
+          <span class="si-otp-sep">|</span>
+          <div class="si-otp-cell"><input class="si-otp-in" type="text" inputmode="numeric" maxlength="1" data-idx="2"><div class="si-otp-gh">0</div></div>
+          <span class="si-otp-sep">|</span>
+          <div class="si-otp-cell"><input class="si-otp-in" type="text" inputmode="numeric" maxlength="1" data-idx="3"><div class="si-otp-gh">0</div></div>
+          <span class="si-otp-sep">|</span>
+          <div class="si-otp-cell"><input class="si-otp-in" type="text" inputmode="numeric" maxlength="1" data-idx="4"><div class="si-otp-gh">0</div></div>
+          <span class="si-otp-sep">|</span>
+          <div class="si-otp-cell"><input class="si-otp-in" type="text" inputmode="numeric" maxlength="1" data-idx="5"><div class="si-otp-gh">0</div></div>
+        </div>
+
+        <div><span class="si-resend" onclick="toast('Code resent!')">Resend code</span></div>
+
+        <div class="si-btn-row">
+          <button class="si-btn-back" onclick="siBack()">Back</button>
+          <button class="si-btn-cont" id="si-cont-btn" disabled onclick="siSubmitCode()">Continue</button>
+        </div>
+
+        <p class="si-terms" style="margin-top:44px">
+          By continuing, you agree to our <a href="#">Terms</a>, <a href="#">Privacy Notice</a> and <a href="#">Cookie Policy</a>.
+        </p>
+      </div>
+
+      <!-- step 3: success -->
+      <div class="si-step" id="si-success" style="display:none">
+        <div class="si-h1">You're in!</div>
+        <div class="si-sub">Welcome back</div>
+        <div class="si-succ-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 20 20" fill="black">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <button class="si-btn-dash" onclick="go('dashboard')">Continue to Dashboard</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════════ APP: DASHBOARD ════════════════════════ -->
 <div id="dashboard" class="screen">
   <div class="app">
@@ -2047,13 +2335,13 @@ const SIDE = (active) => `
 });
 
 /* ─── navigation ────────────────────────────────────────── */
-const SCREENS = ['landing','login','dashboard','discovery','generator','profile'];
+const SCREENS = ['landing','login','signin','dashboard','discovery','generator','profile'];
 function go(id) {
   SCREENS.forEach(s => document.getElementById(s)?.classList.remove('active'));
   const t = document.getElementById(id);
   if (t) { t.classList.add('active'); window.scrollTo(0,0); }
-  // Re-activate Home tab when returning to landing page
   if (id === 'landing') requestAnimationFrame(() => window._tlActivateHome?.());
+  if (id === 'signin')  requestAnimationFrame(() => window._siInit?.());
 }
 
 /* ─── modal ─────────────────────────────────────────────── */
@@ -2511,6 +2799,186 @@ function handleGoogleCredential(response) {
     requestAnimationFrame(animate);
   }
   requestAnimationFrame(animate);
+})();
+
+/* ─── SIGN-IN FLOW ──────────────────────────────────────── */
+(function(){
+  let renderer, scene, camera, mat, clock, animId;
+  let siReady = false, siCurrentStep = 'email';
+
+  const VERT = `
+    precision mediump float;
+    uniform vec2 u_res;
+    out vec2 vCoord;
+    void main(){
+      gl_Position = vec4(position.xy, 0.0, 1.0);
+      vCoord = (position.xy + 1.0) * 0.5 * u_res;
+      vCoord.y = u_res.y - vCoord.y;
+    }`;
+
+  const FRAG = `
+    precision mediump float;
+    in vec2 vCoord;
+    uniform float u_time;
+    uniform float u_opc[10];
+    uniform vec3  u_col[6];
+    uniform float u_tsz;
+    uniform float u_dsz;
+    uniform vec2  u_res;
+    uniform int   u_rev;
+    out vec4 fragColor;
+    float PHI = 1.61803398874989484820459;
+    float rnd(vec2 p){ return fract(tan(distance(p*PHI,p)*0.5)*p.x); }
+    void main(){
+      vec2 st = vCoord;
+      st.x -= abs(floor((mod(u_res.x, u_tsz) - u_dsz) * 0.5));
+      st.y -= abs(floor((mod(u_res.y, u_tsz) - u_dsz) * 0.5));
+      float op = step(0.0, st.x) * step(0.0, st.y);
+      vec2 g = vec2(float(int(st.x / u_tsz)), float(int(st.y / u_tsz)));
+      float so = rnd(g);
+      float r  = rnd(g * floor(u_time / 5.0 + so + 5.0));
+      op *= u_opc[int(r * 10.0)];
+      op *= 1.0 - step(u_dsz / u_tsz, fract(st.x / u_tsz));
+      op *= 1.0 - step(u_dsz / u_tsz, fract(st.y / u_tsz));
+      vec3 col = u_col[int(so * 6.0)];
+      vec2 cg  = u_res / 2.0 / u_tsz;
+      float d  = distance(cg, g);
+      if(u_rev == 1){
+        float md = distance(cg, vec2(0.0));
+        float to = (md - d) * 0.02 + rnd(g + vec2(42.0)) * 0.2;
+        op *= 1.0 - step(to, u_time * 0.5);
+        op *= clamp(step(to + 0.1, u_time * 0.5) * 1.25, 1.0, 1.25);
+      } else {
+        float to = d * 0.01 + rnd(g) * 0.15;
+        op *= step(to, u_time * 0.5);
+        op *= clamp((1.0 - step(to + 0.1, u_time * 0.5)) * 1.25, 1.0, 1.25);
+      }
+      fragColor = vec4(col, op);
+      fragColor.rgb *= fragColor.a;
+    }`;
+
+  function buildCanvas() {
+    if (!window.THREE) return;
+    const canvas = document.getElementById('si-canvas');
+    if (!canvas || siReady) return;
+    const W = window.innerWidth, H = window.innerHeight;
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true });
+    renderer.setSize(W, H);
+    scene  = new THREE.Scene();
+    camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    // Vermilion accent #d94f30 = (0.851, 0.310, 0.188); softer tint for variety
+    const accent = new THREE.Vector3(0.851, 0.310, 0.188);
+    const tint   = new THREE.Vector3(0.945, 0.588, 0.424); // #f19670
+    const dots = [accent, accent, accent, tint, tint, tint];
+    mat = new THREE.ShaderMaterial({
+      vertexShader: VERT,
+      fragmentShader: FRAG,
+      uniforms: {
+        u_time: { value: 0 },
+        u_res:  { value: new THREE.Vector2(W * 2, H * 2) },
+        u_col:  { value: dots },
+        u_opc:  { value: [0.12, 0.15, 0.18, 0.28, 0.30, 0.35, 0.50, 0.55, 0.62, 0.72] },
+        u_tsz:  { value: 20 },
+        u_dsz:  { value: 6 },
+        u_rev:  { value: 0 },
+      },
+      glslVersion: THREE.GLSL3,
+      blending: THREE.CustomBlending,
+      blendSrc: THREE.SrcAlphaFactor,
+      blendDst: THREE.OneFactor,
+    });
+    scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat));
+    clock = new THREE.Clock();
+    (function loop(){ animId = requestAnimationFrame(loop); mat.uniforms.u_time.value = clock.getElapsedTime(); renderer.render(scene, camera); })();
+    window.addEventListener('resize', () => {
+      if (!renderer) return;
+      const W = window.innerWidth, H = window.innerHeight;
+      renderer.setSize(W, H);
+      mat.uniforms.u_res.value.set(W * 2, H * 2);
+    }, { passive: true });
+    siReady = true;
+  }
+
+  function siShowStep(id, dir) {
+    const cur = document.getElementById('si-' + siCurrentStep);
+    const nxt = document.getElementById('si-' + id);
+    if (!nxt || cur === nxt) return;
+    if (cur) cur.style.display = 'none';
+    nxt.classList.remove('si-enter-fwd', 'si-enter-back');
+    nxt.style.display = 'block';
+    void nxt.offsetWidth;
+    nxt.classList.add(dir === 'fwd' ? 'si-enter-fwd' : 'si-enter-back');
+    siCurrentStep = id;
+  }
+
+  window._siInit = function() {
+    buildCanvas();
+    // Reset to email step
+    siCurrentStep = 'email';
+    ['email','code','success'].forEach(s => {
+      const el = document.getElementById('si-' + s);
+      if (el) { el.style.display = s === 'email' ? 'block' : 'none'; el.classList.remove('si-enter-fwd','si-enter-back'); }
+    });
+    const einp = document.getElementById('si-email-input');
+    if (einp) einp.value = '';
+    const ebtn = document.getElementById('si-email-btn');
+    if (ebtn) ebtn.disabled = true;
+    document.querySelectorAll('.si-otp-in').forEach(i => {
+      i.value = '';
+      const gh = i.parentElement.querySelector('.si-otp-gh');
+      if (gh) gh.style.display = '';
+    });
+    const cb = document.getElementById('si-cont-btn');
+    if (cb) { cb.classList.remove('si-ready'); cb.disabled = true; }
+    if (mat) { mat.uniforms.u_rev.value = 0; if (clock) clock.start(); }
+  };
+
+  window.siEmailInput = function(inp) {
+    const btn = document.getElementById('si-email-btn');
+    if (btn) btn.disabled = !(inp.value && inp.value.includes('@'));
+  };
+
+  window.siGoCode = function() {
+    const v = (document.getElementById('si-email-input') || {}).value || '';
+    if (!v || !v.includes('@')) return;
+    siShowStep('code', 'fwd');
+    setTimeout(() => { const f = document.querySelector('.si-otp-in'); if (f) f.focus(); }, 420);
+  };
+
+  window.siBack = function() {
+    siShowStep('email', 'back');
+    if (mat) { mat.uniforms.u_rev.value = 0; if (clock) clock.start(); }
+  };
+
+  window.siSubmitCode = function() {
+    const inputs = document.querySelectorAll('.si-otp-in');
+    if (![...inputs].every(i => i.value.length === 1)) return;
+    if (mat) { mat.uniforms.u_rev.value = 1; if (clock) clock.start(); }
+    setTimeout(() => siShowStep('success', 'fwd'), 1800);
+  };
+
+  // Wire OTP inputs
+  document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.si-otp-in');
+    inputs.forEach(inp => {
+      inp.addEventListener('input', function() {
+        const gh = inp.parentElement.querySelector('.si-otp-gh');
+        if (gh) gh.style.display = inp.value ? 'none' : '';
+        const idx = parseInt(inp.dataset.idx);
+        if (inp.value && idx < 5) inputs[idx + 1].focus();
+        const allFull = [...inputs].every(i => i.value.length === 1);
+        const btn = document.getElementById('si-cont-btn');
+        if (btn) { btn.classList.toggle('si-ready', allFull); btn.disabled = !allFull; }
+        if (allFull) setTimeout(window.siSubmitCode, 240);
+      });
+      inp.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && !inp.value) {
+          const idx = parseInt(inp.dataset.idx);
+          if (idx > 0) inputs[idx - 1].focus();
+        }
+      });
+    });
+  });
 })();
 
 /* ─── GRADIENT ANIMATION — mouse-tracking interactive blob ─ */
