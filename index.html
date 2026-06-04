@@ -305,6 +305,9 @@ label.field-label {
 .mini-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .mini-line { flex: 1; height: 8px; border-radius: 6px; background: rgba(26,25,22,0.07); }
 
+/* ─── HOW IT WORKS animated mini-cards ─── */
+.hiw-card { opacity: 1 !important; transform: none !important; }
+
 /* ─── FEATURES: bento with rhythm ───────────────────────── */
 .bento { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 16px; }
 .cell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
@@ -1951,10 +1954,17 @@ label.field-label {
             <p>Upload your 990, mission statement, and program numbers. Grange AI builds an org profile that feeds every proposal you write.</p>
           </div>
           <div class="proc-visual">
-            <div class="mini">
-              <div class="mini-row"><span class="mini-dot" style="background:var(--ok)"></span><span style="font-size:13px;color:var(--ink-soft)">Form 990 (2024)</span></div>
-              <div class="mini-row"><span class="mini-dot" style="background:var(--ok)"></span><span style="font-size:13px;color:var(--ink-soft)">Mission &amp; NTEE code</span></div>
-              <div class="mini-row"><span class="mini-dot" style="background:var(--warn-ink)"></span><span style="font-size:13px;color:var(--ink-soft)">Logic model (in progress)</span></div>
+            <div class="dp-card hiw-card" id="hiw-c1">
+              <div class="dp-card-bar">
+                <span class="dp-dot" style="background:#ff5f56"></span><span class="dp-dot" style="background:#ffbe2e"></span><span class="dp-dot" style="background:#27c93f"></span>
+                <span class="dp-bar-label">Reading 990 — Eastside Youth Foundation.pdf</span>
+              </div>
+              <div class="dp-card-body">
+                <div class="dp-field" style="--w:100%"><div class="dp-flabel">Organization</div><div class="dp-fval">Eastside Youth Foundation</div><div class="dp-fbar"><div class="dp-fbar-fill"></div></div></div>
+                <div class="dp-field" style="--w:88%"><div class="dp-flabel">NTEE Classification</div><div class="dp-fval">B94 · Youth Development</div><div class="dp-fbar"><div class="dp-fbar-fill"></div></div></div>
+                <div class="dp-field" style="--w:94%"><div class="dp-flabel">Budget range</div><div class="dp-fval">$250K–$500K operating</div><div class="dp-fbar"><div class="dp-fbar-fill"></div></div></div>
+                <div class="dp-field" style="--w:100%"><div class="dp-flabel">501(c)(3) status</div><div class="dp-fval" style="color:var(--ok)">✓ Confirmed</div><div class="dp-fbar"><div class="dp-fbar-fill" style="background:var(--ok)"></div></div></div>
+              </div>
             </div>
           </div>
         </div>
@@ -1965,10 +1975,24 @@ label.field-label {
             <p>Grange AI scans Grants.gov, Candid, and foundation databases daily, scoring each opportunity against your mission, NTEE code, and eligibility.</p>
           </div>
           <div class="proc-visual">
-            <div class="mini">
-              <div class="mini-row"><div class="ring hi" style="--p:94;width:34px;height:34px;font-size:11px"><span>94</span></div><div class="mini-line"></div></div>
-              <div class="mini-row"><div class="ring hi" style="--p:88;width:34px;height:34px;font-size:11px"><span>88</span></div><div class="mini-line" style="width:80%"></div></div>
-              <div class="mini-row"><div class="ring mid" style="--p:76;width:34px;height:34px;font-size:11px"><span>76</span></div><div class="mini-line" style="width:62%"></div></div>
+            <div class="dp-card hiw-card" id="hiw-c2">
+              <div class="dp-card-bar">
+                <span class="dp-dot" style="background:#ff5f56"></span><span class="dp-dot" style="background:#ffbe2e"></span><span class="dp-dot" style="background:#27c93f"></span>
+                <span class="dp-bar-label">Grant discovery · running daily</span>
+                <span class="demo-spinner" style="margin-left:auto;flex-shrink:0"></span>
+              </div>
+              <div class="dp-card-body">
+                <div class="dp-scan-stat">
+                  <span class="dp-scan-count" id="hiw-c2-n">0</span>
+                  <span class="dp-scan-sub">grants scored today</span>
+                </div>
+                <div class="dp-prog-track"><div class="dp-prog-bar" id="hiw-c2-prog"></div></div>
+                <div class="dp-scan-items">
+                  <div class="dp-scan-row" data-delay="450"><span class="dp-scan-tick">✓</span><span>Grants.gov — <span class="dp-scan-hl">1,247 matched</span></span></div>
+                  <div class="dp-scan-row" data-delay="950"><span class="dp-scan-tick">✓</span><span>Candid Foundation — <span class="dp-scan-hl">834 matched</span></span></div>
+                  <div class="dp-scan-row" data-delay="1450" style="color:var(--accent);font-weight:600"><span style="color:var(--accent);font-size:11px">→</span><span>Scoring against your profile…</span></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1979,10 +2003,22 @@ label.field-label {
             <p>Grange AI reads the funder's RFP, pulls from your profile, and writes the full narrative: needs statement, theory of change, KPIs, and evaluation plan. You review and submit.</p>
           </div>
           <div class="proc-visual">
-            <div class="mini">
-              <div class="mini-line" style="width:100%;margin-bottom:8px"></div>
-              <div class="mini-line" style="width:92%;margin-bottom:8px"></div>
-              <div class="mini-line" style="width:78%"></div>
+            <div class="dp-card hiw-card" id="hiw-c3">
+              <div class="dp-card-bar">
+                <span class="dp-dot" style="background:#ff5f56"></span><span class="dp-dot" style="background:#ffbe2e"></span><span class="dp-dot" style="background:#27c93f"></span>
+                <span class="dp-bar-label">Drafting · DHHS Healthy Communities</span>
+                <span class="dp-ai-chip" style="margin-left:auto;flex-shrink:0">AI writing</span>
+              </div>
+              <div class="dp-card-body">
+                <div class="dp-doc-section">
+                  <div class="dp-doc-h" id="hiw-c3-h1">Statement of Need</div>
+                  <div class="dp-doc-p" id="hiw-c3-p1"></div>
+                </div>
+                <div class="dp-doc-section">
+                  <div class="dp-doc-h" id="hiw-c3-h2">Theory of Change</div>
+                  <div class="dp-doc-p" id="hiw-c3-p2"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -3765,6 +3801,75 @@ function handleGoogleCredential(response) {
     interactive.style.transform = `translate(${Math.round(curX)}px,${Math.round(curY)}px)`;
     requestAnimationFrame(moveBlob);
   })();
+})();
+
+/* ── HOW IT WORKS — animated cards (IntersectionObserver, auto-loop) ── */
+(function hiwAnimInit() {
+  const section = document.getElementById('how');
+  if (!section) return;
+  let started = false;
+
+  /* Card 1: profile fields pop in staggered, loop */
+  function runCard1() {
+    const fields = section.querySelectorAll('#hiw-c1 .dp-field');
+    fields.forEach(f => f.classList.remove('vis'));
+    void section.offsetWidth;
+    fields.forEach((f, i) => setTimeout(() => f.classList.add('vis'), 280 + i * 430));
+    setTimeout(runCard1, 4600);
+  }
+
+  /* Card 2: counter, progress bar, scan rows, loop */
+  function runCard2() {
+    const countEl = document.getElementById('hiw-c2-n');
+    const prog    = document.getElementById('hiw-c2-prog');
+    const rows    = section.querySelectorAll('#hiw-c2 .dp-scan-row');
+    rows.forEach(r => r.classList.remove('vis'));
+    if (countEl) countEl.textContent = '0';
+    if (prog) { prog.style.cssText += ';transition:none;width:0'; void prog.offsetWidth; }
+    const target = 2847, dur = 1900, t0 = performance.now();
+    (function tick(now) {
+      const p = Math.min((now - t0) / dur, 1), e = 1 - Math.pow(1 - p, 3);
+      if (countEl) countEl.textContent = Math.round(e * target).toLocaleString();
+      if (p < 1) requestAnimationFrame(tick);
+    })(t0);
+    setTimeout(() => { if (prog) { prog.style.transition = 'width 1.9s linear'; prog.style.width = '100%'; } }, 50);
+    rows.forEach(r => setTimeout(() => r.classList.add('vis'), parseInt(r.dataset.delay) || 500));
+    setTimeout(runCard2, 5000);
+  }
+
+  /* Card 3: type two paragraphs, loop */
+  const T1 = 'Eastside Youth Foundation serves 2,400 youth annually across 12 underserved LA neighborhoods, with 68% qualifying for free or reduced lunch.';
+  const T2 = 'By pairing mentorship with direct services, we move youth from crisis to stability — measurable across school attendance and long-term earnings.';
+  let c3timer = null;
+  function typeInto(el, text, speed, cb) {
+    let i = 0; el.textContent = '';
+    function step() { el.textContent = text.slice(0, ++i); c3timer = i < text.length ? setTimeout(step, speed) : cb ? setTimeout(cb, 300) : null; }
+    step();
+  }
+  function runCard3() {
+    if (c3timer) clearTimeout(c3timer);
+    const h1 = document.getElementById('hiw-c3-h1'), p1 = document.getElementById('hiw-c3-p1');
+    const h2 = document.getElementById('hiw-c3-h2'), p2 = document.getElementById('hiw-c3-p2');
+    [h1, h2].forEach(e => e && e.classList.remove('vis'));
+    [p1, p2].forEach(e => { if (e) e.textContent = ''; });
+    c3timer = setTimeout(() => {
+      if (h1) h1.classList.add('vis');
+      typeInto(p1, T1, 13, () => {
+        if (h2) h2.classList.add('vis');
+        typeInto(p2, T2, 13, () => { c3timer = setTimeout(runCard3, 1400); });
+      });
+    }, 250);
+  }
+
+  const obs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && !started) {
+      started = true;
+      runCard1();
+      setTimeout(runCard2, 700);
+      setTimeout(runCard3, 1400);
+    }
+  }, { threshold: 0.2 });
+  obs.observe(section);
 })();
 
 </script>
