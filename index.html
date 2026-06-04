@@ -826,6 +826,141 @@ label.field-label {
 }
 .scroll-hero-inner { position: relative; z-index: 1; }
 
+/* ─── GRADIENT ANIMATION BG (prototype v2 — full bleed) ──── */
+@keyframes gradMoveVertical {
+  0%   { transform: translateY(-50%); }
+  50%  { transform: translateY(50%);  }
+  100% { transform: translateY(-50%); }
+}
+@keyframes gradMoveCircle {
+  0%   { transform: rotate(0deg);   }
+  50%  { transform: rotate(180deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes gradMoveHorizontal {
+  0%   { transform: translateX(-50%) translateY(-10%); }
+  50%  { transform: translateX(50%)  translateY(10%);  }
+  100% { transform: translateX(-50%) translateY(-10%); }
+}
+.grad-anim-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  /* saturated warm base — no white showing through */
+  background: linear-gradient(135deg, #f0a64d 0%, #e2533b 45%, #c8508f 100%);
+}
+/* blobs layer — plain blur keeps colours smooth & fully merged */
+.grad-container {
+  height: 100%;
+  width: 100%;
+  filter: blur(55px);
+}
+/* each blob is 150% × 150% so edges stay covered even mid-animation */
+.grad-blob {
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  top: -25%;
+  left: -25%;
+}
+.grad-first {
+  background: radial-gradient(ellipse at center, rgba(251,200,110,0.9) 0%, transparent 65%) no-repeat;
+  transform-origin: center center;
+  animation: gradMoveVertical 30s ease infinite;
+}
+.grad-second {
+  background: radial-gradient(ellipse at center, rgba(226,83,59,0.85) 0%, transparent 60%) no-repeat;
+  transform-origin: calc(50% - 400px);
+  animation: gradMoveCircle 20s reverse infinite;
+}
+.grad-third {
+  background: radial-gradient(ellipse at center, rgba(200,80,143,0.8) 0%, transparent 60%) no-repeat;
+  transform-origin: calc(50% + 400px);
+  animation: gradMoveCircle 40s linear infinite;
+}
+.grad-fourth {
+  background: radial-gradient(ellipse at center, rgba(240,149,75,0.85) 0%, transparent 65%) no-repeat;
+  transform-origin: calc(50% - 200px);
+  animation: gradMoveHorizontal 40s ease infinite;
+}
+.grad-fifth {
+  background: radial-gradient(ellipse at center, rgba(217,79,48,0.75) 0%, transparent 60%) no-repeat;
+  transform-origin: calc(50% - 800px) calc(50% + 800px);
+  animation: gradMoveCircle 20s ease infinite;
+}
+.grad-interactive {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: -50%;
+  left: -50%;
+  background: radial-gradient(circle at center, rgba(255,225,150,0.55) 0%, transparent 40%) no-repeat;
+  opacity: 0.8;
+}
+
+/* ─── GOOEY TEXT MORPHING (hero second headline line) ─────── */
+.hero-headline {
+  font-size: clamp(2.6rem, 5.6vw, 5rem);
+  letter-spacing: -0.035em;
+  margin-bottom: 22px;
+  font-weight: 700;
+  line-height: 1.04;
+  text-wrap: balance;
+  color: var(--ink);
+}
+.hero-hl-static { display: block; }
+.gooey-line-wrap {
+  display: block;
+  position: relative;
+  height: 1.18em;
+  overflow: visible;
+}
+.gooey-svg { position: absolute; width: 0; height: 0; overflow: hidden; }
+.gooey-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gooey-t1, .gooey-t2 {
+  position: absolute;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1em;
+  letter-spacing: 0;
+  line-height: 1.1;
+  white-space: nowrap;
+  user-select: none;
+  text-align: center;
+}
+
+/* ─── Hero white-text overrides when on gradient background ─ */
+#scroll-hero-section .hero-headline { color: #fff; }
+#scroll-hero-section .gooey-t1,
+#scroll-hero-section .gooey-t2     { color: #fff; }
+#scroll-hero-section .hero-sub     { color: rgba(255,255,255,0.88); }
+#scroll-hero-section .hero-trust   { color: rgba(255,255,255,0.62); }
+#scroll-hero-section .hero-eyebrow {
+  background: rgba(255,255,255,0.20);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.35);
+}
+#scroll-hero-section .btn-outline {
+  border-color: rgba(255,255,255,0.55);
+  color: #fff;
+  background: rgba(255,255,255,0.10);
+  backdrop-filter: blur(4px);
+}
+#scroll-hero-section .btn-outline:hover {
+  border-color: #fff;
+  background: rgba(255,255,255,0.22);
+  transform: translateY(-1px);
+}
+
 
 /* ─── DISPLAY CARDS ─────────────────────────────────────── */
 .dc-split {
@@ -1157,15 +1292,30 @@ label.field-label {
 
   <!-- HERO - scroll tilt introduction -->
   <section class="scroll-hero" id="scroll-hero-section">
-    <div class="aurora-bg">
-      <div class="aurora-bg-layer aurora-l1"></div>
-      <div class="aurora-bg-layer aurora-l2"></div>
-      <div class="aurora-bg-layer aurora-l3"></div>
+    <!-- PROTOTYPE v2: full-bleed gradient animation -->
+    <div class="grad-anim-bg">
+      <div class="grad-container" id="grad-container">
+        <div class="grad-blob grad-first"></div>
+        <div class="grad-blob grad-second"></div>
+        <div class="grad-blob grad-third"></div>
+        <div class="grad-blob grad-fourth"></div>
+        <div class="grad-blob grad-fifth"></div>
+        <div class="grad-interactive" id="grad-interactive"></div>
+      </div>
     </div>
     <div class="scroll-hero-inner">
       <div class="scroll-hero-title">
         <span class="hero-eyebrow rise d1">For nonprofits under $1M a year</span>
-        <h1 class="rise d2">The grants you need,<br><em class="s">written for you.</em></h1>
+        <div class="hero-headline rise d2" aria-label="The grants you need, written for you.">
+          <span class="hero-hl-static">The grants you need,</span>
+          <div class="gooey-line-wrap">
+            <svg class="gooey-svg" aria-hidden="true"><defs><filter id="goo-threshold"><feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 255 -140"/></filter></defs></svg>
+            <div class="gooey-inner" style="filter:url(#goo-threshold)">
+              <span class="gooey-t1" id="gooey-t1"></span>
+              <span class="gooey-t2" id="gooey-t2"></span>
+            </div>
+          </div>
+        </div>
         <p class="hero-sub rise d3">Grange AI finds the grants your nonprofit qualifies for and drafts fundable proposals in minutes, not weeks.</p>
         <div class="hero-actions rise d4">
           <button class="btn btn-accent" onclick="go('login')">Start free</button>
@@ -2303,6 +2453,78 @@ function handleGoogleCredential(response) {
 
   // Kick off after a short delay so the page paint settles
   setTimeout(runScan, 900);
+})();
+
+/* ─── GOOEY TEXT MORPHING ───────────────────────────────── */
+(function(){
+  const TEXTS        = ['written for you.', 'found for you.', 'won for you.', 'funded for you.'];
+  const MORPH_TIME   = 1.2;   // seconds per transition
+  const COOLDOWN     = 2.4;   // seconds shown static
+
+  const t1 = document.getElementById('gooey-t1');
+  const t2 = document.getElementById('gooey-t2');
+  if (!t1 || !t2) return;
+
+  let textIndex = TEXTS.length - 1;
+  let lastTime  = performance.now();
+  let morph     = 0;
+  let cooldown  = COOLDOWN;
+
+  // initialise text content
+  t1.textContent = TEXTS[textIndex % TEXTS.length];
+  t2.textContent = TEXTS[(textIndex + 1) % TEXTS.length];
+
+  function setMorph(fraction) {
+    t2.style.filter  = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
+    t2.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
+    const inv = 1 - fraction;
+    t1.style.filter  = `blur(${Math.min(8 / inv - 8, 100)}px)`;
+    t1.style.opacity = `${Math.pow(inv, 0.4) * 100}%`;
+  }
+
+  function doCooldown() {
+    morph = 0;
+    t2.style.filter = ''; t2.style.opacity = '100%';
+    t1.style.filter = ''; t1.style.opacity = '0%';
+  }
+
+  function animate(now) {
+    const dt = (now - lastTime) / 1000;
+    lastTime  = now;
+    const wasCooling = cooldown > 0;
+    cooldown -= dt;
+
+    if (cooldown <= 0) {
+      if (wasCooling) {
+        textIndex = (textIndex + 1) % TEXTS.length;
+        t1.textContent = TEXTS[textIndex % TEXTS.length];
+        t2.textContent = TEXTS[(textIndex + 1) % TEXTS.length];
+      }
+      morph -= cooldown; // cooldown ≤ 0, so this adds the overshoot
+      cooldown = 0;
+      let fraction = morph / MORPH_TIME;
+      if (fraction > 1) { cooldown = COOLDOWN; fraction = 1; }
+      setMorph(fraction);
+    } else {
+      doCooldown();
+    }
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+})();
+
+/* ─── GRADIENT ANIMATION — mouse-tracking interactive blob ─ */
+(function(){
+  const interactive = document.getElementById('grad-interactive');
+  const heroSection = document.getElementById('scroll-hero-section');
+  if (!interactive || !heroSection) return;
+  let curX = 0, curY = 0, tgX = 0, tgY = 0;
+  heroSection.addEventListener('mousemove', e => { tgX = e.clientX; tgY = e.clientY; }, { passive: true });
+  (function moveBlob() {
+    curX += (tgX - curX) / 20; curY += (tgY - curY) / 20;
+    interactive.style.transform = `translate(${Math.round(curX)}px,${Math.round(curY)}px)`;
+    requestAnimationFrame(moveBlob);
+  })();
 })();
 
 </script>
