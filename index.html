@@ -2087,11 +2087,11 @@ label.field-label {
       <a class="back-link" href="#" onclick="go('landing')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
       <h3>Create your account</h3>
       <p class="lr-sub">Start your 14-day trial. No card required.</p>
-      <div class="fieldset"><label class="field-label">Organization name</label><input type="text" placeholder="Eastside Youth Foundation"></div>
-      <div class="fieldset"><label class="field-label">Work email</label><input type="email" placeholder="you@yourorg.org"></div>
-      <div class="fieldset"><label class="field-label">Password</label><input type="password" placeholder="At least 8 characters"></div>
-      <div class="fieldset"><label class="field-label">Confirm password</label><input type="password" placeholder="Re-enter your password"></div>
-      <button class="btn btn-accent btn-block" style="padding:13px" onclick="go('profile')">Create account</button>
+      <div class="fieldset"><label class="field-label">Organization name</label><input id="reg-org" type="text" placeholder="Eastside Youth Foundation"></div>
+      <div class="fieldset"><label class="field-label">Work email</label><input id="reg-email" type="email" placeholder="you@yourorg.org"></div>
+      <div class="fieldset"><label class="field-label">Password</label><input id="reg-pw" type="password" placeholder="At least 8 characters"></div>
+      <div class="fieldset"><label class="field-label">Confirm password</label><input id="reg-pw2" type="password" placeholder="Re-enter your password"></div>
+      <button class="btn btn-accent btn-block" style="padding:13px" onclick="submitSignup()">Create account</button>
       <div class="lr-divider">or</div>
       <button class="btn btn-google btn-block" style="padding:12px" onclick="signInWithGoogle()" id="btn-google-signin">
         <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
@@ -2796,6 +2796,27 @@ function toast(msg){
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function submitSignup() {
+  const org  = document.getElementById('reg-org');
+  const email = document.getElementById('reg-email');
+  const pw   = document.getElementById('reg-pw');
+  const pw2  = document.getElementById('reg-pw2');
+  const fields = [org, email, pw, pw2];
+
+  fields.forEach(f => f.style.borderColor = '');
+
+  let valid = true;
+  fields.forEach(f => {
+    if (!f.value.trim()) { f.style.borderColor = 'var(--accent)'; valid = false; }
+  });
+  if (!valid) { toast('Please fill in all fields.'); return; }
+
+  if (pw.value.length < 8) { pw.style.borderColor = 'var(--accent)'; toast('Password must be at least 8 characters.'); return; }
+  if (pw.value !== pw2.value) { pw2.style.borderColor = 'var(--accent)'; toast('Passwords do not match.'); return; }
+
+  go('profile');
 }
 
 /* ─── filter chips ──────────────────────────────────────── */
