@@ -557,8 +557,6 @@ label.field-label {
   backface-visibility:hidden;
   animation:tc-scroll var(--dur,15s) linear infinite;
 }
-/* Pause scroll when user hovers anywhere in the testimonial area */
-.tc-outer:hover .tc-track { animation-play-state: paused; }
 @keyframes tc-scroll { from{transform:translate3d(0,0,0)} to{transform:translate3d(0,-50%,0)} }
 
 /* Individual cards — no transform on hover: applying transform inside a
