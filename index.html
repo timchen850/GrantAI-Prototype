@@ -330,6 +330,9 @@ label.field-label {
 .fcar-chip:hover { color:#fff; border-color:rgba(255,255,255,0.55); }
 .fcar-chip.active { background:#fff; color:var(--accent); border-color:#fff;
   box-shadow:0 16px 34px -16px rgba(120,40,15,0.65); }
+.fcar-chip:focus { outline:none; }
+.fcar-chip:focus-visible { outline:2px solid rgba(255,255,255,0.6); outline-offset:2px; }
+.fcar-chip { scroll-margin:0; }
 .fcar-chip svg { width:18px; height:18px; flex-shrink:0; }
 .fcar-chip span { font-size:13.5px; font-weight:600; letter-spacing:-0.005em;
   text-transform:uppercase; }
@@ -3514,7 +3517,7 @@ function handleGoogleCredential(response) {
   function stop(){ if (timer){ clearInterval(timer); timer = null; } }
   function start(){ if (reduce || timer) return; timer = setInterval(() => { if (!paused) next(); }, DWELL); }
 
-  chips.forEach((chip, i) => chip.addEventListener('click', () => go(i)));
+  chips.forEach((chip, i) => chip.addEventListener('click', e => { e.preventDefault(); chip.blur(); go(i); }));
   car.addEventListener('mouseenter', () => { paused = true; });
   car.addEventListener('mouseleave', () => { paused = false; });
 
