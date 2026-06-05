@@ -3534,25 +3534,58 @@ function handleGoogleCredential(response) {
   if (!grid || window.matchMedia('(hover:none)').matches) return;
   const cards = [...grid.querySelectorAll('.dc')];
 
-  function nearest(mx, my) {
-    let best = null, bestDist = Infinity;
-    cards.forEach(card => {
-      const r = card.getBoundingClientRect();
-      const cx = r.left + r.width  / 2;
-      const cy = r.top  + r.height / 2;
-      const d  = Math.hypot(mx - cx, my - cy);
-      if (d < bestDist) { bestDist = d; best = card; }
+  // Cache centers from DOM at rest (before any lift transforms).
+  // Re-reading getBoundingClientRect during animation causes oscillation
+  // because a lifted card's center shifts, making a neighbor nearest,
+  // which deactivates the first card, dropping it back — infinite loop.
+  let centers = null;
+  function cacheCenters() {
+    centers = cards.map(c => {
+      const r = c.getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     });
-    return bestDist < 220 ? best : null;
   }
 
+  let current = null;
+  const SWITCH_THRESHOLD = 40; // px — cursor must be this much closer to switch cards
+
+  function activate(card) {
+    if (card === current) return;
+    current = card;
+    cards.forEach(c => c.classList.toggle('dc-active', c === card));
+  }
+
+  // Snapshot centers the moment the mouse enters (cards are all at rest)
+  grid.addEventListener('mouseenter', cacheCenters);
+
   grid.addEventListener('mousemove', e => {
-    const active = nearest(e.clientX, e.clientY);
-    cards.forEach(c => c.classList.toggle('dc-active', c === active));
+    if (!centers) cacheCenters();
+    let best = null, bestDist = Infinity;
+    centers.forEach((c, i) => {
+      const d = Math.hypot(e.clientX - c.x, e.clientY - c.y);
+      if (d < bestDist) { bestDist = d; best = cards[i]; }
+    });
+
+    const candidate = bestDist < 240 ? best : null;
+    if (candidate === current) return;
+
+    // Hysteresis: only switch if candidate is meaningfully closer than current
+    if (current) {
+      const ci = cards.indexOf(current);
+      const curDist = Math.hypot(e.clientX - centers[ci].x, e.clientY - centers[ci].y);
+      if (curDist - bestDist < SWITCH_THRESHOLD) return;
+    }
+
+    activate(candidate);
   });
+
   grid.addEventListener('mouseleave', () => {
+    current = null;
+    centers = null; // re-snapshot next time (handles scroll/resize)
     cards.forEach(c => c.classList.remove('dc-active'));
   });
+
+  window.addEventListener('resize', () => { centers = null; }, { passive: true });
 })();
 
 /* ─── TUBELIGHT NAVBAR ──────────────────────────────────── */
