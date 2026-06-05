@@ -1208,7 +1208,7 @@ label.field-label {
 .dc-grid {
   display: grid;
   grid-template-areas: 'stack';
-  place-items: center;
+  place-items: center start;
   height: 460px;
   padding-left: 0;
 }
@@ -1259,14 +1259,14 @@ label.field-label {
 .dc:nth-child(5) { transform: skewY(-8deg) translate(12rem, 8.8rem); }
 @media (hover: hover) and (pointer: fine) {
   .dc.dc-active { z-index: 10; }
-  .dc:nth-child(1).dc-active { transform: skewY(-8deg) translateY(-45px); filter: grayscale(0); border-color: var(--accent); }
+  .dc:nth-child(1).dc-active { transform: skewY(-8deg) translateY(calc(-45px + var(--float,0px))); filter: grayscale(0); border-color: var(--accent); }
   .dc:nth-child(1).dc-active::before { opacity: 0; }
-  .dc:nth-child(2).dc-active { transform: skewY(-8deg) translate(3rem, calc(2.2rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
+  .dc:nth-child(2).dc-active { transform: skewY(-8deg) translate(3rem, calc(2.2rem - 45px + var(--float,0px))); filter: grayscale(0); border-color: var(--accent); }
   .dc:nth-child(2).dc-active::before { opacity: 0; }
-  .dc:nth-child(3).dc-active { transform: skewY(-8deg) translate(6rem, calc(4.4rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
+  .dc:nth-child(3).dc-active { transform: skewY(-8deg) translate(6rem, calc(4.4rem - 45px + var(--float,0px))); filter: grayscale(0); border-color: var(--accent); }
   .dc:nth-child(3).dc-active::before { opacity: 0; }
-  .dc:nth-child(4).dc-active { transform: skewY(-8deg) translate(9rem, calc(6.6rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
-  .dc:nth-child(5).dc-active { transform: skewY(-8deg) translate(12rem, calc(8.8rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
+  .dc:nth-child(4).dc-active { transform: skewY(-8deg) translate(9rem, calc(6.6rem - 45px + var(--float,0px))); filter: grayscale(0); border-color: var(--accent); }
+  .dc:nth-child(5).dc-active { transform: skewY(-8deg) translate(12rem, calc(8.8rem - 45px + var(--float,0px))); filter: grayscale(0); border-color: var(--accent); }
 }
 .dc-row { display: flex; align-items: center; gap: 8px; }
 .dc-icon {
@@ -3534,10 +3534,9 @@ function handleGoogleCredential(response) {
   if (!grid || window.matchMedia('(hover:none)').matches) return;
   const cards = [...grid.querySelectorAll('.dc')];
 
-  // Cache centers from DOM at rest (before any lift transforms).
-  // Re-reading getBoundingClientRect during animation causes oscillation
-  // because a lifted card's center shifts, making a neighbor nearest,
-  // which deactivates the first card, dropping it back — infinite loop.
+  // Centers snapshotted at mouseenter (rest position). Using live
+  // getBoundingClientRect during animation causes oscillation because
+  // the lifted card's center shifts, flipping back and forth endlessly.
   let centers = null;
   function cacheCenters() {
     centers = cards.map(c => {
@@ -3546,16 +3545,32 @@ function handleGoogleCredential(response) {
     });
   }
 
+  // Float animation: sine wave on --float CSS var inherited by active card
+  let floatRAF = null, floatT = 0;
+  function startFloat() {
+    if (floatRAF) return;
+    function tick() {
+      floatT += 0.022;
+      grid.style.setProperty('--float', (Math.sin(floatT) * 6) + 'px');
+      floatRAF = requestAnimationFrame(tick);
+    }
+    floatRAF = requestAnimationFrame(tick);
+  }
+  function stopFloat() {
+    if (floatRAF) { cancelAnimationFrame(floatRAF); floatRAF = null; }
+    grid.style.removeProperty('--float');
+  }
+
   let current = null;
-  const SWITCH_THRESHOLD = 40; // px — cursor must be this much closer to switch cards
+  const SWITCH_THRESHOLD = 16; // px — low enough to switch quickly, high enough to prevent jitter
 
   function activate(card) {
     if (card === current) return;
     current = card;
     cards.forEach(c => c.classList.toggle('dc-active', c === card));
+    if (card) startFloat(); else stopFloat();
   }
 
-  // Snapshot centers the moment the mouse enters (cards are all at rest)
   grid.addEventListener('mouseenter', cacheCenters);
 
   grid.addEventListener('mousemove', e => {
@@ -3569,7 +3584,6 @@ function handleGoogleCredential(response) {
     const candidate = bestDist < 240 ? best : null;
     if (candidate === current) return;
 
-    // Hysteresis: only switch if candidate is meaningfully closer than current
     if (current) {
       const ci = cards.indexOf(current);
       const curDist = Math.hypot(e.clientX - centers[ci].x, e.clientY - centers[ci].y);
@@ -3581,7 +3595,8 @@ function handleGoogleCredential(response) {
 
   grid.addEventListener('mouseleave', () => {
     current = null;
-    centers = null; // re-snapshot next time (handles scroll/resize)
+    centers = null;
+    stopFloat();
     cards.forEach(c => c.classList.remove('dc-active'));
   });
 
