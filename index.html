@@ -3562,7 +3562,7 @@ function handleGoogleCredential(response) {
   }
 
   let current = null;
-  const SWITCH_THRESHOLD = 16; // px — low enough to switch quickly, high enough to prevent jitter
+  const SWITCH_THRESHOLD = 6; // px — low enough to switch quickly, high enough to prevent jitter
 
   function activate(card) {
     if (card === current) return;
