@@ -1,0 +1,10 @@
+# NOTE: config.js holds only the PUBLISHABLE (anon) key, which is public by
+# design — it ships to every visitor's browser and is safe to commit. Data is
+# protected by Row Level Security, not by hiding this key. The secret
+# (service_role) key must NEVER be committed.
+
+# Cloudflare Wrangler
+.wrangler/
+
+# OS noise
+.DS_Store

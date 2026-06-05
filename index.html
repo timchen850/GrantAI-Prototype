@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async></script>
 <style>
 /* ═══════════════════════════════════════════════════════════
    GRANGE AI - design tokens
@@ -2046,6 +2045,9 @@ label.field-label {
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<!-- Supabase backend: config.js (gitignored) holds the project URL + anon key -->
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <script>
@@ -3428,7 +3430,7 @@ label.field-label {
         </svg>
         Continue with Google
       </button>
-      <p class="lr-foot">Already have an account? <a href="#" onclick="go('dashboard')">Sign in</a></p>
+      <p class="lr-foot">Already have an account? <a href="#" onclick="go('signin')">Sign in</a></p>
     </div>
   </div>
 </div>
@@ -3688,30 +3690,24 @@ label.field-label {
         </p>
       </div>
 
-      <!-- step 2: OTP code -->
+      <!-- step 2: password -->
       <div class="si-step" id="si-code" style="display:none">
-        <div class="si-h1">Check your email</div>
-        <div class="si-sub">Enter the 6-digit code we sent</div>
+        <div class="si-h1">Enter your password</div>
+        <div class="si-sub">Signing in as <span id="si-pw-email">your account</span></div>
 
-        <div class="si-otp-row">
-          <div class="si-otp-cell"><input class="si-otp-in" type="text" inputmode="numeric" maxlength="1" data-idx="0"><div class="si-otp-gh">0</div></div>
-          <span class="si-otp-sep">|</span>
-          <div class="si-otp-cell"><input class="si-otp-in" type="text" inputmode="numeric" maxlength="1" data-idx="1"><div class="si-otp-gh">0</div></div>
-          <span class="si-otp-sep">|</span>
-          <div class="si-otp-cell"><input class="si-otp-in" type="text" inputmode="numeric" maxlength="1" data-idx="2"><div class="si-otp-gh">0</div></div>
-          <span class="si-otp-sep">|</span>
-          <div class="si-otp-cell"><input class="si-otp-in" type="text" inputmode="numeric" maxlength="1" data-idx="3"><div class="si-otp-gh">0</div></div>
-          <span class="si-otp-sep">|</span>
-          <div class="si-otp-cell"><input class="si-otp-in" type="text" inputmode="numeric" maxlength="1" data-idx="4"><div class="si-otp-gh">0</div></div>
-          <span class="si-otp-sep">|</span>
-          <div class="si-otp-cell"><input class="si-otp-in" type="text" inputmode="numeric" maxlength="1" data-idx="5"><div class="si-otp-gh">0</div></div>
+        <div class="si-email-row" style="margin-top:18px">
+          <input type="password" id="si-pw-input" class="si-email-input"
+            placeholder="Your password" autocomplete="current-password"
+            oninput="siPwInput(this)"
+            onkeydown="if(event.key==='Enter')siSubmitCode()">
+          <button class="si-email-arr" id="si-pw-btn" disabled onclick="siSubmitCode()">→</button>
         </div>
 
-        <div><span class="si-resend" onclick="toast('Code resent!')">Resend code</span></div>
+        <div><span class="si-resend" onclick="siMagicLink()">Email me a sign-in link instead</span></div>
 
         <div class="si-btn-row">
           <button class="si-btn-back" onclick="siBack()">Back</button>
-          <button class="si-btn-cont" id="si-cont-btn" disabled onclick="siSubmitCode()">Continue</button>
+          <button class="si-btn-cont" id="si-cont-btn" disabled onclick="siSubmitCode()">Sign in</button>
         </div>
 
         <p class="si-terms" style="margin-top:44px">
@@ -3728,9 +3724,52 @@ label.field-label {
             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
           </svg>
         </div>
-        <button class="si-btn-dash" onclick="go('dashboard')">Continue to Dashboard</button>
+        <button class="si-btn-dash" onclick="routeAfterAuth()">Continue</button>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ ONBOARDING ════════════════════════ -->
+<style>
+  #onboarding { background: var(--bg); }
+  .ob-wrap { max-width: 640px; margin: 0 auto; padding: 28px 22px 80px; min-height: 100vh; display: flex; flex-direction: column; }
+  .ob-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; }
+  .ob-skip { background: none; border: none; color: var(--ink-soft, #8a857c); font-size: 13.5px; cursor: pointer; font-family: inherit; }
+  .ob-skip:hover { color: var(--ink); }
+  .ob-progress { height: 6px; background: rgba(0,0,0,0.07); border-radius: 99px; overflow: hidden; margin-bottom: 30px; }
+  .ob-progress-fill { height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .45s cubic-bezier(.4,0,.2,1); }
+  .ob-card { background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 18px; padding: 34px 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .ob-eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .ob-title { font-size: 26px; font-weight: 700; line-height: 1.15; color: var(--ink); margin: 0 0 8px; }
+  .ob-sub { font-size: 14.5px; color: var(--ink-body, #6b665e); line-height: 1.6; margin: 0 0 24px; }
+  .ob-fields { display: flex; flex-direction: column; gap: 18px; }
+  .ob-chips { display: flex; flex-wrap: wrap; gap: 9px; }
+  .ob-chip { padding: 9px 15px; border: 1.5px solid rgba(0,0,0,0.12); border-radius: 99px; background: #fff; font-size: 13.5px; cursor: pointer; font-family: inherit; color: var(--ink); transition: all .15s; }
+  .ob-chip:hover { border-color: var(--accent); }
+  .ob-chip.on { background: var(--accent-tint); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .ob-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 30px; }
+  .ob-nav .btn-ghost[disabled] { opacity: 0; pointer-events: none; }
+  .ob-upload { border: 1.5px dashed rgba(0,0,0,0.18); border-radius: 12px; padding: 22px; text-align: center; font-size: 13.5px; color: var(--ink-body,#6b665e); cursor: pointer; }
+  .ob-upload.has { border-style: solid; border-color: var(--ok, #2a9d6e); color: var(--ink); }
+</style>
+<div id="onboarding" class="screen">
+  <div class="ob-wrap">
+    <div class="ob-top">
+      <a class="brand" href="#"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+      <button class="ob-skip" onclick="obSkip()">Skip for now</button>
+    </div>
+    <div class="ob-progress"><div class="ob-progress-fill" id="ob-progress-fill"></div></div>
+    <div class="ob-card">
+      <div class="ob-eyebrow" id="ob-eyebrow"></div>
+      <h2 class="ob-title" id="ob-title"></h2>
+      <p class="ob-sub" id="ob-sub"></p>
+      <div class="ob-fields" id="ob-fields"></div>
+      <div class="ob-nav">
+        <button class="btn btn-ghost" id="ob-back" onclick="obBack()">Back</button>
+        <button class="btn btn-accent" id="ob-next" onclick="obNext()">Continue</button>
+      </div>
     </div>
   </div>
 </div>
@@ -4093,8 +4132,8 @@ const SIDE = (active) => `
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Org profile</a>
   </nav>
   <div class="side-foot">
-    <div class="org-card"><div class="nm">Eastside Youth Foundation</div><div class="pl">Growth plan, trial</div></div>
-    <div class="links"><a href="#">Settings</a><a href="#" onclick="go('landing')">Sign out</a></div>
+    <div class="org-card"><div class="nm" data-org-name>Eastside Youth Foundation</div><div class="pl">Growth plan, trial</div></div>
+    <div class="links"><a href="#" onclick="go('profile')">Settings</a><a href="#" onclick="signOut();return false;">Sign out</a></div>
   </div>`;
 ['dashboard','discovery','generator','profile'].forEach(s => {
   const el = document.getElementById('side-' + s);
@@ -4106,7 +4145,7 @@ window._currentScreen = 'landing';
 document.body.dataset.screen = 'landing';
 
 /* ─── navigation ────────────────────────────────────────── */
-const SCREENS = ['landing','login','signin','demo','dashboard','discovery','generator','profile','privacy','terms','security','contact'];
+const SCREENS = ['landing','login','signin','onboarding','demo','dashboard','discovery','generator','profile','privacy','terms','security','contact'];
 
 /* ─── mobile hamburger drawer (phones only) ─────────────── */
 function mNavMarkup() {
@@ -4120,7 +4159,7 @@ function mNavMarkup() {
       <a href="#" onclick="mNavGo('profile');return false;" class="${s==='profile'?'on':''}">Org profile</a>
       <div class="m-nav-div"></div>
       <a href="#" onclick="mNavGo('landing');return false;">Back to site</a>
-      <a href="#" onclick="mNavGo('landing');return false;">Sign out</a>`;
+      <a href="#" onclick="mNavClose();signOut();return false;">Sign out</a>`;
   }
   return `
     <a href="#" onclick="mNavClose();goHome();return false;">Home</a>
@@ -4218,7 +4257,7 @@ function toast(msg){
   toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-function submitSignup() {
+async function submitSignup() {
   const org  = document.getElementById('reg-org');
   const email = document.getElementById('reg-email');
   const pw   = document.getElementById('reg-pw');
@@ -4236,7 +4275,29 @@ function submitSignup() {
   if (pw.value.length < 8) { pw.style.borderColor = 'var(--accent)'; toast('Password must be at least 8 characters.'); return; }
   if (pw.value !== pw2.value) { pw2.style.borderColor = 'var(--accent)'; toast('Passwords do not match.'); return; }
 
-  go('profile');
+  window._manualAuthFlow = true;
+  const btn = document.querySelector('#login .btn-accent');
+  if (btn) { btn.disabled = true; btn.textContent = 'Creating account…'; }
+  const { data, error } = await sb.auth.signUp({
+    email: email.value.trim(),
+    password: pw.value,
+    options: { data: { org_name: org.value.trim() } }
+  });
+  if (btn) { btn.disabled = false; btn.textContent = 'Create account'; }
+
+  if (error) {
+    toast(error.message || 'Could not create account.');
+    return;
+  }
+  // Email auto-confirm is on, so a session exists immediately → onboarding.
+  // (If confirmation were required, data.session would be null here.)
+  if (!data.session) {
+    toast('Check your email to confirm your account, then sign in.');
+    go('signin');
+    return;
+  }
+  toast('Account created! Let’s set up your profile.');
+  await routeAfterAuth();
 }
 
 /* ─── filter chips ──────────────────────────────────────── */
@@ -4285,54 +4346,16 @@ function generate(){
   }, 2800);
 }
 
-/* ─── Google Sign-In ─────────────────────────────────────── */
-// To use real Google sign-in, replace this with your OAuth 2.0 Client ID
-// from Google Cloud Console → APIs & Services → Credentials
-const GOOGLE_CLIENT_ID = '791701884922-lqu3fhjufi1hnlkfbst3n3dvpbv80fgo.apps.googleusercontent.com';
-
-window.addEventListener('load', function () {
-  if (typeof google !== 'undefined' && google.accounts) {
-    google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: handleGoogleCredential,
-      ux_mode: 'popup',
-      auto_select: false,
-    });
-  }
-});
-
-function signInWithGoogle() {
-  if (typeof google === 'undefined' || !google.accounts) {
-    toast('Google Sign-In is still loading, please try again.');
-    return;
-  }
-  google.accounts.id.prompt(function (notification) {
-    // If One Tap is suppressed (e.g. user dismissed it before), fall back to renderButton flow
-    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-      const container = document.createElement('div');
-      container.style.display = 'none';
-      document.body.appendChild(container);
-      google.accounts.id.renderButton(container, { type: 'standard' });
-      container.querySelector('[role="button"]')?.click();
-    }
+/* ─── Google Sign-In (via Supabase OAuth) ────────────────── */
+async function signInWithGoogle() {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + window.location.pathname }
   });
-}
-
-function handleGoogleCredential(response) {
-  try {
-    // Decode the JWT payload (base64url → JSON)
-    const b64 = response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    const payload = JSON.parse(atob(b64));
-    sessionStorage.setItem('grange_user', JSON.stringify({
-      name: payload.name,
-      email: payload.email,
-      picture: payload.picture,
-    }));
-    toast('Signed in as ' + (payload.given_name || payload.name));
-    setTimeout(() => go('dashboard'), 500);
-  } catch (e) {
-    toast('Sign-in failed, please try again.');
-  }
+  // On success the browser redirects to Google; control returns via the
+  // OAuth callback, where onAuthStateChange routes the user. An error here
+  // usually means the Google provider isn't configured in Supabase yet.
+  if (error) toast(error.message || 'Google sign-in is not set up yet.');
 }
 
 /* ─── MOTION ENGINE (Emil-style scroll reveal, count-up, ring fill) ─── */
@@ -5123,13 +5146,12 @@ function handleGoogleCredential(response) {
     if (einp) einp.value = '';
     const ebtn = document.getElementById('si-email-btn');
     if (ebtn) ebtn.disabled = true;
-    document.querySelectorAll('.si-otp-in').forEach(i => {
-      i.value = '';
-      const gh = i.parentElement.querySelector('.si-otp-gh');
-      if (gh) gh.style.display = '';
-    });
+    const pin = document.getElementById('si-pw-input');
+    if (pin) pin.value = '';
     const cb = document.getElementById('si-cont-btn');
     if (cb) { cb.classList.remove('si-ready'); cb.disabled = true; }
+    const pb = document.getElementById('si-pw-btn');
+    if (pb) pb.disabled = true;
     if (mat) { mat.uniforms.u_rev.value = 0; if (clock) clock.start(); }
   };
 
@@ -5138,11 +5160,22 @@ function handleGoogleCredential(response) {
     if (btn) btn.disabled = !(inp.value && inp.value.includes('@'));
   };
 
+  // step 1 → step 2 (email entered → ask for password)
   window.siGoCode = function() {
     const v = (document.getElementById('si-email-input') || {}).value || '';
     if (!v || !v.includes('@')) return;
+    const lbl = document.getElementById('si-pw-email');
+    if (lbl) lbl.textContent = v.trim();
     siShowStep('code', 'fwd');
-    setTimeout(() => { const f = document.querySelector('.si-otp-in'); if (f) f.focus(); }, 420);
+    setTimeout(() => { const f = document.getElementById('si-pw-input'); if (f) f.focus(); }, 420);
+  };
+
+  window.siPwInput = function(inp) {
+    const on = !!inp.value;
+    const cb = document.getElementById('si-cont-btn');
+    if (cb) { cb.classList.toggle('si-ready', on); cb.disabled = !on; }
+    const pb = document.getElementById('si-pw-btn');
+    if (pb) pb.disabled = !on;
   };
 
   window.siBack = function() {
@@ -5150,35 +5183,41 @@ function handleGoogleCredential(response) {
     if (mat) { mat.uniforms.u_rev.value = 0; if (clock) clock.start(); }
   };
 
-  window.siSubmitCode = function() {
-    const inputs = document.querySelectorAll('.si-otp-in');
-    if (![...inputs].every(i => i.value.length === 1)) return;
+  // step 2: real email+password sign-in
+  let siBusy = false;
+  window.siSubmitCode = async function() {
+    if (siBusy) return;
+    const email = (document.getElementById('si-email-input') || {}).value.trim();
+    const pw = (document.getElementById('si-pw-input') || {}).value;
+    if (!email || !pw) return;
+    siBusy = true;
+    window._manualAuthFlow = true;
+    const cb = document.getElementById('si-cont-btn');
+    if (cb) { cb.disabled = true; cb.textContent = 'Signing in…'; }
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+    if (error) {
+      siBusy = false;
+      if (cb) { cb.disabled = false; cb.textContent = 'Sign in'; }
+      toast(error.message || 'Could not sign in.');
+      return;
+    }
+    // success: play the shader reveal, then route based on onboarding state
     if (mat) { mat.uniforms.u_rev.value = 1; if (clock) clock.start(); }
     setTimeout(() => siShowStep('success', 'fwd'), 1800);
+    setTimeout(() => { routeAfterAuth(); }, 2600);
   };
 
-  // Wire OTP inputs
-  document.addEventListener('DOMContentLoaded', function() {
-    const inputs = document.querySelectorAll('.si-otp-in');
-    inputs.forEach(inp => {
-      inp.addEventListener('input', function() {
-        const gh = inp.parentElement.querySelector('.si-otp-gh');
-        if (gh) gh.style.display = inp.value ? 'none' : '';
-        const idx = parseInt(inp.dataset.idx);
-        if (inp.value && idx < 5) inputs[idx + 1].focus();
-        const allFull = [...inputs].every(i => i.value.length === 1);
-        const btn = document.getElementById('si-cont-btn');
-        if (btn) { btn.classList.toggle('si-ready', allFull); btn.disabled = !allFull; }
-        if (allFull) setTimeout(window.siSubmitCode, 240);
-      });
-      inp.addEventListener('keydown', function(e) {
-        if (e.key === 'Backspace' && !inp.value) {
-          const idx = parseInt(inp.dataset.idx);
-          if (idx > 0) inputs[idx - 1].focus();
-        }
-      });
+  // third method: passwordless magic link (free-tier substitute for OTP code)
+  window.siMagicLink = async function() {
+    const email = (document.getElementById('si-email-input') || {}).value.trim();
+    if (!email || !email.includes('@')) { toast('Enter your email first.'); return; }
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin + window.location.pathname }
     });
-  });
+    if (error) { toast(error.message || 'Could not send link.'); return; }
+    toast('Check your email for a sign-in link.');
+  };
 })();
 
 /* ─── GRADIENT ANIMATION — mouse-tracking interactive blob ─ */
@@ -5264,6 +5303,253 @@ function handleGoogleCredential(response) {
   obs.observe(section);
 })();
 
+</script>
+
+<!-- ════════════════ SUPABASE: client, auth routing, onboarding ════════════════ -->
+<script>
+/* ─── client ───────────────────────────────────────────────── */
+if (window.SUPABASE_CONFIG && window.supabase) {
+  window.sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+} else {
+  console.error('Supabase not configured: copy config.example.js to config.js.');
+}
+
+/* screens a logged-out (or freshly-redirected) user can sit on */
+const PUBLIC_SCREENS = ['landing','login','signin','demo','privacy','terms','security','contact'];
+
+/* manual flows (signup / password sign-in) route themselves; this flag stops
+   the auth listener from racing their success animation. */
+window._manualAuthFlow = false;
+
+async function currentProfile() {
+  if (!window.sb) return null;
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return null;
+  let { data: profile } = await sb.from('profiles').select('*').eq('user_id', user.id).maybeSingle();
+  if (!profile) {
+    const ins = await sb.from('profiles')
+      .insert({ user_id: user.id, org_name: user.user_metadata?.org_name || null })
+      .select().maybeSingle();
+    profile = ins.data;
+  }
+  return { user, profile };
+}
+
+async function routeAfterAuth() {
+  const ctx = await currentProfile();
+  if (!ctx) { go('landing'); return; }
+  window._grange = ctx;
+  applyOrgIdentity(ctx);
+  if (!ctx.profile || !ctx.profile.onboarding_complete) {
+    go('onboarding');
+    obInit(ctx);
+  } else {
+    go('dashboard');
+  }
+}
+
+async function signOut() {
+  if (window.sb) await sb.auth.signOut();
+  window._grange = null;
+  window._manualAuthFlow = false;
+  toast('Signed out.');
+  go('landing');
+}
+
+function applyOrgIdentity(ctx) {
+  const name = (ctx && ctx.profile && ctx.profile.org_name) || 'Your organization';
+  document.querySelectorAll('[data-org-name]').forEach(el => el.textContent = name);
+}
+
+/* returning session (page load) + OAuth redirect both come through here */
+if (window.sb) {
+  sb.auth.onAuthStateChange((event, session) => {
+    if (window._manualAuthFlow) return;
+    if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session) {
+      if (PUBLIC_SCREENS.includes(window._currentScreen || 'landing')) routeAfterAuth();
+    }
+  });
+}
+
+/* ════════════════════ ONBOARDING ════════════════════ */
+const OB_STEPS = [
+  { eyebrow: 'Step 1 of 6 · Your organization', title: 'Tell us about your nonprofit',
+    sub: 'The basics that establish your eligibility for most grants.',
+    fields: [
+      { key: 'org_name', label: 'Organization legal name', type: 'text', placeholder: 'Eastside Youth Foundation' },
+      { key: 'ein', label: 'EIN (Employer Identification Number)', type: 'text', placeholder: '47-1234567' },
+      { key: 'status_501c3', label: '501(c)(3) status confirmed?', type: 'radio', options: ['Yes','No','In progress'] },
+      { key: 'year_founded', label: 'Year founded', type: 'number', placeholder: '2011' },
+      { key: 'state_incorp', label: 'State of incorporation', type: 'text', placeholder: 'California' },
+    ] },
+  { eyebrow: 'Step 2 of 6 · Your mission', title: 'What do you work on?',
+    sub: 'This is the single biggest driver of which grants we match you to.',
+    fields: [
+      { key: 'mission', label: 'Mission statement', type: 'textarea', placeholder: 'In 2–3 sentences, what is your mission?' },
+      { key: 'focus_areas', label: 'Primary focus areas', type: 'multi', options: ['Education','Housing','Food Security','Health','Environment','Arts','Youth','Veterans','Workforce','Other'] },
+      { key: 'beneficiaries', label: 'Who do you serve?', type: 'textarea', placeholder: 'Describe your beneficiaries.' },
+    ] },
+  { eyebrow: 'Step 3 of 6 · Your reach', title: 'Where do you work?',
+    sub: 'Geography narrows the field to grants you can actually win.',
+    fields: [
+      { key: 'geo_focus', label: 'Geographic focus', type: 'radio', options: ['Local','Regional','Statewide','National','International'] },
+      { key: 'primary_location', label: 'City / state you primarily operate in', type: 'text', placeholder: 'Los Angeles, CA' },
+      { key: 'people_served', label: 'Approx. people served per year', type: 'number', placeholder: '340' },
+    ] },
+  { eyebrow: 'Step 4 of 6 · Finances & capacity', title: 'Your size and capacity',
+    sub: 'Funders screen on budget and staffing; this keeps matches realistic.',
+    fields: [
+      { key: 'annual_budget', label: 'Annual operating budget', type: 'select', options: ['<$100K','$100K–$500K','$500K–$1M','$1M–$5M','$5M+'] },
+      { key: 'staff_count', label: 'Full-time staff count', type: 'number', placeholder: '6' },
+      { key: 'grant_writer', label: 'Do you have a dedicated grant writer?', type: 'radio', options: ['Yes','No','Sometimes'] },
+    ] },
+  { eyebrow: 'Step 5 of 6 · Grant history', title: 'Your grant experience',
+    sub: 'Helps us calibrate the proposals we draft for you.',
+    fields: [
+      { key: 'applied_before', label: 'Have you applied for grants before?', type: 'radio', options: ['Yes','No'] },
+      { key: 'largest_grant', label: 'Largest grant ever received (optional)', type: 'text', placeholder: '$150,000' },
+      { key: 'funding_types', label: 'Types of funding you’re seeking', type: 'multi', options: ['Federal','State','Private Foundation','Corporate','Community','All'] },
+      { key: 'biggest_challenge', label: 'Biggest challenge with grants today', type: 'textarea', placeholder: 'What slows you down most?' },
+    ] },
+  { eyebrow: 'Step 6 of 6 · Documents', title: 'Add your 990 (optional)',
+    sub: 'Upload your most recent IRS Form 990 and we’ll pull mission and financials from it. You can skip and do this later.',
+    fields: [
+      { key: 'doc_990', label: 'Most recent IRS Form 990 (PDF)', type: 'file' },
+      { key: 'doc_programs', label: 'Program summaries or case statements (optional)', type: 'file' },
+    ] },
+];
+
+let obState = { idx: 0, answers: {}, files: {}, ctx: null };
+
+function obInit(ctx) {
+  obState = { idx: 0, answers: {}, files: {}, ctx };
+  // prefill org_name from the profile we already have
+  if (ctx && ctx.profile && ctx.profile.org_name) obState.answers.org_name = ctx.profile.org_name;
+  obRender();
+}
+
+function obRender() {
+  const step = OB_STEPS[obState.idx];
+  document.getElementById('ob-eyebrow').textContent = step.eyebrow;
+  document.getElementById('ob-title').textContent = step.title;
+  document.getElementById('ob-sub').textContent = step.sub;
+  document.getElementById('ob-progress-fill').style.width = ((obState.idx) / OB_STEPS.length * 100) + '%';
+
+  const wrap = document.getElementById('ob-fields');
+  wrap.innerHTML = step.fields.map(f => obFieldHTML(f)).join('');
+
+  // wire inputs back into state
+  step.fields.forEach(f => {
+    if (f.type === 'multi') {
+      wrap.querySelectorAll('[data-multi="'+f.key+'"] .ob-chip').forEach(chip => {
+        chip.onclick = () => {
+          const arr = obState.answers[f.key] || [];
+          const v = chip.dataset.val;
+          const i = arr.indexOf(v);
+          if (i >= 0) { arr.splice(i, 1); chip.classList.remove('on'); }
+          else { arr.push(v); chip.classList.add('on'); }
+          obState.answers[f.key] = arr;
+        };
+      });
+    } else if (f.type === 'radio') {
+      wrap.querySelectorAll('[data-radio="'+f.key+'"] .ob-chip').forEach(chip => {
+        chip.onclick = () => {
+          wrap.querySelectorAll('[data-radio="'+f.key+'"] .ob-chip').forEach(c => c.classList.remove('on'));
+          chip.classList.add('on');
+          obState.answers[f.key] = chip.dataset.val;
+        };
+      });
+    } else if (f.type === 'file') {
+      const inp = wrap.querySelector('#ob-file-'+f.key);
+      const box = wrap.querySelector('#ob-filebox-'+f.key);
+      box.onclick = () => inp.click();
+      inp.onchange = () => {
+        if (inp.files[0]) {
+          obState.files[f.key] = inp.files[0];
+          box.classList.add('has');
+          box.textContent = inp.files[0].name;
+        }
+      };
+    } else {
+      const inp = wrap.querySelector('#ob-'+f.key);
+      inp.oninput = () => { obState.answers[f.key] = inp.value; };
+    }
+  });
+
+  document.getElementById('ob-back').disabled = obState.idx === 0;
+  document.getElementById('ob-next').textContent = obState.idx === OB_STEPS.length - 1 ? 'Finish' : 'Continue';
+}
+
+function obFieldHTML(f) {
+  const v = obState.answers[f.key];
+  if (f.type === 'textarea')
+    return `<div class="fieldset" style="margin:0"><label class="field-label">${f.label}</label><textarea id="ob-${f.key}" placeholder="${f.placeholder||''}">${v||''}</textarea></div>`;
+  if (f.type === 'select')
+    return `<div class="fieldset" style="margin:0"><label class="field-label">${f.label}</label><select id="ob-${f.key}"><option value="">Select…</option>${f.options.map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')}</select></div>`;
+  if (f.type === 'multi')
+    return `<div class="fieldset" style="margin:0"><label class="field-label">${f.label}</label><div class="ob-chips" data-multi="${f.key}">${f.options.map(o=>`<button type="button" class="ob-chip ${(v||[]).includes(o)?'on':''}" data-val="${o}">${o}</button>`).join('')}</div></div>`;
+  if (f.type === 'radio')
+    return `<div class="fieldset" style="margin:0"><label class="field-label">${f.label}</label><div class="ob-chips" data-radio="${f.key}">${f.options.map(o=>`<button type="button" class="ob-chip ${v===o?'on':''}" data-val="${o}">${o}</button>`).join('')}</div></div>`;
+  if (f.type === 'file')
+    return `<div class="fieldset" style="margin:0"><label class="field-label">${f.label}</label><div class="ob-upload" id="ob-filebox-${f.key}">Drop a file or click to upload</div><input type="file" id="ob-file-${f.key}" accept="application/pdf" style="display:none"></div>`;
+  return `<div class="fieldset" style="margin:0"><label class="field-label">${f.label}</label><input type="${f.type}" id="ob-${f.key}" placeholder="${f.placeholder||''}" value="${v||''}"></div>`;
+}
+
+function obBack() { if (obState.idx > 0) { obState.idx--; obRender(); } }
+
+async function obNext() {
+  if (obState.idx < OB_STEPS.length - 1) { obState.idx++; obRender(); return; }
+  await obFinish();
+}
+
+async function obSkip() {
+  // mark complete with whatever's been entered so far, then go to dashboard
+  await obFinish(true);
+}
+
+async function obFinish(skipped) {
+  const btn = document.getElementById('ob-next');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  const ctx = obState.ctx || await currentProfile();
+  if (!ctx) { go('landing'); return; }
+  const uid = ctx.user.id;
+  const a = obState.answers;
+
+  try {
+    // 1) persist every answered question (jsonb)
+    const rows = Object.keys(a)
+      .filter(k => a[k] !== undefined && a[k] !== '' && !(Array.isArray(a[k]) && a[k].length === 0))
+      .map(k => ({ user_id: uid, question_key: k, answer: a[k] }));
+    if (rows.length) await sb.from('onboarding_answers').upsert(rows, { onConflict: 'user_id,question_key' });
+
+    // 2) upload any documents to private Storage + record metadata
+    for (const key of Object.keys(obState.files)) {
+      const file = obState.files[key];
+      const path = `${uid}/${key}-${file.name}`;
+      const up = await sb.storage.from('documents').upload(path, file, { upsert: true });
+      if (!up.error) {
+        await sb.from('documents').insert({ user_id: uid, kind: key, file_path: path, file_name: file.name });
+      }
+    }
+
+    // 3) patch the profile + mark onboarding complete
+    await sb.from('profiles').update({
+      org_name: a.org_name || ctx.profile?.org_name || null,
+      ein: a.ein || null,
+      mission: a.mission || null,
+      onboarding_complete: true,
+    }).eq('user_id', uid);
+  } catch (e) {
+    console.error('onboarding save failed', e);
+    toast('Saved locally, but something went wrong syncing. You can edit later in your profile.');
+  }
+
+  document.getElementById('ob-progress-fill').style.width = '100%';
+  window._grange = await currentProfile();
+  applyOrgIdentity(window._grange);
+  toast(skipped ? 'You can finish your profile any time.' : 'Profile saved! Welcome to Grange AI.');
+  go('dashboard');
+}
 </script>
 </body>
 </html>
