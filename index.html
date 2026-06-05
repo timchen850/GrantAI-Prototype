@@ -324,6 +324,7 @@ label.field-label {
   padding:13px 20px; border-radius:var(--r-pill);
   border:1px solid rgba(255,255,255,0.30); background:rgba(255,255,255,0.07);
   color:rgba(255,255,255,0.84); white-space:nowrap; text-align:left;
+  will-change:transform, opacity;
   transition:transform 640ms var(--ease), opacity 640ms var(--ease),
     background 340ms var(--ease), color 340ms var(--ease), border-color 340ms var(--ease); }
 .fcar-chip:hover { color:#fff; border-color:rgba(255,255,255,0.55); }
@@ -556,14 +557,18 @@ label.field-label {
   backface-visibility:hidden;
   animation:tc-scroll var(--dur,15s) linear infinite;
 }
+/* Pause scroll when user hovers anywhere in the testimonial area */
+.tc-outer:hover .tc-track { animation-play-state: paused; }
 @keyframes tc-scroll { from{transform:translate3d(0,0,0)} to{transform:translate3d(0,-50%,0)} }
 
-/* Individual cards */
+/* Individual cards — no transform on hover: applying transform inside a
+   will-change:transform parent forces per-card layer promotion mid-animation,
+   causing visible repaints. Box-shadow only keeps everything on one GPU layer. */
 .tc-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg);
   padding:26px; flex-shrink:0; position:relative; overflow:hidden;
   isolation:isolate;
-  transition:transform 240ms var(--ease-expo), border-color 240ms var(--ease), box-shadow 240ms var(--ease); }
-.tc-card:hover { transform:translateY(-5px) scale(1.02);
+  transition:border-color 240ms var(--ease), box-shadow 240ms var(--ease); }
+.tc-card:hover {
   border-color:rgba(26,25,22,0.18); box-shadow:0 24px 48px -28px rgba(26,25,22,0.36); }
 
 /* quote mark decoration */
