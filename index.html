@@ -1202,7 +1202,7 @@ label.field-label {
 .dc-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 0px;
   align-items: center;
 }
 .dc-grid {
@@ -1210,7 +1210,7 @@ label.field-label {
   grid-template-areas: 'stack';
   place-items: center;
   height: 460px;
-  padding-left: 20px;
+  padding-left: 0;
 }
 .dc {
   grid-area: stack;
@@ -1226,8 +1226,7 @@ label.field-label {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: transform 0.7s var(--ease), filter 0.7s var(--ease), border-color 0.4s var(--ease);
-  z-index: 1;
+  transition: transform 0.35s var(--ease), filter 0.35s var(--ease), border-color 0.25s var(--ease);
   cursor: default;
   user-select: none;
 }
@@ -1237,7 +1236,7 @@ label.field-label {
   right: -4px;
   top: -5%;
   height: 110%;
-  width: 20rem;
+  width: 8rem;
   background: linear-gradient(to left, var(--paper), transparent);
   pointer-events: none;
 }
@@ -1260,14 +1259,14 @@ label.field-label {
 .dc:nth-child(5) { transform: skewY(-8deg) translate(12rem, 8.8rem); }
 @media (hover: hover) and (pointer: fine) {
   .dc:hover { z-index: 10; }
-  .dc:nth-child(1):hover { transform: skewY(-8deg) translateY(-140px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
+  .dc:nth-child(1):hover { transform: skewY(-8deg) translateY(-45px); filter: grayscale(0); border-color: var(--accent); }
   .dc:nth-child(1):hover::before { opacity: 0; }
-  .dc:nth-child(2):hover { transform: skewY(-8deg) translate(3rem, -130px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
+  .dc:nth-child(2):hover { transform: skewY(-8deg) translate(3rem, calc(2.2rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
   .dc:nth-child(2):hover::before { opacity: 0; }
-  .dc:nth-child(3):hover { transform: skewY(-8deg) translate(6rem, -120px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
+  .dc:nth-child(3):hover { transform: skewY(-8deg) translate(6rem, calc(4.4rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
   .dc:nth-child(3):hover::before { opacity: 0; }
-  .dc:nth-child(4):hover { transform: skewY(-8deg) translate(9rem, -110px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
-  .dc:nth-child(5):hover { transform: skewY(-8deg) translate(12rem, -100px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
+  .dc:nth-child(4):hover { transform: skewY(-8deg) translate(9rem, calc(6.6rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
+  .dc:nth-child(5):hover { transform: skewY(-8deg) translate(12rem, calc(8.8rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
 }
 .dc-row { display: flex; align-items: center; gap: 8px; }
 .dc-icon {
