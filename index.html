@@ -1258,15 +1258,15 @@ label.field-label {
 .dc:nth-child(4) { transform: skewY(-8deg) translate(9rem, 6.6rem); }
 .dc:nth-child(5) { transform: skewY(-8deg) translate(12rem, 8.8rem); }
 @media (hover: hover) and (pointer: fine) {
-  .dc:hover { z-index: 10; }
-  .dc:nth-child(1):hover { transform: skewY(-8deg) translateY(-45px); filter: grayscale(0); border-color: var(--accent); }
-  .dc:nth-child(1):hover::before { opacity: 0; }
-  .dc:nth-child(2):hover { transform: skewY(-8deg) translate(3rem, calc(2.2rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
-  .dc:nth-child(2):hover::before { opacity: 0; }
-  .dc:nth-child(3):hover { transform: skewY(-8deg) translate(6rem, calc(4.4rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
-  .dc:nth-child(3):hover::before { opacity: 0; }
-  .dc:nth-child(4):hover { transform: skewY(-8deg) translate(9rem, calc(6.6rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
-  .dc:nth-child(5):hover { transform: skewY(-8deg) translate(12rem, calc(8.8rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
+  .dc.dc-active { z-index: 10; }
+  .dc:nth-child(1).dc-active { transform: skewY(-8deg) translateY(-45px); filter: grayscale(0); border-color: var(--accent); }
+  .dc:nth-child(1).dc-active::before { opacity: 0; }
+  .dc:nth-child(2).dc-active { transform: skewY(-8deg) translate(3rem, calc(2.2rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
+  .dc:nth-child(2).dc-active::before { opacity: 0; }
+  .dc:nth-child(3).dc-active { transform: skewY(-8deg) translate(6rem, calc(4.4rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
+  .dc:nth-child(3).dc-active::before { opacity: 0; }
+  .dc:nth-child(4).dc-active { transform: skewY(-8deg) translate(9rem, calc(6.6rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
+  .dc:nth-child(5).dc-active { transform: skewY(-8deg) translate(12rem, calc(8.8rem - 45px)); filter: grayscale(0); border-color: var(--accent); }
 }
 .dc-row { display: flex; align-items: center; gap: 8px; }
 .dc-icon {
@@ -2074,7 +2074,7 @@ label.field-label {
             </li>
           </ul>
         </div>
-        <div class="dc-grid reveal" style="height:460px;gap:18px">
+        <div class="dc-grid reveal" id="dc-grid" style="height:460px;gap:18px">
           <div class="dc">
             <div class="dc-row">
               <span class="dc-icon" style="background:var(--accent-tint)">
@@ -3526,6 +3526,33 @@ function handleGoogleCredential(response) {
     }, { threshold: 0.3 });
     io.observe(car);
   } else { start(); }
+})();
+
+/* ─── DEADLINE CARD proximity hover ─────────────────────── */
+(function(){
+  const grid = document.getElementById('dc-grid');
+  if (!grid || window.matchMedia('(hover:none)').matches) return;
+  const cards = [...grid.querySelectorAll('.dc')];
+
+  function nearest(mx, my) {
+    let best = null, bestDist = Infinity;
+    cards.forEach(card => {
+      const r = card.getBoundingClientRect();
+      const cx = r.left + r.width  / 2;
+      const cy = r.top  + r.height / 2;
+      const d  = Math.hypot(mx - cx, my - cy);
+      if (d < bestDist) { bestDist = d; best = card; }
+    });
+    return bestDist < 220 ? best : null;
+  }
+
+  grid.addEventListener('mousemove', e => {
+    const active = nearest(e.clientX, e.clientY);
+    cards.forEach(c => c.classList.toggle('dc-active', c === active));
+  });
+  grid.addEventListener('mouseleave', () => {
+    cards.forEach(c => c.classList.remove('dc-active'));
+  });
 })();
 
 /* ─── TUBELIGHT NAVBAR ──────────────────────────────────── */
