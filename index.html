@@ -1251,10 +1251,12 @@ label.field-label {
 }
 .dc:nth-child(3)::before { display: none; }
 .dc:nth-child(4)::before { display: none; }
+.dc:nth-child(5)::before { display: none; }
 .dc:nth-child(1) { filter: grayscale(1); }
 .dc:nth-child(2) { transform: skewY(-8deg) translate(3rem, 2.2rem); filter: grayscale(1); }
 .dc:nth-child(3) { transform: skewY(-8deg) translate(6rem, 4.4rem); filter: grayscale(0.4); }
 .dc:nth-child(4) { transform: skewY(-8deg) translate(9rem, 6.6rem); }
+.dc:nth-child(5) { transform: skewY(-8deg) translate(12rem, 8.8rem); }
 @media (hover: hover) and (pointer: fine) {
   .dc:nth-child(1):hover { transform: skewY(-8deg) translateY(-40px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
   .dc:nth-child(1):hover::before { opacity: 0; }
@@ -1263,6 +1265,7 @@ label.field-label {
   .dc:nth-child(3):hover { transform: skewY(-8deg) translate(6rem, 2rem); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
   .dc:nth-child(3):hover::before { opacity: 0; }
   .dc:nth-child(4):hover { transform: skewY(-8deg) translate(9rem, 4.2rem); }
+  .dc:nth-child(5):hover { transform: skewY(-8deg) translate(12rem, 6.4rem); }
 }
 .dc-row { display: flex; align-items: center; gap: 8px; }
 .dc-icon {
@@ -2070,7 +2073,7 @@ label.field-label {
             </li>
           </ul>
         </div>
-        <div class="dc-grid reveal" style="height:380px;gap:18px">
+        <div class="dc-grid reveal" style="height:460px;gap:18px">
           <div class="dc">
             <div class="dc-row">
               <span class="dc-icon" style="background:var(--accent-tint)">
@@ -2099,7 +2102,7 @@ label.field-label {
               <span class="dc-title" style="color:var(--ok)">3 New Matches</span>
             </div>
             <p class="dc-desc">Review this week's grant pipeline</p>
-            <p class="dc-date">Updated today · 12 total matches</p>
+            <p class="dc-date">Updated today · 12 matches · Next due Jun 15</p>
           </div>
           <div class="dc">
             <div class="dc-row">
@@ -2109,7 +2112,17 @@ label.field-label {
               <span class="dc-title" style="color:#4f5fc4">Draft Ready</span>
             </div>
             <p class="dc-desc">Robert Wood Johnson — Health Equity</p>
-            <p class="dc-date">Proposal draft · 94% match · Review now</p>
+            <p class="dc-date">Proposal draft · 94% match · Due Jul 8</p>
+          </div>
+          <div class="dc">
+            <div class="dc-row">
+              <span class="dc-icon" style="background:#fce8f3">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b5438a" stroke-width="2.4"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+              </span>
+              <span class="dc-title" style="color:#b5438a">Report Due</span>
+            </div>
+            <p class="dc-desc">Annie E. Casey — Interim Progress Report</p>
+            <p class="dc-date">Interim report · Due Aug 12 · 52 days left</p>
           </div>
         </div>
       </div>
