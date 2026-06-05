@@ -3939,6 +3939,13 @@ const SIDE = (active) => `
 /* ─── navigation ────────────────────────────────────────── */
 const SCREENS = ['landing','login','signin','demo','dashboard','discovery','generator','profile','privacy','terms','security','contact'];
 function go(id) {
+  // lock body scroll when entering demo (position:fixed screen), unlock when leaving
+  if (id === 'demo') {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+    window.scrollTo(0, 0);
+  }
   SCREENS.forEach(s => document.getElementById(s)?.classList.remove('active'));
   const t = document.getElementById(id);
   if (t) { t.classList.add('active'); requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0,0))); }
