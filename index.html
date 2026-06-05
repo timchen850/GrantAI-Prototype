@@ -308,93 +308,274 @@ label.field-label {
 /* ─── HOW IT WORKS animated mini-cards ─── */
 .hiw-card { opacity: 1 !important; transform: none !important; }
 
-/* ─── FEATURES: bento with rhythm ───────────────────────── */
-.bento { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 16px; }
-.cell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
-  padding: 28px; transition: transform 200ms var(--ease), box-shadow 200ms var(--ease);
-  display: flex; flex-direction: column; }
-.cell:hover { transform: translateY(-3px); box-shadow: 0 24px 50px -30px rgba(26,25,22,0.35); }
-.cell.span2 { grid-column: span 2; }
-.cell.tall { grid-row: span 2; }
-.cell h3 { font-size: 20px; margin-bottom: 9px; letter-spacing: -0.025em; }
-.cell p { font-size: 14.5px; color: var(--ink-body); }
-.cell .ico { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
-  background: var(--accent-tint); color: var(--accent-ink); margin-bottom: 16px; }
-.cell.feature-img { padding: 0; overflow: hidden; position: relative; min-height: 220px; }
-.cell.feature-img img { width: 100%; height: 100%; object-fit: cover; }
-.cell.feature-img .cap { position: absolute; left: 22px; bottom: 20px; right: 22px;
-  color: #fff; }
-.cell.feature-img .cap h3 { color: #fff; }
-.cell.feature-img .cap p { color: rgba(255,255,255,0.86); }
-.cell.feature-img::after { content: ''; position: absolute; inset: 0;
-  background: linear-gradient(transparent 35%, rgba(20,12,8,0.72)); }
-.cell.feature-img .cap { z-index: 1; }
-.cell.gradient { background: linear-gradient(150deg, #fbe3c8, #f0a64d 60%, #e2533b);
-  color: #fff; border: none; }
-.cell.gradient h3 { color: #fff; }
-.cell.gradient p { color: rgba(255,255,255,0.9); }
-.cell.gradient .big { font-family: var(--display); font-weight: 800; font-size: 46px;
-  letter-spacing: -0.04em; line-height: 1; margin-bottom: 6px; }
+/* ─── FEATURES v3: animated lifecycle carousel ───────────── */
+.fcar { display:grid; grid-template-columns: minmax(280px, 35%) 1fr;
+  border:1px solid var(--line); border-radius: var(--r-lg); overflow:hidden;
+  background:var(--surface); box-shadow:0 40px 90px -54px rgba(26,25,22,0.5);
+  min-height:560px; }
 
-/* ─── FEATURES v2: lifecycle-grouped cards w/ corner brackets ── */
-.feat-stage { margin-top: 56px; }
-.feat-stage:first-of-type { margin-top: 0; }
-.feat-stage-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 22px; }
-.feat-stage-num { font-family: var(--display); font-weight: 800; font-size: 13px;
-  color: var(--accent); letter-spacing: 0.08em; }
-.feat-stage-title { font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
-.feat-stage-line { flex: 1; height: 1px; background: var(--line); }
-.feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-.feat-card {
-  position: relative; background: var(--surface); border: 1px solid var(--line);
-  padding: 26px 24px 28px; display: flex; flex-direction: column;
-  transition: border-color 220ms var(--ease), transform 220ms var(--ease), box-shadow 220ms var(--ease);
+/* LEFT RAIL — brand gradient with cycling chips */
+.fcar-rail { position:relative; overflow:hidden; display:flex; align-items:center;
+  background:linear-gradient(158deg, #fbe3c8 0%, #ef9a47 52%, #d94f30 100%); }
+.fcar-chips { position:relative; width:100%; height:100%;
+  -webkit-mask-image:linear-gradient(to bottom, transparent, #000 17%, #000 83%, transparent);
+          mask-image:linear-gradient(to bottom, transparent, #000 17%, #000 83%, transparent); }
+.fcar-chip { position:absolute; top:50%; left:34px; margin-top:-23px;
+  display:flex; align-items:center; gap:12px; width:max-content; max-width:calc(100% - 60px);
+  padding:13px 20px; border-radius:var(--r-pill);
+  border:1px solid rgba(255,255,255,0.30); background:rgba(255,255,255,0.07);
+  color:rgba(255,255,255,0.84); white-space:nowrap; text-align:left;
+  transition:transform 640ms var(--ease), opacity 640ms var(--ease),
+    background 340ms var(--ease), color 340ms var(--ease), border-color 340ms var(--ease); }
+.fcar-chip:hover { color:#fff; border-color:rgba(255,255,255,0.55); }
+.fcar-chip.active { background:#fff; color:var(--accent); border-color:#fff;
+  box-shadow:0 16px 34px -16px rgba(120,40,15,0.65); }
+.fcar-chip svg { width:18px; height:18px; flex-shrink:0; }
+.fcar-chip span { font-size:13.5px; font-weight:600; letter-spacing:-0.005em;
+  text-transform:uppercase; }
+
+/* RIGHT STAGE — stacked animated demo panels */
+.fcar-stage { position:relative; background:var(--surface-2); }
+.fcar-panel { position:absolute; inset:38px; display:flex; flex-direction:column; gap:22px;
+  opacity:0; transform:translateY(14px) scale(0.99); pointer-events:none;
+  transition:opacity 520ms var(--ease), transform 520ms var(--ease); }
+.fcar-panel.active { opacity:1; transform:none; pointer-events:auto; }
+.fcar-cap { flex-shrink:0; }
+.fcar-eyebrow { font-size:11.5px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:9px; }
+.fcar-panel h3 { font-size:23px; letter-spacing:-0.03em; margin-bottom:8px; }
+.fcar-panel .fcar-desc { font-size:14px; line-height:1.55; color:var(--ink-body); max-width:46ch; }
+
+/* shared device frame */
+.fd-frame { flex:1; min-height:0; position:relative; background:var(--surface);
+  border:1px solid var(--line); border-radius:var(--r); overflow:hidden;
+  display:flex; flex-direction:column; box-shadow:0 26px 56px -38px rgba(26,25,22,0.45); }
+.fd-bar { display:flex; align-items:center; gap:7px; padding:11px 16px;
+  border-bottom:1px solid var(--line-soft); flex-shrink:0; }
+.fd-dot { width:9px; height:9px; border-radius:50%; background:rgba(26,25,22,0.13); }
+.fd-bar .fd-live { margin-left:auto; display:flex; align-items:center; gap:6px;
+  font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--accent); font-weight:700; }
+.fd-live i { width:7px; height:7px; border-radius:50%; background:var(--accent); animation:fd-pulse 1.7s infinite; }
+@keyframes fd-pulse { 0%{box-shadow:0 0 0 0 rgba(217,79,48,0.5)} 70%{box-shadow:0 0 0 8px rgba(217,79,48,0)} 100%{box-shadow:0 0 0 0 rgba(217,79,48,0)} }
+.fd-body { flex:1; min-height:0; display:flex; padding:24px; }
+
+/* reusable keyframes */
+@keyframes fdc-in { to { opacity:1; transform:none; } }
+@keyframes fds-pop { to { transform:scale(1); opacity:1; } }
+@keyframes fdm-bar { to { transform:scaleX(1); } }
+@keyframes fdl-grow { to { transform:scaleY(1); } }
+@keyframes fdc-draw { to { stroke-dashoffset:0; } }
+
+/* 1 — Match scoring */
+.fd-match { gap:26px; align-items:center; }
+.fdm-ring { position:relative; width:130px; height:130px; flex-shrink:0; }
+.fdm-ring svg { width:100%; height:100%; transform:rotate(-90deg); }
+.fdm-track { fill:none; stroke:var(--accent-tint); stroke-width:10; }
+.fdm-prog { fill:none; stroke:var(--accent); stroke-width:10; stroke-linecap:round;
+  stroke-dasharray:327; stroke-dashoffset:327; }
+.fcar-panel.active .fd-match .fdm-prog { animation:fdm-fill 1.5s var(--ease-expo) .25s forwards; }
+@keyframes fdm-fill { to { stroke-dashoffset:19.6; } }
+.fdm-num { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.fdm-num b { font-family:var(--display); font-size:36px; font-weight:800; color:var(--ink); letter-spacing:-0.04em; line-height:1; }
+.fdm-num span { font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); margin-top:4px; }
+.fdm-bars { flex:1; display:flex; flex-direction:column; gap:13px; min-width:0; }
+.fdm-row { display:grid; grid-template-columns:94px 1fr; align-items:center; gap:12px; }
+.fdm-row > span { font-size:12px; color:var(--ink-body); }
+.fdm-row i { height:7px; border-radius:6px; background:var(--accent-tint); position:relative; overflow:hidden; }
+.fdm-row i::after { content:''; position:absolute; inset:0 auto 0 0; width:var(--w); background:var(--accent); border-radius:6px; transform:scaleX(0); transform-origin:left; }
+.fcar-panel.active .fd-match .fdm-row i::after { animation:fdm-bar .9s var(--ease-expo) forwards; }
+
+/* 2 — Eligibility checks (checklist) */
+.fd-check { flex-direction:column; gap:12px; justify-content:center; }
+.fdc-row { display:flex; align-items:center; gap:13px; padding:13px 15px;
+  border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface);
+  opacity:0; transform:translateX(-12px); }
+.fcar-panel.active .fd-check .fdc-row { animation:fdc-in .5s var(--ease) forwards; }
+.fdc-tick { width:24px; height:24px; border-radius:50%; background:var(--ok-tint); color:var(--ok);
+  display:grid; place-items:center; flex-shrink:0; }
+.fdc-tick svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:3.2;
+  stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:24; stroke-dashoffset:24; }
+.fcar-panel.active .fd-check .fdc-tick svg { animation:fdc-draw .4s var(--ease) forwards; }
+.fdc-label { flex:1; font-size:13.5px; font-weight:600; color:var(--ink); }
+.fdc-pill { font-size:10.5px; font-weight:700; letter-spacing:0.02em; color:var(--ok);
+  background:var(--ok-tint); padding:3px 10px; border-radius:var(--r-pill); }
+
+/* 3 — SAM.gov setup (validating fields) */
+.fd-sam { flex-direction:column; gap:13px; justify-content:center; }
+.fds-field { opacity:0; transform:translateY(8px); }
+.fcar-panel.active .fd-sam .fds-field { animation:fdc-in .5s var(--ease) forwards; }
+.fds-field label { display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em;
+  color:var(--muted); margin-bottom:5px; font-weight:600; }
+.fds-val { display:flex; align-items:center; justify-content:space-between; padding:11px 14px;
+  border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface);
+  font-size:13.5px; color:var(--ink); font-variant-numeric:tabular-nums; }
+.fds-val i { width:20px; height:20px; border-radius:50%; background:var(--ok); color:#fff;
+  display:grid; place-items:center; font-size:11px; font-weight:800; font-style:normal; transform:scale(0); }
+.fcar-panel.active .fd-sam .fds-val i { animation:fds-pop .4s var(--ease) forwards; }
+.fds-badge { margin-top:4px; align-self:flex-start; font-size:11.5px; font-weight:700;
+  color:var(--accent-ink); background:var(--accent-tint); padding:7px 14px; border-radius:var(--r-pill);
+  opacity:0; transform:translateY(8px); }
+.fcar-panel.active .fd-sam .fds-badge { animation:fdc-in .5s var(--ease) forwards; }
+
+/* 4 — Blank page to first draft (typing) */
+.fd-draft { flex-direction:column; }
+.fdd-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+.fdd-head b { font-size:13px; font-weight:700; color:var(--ink); }
+.fdd-timer { font-size:11px; font-weight:700; color:var(--accent); background:var(--accent-tint); padding:4px 11px; border-radius:var(--r-pill); }
+.fdd-lines { display:flex; flex-direction:column; gap:10px; }
+.fdd-lines i { height:8px; border-radius:5px; background:rgba(26,25,22,0.10); width:0; }
+.fdd-lines i.fdd-h { background:var(--accent-tint); height:10px; }
+.fdd-lines i.fdd-gap { height:6px; background:transparent; width:0 !important; }
+.fcar-panel.active .fd-draft .fdd-lines i:not(.fdd-gap) { animation:fdd-type .55s steps(22) forwards; }
+@keyframes fdd-type { from { width:0; } to { width:var(--w); } }
+
+/* 5 — Budget & narrative (table) */
+.fd-budget { flex-direction:column; justify-content:center; }
+.fdb-row { display:flex; justify-content:space-between; align-items:center; padding:10px 4px;
+  border-bottom:1px solid var(--line-soft); font-size:13px; color:var(--ink-body);
+  opacity:0; transform:translateY(8px); }
+.fcar-panel.active .fd-budget .fdb-row { animation:fdc-in .45s var(--ease) forwards; }
+.fdb-row b { font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+.fdb-h { font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:var(--muted); }
+.fdb-h span { font-weight:600; }
+.fdb-total { border-bottom:none; border-top:2px solid var(--ink); margin-top:6px; }
+.fdb-total span { font-weight:700; color:var(--ink); }
+.fdb-total b { color:var(--accent); font-size:15px; }
+.fdb-note { margin-top:14px; font-size:11.5px; color:var(--ok); display:flex; align-items:center; gap:7px;
+  opacity:0; transform:translateY(8px); }
+.fcar-panel.active .fd-budget .fdb-note { animation:fdc-in .5s var(--ease) forwards; }
+.fdb-note::before { content:'✓'; color:var(--ok); font-weight:800; }
+
+/* 6 — Logic model (flow nodes) */
+.fd-logic { flex-direction:column; align-items:center; justify-content:center; }
+.fdl-node { width:74%; text-align:center; padding:10px 12px; border:1px solid var(--line);
+  border-radius:var(--r-sm); background:var(--surface); opacity:0; transform:scale(0.9); }
+.fdl-node b { display:block; font-size:13px; font-weight:700; color:var(--ink); }
+.fdl-node small { font-size:10.5px; color:var(--muted); }
+.fdl-node.fdl-out { background:var(--accent); border-color:var(--accent); }
+.fdl-node.fdl-out b, .fdl-node.fdl-out small { color:#fff; }
+.fcar-panel.active .fd-logic .fdl-node { animation:fds-pop .5s var(--ease) forwards; }
+.fdl-link { width:2px; height:18px; background:var(--accent); transform:scaleY(0); transform-origin:top; }
+.fcar-panel.active .fd-logic .fdl-link { animation:fdl-grow .3s var(--ease) forwards; }
+
+/* 7 — Compliance & format check (page + checks) */
+.fd-format { gap:22px; align-items:center; justify-content:center; }
+.fdf-page { position:relative; width:150px; height:192px; background:var(--surface);
+  border:1px solid var(--line); border-radius:6px; flex-shrink:0; overflow:hidden;
+  box-shadow:0 16px 32px -24px rgba(26,25,22,0.45); }
+.fdf-page span[class^="fdf-m"] { position:absolute; background:var(--accent); opacity:0.32; }
+.fdf-mtop { top:16px; left:16px; right:16px; height:1.5px; transform:scaleX(0); transform-origin:left; }
+.fdf-mbot { bottom:16px; left:16px; right:16px; height:1.5px; transform:scaleX(0); transform-origin:left; }
+.fdf-mleft { top:16px; bottom:16px; left:16px; width:1.5px; transform:scaleY(0); transform-origin:top; }
+.fdf-mright { top:16px; bottom:16px; right:16px; width:1.5px; transform:scaleY(0); transform-origin:top; }
+.fcar-panel.active .fd-format .fdf-mtop, .fcar-panel.active .fd-format .fdf-mbot { animation:fdm-bar .5s var(--ease) .2s forwards; }
+.fcar-panel.active .fd-format .fdf-mleft, .fcar-panel.active .fd-format .fdf-mright { animation:fdl-grow .5s var(--ease) .35s forwards; }
+.fdf-lines { position:absolute; top:30px; left:30px; right:30px; display:flex; flex-direction:column; gap:7px; }
+.fdf-lines i { height:5px; border-radius:4px; background:rgba(26,25,22,0.10); }
+.fdf-lines i:last-child { width:55%; }
+.fdf-stamp { position:absolute; bottom:26px; left:50%; border:2px solid var(--ok); color:var(--ok);
+  font-size:10px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; padding:4px 9px;
+  border-radius:6px; white-space:nowrap; transform:translateX(-50%) rotate(-7deg) scale(0); }
+.fcar-panel.active .fd-format .fdf-stamp { animation:fdf-stamp .5s var(--ease) 1s forwards; }
+@keyframes fdf-stamp { from { transform:translateX(-50%) rotate(-7deg) scale(0); } to { transform:translateX(-50%) rotate(-7deg) scale(1); } }
+.fdf-checks { display:flex; flex-direction:column; gap:11px; }
+.fdf-checks span { font-size:12.5px; color:var(--ink); padding-left:22px; position:relative;
+  opacity:0; transform:translateX(-10px); }
+.fcar-panel.active .fd-format .fdf-checks span { animation:fdc-in .4s var(--ease) forwards; }
+.fdf-checks span::before { content:'✓'; position:absolute; left:0; top:0; color:var(--ok); font-weight:800; }
+
+/* 8 — Deadline tracking (calendar) */
+.fd-cal { flex-direction:column; gap:18px; justify-content:center; }
+.fdcal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:7px; }
+.fdcal-cell { aspect-ratio:1; border-radius:6px; background:var(--surface-2);
+  border:1px solid var(--line-soft); display:grid; place-items:center; font-size:10px; color:var(--muted); }
+.fdcal-cell.r { background:var(--accent-tint); border-color:var(--accent-tint); color:var(--accent-ink);
+  font-weight:700; opacity:0; transform:scale(0.7); }
+.fcar-panel.active .fd-cal .fdcal-cell.r { animation:fds-pop .42s var(--ease) forwards; }
+.fdcal-cell.due { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:800;
+  opacity:0; transform:scale(0.7); }
+.fcar-panel.active .fd-cal .fdcal-cell.due { animation:fds-pop .5s var(--ease) forwards; }
+.fdcal-pills { display:flex; gap:8px; flex-wrap:wrap; }
+.fdcal-pills span { font-size:11px; font-weight:600; padding:5px 12px; border-radius:var(--r-pill);
+  background:var(--accent-tint); color:var(--accent-ink); opacity:0; transform:translateY(6px); }
+.fdcal-pills span.due { background:var(--accent); color:#fff; }
+.fcar-panel.active .fd-cal .fdcal-pills span { animation:fdc-in .4s var(--ease) forwards; }
+
+/* 9 — Reporting & renewals */
+.fd-report { gap:20px; align-items:center; justify-content:center; }
+.fdr-doc { flex:1; min-width:0; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-sm); padding:16px; box-shadow:0 16px 32px -26px rgba(26,25,22,0.4); }
+.fdr-head { font-size:12px; font-weight:700; color:var(--ink); margin-bottom:14px; }
+.fdr-stat { display:flex; justify-content:space-between; font-size:12px; color:var(--ink-body); margin-bottom:7px; }
+.fdr-stat b { color:var(--ink); font-weight:700; }
+.fdr-bar { height:7px; border-radius:5px; background:var(--accent-tint); overflow:hidden; margin-bottom:15px; }
+.fdr-bar:last-child { margin-bottom:0; }
+.fdr-bar i { display:block; height:100%; width:var(--w); background:var(--accent); border-radius:5px;
+  transform:scaleX(0); transform-origin:left; }
+.fcar-panel.active .fd-report .fdr-bar i { animation:fdm-bar 1s var(--ease-expo) forwards; }
+.fdr-renew { flex-shrink:0; width:100px; display:flex; flex-direction:column; align-items:center; gap:11px; text-align:center; }
+.fdr-loop { width:50px; height:50px; color:var(--ok); }
+.fdr-loop circle { fill:none; stroke:currentColor; stroke-width:4; stroke-linecap:round;
+  stroke-dasharray:120; stroke-dashoffset:120; }
+.fcar-panel.active .fd-report .fdr-loop circle { animation:fdr-spin 1s var(--ease) .7s forwards; }
+@keyframes fdr-spin { to { stroke-dashoffset:30; } }
+.fdr-loop path { fill:currentColor; opacity:0; }
+.fcar-panel.active .fd-report .fdr-loop path { animation:fdc-in .3s var(--ease) 1.6s forwards; }
+.fdr-renew span { font-size:11px; font-weight:600; color:var(--ink); line-height:1.35; }
+
+@media (max-width:860px) {
+  .fcar { grid-template-columns:1fr; min-height:0; }
+  .fcar-rail { min-height:240px; }
+  .fcar-chip { left:24px; }
+  .fcar-stage { min-height:460px; }
+  .fcar-panel { inset:24px; }
 }
-.feat-card:hover { transform: translateY(-3px); border-color: rgba(26,25,22,0.20);
-  box-shadow: 0 24px 50px -32px rgba(26,25,22,0.4); }
-/* corner brackets */
-.feat-card::before, .feat-card::after,
-.feat-card > .fc-corner::before, .feat-card > .fc-corner::after {
-  content: ''; position: absolute; width: 9px; height: 9px;
-  color: var(--accent); opacity: 0; transition: opacity 220ms var(--ease);
-}
-.feat-card::before { top: -1px; left: -1px; border-top: 2px solid currentColor; border-left: 2px solid currentColor; }
-.feat-card::after  { top: -1px; right: -1px; border-top: 2px solid currentColor; border-right: 2px solid currentColor; }
-.feat-card > .fc-corner::before { bottom: -1px; left: -1px; border-bottom: 2px solid currentColor; border-left: 2px solid currentColor; }
-.feat-card > .fc-corner::after  { bottom: -1px; right: -1px; border-bottom: 2px solid currentColor; border-right: 2px solid currentColor; }
-.feat-card:hover::before, .feat-card:hover::after,
-.feat-card:hover > .fc-corner::before, .feat-card:hover > .fc-corner::after { opacity: 1; }
-.feat-ico { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center;
-  background: var(--accent-tint); color: var(--accent-ink); margin-bottom: 18px; }
-.feat-card h3 { font-size: 18px; letter-spacing: -0.025em; margin-bottom: 9px; }
-.feat-card p { font-size: 14px; line-height: 1.55; color: var(--ink-body); }
-.feat-tag { margin-top: 14px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em;
-  color: var(--accent-ink); background: var(--accent-tint); align-self: flex-start;
-  padding: 4px 10px; border-radius: var(--r-pill); }
-/* highlighted card (the writing engine) */
-.feat-card.feat-hl { background: linear-gradient(155deg, #fff 0%, #fdf1ec 100%); border-color: var(--accent-tint); }
-.feat-card.feat-hl .feat-ico { background: var(--accent); color: #fff; }
-.feat-card.feat-hl .fc-big { font-family: var(--display); font-weight: 800; font-size: 38px;
-  color: var(--accent); letter-spacing: -0.04em; line-height: 1; margin-bottom: 10px; }
-@media (max-width: 860px) {
-  .feat-grid { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 560px) {
-  .feat-grid { grid-template-columns: 1fr; }
+@media (max-width:520px) {
+  .fcar-panel h3 { font-size:20px; }
+  .fd-match, .fd-report { flex-direction:column; }
 }
 
-/* ─── VOICES: editorial pull-quotes, no cards, no photos ── */
-.voices { display: flex; flex-direction: column; }
-.voice { padding: 44px 0; border-top: 1px solid var(--line); max-width: 34ch; }
-.voice:first-child { border-top: none; padding-top: 0; }
-.voice.lead { max-width: 24ch; }
-.voice.right { margin-left: auto; text-align: right; }
-.voice .vq { font-family: var(--serif); font-style: italic; font-weight: 500;
-  color: var(--ink); line-height: 1.32; letter-spacing: 0;
-  font-size: clamp(1.3rem, 2.1vw, 1.7rem); }
-.voice.lead .vq { font-size: clamp(1.7rem, 3.2vw, 2.5rem); line-height: 1.22; }
-.voice .vn { margin-top: 20px; font-family: var(--display); font-style: normal;
-  font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+/* ─── VOICES v2: infinite-scroll testimonial columns ────── */
+.tc-outer { position:relative; overflow:hidden;
+  mask-image:linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+  -webkit-mask-image:linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+  max-height:680px; display:flex; justify-content:center; gap:20px; margin-top:52px; }
+.tc-col { display:flex; flex-direction:column; gap:0; min-width:0; flex:1; max-width:320px; }
+.tc-col:nth-child(2) { display:none; }
+.tc-col:nth-child(3) { display:none; }
+@media (min-width:720px) { .tc-col:nth-child(2) { display:flex; } }
+@media (min-width:1020px) { .tc-col:nth-child(3) { display:flex; } }
+
+/* The track is doubled; animate from 0 → -50% then loop */
+.tc-track {
+  display:flex; flex-direction:column; gap:16px; will-change:transform;
+  animation:tc-scroll var(--dur,15s) linear infinite;
+}
+.tc-col:hover .tc-track,
+.tc-col:focus-within .tc-track { animation-play-state:paused; }
+@keyframes tc-scroll { from{transform:translateY(0)} to{transform:translateY(-50%)} }
+
+/* Individual cards */
+.tc-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg);
+  padding:26px; flex-shrink:0; position:relative; overflow:hidden;
+  transition:transform 240ms var(--ease-expo), border-color 240ms var(--ease), box-shadow 240ms var(--ease); }
+.tc-card:hover { transform:translateY(-5px) scale(1.02);
+  border-color:rgba(26,25,22,0.18); box-shadow:0 24px 48px -28px rgba(26,25,22,0.36); }
+
+/* quote mark decoration */
+.tc-card::before { content:'\201C'; position:absolute; top:14px; right:20px;
+  font-family:var(--serif); font-size:56px; color:var(--accent-tint); line-height:1;
+  pointer-events:none; }
+
+.tc-q { font-size:14px; line-height:1.6; color:var(--ink-body); margin-bottom:18px;
+  position:relative; z-index:1; }
+.tc-footer { display:flex; align-items:center; gap:11px; }
+.tc-avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; flex-shrink:0;
+  border:2px solid var(--accent-tint);
+  transition:border-color 240ms var(--ease); }
+.tc-card:hover .tc-avatar { border-color:var(--accent); }
+.tc-name { font-size:13.5px; font-weight:700; color:var(--ink); letter-spacing:-0.01em; line-height:1.2; }
+.tc-role { font-size:11.5px; color:var(--muted); letter-spacing:0; margin-top:2px; }
 
 /* ─── PRICING ───────────────────────────────────────────── */
 .pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
@@ -663,8 +844,6 @@ label.field-label {
 @media (max-width: 1080px) {
   .hero-grid { grid-template-columns: 1fr; gap: 40px; }
   .hero-asset { max-width: 480px; }
-  .bento { grid-template-columns: repeat(2, 1fr); }
-  .cell.tall { grid-row: span 1; }
   .gen-grid { grid-template-columns: 1fr; }
   .out { position: static; }
 }
@@ -691,8 +870,6 @@ label.field-label {
   .wrap, .nav-inner { padding: 0 20px; }
   .app-main { padding: 24px 20px 48px; }
   .section { padding: 64px 0; }
-  .bento { grid-template-columns: 1fr; }
-  .cell.span2 { grid-column: span 1; }
   .cta-band { padding: 44px 28px; }
   .kpi { grid-template-columns: 1fr; }
   .kpi .k { border-left: none; border-top: 1px solid var(--line); }
@@ -2034,111 +2211,281 @@ label.field-label {
         <p>Grange AI runs the whole grant lifecycle, from getting registered to filing the final report, so your team can stay on mission.</p>
       </div>
 
-      <!-- STAGE 1: get qualified -->
-      <div class="feat-stage reveal">
-        <div class="feat-stage-head">
-          <span class="feat-stage-num">01</span>
-          <span class="feat-stage-title">Get qualified</span>
-          <span class="feat-stage-line"></span>
-        </div>
-        <div class="feat-grid reveal-group">
-          <div class="feat-card"><span class="fc-corner"></span>
-            <div class="feat-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
-            <h3>Match scoring</h3>
-            <p>Every grant gets a fit score from your mission, NTEE code, geography, and budget range. You only see the ones worth applying for.</p>
-          </div>
-          <div class="feat-card"><span class="fc-corner"></span>
-            <div class="feat-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-            <h3>Eligibility checks</h3>
-            <p>501(c)(3) status, allowable costs, and applicant restrictions confirmed against the RFP before you write a single word.</p>
-          </div>
-          <div class="feat-card"><span class="fc-corner"></span>
-            <div class="feat-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L3 7v6c0 5 3.8 8.5 9 9 5.2-.5 9-4 9-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div>
-            <h3>SAM.gov &amp; Grants.gov setup</h3>
-            <p>We pre-validate your UEI, TIN, and address against IRS and USPS records, the #1 cause of weeks-long rejections, and track annual renewals.</p>
-            <span class="feat-tag">Avoids 4–6 week delays</span>
+      <!-- FEATURE CAROUSEL -->
+      <div class="fcar reveal" id="fcar">
+        <div class="fcar-rail">
+          <div class="fcar-chips">
+            <button class="fcar-chip" data-i="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span>Match scoring</span></button>
+            <button class="fcar-chip" data-i="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Eligibility checks</span></button>
+            <button class="fcar-chip" data-i="2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L3 7v6c0 5 3.8 8.5 9 9 5.2-.5 9-4 9-9V7z"/><path d="M9 12l2 2 4-4"/></svg><span>SAM.gov setup</span></button>
+            <button class="fcar-chip" data-i="3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg><span>First draft</span></button>
+            <button class="fcar-chip" data-i="4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Budget narrative</span></button>
+            <button class="fcar-chip" data-i="5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="12" r="3"/><path d="M9 6h4a2 2 0 0 1 2 2v1M9 18h4a2 2 0 0 0 2-2v-1"/></svg><span>Logic model</span></button>
+            <button class="fcar-chip" data-i="6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></svg><span>Format check</span></button>
+            <button class="fcar-chip" data-i="7"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span>Deadline tracking</span></button>
+            <button class="fcar-chip" data-i="8"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg><span>Reporting &amp; renewals</span></button>
           </div>
         </div>
-      </div>
 
-      <!-- STAGE 2: write the proposal -->
-      <div class="feat-stage reveal">
-        <div class="feat-stage-head">
-          <span class="feat-stage-num">02</span>
-          <span class="feat-stage-title">Write the proposal</span>
-          <span class="feat-stage-line"></span>
-        </div>
-        <div class="feat-grid reveal-group">
-          <div class="feat-card feat-hl"><span class="fc-corner"></span>
-            <div class="feat-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></div>
-            <div class="fc-big">4 min</div>
-            <h3>Blank page to first draft</h3>
-            <p>A full narrative pulled from your profile and the funder's own RFP language. A grant writer needs 30–50 hours for the same thing.</p>
+        <div class="fcar-stage">
+          <!-- 1 Match scoring -->
+          <div class="fcar-panel" data-i="0">
+            <div class="fd-frame">
+              <div class="fd-bar"><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-live"><i></i>Scoring</span></div>
+              <div class="fd-body fd-match">
+                <div class="fdm-ring">
+                  <svg viewBox="0 0 120 120"><circle class="fdm-track" cx="60" cy="60" r="52"/><circle class="fdm-prog" cx="60" cy="60" r="52"/></svg>
+                  <div class="fdm-num"><b>94</b><span>fit score</span></div>
+                </div>
+                <div class="fdm-bars">
+                  <div class="fdm-row"><span>Mission</span><i style="--w:96%"></i></div>
+                  <div class="fdm-row"><span>NTEE code</span><i style="--w:100%"></i></div>
+                  <div class="fdm-row"><span>Geography</span><i style="--w:88%"></i></div>
+                  <div class="fdm-row"><span>Budget range</span><i style="--w:91%"></i></div>
+                </div>
+              </div>
+            </div>
+            <div class="fcar-cap">
+              <div class="fcar-eyebrow">01 · Get qualified</div>
+              <h3>Match scoring</h3>
+              <p class="fcar-desc">Every grant gets a fit score from your mission, NTEE code, geography, and budget range. You only see the ones worth applying for.</p>
+            </div>
           </div>
-          <div class="feat-card"><span class="fc-corner"></span>
-            <div class="feat-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
-            <h3>Budget &amp; budget narrative</h3>
-            <p>Build the budget once and Grange AI writes a justification that matches every line item, the alignment reviewers reject proposals over.</p>
-          </div>
-          <div class="feat-card"><span class="fc-corner"></span>
-            <div class="feat-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="12" r="3"/><path d="M9 6h4a2 2 0 0 1 2 2v1M9 18h4a2 2 0 0 0 2-2v-1"/></svg></div>
-            <h3>Logic model &amp; outcomes</h3>
-            <p>Turn your program into the logic model, measurable objectives, and evaluation plan funders ask for, as a diagram and narrative.</p>
-          </div>
-        </div>
-      </div>
 
-      <!-- STAGE 3: submit & sustain -->
-      <div class="feat-stage reveal">
-        <div class="feat-stage-head">
-          <span class="feat-stage-num">03</span>
-          <span class="feat-stage-title">Submit &amp; sustain</span>
-          <span class="feat-stage-line"></span>
-        </div>
-        <div class="feat-grid reveal-group">
-          <div class="feat-card"><span class="fc-corner"></span>
-            <div class="feat-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-            <h3>Compliance &amp; format check</h3>
-            <p>Page limits, fonts, margins, file naming, and required attachments verified against the RFP, so you're never administratively disqualified.</p>
+          <!-- 2 Eligibility checks -->
+          <div class="fcar-panel" data-i="1">
+            <div class="fd-frame">
+              <div class="fd-bar"><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-live"><i></i>Screening</span></div>
+              <div class="fd-body fd-check">
+                <div class="fdc-row"><span class="fdc-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 6"/></svg></span><span class="fdc-label">501(c)(3) status</span><span class="fdc-pill">Confirmed</span></div>
+                <div class="fdc-row"><span class="fdc-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 6"/></svg></span><span class="fdc-label">Allowable costs</span><span class="fdc-pill">Confirmed</span></div>
+                <div class="fdc-row"><span class="fdc-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 6"/></svg></span><span class="fdc-label">Applicant restrictions</span><span class="fdc-pill">Confirmed</span></div>
+                <div class="fdc-row"><span class="fdc-tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 6"/></svg></span><span class="fdc-label">Match requirement</span><span class="fdc-pill">Confirmed</span></div>
+              </div>
+            </div>
+            <div class="fcar-cap">
+              <div class="fcar-eyebrow">01 · Get qualified</div>
+              <h3>Eligibility checks</h3>
+              <p class="fcar-desc">501(c)(3) status, allowable costs, and applicant restrictions confirmed against the RFP before you write a single word.</p>
+            </div>
           </div>
-          <div class="feat-card"><span class="fc-corner"></span>
-            <div class="feat-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
-            <h3>Deadline tracking</h3>
-            <p>Reminders at 30, 14, and 7 days for proposals, LOIs, and reports, synced straight to your calendar so nothing slips.</p>
+
+          <!-- 3 SAM.gov setup -->
+          <div class="fcar-panel" data-i="2">
+            <div class="fd-frame">
+              <div class="fd-bar"><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-live"><i></i>Validating</span></div>
+              <div class="fd-body fd-sam">
+                <div class="fds-field"><label>UEI</label><div class="fds-val">ABC123DEF456 <i>&check;</i></div></div>
+                <div class="fds-field"><label>TIN / EIN</label><div class="fds-val">47-1234567 <i>&check;</i></div></div>
+                <div class="fds-field"><label>Registered address</label><div class="fds-val">USPS-verified <i>&check;</i></div></div>
+                <div class="fds-badge">Avoids 4–6 week delays</div>
+              </div>
+            </div>
+            <div class="fcar-cap">
+              <div class="fcar-eyebrow">01 · Get qualified</div>
+              <h3>SAM.gov &amp; Grants.gov setup</h3>
+              <p class="fcar-desc">We pre-validate your UEI, TIN, and address against IRS and USPS records, the #1 cause of weeks-long rejections, and track annual renewals.</p>
+            </div>
           </div>
-          <div class="feat-card"><span class="fc-corner"></span>
-            <div class="feat-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
-            <h3>Reporting &amp; renewals</h3>
-            <p>Interim and final reports written from your outcome data. Funders get what they need and you keep the relationship for next year.</p>
+
+          <!-- 4 First draft -->
+          <div class="fcar-panel" data-i="3">
+            <div class="fd-frame">
+              <div class="fd-bar"><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-live"><i></i>Drafting</span></div>
+              <div class="fd-body fd-draft">
+                <div class="fdd-head"><b>Project Narrative</b><span class="fdd-timer">4 min</span></div>
+                <div class="fdd-lines">
+                  <i class="fdd-h" style="--w:62%; animation-delay:.2s"></i>
+                  <i style="--w:100%; animation-delay:.4s"></i>
+                  <i style="--w:96%; animation-delay:.55s"></i>
+                  <i style="--w:99%; animation-delay:.7s"></i>
+                  <i style="--w:72%; animation-delay:.85s"></i>
+                  <i class="fdd-gap"></i>
+                  <i style="--w:100%; animation-delay:1.05s"></i>
+                  <i style="--w:94%; animation-delay:1.2s"></i>
+                  <i style="--w:58%; animation-delay:1.35s"></i>
+                </div>
+              </div>
+            </div>
+            <div class="fcar-cap">
+              <div class="fcar-eyebrow">02 · Write the proposal</div>
+              <h3>Blank page to first draft</h3>
+              <p class="fcar-desc">A full narrative pulled from your profile and the funder's own RFP language. A grant writer needs 30–50 hours for the same thing.</p>
+            </div>
+          </div>
+
+          <!-- 5 Budget narrative -->
+          <div class="fcar-panel" data-i="4">
+            <div class="fd-frame">
+              <div class="fd-bar"><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-live"><i></i>Building</span></div>
+              <div class="fd-body fd-budget">
+                <div class="fdb-row fdb-h" style="animation-delay:.15s"><span>Line item</span><span>Amount</span></div>
+                <div class="fdb-row" style="animation-delay:.3s"><span>Personnel</span><b>$148,000</b></div>
+                <div class="fdb-row" style="animation-delay:.42s"><span>Fringe benefits</span><b>$37,000</b></div>
+                <div class="fdb-row" style="animation-delay:.54s"><span>Travel</span><b>$6,200</b></div>
+                <div class="fdb-row" style="animation-delay:.66s"><span>Supplies</span><b>$9,800</b></div>
+                <div class="fdb-row fdb-total" style="animation-delay:.82s"><span>Total request</span><b>$201,000</b></div>
+                <div class="fdb-note" style="animation-delay:1s">Narrative justification matched to every line item</div>
+              </div>
+            </div>
+            <div class="fcar-cap">
+              <div class="fcar-eyebrow">02 · Write the proposal</div>
+              <h3>Budget &amp; budget narrative</h3>
+              <p class="fcar-desc">Build the budget once and Grange AI writes a justification that matches every line item, the alignment reviewers reject proposals over.</p>
+            </div>
+          </div>
+
+          <!-- 6 Logic model -->
+          <div class="fcar-panel" data-i="5">
+            <div class="fd-frame">
+              <div class="fd-bar"><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-live"><i></i>Mapping</span></div>
+              <div class="fd-body fd-logic">
+                <div class="fdl-node" style="animation-delay:.2s"><b>Inputs</b><small>Staff · $201K · partners</small></div>
+                <span class="fdl-link" style="animation-delay:.45s"></span>
+                <div class="fdl-node" style="animation-delay:.55s"><b>Activities</b><small>Programs delivered</small></div>
+                <span class="fdl-link" style="animation-delay:.8s"></span>
+                <div class="fdl-node" style="animation-delay:.9s"><b>Outputs</b><small>1,200 people served</small></div>
+                <span class="fdl-link" style="animation-delay:1.15s"></span>
+                <div class="fdl-node fdl-out" style="animation-delay:1.25s"><b>Outcomes</b><small>Measurable change</small></div>
+              </div>
+            </div>
+            <div class="fcar-cap">
+              <div class="fcar-eyebrow">02 · Write the proposal</div>
+              <h3>Logic model &amp; outcomes</h3>
+              <p class="fcar-desc">Turn your program into the logic model, measurable objectives, and evaluation plan funders ask for, as a diagram and narrative.</p>
+            </div>
+          </div>
+
+          <!-- 7 Format check -->
+          <div class="fcar-panel" data-i="6">
+            <div class="fd-frame">
+              <div class="fd-bar"><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-live"><i></i>Checking</span></div>
+              <div class="fd-body fd-format">
+                <div class="fdf-page">
+                  <span class="fdf-mtop"></span><span class="fdf-mbot"></span><span class="fdf-mleft"></span><span class="fdf-mright"></span>
+                  <div class="fdf-lines"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                  <div class="fdf-stamp">RFP compliant</div>
+                </div>
+                <div class="fdf-checks">
+                  <span style="animation-delay:.5s">15 / 15 pages</span>
+                  <span style="animation-delay:.65s">12pt Times</span>
+                  <span style="animation-delay:.8s">1&Prime; margins</span>
+                  <span style="animation-delay:.95s">4 / 4 attachments</span>
+                </div>
+              </div>
+            </div>
+            <div class="fcar-cap">
+              <div class="fcar-eyebrow">03 · Submit &amp; sustain</div>
+              <h3>Compliance &amp; format check</h3>
+              <p class="fcar-desc">Page limits, fonts, margins, file naming, and required attachments verified against the RFP, so you're never administratively disqualified.</p>
+            </div>
+          </div>
+
+          <!-- 8 Deadline tracking -->
+          <div class="fcar-panel" data-i="7">
+            <div class="fd-frame">
+              <div class="fd-bar"><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-live"><i></i>Tracking</span></div>
+              <div class="fd-body fd-cal">
+                <div class="fdcal-grid">
+                  <div class="fdcal-cell">1</div><div class="fdcal-cell">2</div><div class="fdcal-cell r" style="animation-delay:.3s">3</div><div class="fdcal-cell">4</div><div class="fdcal-cell">5</div><div class="fdcal-cell">6</div><div class="fdcal-cell">7</div>
+                  <div class="fdcal-cell">8</div><div class="fdcal-cell">9</div><div class="fdcal-cell">10</div><div class="fdcal-cell r" style="animation-delay:.5s">11</div><div class="fdcal-cell">12</div><div class="fdcal-cell">13</div><div class="fdcal-cell">14</div>
+                  <div class="fdcal-cell">15</div><div class="fdcal-cell">16</div><div class="fdcal-cell">17</div><div class="fdcal-cell r" style="animation-delay:.7s">18</div><div class="fdcal-cell">19</div><div class="fdcal-cell">20</div><div class="fdcal-cell due" style="animation-delay:.9s">21</div>
+                </div>
+                <div class="fdcal-pills">
+                  <span style="animation-delay:.3s">30-day notice</span>
+                  <span style="animation-delay:.5s">14-day notice</span>
+                  <span style="animation-delay:.7s">7-day notice</span>
+                  <span class="due" style="animation-delay:.9s">Due Mar 21</span>
+                </div>
+              </div>
+            </div>
+            <div class="fcar-cap">
+              <div class="fcar-eyebrow">03 · Submit &amp; sustain</div>
+              <h3>Deadline tracking</h3>
+              <p class="fcar-desc">Reminders at 30, 14, and 7 days for proposals, LOIs, and reports, synced straight to your calendar so nothing slips.</p>
+            </div>
+          </div>
+
+          <!-- 9 Reporting & renewals -->
+          <div class="fcar-panel" data-i="8">
+            <div class="fd-frame">
+              <div class="fd-bar"><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-dot"></span><span class="fd-live"><i></i>Reporting</span></div>
+              <div class="fd-body fd-report">
+                <div class="fdr-doc">
+                  <div class="fdr-head">Interim report</div>
+                  <div class="fdr-stat"><span>Outcomes met</span><b>8 / 9</b></div>
+                  <div class="fdr-bar"><i style="--w:89%; animation-delay:.3s"></i></div>
+                  <div class="fdr-stat"><span>Funds utilized</span><b>72%</b></div>
+                  <div class="fdr-bar"><i style="--w:72%; animation-delay:.55s"></i></div>
+                </div>
+                <div class="fdr-renew">
+                  <svg class="fdr-loop" viewBox="0 0 48 48"><circle cx="24" cy="24" r="19"/><path d="M24 2l6 6-6 6z"/></svg>
+                  <span>Renewal<br>queued</span>
+                </div>
+              </div>
+            </div>
+            <div class="fcar-cap">
+              <div class="fcar-eyebrow">03 · Submit &amp; sustain</div>
+              <h3>Reporting &amp; renewals</h3>
+              <p class="fcar-desc">Interim and final reports written from your outcome data. Funders get what they need and you keep the relationship for next year.</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+        </div>
   </section>
 
-  <!-- VOICES -->
+  <!-- VOICES v2 -->
   <section class="section" style="padding-top:0">
     <div class="wrap">
       <div class="section-head reveal">
         <h2>From people running<br>lean nonprofits.</h2>
+        <p>Grant writers charge $3,000–$15,000 a proposal. Here's what organizations do instead.</p>
       </div>
-      <div class="voices">
-        <figure class="voice lead reveal">
-          <blockquote class="vq">"Grange AI found a foundation we'd never heard of and drafted the whole application in an afternoon. We won it."</blockquote>
-          <figcaption class="vn">Maria Reyes</figcaption>
-        </figure>
-        <figure class="voice right reveal">
-          <blockquote class="vq">"Three grants in our first sixty days. It costs us less per month than one hour of a grant writer."</blockquote>
-          <figcaption class="vn">James Thornton</figcaption>
-        </figure>
-        <figure class="voice reveal">
-          <blockquote class="vq">"I stopped giving up my Sundays to the 990 binder."</blockquote>
-          <figcaption class="vn">Amara Nwosu</figcaption>
-        </figure>
+
+      <div class="tc-outer reveal" id="tc-outer" aria-label="Testimonials">
+
+        <!-- Column 1 — speed 15s -->
+        <div class="tc-col">
+          <div class="tc-track" style="--dur:15s">
+            <!-- real items -->
+            <div class="tc-card"><p class="tc-q">"Grange AI found a foundation we'd never heard of and drafted the whole application in an afternoon. We won it."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&q=80" alt="Maria Reyes"><div><div class="tc-name">Maria Reyes</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"Three grants in our first sixty days. It costs less per month than one hour of a professional grant writer."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&q=80" alt="James Thornton"><div><div class="tc-name">James Thornton</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"I stopped giving up my Sundays to the 990 binder. Grange AI handles the compliance prep I used to dread."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&q=80" alt="Amara Nwosu"><div><div class="tc-name">Amara Nwosu</div></div></div></div>
+            <!-- duplicates for seamless loop -->
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Grange AI found a foundation we'd never heard of and drafted the whole application in an afternoon. We won it."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&q=80" alt="Maria Reyes"><div><div class="tc-name">Maria Reyes</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Three grants in our first sixty days. It costs less per month than one hour of a professional grant writer."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&q=80" alt="James Thornton"><div><div class="tc-name">James Thornton</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"I stopped giving up my Sundays to the 990 binder. Grange AI handles the compliance prep I used to dread."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&q=80" alt="Amara Nwosu"><div><div class="tc-name">Amara Nwosu</div></div></div></div>
+          </div>
+        </div>
+
+        <!-- Column 2 — speed 19s, offset start -->
+        <div class="tc-col">
+          <div class="tc-track" style="--dur:19s; transform:translateY(-16%)">
+            <div class="tc-card"><p class="tc-q">"We applied to 11 grants last quarter. Before Grange AI we could barely manage two. Our funding doubled."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&h=80&fit=crop&q=80" alt="Priya Sharma"><div><div class="tc-name">Priya Sharma</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"The SAM.gov validation alone saved us from a rejection that would have cost six weeks. That feature pays for itself."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&q=80" alt="Derek Walsh"><div><div class="tc-name">Derek Walsh</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"Our board asked why we suddenly had so much capacity. The answer was Grange AI doing the proposal writing."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&q=80" alt="Keisha Monroe"><div><div class="tc-name">Keisha Monroe</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"We applied to 11 grants last quarter. Before Grange AI we could barely manage two. Our funding doubled."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&h=80&fit=crop&q=80" alt="Priya Sharma"><div><div class="tc-name">Priya Sharma</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"The SAM.gov validation alone saved us from a rejection that would have cost six weeks. That feature pays for itself."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&q=80" alt="Derek Walsh"><div><div class="tc-name">Derek Walsh</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Our board asked why we suddenly had so much capacity. The answer was Grange AI doing the proposal writing."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&q=80" alt="Keisha Monroe"><div><div class="tc-name">Keisha Monroe</div></div></div></div>
+          </div>
+        </div>
+
+        <!-- Column 3 — speed 17s, offset start -->
+        <div class="tc-col">
+          <div class="tc-track" style="--dur:17s; transform:translateY(-30%)">
+            <div class="tc-card"><p class="tc-q">"The logic model diagram it generates is better than anything I was producing manually. Funders notice."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&q=80" alt="Carlos Ibáñez"><div><div class="tc-name">Carlos Ibáñez</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"First federal grant we'd ever submitted. Grange AI walked us through SAM registration and wrote the full narrative. We got funded."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&q=80" alt="Ngozi Adeyemi"><div><div class="tc-name">Ngozi Adeyemi</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"Deadline reminders synced to my calendar and a draft ready two weeks before due. I've never submitted anything late since."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop&q=80" alt="Thomas Reid"><div><div class="tc-name">Thomas Reid</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"The logic model diagram it generates is better than anything I was producing manually. Funders notice."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&q=80" alt="Carlos Ibáñez"><div><div class="tc-name">Carlos Ibáñez</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"First federal grant we'd ever submitted. Grange AI walked us through SAM registration and wrote the full narrative. We got funded."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&q=80" alt="Ngozi Adeyemi"><div><div class="tc-name">Ngozi Adeyemi</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Deadline reminders synced to my calendar and a draft ready two weeks before due. I've never submitted anything late since."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop&q=80" alt="Thomas Reid"><div><div class="tc-name">Thomas Reid</div></div></div></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
-
   <!-- PRICING -->
   <section class="section" id="pricing" style="padding-top:0">
     <div class="wrap">
@@ -3121,6 +3468,50 @@ function handleGoogleCredential(response) {
   });
   document.querySelectorAll('.screen').forEach(s =>
     screenObs.observe(s, { attributes: true, attributeFilter: ['class'] }));
+})();
+
+/* ─── FEATURE CAROUSEL (auto-cycling chip rail + animated demos) ─── */
+(function(){
+  const car = document.getElementById('fcar');
+  if (!car) return;
+  const chips  = [...car.querySelectorAll('.fcar-chip')];
+  const panels = [...car.querySelectorAll('.fcar-panel')];
+  const N = chips.length;
+  const ITEM = 60;           // vertical spacing between chips (px)
+  const DWELL = 4600;        // autoplay interval (ms)
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let idx = 0, paused = false, timer = null;
+
+  function layout(){
+    chips.forEach((chip, i) => {
+      let d = i - idx;
+      if (d >  N/2) d -= N;   // wrap to shortest path
+      if (d < -N/2) d += N;
+      chip.style.transform = 'translateY(' + (d * ITEM) + 'px)';
+      chip.style.opacity   = Math.max(0, 1 - Math.abs(d) * 0.26);
+      chip.style.zIndex    = (i === idx) ? 5 : 1;
+      chip.style.pointerEvents = (Math.abs(d) > 3) ? 'none' : 'auto';
+      chip.classList.toggle('active', i === idx);
+    });
+    panels.forEach((p, i) => p.classList.toggle('active', i === idx));
+  }
+  function go(i){ idx = ((i % N) + N) % N; layout(); }
+  function next(){ go(idx + 1); }
+  function stop(){ if (timer){ clearInterval(timer); timer = null; } }
+  function start(){ if (reduce || timer) return; timer = setInterval(() => { if (!paused) next(); }, DWELL); }
+
+  chips.forEach((chip, i) => chip.addEventListener('click', () => go(i)));
+  car.addEventListener('mouseenter', () => { paused = true; });
+  car.addEventListener('mouseleave', () => { paused = false; });
+
+  layout();
+
+  if ('IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => e.isIntersecting ? start() : stop());
+    }, { threshold: 0.3 });
+    io.observe(car);
+  } else { start(); }
 })();
 
 /* ─── TUBELIGHT NAVBAR ──────────────────────────────────── */
