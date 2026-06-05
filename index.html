@@ -341,8 +341,9 @@ label.field-label {
 .fcar-stage { position:relative; background:var(--surface-2); }
 .fcar-panel { position:absolute; inset:38px; display:flex; flex-direction:column; gap:22px;
   opacity:0; transform:translateY(14px) scale(0.99); pointer-events:none;
-  transition:opacity 520ms var(--ease), transform 520ms var(--ease); }
-.fcar-panel.active { opacity:1; transform:none; pointer-events:auto; }
+  transition:opacity 480ms var(--ease), transform 480ms var(--ease); }
+.fcar-panel.active { opacity:1; transform:none; pointer-events:auto;
+  transition:opacity 520ms 100ms var(--ease), transform 520ms 100ms var(--ease); }
 .fcar-cap { flex-shrink:0; }
 .fcar-eyebrow { font-size:11.5px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
   color:var(--accent); margin-bottom:9px; }
@@ -530,11 +531,14 @@ label.field-label {
   .fcar { grid-template-columns:1fr; min-height:0; }
   .fcar-rail { min-height:240px; }
   .fcar-chip { left:24px; }
-  .fcar-stage { min-height:460px; }
-  .fcar-panel { inset:24px; }
+  .fcar-stage { min-height:480px; }
+  .fcar-panel { inset:24px; gap:14px; }
 }
 @media (max-width:520px) {
+  .fcar-stage { min-height:520px; }
+  .fcar-panel { inset:18px; gap:10px; }
   .fcar-panel h3 { font-size:20px; }
+  .fd-body { padding:14px; }
   .fd-match, .fd-report { flex-direction:column; }
 }
 
@@ -4666,7 +4670,7 @@ async function signInWithGoogle() {
 /* ─── SCROLL HERO tilt animation (hero at page top) ─────── */
 (function(){
   const reduce  = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const mobile  = window.innerWidth <= 768;
+  const mobile  = window.innerWidth < 640;
   const section = document.getElementById('scroll-hero-section');
   const card    = document.getElementById('scroll-hero-card');
   const title   = section && section.querySelector('.scroll-hero-title');
