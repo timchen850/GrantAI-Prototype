@@ -2625,8 +2625,8 @@ label.field-label {
 <div id="demo" class="screen">
 
   <nav class="dp-nav">
-    <a class="brand" href="#" onclick="go('landing')"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
-    <button class="dp-back" onclick="go('landing')">
+    <a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+    <button class="dp-back" onclick="goHome()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
       Back
     </button>
@@ -3276,7 +3276,7 @@ const SCREENS = ['landing','login','signin','demo','dashboard','discovery','gene
 function go(id) {
   SCREENS.forEach(s => document.getElementById(s)?.classList.remove('active'));
   const t = document.getElementById(id);
-  if (t) { t.classList.add('active'); window.scrollTo(0,0); }
+  if (t) { t.classList.add('active'); requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0,0))); }
   if (id === 'landing') requestAnimationFrame(() => window._tlActivateHome?.());
   if (id === 'signin')  requestAnimationFrame(() => window._siInit?.());
   if (id === 'demo')    requestAnimationFrame(() => window._dpReset?.());
