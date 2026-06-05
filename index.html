@@ -3517,7 +3517,10 @@ function handleGoogleCredential(response) {
   function stop(){ if (timer){ clearInterval(timer); timer = null; } }
   function start(){ if (reduce || timer) return; timer = setInterval(() => { if (!paused) next(); }, DWELL); }
 
-  chips.forEach((chip, i) => chip.addEventListener('click', e => { e.preventDefault(); chip.blur(); go(i); }));
+  chips.forEach((chip, i) => {
+    chip.addEventListener("mousedown", e => e.preventDefault()); // block focus-assign → no scroll
+    chip.addEventListener("click", e => { e.preventDefault(); go(i); });
+  });
   car.addEventListener('mouseenter', () => { paused = true; });
   car.addEventListener('mouseleave', () => { paused = false; });
 
