@@ -1902,6 +1902,148 @@ label.field-label {
 .si-terms a:hover { color: var(--accent); }
 @keyframes siPop    { from { transform:scale(0.65); opacity:0 } to { transform:scale(1); opacity:1 } }
 @keyframes siFadeUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE PASS  —  ALL RULES BELOW ARE max-width gated.
+   Nothing here affects the desktop (>768px) layout.
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── 1. Deadline-card deck → clean vertical stack ──────────
+     On desktop these cards are a skewed, translated hover-fan.
+     On a phone the 5th card was translated out to ~564px,
+     ballooning the layout viewport to 566px and zooming the
+     WHOLE site out. Flatten them into a readable list. */
+  .dc-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: auto !important;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden;
+    place-items: stretch;
+  }
+  .dc {
+    grid-area: auto;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-height: 0;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    box-shadow: 0 8px 24px -18px rgba(26,25,22,0.30);
+    padding: 14px 16px;
+    gap: 6px;
+  }
+  .dc::before, .dc::after { display: none !important; }
+  .dc-desc { white-space: normal; overflow: visible; }
+
+  /* ── 2. Gooey headline: drop the broken SVG goo filter ─────
+     #goo-threshold renders as torn strokes on mobile WebKit.
+     Removing it leaves a clean blur-crossfade of the words. */
+  .gooey-inner { filter: none !important; }
+
+}
+
+@media (max-width: 640px) {
+  /* ── 3. Hero demo mockup: kill the collapsed sidebar that
+     overlapped the content ("Grange AI" over "12 matches"). */
+  .demo-wrap { grid-template-columns: 1fr !important; }
+  .demo-sb   { display: none !important; }
+}
+
+/* ── 4. Mobile hamburger nav ───────────────────────────────
+   Base state: every piece hidden so DESKTOP is never affected. */
+.m-burger, .m-appbar, .m-nav { display: none; }
+.m-burger {
+  width: 42px; height: 42px; border-radius: 12px;
+  flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  background: transparent; flex-shrink: 0;
+}
+.m-burger span {
+  display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--ink);
+  transition: transform .25s var(--ease), opacity .2s var(--ease);
+}
+.m-burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.m-burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.m-burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.m-appbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 90;
+  align-items: center; justify-content: space-between; padding: 0 16px;
+  background: rgba(245,244,241,0.9);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.m-appbar .brand { font-size: 18px; }
+.m-nav { position: fixed; inset: 0; z-index: var(--z-modal); }
+.m-nav-scrim { position: absolute; inset: 0; background: rgba(26,25,22,0.45);
+  opacity: 0; transition: opacity .3s var(--ease); }
+.m-nav-panel {
+  position: absolute; top: 0; right: 0; height: 100%; width: min(82vw, 330px);
+  background: var(--surface); box-shadow: -20px 0 50px -20px rgba(26,25,22,0.45);
+  display: flex; flex-direction: column; padding: 16px 18px;
+  transform: translateX(100%); transition: transform .34s var(--ease-expo);
+}
+.m-nav.open { display: block; }
+.m-nav.open .m-nav-scrim { opacity: 1; }
+.m-nav.open .m-nav-panel { transform: none; }
+.m-nav-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.m-nav-x { width: 40px; height: 40px; display: grid; place-items: center; color: var(--muted); border-radius: 10px; }
+.m-nav-links { display: flex; flex-direction: column; gap: 2px; }
+.m-nav-links a {
+  display: flex; align-items: center; min-height: 48px; padding: 11px 12px;
+  border-radius: 10px; font-size: 16px; font-weight: 600; color: var(--ink-soft);
+}
+.m-nav-links a.on { background: var(--accent-tint); color: var(--accent-ink); }
+.m-nav-links a:active { background: var(--surface-2); }
+.m-nav-div { height: 1px; background: var(--line); margin: 12px 4px; }
+.m-nav-links a.m-nav-cta { background: var(--accent); color: #fff; justify-content: center; margin-top: 6px; }
+
+@media (max-width: 768px) {
+  /* landing nav → brand + hamburger only (links live in the drawer) */
+  .nav .m-burger { display: flex; }
+  .nav .tl-wrap  { display: none; }
+  .nav-right     { display: none; }
+  /* app screens get a fixed top bar with the hamburger */
+  body[data-screen="dashboard"] .m-appbar,
+  body[data-screen="discovery"] .m-appbar,
+  body[data-screen="generator"] .m-appbar,
+  body[data-screen="profile"]  .m-appbar { display: flex; }
+  .m-appbar .m-burger { display: flex; }
+  /* reserve room below the fixed app bar */
+  body[data-screen="dashboard"] .app-main,
+  body[data-screen="discovery"] .app-main,
+  body[data-screen="generator"] .app-main,
+  body[data-screen="profile"]  .app-main { padding-top: 74px; }
+}
+
+/* ── 5. Legal / contact pages: stack the two-column layout ── */
+@media (max-width: 768px) {
+  .legal-doc { display: block !important; gap: 0 !important;
+    padding-top: 36px !important; padding-bottom: 80px !important; }
+  .legal-toc { display: none !important; }      /* sticky "on this page" jump-list is noise on a phone */
+  .legal-doc > div[style*="flex:1"] { min-width: 0 !important; }
+}
+
+/* ── 6. Touch tap targets: comfortable minimum on phones ──── */
+@media (max-width: 768px) {
+  .btn { min-height: 44px; }
+}
+
+/* ── 7. Generator step rail: wrap instead of overflowing ──── */
+@media (max-width: 560px) {
+  .steps { flex-wrap: wrap; }
+  .steps .stp { flex: 1 1 calc(50% - 4px); }
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 </head>
@@ -1946,6 +2088,7 @@ label.field-label {
         <button class="btn btn-ghost" onclick="go('signin')">Sign in</button>
         <button class="btn btn-primary btn-sm" onclick="go('login')">Start free</button>
       </div>
+      <button class="m-burger" aria-label="Open menu" aria-expanded="false" onclick="mNavToggle()"><span></span><span></span><span></span></button>
     </div>
   </header>
 
@@ -2600,9 +2743,9 @@ label.field-label {
   </div>
 
   <!-- two-col layout: toc + content -->
-  <div class="wrap" style="max-width:1100px;padding-top:72px;padding-bottom:140px;display:flex;gap:80px;align-items:flex-start;">
+  <div class="wrap legal-doc" style="max-width:1100px;padding-top:72px;padding-bottom:140px;display:flex;gap:80px;align-items:flex-start;">
     <!-- sticky toc -->
-    <nav style="width:220px;flex-shrink:0;position:sticky;top:100px;display:flex;flex-direction:column;gap:4px;">
+    <nav class="legal-toc" style="width:220px;flex-shrink:0;position:sticky;top:100px;display:flex;flex-direction:column;gap:4px;">
       <p style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">On this page</p>
       <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Information We Collect</a>
       <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">How We Use It</a>
@@ -2777,8 +2920,8 @@ label.field-label {
     </div>
   </div>
 
-  <div class="wrap" style="max-width:1100px;padding-top:72px;padding-bottom:140px;display:flex;gap:80px;align-items:flex-start;">
-    <nav style="width:220px;flex-shrink:0;position:sticky;top:100px;display:flex;flex-direction:column;gap:4px;">
+  <div class="wrap legal-doc" style="max-width:1100px;padding-top:72px;padding-bottom:140px;display:flex;gap:80px;align-items:flex-start;">
+    <nav class="legal-toc" style="width:220px;flex-shrink:0;position:sticky;top:100px;display:flex;flex-direction:column;gap:4px;">
       <p style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">On this page</p>
       <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Acceptance</a>
       <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Accounts</a>
@@ -3148,7 +3291,7 @@ label.field-label {
     </div>
   </div>
 
-  <div class="wrap" style="max-width:1100px;padding-top:72px;padding-bottom:140px;display:flex;gap:80px;align-items:flex-start;flex-wrap:wrap;">
+  <div class="wrap legal-doc" style="max-width:1100px;padding-top:72px;padding-bottom:140px;display:flex;gap:80px;align-items:flex-start;flex-wrap:wrap;">
 
     <!-- left: form -->
     <div style="flex:1;min-width:320px;">
@@ -3917,6 +4060,24 @@ label.field-label {
   <span id="toast-text"></span>
 </div>
 
+<!-- ═══════════ MOBILE NAV (phones only; hidden ≥769px via CSS) ═══════════ -->
+<!-- app-screen top bar: brand + hamburger -->
+<header class="m-appbar">
+  <a class="brand" href="#" onclick="go('landing');return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+  <button class="m-burger" aria-label="Open menu" aria-expanded="false" onclick="mNavToggle()"><span></span><span></span><span></span></button>
+</header>
+<!-- slide-in drawer (shared by marketing + app contexts) -->
+<div class="m-nav" id="m-nav" aria-hidden="true">
+  <div class="m-nav-scrim" onclick="mNavClose()"></div>
+  <aside class="m-nav-panel" role="dialog" aria-label="Menu" aria-modal="true">
+    <div class="m-nav-head">
+      <a class="brand" href="#" onclick="mNavClose();goHome();return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+      <button class="m-nav-x" aria-label="Close menu" onclick="mNavClose()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <nav class="m-nav-links" id="m-nav-links"></nav>
+  </aside>
+</div>
+
 <script>
 /* ─── sidebar template ──────────────────────────────────── */
 const SIDE = (active) => `
@@ -3940,9 +4101,62 @@ const SIDE = (active) => `
   if (el) el.innerHTML = SIDE(s);
 });
 
+/* initial screen state for the mobile hamburger nav */
+window._currentScreen = 'landing';
+document.body.dataset.screen = 'landing';
+
 /* ─── navigation ────────────────────────────────────────── */
 const SCREENS = ['landing','login','signin','demo','dashboard','discovery','generator','profile','privacy','terms','security','contact'];
+
+/* ─── mobile hamburger drawer (phones only) ─────────────── */
+function mNavMarkup() {
+  const s = window._currentScreen || 'landing';
+  const app = ['dashboard','discovery','generator','profile'];
+  if (app.indexOf(s) >= 0) {
+    return `
+      <a href="#" onclick="mNavGo('dashboard');return false;" class="${s==='dashboard'?'on':''}">Dashboard</a>
+      <a href="#" onclick="mNavGo('discovery');return false;" class="${s==='discovery'?'on':''}">Grant discovery</a>
+      <a href="#" onclick="mNavGo('generator');return false;" class="${s==='generator'?'on':''}">Proposal generator</a>
+      <a href="#" onclick="mNavGo('profile');return false;" class="${s==='profile'?'on':''}">Org profile</a>
+      <div class="m-nav-div"></div>
+      <a href="#" onclick="mNavGo('landing');return false;">Back to site</a>
+      <a href="#" onclick="mNavGo('landing');return false;">Sign out</a>`;
+  }
+  return `
+    <a href="#" onclick="mNavClose();goHome();return false;">Home</a>
+    <a href="#how" onclick="mNavClose()">How it works</a>
+    <a href="#features" onclick="mNavClose()">Features</a>
+    <a href="#pricing" onclick="mNavClose()">Pricing</a>
+    <a href="#" onclick="mNavGo('demo');return false;">Demo</a>
+    <div class="m-nav-div"></div>
+    <a href="#" onclick="mNavGo('signin');return false;">Sign in</a>
+    <a href="#" class="m-nav-cta" onclick="mNavGo('login');return false;">Start free</a>`;
+}
+function mNavToggle() {
+  const n = document.getElementById('m-nav');
+  if (n.classList.contains('open')) { mNavClose(); return; }
+  document.getElementById('m-nav-links').innerHTML = mNavMarkup();
+  n.classList.add('open');
+  n.setAttribute('aria-hidden', 'false');
+  document.querySelectorAll('.m-burger').forEach(b => b.setAttribute('aria-expanded', 'true'));
+  document.body.style.overflow = 'hidden';
+}
+function mNavClose() {
+  const n = document.getElementById('m-nav');
+  if (!n) return;
+  n.classList.remove('open');
+  n.setAttribute('aria-hidden', 'true');
+  document.querySelectorAll('.m-burger').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  if ((window._currentScreen || '') !== 'demo') document.body.style.overflow = '';
+}
+function mNavGo(id) { mNavClose(); go(id); }
 function go(id) {
+  // track active screen (drives the mobile hamburger nav visibility)
+  window._currentScreen = id;
+  document.body.dataset.screen = id;
+  // close the mobile drawer whenever we navigate
+  document.getElementById('m-nav')?.classList.remove('open');
+  document.querySelectorAll('.m-burger').forEach(b => b.setAttribute('aria-expanded', 'false'));
   // lock body scroll when entering demo (position:fixed screen), unlock when leaving
   if (id === 'demo') {
     document.body.style.overflow = 'hidden';
