@@ -2583,163 +2583,667 @@ label.field-label {
 
 <!-- ════════════════════════ PRIVACY ════════════════════════ -->
 <div id="privacy" class="screen">
-  <div class="wrap" style="max-width:760px;padding-top:80px;padding-bottom:120px;">
-    <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:48px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back to home
-    </button>
-    <h1 style="font-size:clamp(28px,5vw,42px);font-weight:700;line-height:1.15;margin-bottom:12px;">Privacy Policy</h1>
-    <p style="font-size:14px;color:var(--muted);margin-bottom:56px;">Last updated June 5, 2025</p>
+  <!-- page hero -->
+  <div style="background:var(--surface-2);border-bottom:1px solid var(--line);padding:72px 0 64px;">
+    <div class="wrap" style="max-width:860px;">
+      <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:32px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to home</button>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Legal</div>
+      <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">Privacy Policy</h1>
+      <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:600px;margin-bottom:28px;">We believe privacy is a right, not a feature. This policy explains exactly what data we collect, why we collect it, and how you can control it.</p>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;">
+        <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Last updated June 5, 2025</span>
+        <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L2 4v4.5c0 3.5 2.5 6 6 7 3.5-1 6-3.5 6-7V4L8 1.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Effective immediately upon posting</span>
+      </div>
+    </div>
+  </div>
 
-    <div style="display:flex;flex-direction:column;gap:40px;font-size:15.5px;line-height:1.75;color:var(--ink-soft);">
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">1. Information We Collect</h2>
-        <p>We collect information you provide directly — such as your organization name, email address, and the grant-related content you upload or generate through Grange AI. We also collect standard usage data (pages visited, features used, session duration) to improve the product.</p>
+  <!-- two-col layout: toc + content -->
+  <div class="wrap" style="max-width:1100px;padding-top:72px;padding-bottom:140px;display:flex;gap:80px;align-items:flex-start;">
+    <!-- sticky toc -->
+    <nav style="width:220px;flex-shrink:0;position:sticky;top:100px;display:flex;flex-direction:column;gap:4px;">
+      <p style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">On this page</p>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Information We Collect</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">How We Use It</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Sharing &amp; Disclosure</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Data Retention</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Cookies &amp; Tracking</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Your Rights &amp; Choices</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Security</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Children's Privacy</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">International Transfers</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Changes to Policy</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Contact Us</a>
+    </nav>
+
+    <!-- content -->
+    <div style="flex:1;min-width:0;font-size:16px;line-height:1.8;color:var(--ink-soft);display:flex;flex-direction:column;gap:0;">
+
+      <div style="background:var(--accent-tint);border-left:3px solid var(--accent);padding:18px 20px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin-bottom:52px;">
+        <p style="font-size:14.5px;color:var(--accent-ink);line-height:1.65;margin:0;"><strong>Plain-language summary:</strong> We collect only what we need to run Grange AI. We never sell your data. You can delete your account and all associated data at any time. If you have questions, email <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);font-weight:600;">executivegrangeai@gmail.com</a>.</p>
+      </div>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">1. Information We Collect</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:8px;margin-top:24px;">Information you provide directly</h3>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+          <li><strong>Account information:</strong> When you create an account we collect your name, email address, password (hashed, never stored in plain text), and your organization name.</li>
+          <li><strong>Organization profile:</strong> To personalize grant discovery, you may provide your nonprofit's mission statement, program areas, geographic focus, annual budget, EIN, and prior grant history.</li>
+          <li><strong>Uploaded documents:</strong> If you upload IRS Form 990s, program summaries, or prior grant applications, we store those files to power your profile and proposal drafts.</li>
+          <li><strong>Grant content:</strong> Proposals you draft, edit, save, or submit through Grange AI are stored so you can access and revise them later.</li>
+          <li><strong>Communications:</strong> If you contact us for support or send feedback, we retain those messages to respond and improve the product.</li>
+          <li><strong>Payment information:</strong> Billing is handled by our payment processor (Stripe). We never see or store your full card number. We receive only a billing token and basic billing address for our records.</li>
+        </ul>
+        <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:8px;margin-top:24px;">Information collected automatically</h3>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:8px;">
+          <li><strong>Usage data:</strong> Pages visited, features used, buttons clicked, time on page, and search queries within the app. We use this to understand what's working and what to improve.</li>
+          <li><strong>Device &amp; browser:</strong> Browser type and version, operating system, screen resolution, and time zone. We do not fingerprint your device.</li>
+          <li><strong>Log data:</strong> IP address, request timestamps, HTTP status codes, and referrer URLs. Logs are retained for 90 days for security and debugging purposes.</li>
+          <li><strong>Cookies &amp; session tokens:</strong> We use a session cookie to keep you logged in and a CSRF token to protect form submissions. See Section 5 for full cookie details.</li>
+        </ul>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">2. How We Use Your Information</h2>
-        <p>Your data is used solely to operate and improve Grange AI. We use your organization profile and grant history to personalize grant discovery and proposal drafts. We do not sell your data to third parties, ever.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">2. How We Use Your Information</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:16px;">We use your data only for the following purposes:</p>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
+          <li><strong>To operate the service:</strong> Your organization profile, uploaded documents, and grant history power the discovery engine and AI proposal drafts. Without this data, Grange AI cannot function.</li>
+          <li><strong>To personalize your experience:</strong> We use your mission, program areas, and location to surface grants that match your organization — not a generic list.</li>
+          <li><strong>To improve the product:</strong> Aggregated, de-identified usage data helps us understand which features are valuable and where users get stuck.</li>
+          <li><strong>To communicate with you:</strong> We send transactional emails (password resets, billing receipts, account notices). With your permission, we may send product updates. You can opt out of marketing emails at any time.</li>
+          <li><strong>To process payments:</strong> We pass billing information to Stripe to charge your subscription. We do not use it for any other purpose.</li>
+          <li><strong>To ensure security:</strong> Log data and usage patterns help us detect fraud, abuse, and unauthorized access.</li>
+          <li><strong>To comply with law:</strong> We may process your data to comply with applicable legal obligations, such as responding to lawful requests from public authorities.</li>
+        </ul>
+        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:18px 20px;margin-top:24px;">
+          <p style="font-size:14px;color:var(--ink-soft);margin:0;"><strong style="color:var(--ink);">We will never:</strong> sell your data to advertisers, share your grant content with other organizations, use your proposals to train AI models without your explicit consent, or use your data in ways not described in this policy.</p>
+        </div>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">3. Data Storage &amp; Security</h2>
-        <p>All data is encrypted in transit (TLS 1.3) and at rest (AES-256). We store data on infrastructure located in the United States. Access controls limit which team members can view customer data, and all access is logged.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">3. Sharing &amp; Disclosure</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:16px;">We do not sell, rent, or share your personal information with third parties for their own marketing purposes. We share data only in these limited circumstances:</p>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
+          <li><strong>Service providers:</strong> We work with a small number of trusted vendors (cloud hosting, payment processing, transactional email) who process data on our behalf. All vendors are bound by data processing agreements that prohibit them from using your data for any purpose other than providing services to us.</li>
+          <li><strong>Legal requirements:</strong> We may disclose data if required by law, court order, or valid legal process. Where permitted, we will notify you before complying.</li>
+          <li><strong>Safety:</strong> We may disclose information if we believe in good faith that disclosure is necessary to protect the rights, property, or safety of Grange AI, our users, or the public.</li>
+          <li><strong>Business transfers:</strong> If Grange AI is acquired or merges with another company, your data may transfer as part of that transaction. We will notify you via email and give you the opportunity to delete your account before data transfers to a new entity.</li>
+          <li><strong>With your consent:</strong> We may share information in any other way if you have given us explicit permission to do so.</li>
+        </ul>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">4. Cookies</h2>
-        <p>We use essential cookies to keep you logged in and remember your preferences. We do not use advertising or tracking cookies. You can clear cookies at any time through your browser settings.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">4. Data Retention</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:16px;">We retain your data for as long as your account is active. When you close your account:</p>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
+          <li>Your profile and all grant content are deleted within 30 days of account closure.</li>
+          <li>Billing records and transactional emails are retained for 7 years as required by financial regulations.</li>
+          <li>Server logs are deleted after 90 days on a rolling basis.</li>
+          <li>Anonymized, aggregated product analytics are retained indefinitely because they cannot be linked back to you.</li>
+        </ul>
+        <p style="margin-top:16px;">You may request earlier deletion of specific data by emailing <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);text-decoration:none;">executivegrangeai@gmail.com</a>. We will honor requests within 30 days except where retention is required by law.</p>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">5. Your Rights</h2>
-        <p>You may request a copy of your data, correction of inaccurate data, or deletion of your account and all associated data at any time by emailing <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);text-decoration:none;">executivegrangeai@gmail.com</a>. We will respond within 30 days.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">5. Cookies &amp; Tracking</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:20px;">We use a minimal set of cookies. We do not use third-party advertising or behavioral tracking cookies.</p>
+        <div style="border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;">
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <thead><tr style="background:var(--surface-2);"><th style="text-align:left;padding:12px 16px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);">Cookie</th><th style="text-align:left;padding:12px 16px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);">Purpose</th><th style="text-align:left;padding:12px 16px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);">Duration</th></tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--line);"><td style="padding:12px 16px;color:var(--ink);font-family:monospace;font-size:13px;">session_id</td><td style="padding:12px 16px;">Keeps you logged in across page loads</td><td style="padding:12px 16px;">Session</td></tr>
+              <tr style="border-bottom:1px solid var(--line);background:var(--surface-2);"><td style="padding:12px 16px;color:var(--ink);font-family:monospace;font-size:13px;">csrf_token</td><td style="padding:12px 16px;">Prevents cross-site request forgery</td><td style="padding:12px 16px;">Session</td></tr>
+              <tr><td style="padding:12px 16px;color:var(--ink);font-family:monospace;font-size:13px;">pref_*</td><td style="padding:12px 16px;">Stores UI preferences (theme, sidebar state)</td><td style="padding:12px 16px;">1 year</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:16px;font-size:14.5px;">You can delete cookies at any time through your browser settings. Note that deleting <code style="background:var(--surface-2);padding:2px 6px;border-radius:4px;font-size:13px;">session_id</code> will log you out.</p>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">6. Changes to This Policy</h2>
-        <p>We may update this policy as the product evolves. When we make material changes we will notify you by email and update the "Last updated" date above.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">6. Your Rights &amp; Choices</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:16px;">Regardless of where you are located, you have the following rights with respect to your data:</p>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
+          <li><strong>Access:</strong> You may request a copy of all personal data we hold about you and your organization.</li>
+          <li><strong>Correction:</strong> You may ask us to correct any inaccurate or incomplete data. You can update most information directly from your account settings.</li>
+          <li><strong>Deletion:</strong> You may request deletion of your account and all associated data. We will complete the deletion within 30 days.</li>
+          <li><strong>Portability:</strong> You may request a machine-readable export of your grant content and organization profile in JSON format.</li>
+          <li><strong>Restriction:</strong> You may ask us to restrict processing of your data while a correction or objection request is pending.</li>
+          <li><strong>Objection:</strong> You may object to processing of your data where we rely on legitimate interests as a legal basis.</li>
+          <li><strong>Marketing opt-out:</strong> Every marketing email includes an unsubscribe link. You can also email us to opt out of all non-transactional communications.</li>
+        </ul>
+        <p style="margin-top:16px;">To exercise any of these rights, email <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);text-decoration:none;">executivegrangeai@gmail.com</a>. We will respond within 30 days. We may ask you to verify your identity before processing the request.</p>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">7. Contact</h2>
-        <p>Questions about this policy? Email us at <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);text-decoration:none;">executivegrangeai@gmail.com</a>.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">7. Security</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p>We take the security of your data seriously. For full details on our technical and organizational security measures, see our <button onclick="go('security')" style="background:none;border:none;padding:0;color:var(--accent);font-size:inherit;font-family:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px;">Security page</button>. In summary: all data is encrypted in transit (TLS 1.3) and at rest (AES-256), access is restricted by role and requires MFA, and we conduct regular vulnerability assessments. No system is perfectly secure, but we work hard to protect yours. If we ever become aware of a breach that affects your data, we will notify you by email within 72 hours.</p>
       </section>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">8. Children's Privacy</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p>Grange AI is designed for nonprofit organizations and their staff. It is not directed at individuals under the age of 13, and we do not knowingly collect personal information from children. If you believe a child has provided us with personal information, please contact us immediately and we will delete it.</p>
+      </section>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">9. International Data Transfers</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p>Grange AI is operated from the United States. If you are located outside the United States, your data will be transferred to and processed in the United States. By using Grange AI, you consent to this transfer. Where required by applicable law, we implement appropriate safeguards such as standard contractual clauses.</p>
+      </section>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">10. Changes to This Policy</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p>We may update this Privacy Policy from time to time. When we make material changes — changes that significantly affect your rights or how we use your data — we will notify you by email at least 14 days before the changes take effect. For minor changes (grammar, formatting, clarifications that do not alter meaning), we will update the "Last updated" date without email notice. Continued use of Grange AI after changes take effect constitutes your acceptance of the updated policy.</p>
+      </section>
+
+      <section style="margin-bottom:0;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">11. Contact Us</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:20px;">If you have questions, concerns, or requests relating to this Privacy Policy or your personal data, please contact us:</p>
+        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:24px 28px;display:inline-block;">
+          <p style="font-weight:700;color:var(--ink);margin-bottom:4px;">Grange AI</p>
+          <p style="font-size:14.5px;margin-bottom:2px;">Privacy inquiries: <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);text-decoration:none;">executivegrangeai@gmail.com</a></p>
+          <p style="font-size:13px;color:var(--muted);margin-top:10px;">We respond to all privacy requests within 30 days.</p>
+        </div>
+      </section>
+
     </div>
   </div>
 </div>
 
 <!-- ════════════════════════ TERMS ════════════════════════ -->
 <div id="terms" class="screen">
-  <div class="wrap" style="max-width:760px;padding-top:80px;padding-bottom:120px;">
-    <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:48px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back to home
-    </button>
-    <h1 style="font-size:clamp(28px,5vw,42px);font-weight:700;line-height:1.15;margin-bottom:12px;">Terms of Service</h1>
-    <p style="font-size:14px;color:var(--muted);margin-bottom:56px;">Last updated June 5, 2025</p>
+  <!-- page hero -->
+  <div style="background:var(--surface-2);border-bottom:1px solid var(--line);padding:72px 0 64px;">
+    <div class="wrap" style="max-width:860px;">
+      <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:32px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to home</button>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Legal</div>
+      <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">Terms of Service</h1>
+      <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:620px;margin-bottom:28px;">These terms govern your use of Grange AI. Please read them carefully. By creating an account, you agree to be bound by them.</p>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;">
+        <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Last updated June 5, 2025</span>
+        <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Governing law: United States</span>
+      </div>
+    </div>
+  </div>
 
-    <div style="display:flex;flex-direction:column;gap:40px;font-size:15.5px;line-height:1.75;color:var(--ink-soft);">
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">1. Acceptance</h2>
-        <p>By creating an account or using Grange AI you agree to these Terms. If you are using Grange AI on behalf of an organization, you represent that you have authority to bind that organization.</p>
+  <div class="wrap" style="max-width:1100px;padding-top:72px;padding-bottom:140px;display:flex;gap:80px;align-items:flex-start;">
+    <nav style="width:220px;flex-shrink:0;position:sticky;top:100px;display:flex;flex-direction:column;gap:4px;">
+      <p style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">On this page</p>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Acceptance</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Accounts</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Permitted Use</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">AI-Generated Content</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Subscriptions &amp; Billing</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Intellectual Property</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Confidentiality</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Disclaimers</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Limitation of Liability</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Termination</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Governing Law</a>
+      <a href="#" onclick="return false;" style="font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;border-left:2px solid var(--line);padding-left:12px;transition:all 120ms;" onmouseover="this.style.color='var(--ink)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--line)'">Miscellaneous</a>
+    </nav>
+
+    <div style="flex:1;min-width:0;font-size:16px;line-height:1.8;color:var(--ink-soft);display:flex;flex-direction:column;gap:0;">
+
+      <div style="background:var(--accent-tint);border-left:3px solid var(--accent);padding:18px 20px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin-bottom:52px;">
+        <p style="font-size:14.5px;color:var(--accent-ink);line-height:1.65;margin:0;"><strong>Plain-language summary:</strong> You own your content. We own the platform. You may use Grange AI only for lawful grant-writing purposes. AI output needs human review before submission. Cancel any time. We're not liable for grant outcomes.</p>
+      </div>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">1. Acceptance of Terms</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:16px;">By accessing or using Grange AI ("Service," "we," "us," or "our"), you ("User," "you," or "your") agree to be bound by these Terms of Service ("Terms"). If you are using the Service on behalf of a nonprofit organization or other legal entity, you represent and warrant that you have authority to bind that entity to these Terms, in which case "you" refers to both you individually and that entity.</p>
+        <p>If you do not agree to these Terms, you may not use the Service. These Terms apply to all visitors, users, and others who access or use the Service.</p>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">2. Use of the Service</h2>
-        <p>Grange AI is a grant-writing assistance tool for nonprofit organizations. You may use it only for lawful purposes and in accordance with these Terms. You are responsible for all content you submit, and you represent that your organization has the right to use that content.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">2. Accounts</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
+          <li><strong>Registration:</strong> You must create an account to use most features of Grange AI. You agree to provide accurate, complete, and up-to-date information during registration and to keep this information current.</li>
+          <li><strong>Account security:</strong> You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. Notify us immediately at <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);text-decoration:none;">executivegrangeai@gmail.com</a> if you suspect unauthorized access.</li>
+          <li><strong>One account per organization:</strong> Each account is intended for a single nonprofit organization. Team members within an organization may share an account; sharing accounts across unaffiliated organizations is not permitted.</li>
+          <li><strong>Age requirement:</strong> You must be at least 18 years old to create an account and use the Service.</li>
+        </ul>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">3. AI-Generated Content</h2>
-        <p>Grange AI uses artificial intelligence to assist with grant discovery and proposal drafting. You are responsible for reviewing, editing, and submitting any grant application. AI output may contain inaccuracies; do not submit content without human review.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">3. Permitted Use</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:16px;">Grange AI is a grant-writing and grant-discovery tool for nonprofit organizations. You agree to use it only for lawful purposes related to your organization's mission and grant-seeking activities.</p>
+        <p style="margin-bottom:12px;font-weight:600;color:var(--ink);">You may not use the Service to:</p>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:8px;">
+          <li>Fabricate organizational credentials, financial data, or program outcomes in grant applications.</li>
+          <li>Submit fraudulent grant applications or misrepresent your organization to funders.</li>
+          <li>Reverse-engineer, decompile, or otherwise attempt to extract the source code of the platform.</li>
+          <li>Resell, sublicense, or otherwise commercialize access to the Service without our written consent.</li>
+          <li>Use automated scraping, bots, or scripts to extract grant data from the Service for use in competing products.</li>
+          <li>Interfere with or disrupt the integrity or performance of the Service or its underlying infrastructure.</li>
+          <li>Attempt to gain unauthorized access to any part of the Service or related systems.</li>
+          <li>Upload or transmit any content that is unlawful, harmful, defamatory, or that infringes the intellectual property rights of a third party.</li>
+        </ul>
+        <p style="margin-top:16px;">We reserve the right to investigate and take appropriate action, including account suspension or termination, for violations of this section.</p>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">4. Subscriptions &amp; Payment</h2>
-        <p>Paid plans are billed monthly or annually as selected at checkout. You may cancel at any time; cancellation takes effect at the end of the current billing period. We do not offer refunds for partial periods except where required by law.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">4. AI-Generated Content</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:16px;">Grange AI uses large language models and AI systems to assist with grant discovery and proposal drafting. By using these features, you acknowledge and agree to the following:</p>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
+          <li><strong>Human review is required:</strong> AI-generated proposals, summaries, and recommendations may contain errors, inaccuracies, or hallucinations. You are solely responsible for reviewing, editing, and verifying all AI-generated content before submitting it to any funder.</li>
+          <li><strong>Not professional advice:</strong> Grange AI does not provide legal, financial, accounting, or compliance advice. Content generated by the Service is for informational and drafting assistance purposes only.</li>
+          <li><strong>Grant outcomes:</strong> Grange AI makes no representations or warranties that using the Service will result in successful grant applications or funding awards. Grant decisions are made solely by funders.</li>
+          <li><strong>Your content ownership:</strong> You retain full ownership of all grant content you create, upload, or generate through the Service. We do not claim any ownership rights in your content.</li>
+          <li><strong>Model training:</strong> We will not use your specific grant content, organizational data, or uploaded documents to train or fine-tune AI models without your explicit written consent.</li>
+        </ul>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">5. Intellectual Property</h2>
-        <p>You retain ownership of all content you upload or create. Grange AI retains ownership of the platform, models, and underlying technology. We do not use your grant content to train AI models without your explicit consent.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">5. Subscriptions &amp; Billing</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
+          <li><strong>Paid plans:</strong> Certain features require a paid subscription. Pricing is displayed at checkout and may be updated from time to time. We will notify you of price changes at least 30 days in advance.</li>
+          <li><strong>Billing cycle:</strong> Subscriptions are billed monthly or annually, as selected at checkout. Your subscription renews automatically at the end of each billing period.</li>
+          <li><strong>Cancellation:</strong> You may cancel your subscription at any time from your account settings. Cancellation takes effect at the end of the current billing period. You will retain access to paid features until that date.</li>
+          <li><strong>Refunds:</strong> We do not offer refunds for partial billing periods except where required by applicable law. If you believe you have been billed in error, contact us within 30 days of the charge.</li>
+          <li><strong>Taxes:</strong> Prices are exclusive of applicable taxes. You are responsible for paying any taxes, levies, or duties imposed by applicable law.</li>
+          <li><strong>Free trials:</strong> Where offered, free trials automatically convert to a paid subscription at the end of the trial period. You may cancel before the trial ends to avoid charges.</li>
+          <li><strong>Disputed charges:</strong> Contact us at <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);text-decoration:none;">executivegrangeai@gmail.com</a> before initiating a chargeback. We will work to resolve billing disputes promptly.</li>
+        </ul>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">6. Limitation of Liability</h2>
-        <p>Grange AI is provided "as is." We are not liable for grant outcomes, application results, or decisions made by funders. Our liability is limited to the fees you paid in the 12 months prior to any claim.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">6. Intellectual Property</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:16px;"><strong style="color:var(--ink);">Your content:</strong> You retain all ownership rights in any content you upload, create, or generate through the Service, including organization profiles, uploaded documents, grant drafts, and final proposals. By using the Service, you grant us a limited, non-exclusive license to store and process your content solely for the purpose of operating and improving the Service.</p>
+        <p style="margin-bottom:16px;"><strong style="color:var(--ink);">Our platform:</strong> Grange AI, including its software, AI models, algorithms, databases, design, trademarks, logos, and all related intellectual property, is owned by us and protected by copyright, trademark, and other intellectual property laws. These Terms do not grant you any rights in our intellectual property beyond what is expressly stated herein.</p>
+        <p><strong style="color:var(--ink);">Feedback:</strong> If you provide suggestions, ideas, or feedback about the Service, you grant us a perpetual, royalty-free license to use and incorporate that feedback without obligation to you.</p>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">7. Termination</h2>
-        <p>Either party may terminate at any time. We may suspend accounts that violate these Terms. On termination, your data will be retained for 30 days and then deleted unless you request an earlier deletion.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">7. Confidentiality</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p>We treat your organization's grant content, financial data, mission documents, and strategic information as confidential. We will not disclose your confidential information to third parties except as set out in our Privacy Policy or as required by law. Our employees and contractors who have access to customer data are bound by confidentiality obligations.</p>
       </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">8. Contact</h2>
-        <p>Questions about these Terms? Email <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);text-decoration:none;">executivegrangeai@gmail.com</a>.</p>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">8. Disclaimers</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:16px;">THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND ACCURACY.</p>
+        <p>We do not warrant that the Service will be uninterrupted, error-free, or completely secure. We do not guarantee that the grant opportunities surfaced by the Service are accurate, complete, or current. Grant databases change frequently and information may be delayed. Always verify grant details directly with funders.</p>
       </section>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">9. Limitation of Liability</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:16px;">TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL GRANGE AI BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, LOSS OF DATA, LOSS OF GOODWILL, OR BUSINESS INTERRUPTION, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF THE SERVICE.</p>
+        <p>OUR TOTAL CUMULATIVE LIABILITY TO YOU FOR ANY CLAIMS ARISING OUT OF THESE TERMS OR YOUR USE OF THE SERVICE SHALL NOT EXCEED THE GREATER OF (A) THE TOTAL FEES YOU PAID TO US IN THE 12 MONTHS PRECEDING THE CLAIM, OR (B) $100 USD.</p>
+        <p style="margin-top:16px;">Some jurisdictions do not allow the exclusion of certain warranties or limitation of liability, so some of the above limitations may not apply to you.</p>
+      </section>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">10. Termination</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
+          <li><strong>By you:</strong> You may close your account at any time from your account settings. Closure takes effect immediately for free accounts, and at the end of the billing period for paid accounts.</li>
+          <li><strong>By us:</strong> We may suspend or terminate your account immediately if you violate these Terms, engage in fraudulent activity, or if we are required to do so by law. We will make reasonable efforts to notify you before termination unless doing so would cause harm or is prohibited.</li>
+          <li><strong>Effect of termination:</strong> Upon termination, your right to access the Service ends. Your data will be retained for 30 days following termination, during which you may request an export. After 30 days, your data will be permanently deleted except as required by applicable law.</li>
+          <li><strong>Survival:</strong> Sections relating to intellectual property, limitation of liability, disclaimers, and governing law survive termination of these Terms.</li>
+        </ul>
+      </section>
+
+      <section style="margin-bottom:52px;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">11. Governing Law &amp; Disputes</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <p style="margin-bottom:16px;">These Terms are governed by the laws of the United States, without regard to conflict of law principles. Any dispute arising out of or relating to these Terms or the Service shall first be submitted to informal negotiation by contacting us at <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);text-decoration:none;">executivegrangeai@gmail.com</a>. If informal resolution fails after 30 days, disputes shall be resolved by binding arbitration, except that either party may seek injunctive relief in court for intellectual property claims.</p>
+        <p>YOU WAIVE YOUR RIGHT TO A JURY TRIAL AND TO PARTICIPATE IN CLASS-ACTION LAWSUITS TO THE EXTENT PERMITTED BY APPLICABLE LAW.</p>
+      </section>
+
+      <section style="margin-bottom:0;">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">12. Miscellaneous</h2>
+        <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
+          <li><strong>Entire agreement:</strong> These Terms, together with our Privacy Policy, constitute the entire agreement between you and Grange AI and supersede all prior agreements.</li>
+          <li><strong>Modifications:</strong> We may update these Terms from time to time. We will notify you of material changes by email or prominent notice in the app at least 14 days before they take effect.</li>
+          <li><strong>Severability:</strong> If any provision of these Terms is found invalid or unenforceable, the remaining provisions will continue in full force and effect.</li>
+          <li><strong>Waiver:</strong> Failure to enforce any provision of these Terms shall not constitute a waiver of our right to enforce it in the future.</li>
+          <li><strong>Assignment:</strong> You may not assign your rights or obligations under these Terms without our prior written consent. We may assign our rights without restriction.</li>
+          <li><strong>Contact:</strong> Questions about these Terms? Email <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);text-decoration:none;">executivegrangeai@gmail.com</a>.</li>
+        </ul>
+      </section>
+
     </div>
   </div>
 </div>
 
 <!-- ════════════════════════ SECURITY ════════════════════════ -->
 <div id="security" class="screen">
-  <div class="wrap" style="max-width:760px;padding-top:80px;padding-bottom:120px;">
-    <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:48px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back to home
-    </button>
-    <h1 style="font-size:clamp(28px,5vw,42px);font-weight:700;line-height:1.15;margin-bottom:12px;">Security</h1>
-    <p style="font-size:14px;color:var(--muted);margin-bottom:56px;">How we protect your organization's data</p>
-
-    <div style="display:flex;flex-direction:column;gap:40px;font-size:15.5px;line-height:1.75;color:var(--ink-soft);">
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">Encryption</h2>
-        <p>All data is encrypted in transit using TLS 1.3 and encrypted at rest using AES-256. Encryption keys are managed separately from data and rotated regularly.</p>
-      </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">Access Controls</h2>
-        <p>Internal access to customer data is restricted by role and requires multi-factor authentication. Every access event is logged and reviewed. Only a small number of engineers have access for support purposes, and only when required.</p>
-      </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">Infrastructure</h2>
-        <p>Grange AI runs on cloud infrastructure with SOC 2 Type II certified providers. We use isolated environments per customer, automated vulnerability scanning, and regular dependency audits.</p>
-      </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">Data Isolation</h2>
-        <p>Your organization's grant data, profile, and generated content are logically isolated from other customers. We do not commingle data across organizations.</p>
-      </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">Backups</h2>
-        <p>Data is backed up daily with point-in-time recovery. Backups are stored in a separate geographic region and tested quarterly.</p>
-      </section>
-      <section>
-        <h2 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:12px;">Responsible Disclosure</h2>
-        <p>Found a vulnerability? Please report it to <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);text-decoration:none;">executivegrangeai@gmail.com</a>. We will acknowledge reports within 48 hours and aim to resolve confirmed issues within 30 days. We ask that you give us time to patch before public disclosure.</p>
-      </section>
+  <!-- hero -->
+  <div style="background:var(--surface-2);border-bottom:1px solid var(--line);padding:72px 0 64px;">
+    <div class="wrap" style="max-width:1100px;">
+      <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:32px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to home</button>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Trust &amp; Safety</div>
+      <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">Security at Grange AI</h1>
+      <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:640px;margin-bottom:0;">Your organization's grant data is sensitive. We build our security program around that reality — not as an afterthought.</p>
     </div>
+  </div>
+
+  <!-- stats bar -->
+  <div style="border-bottom:1px solid var(--line);padding:32px 0;">
+    <div class="wrap" style="max-width:1100px;display:flex;gap:0;flex-wrap:wrap;">
+      <div style="flex:1;min-width:180px;padding:0 32px;border-right:1px solid var(--line);text-align:center;">
+        <div style="font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-.02em;">TLS 1.3</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Encryption in transit</div>
+      </div>
+      <div style="flex:1;min-width:180px;padding:0 32px;border-right:1px solid var(--line);text-align:center;">
+        <div style="font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-.02em;">AES-256</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Encryption at rest</div>
+      </div>
+      <div style="flex:1;min-width:180px;padding:0 32px;border-right:1px solid var(--line);text-align:center;">
+        <div style="font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-.02em;">99.9%</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Uptime SLA</div>
+      </div>
+      <div style="flex:1;min-width:180px;padding:0 32px;text-align:center;">
+        <div style="font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-.02em;">72h</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Breach notification</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap" style="max-width:1100px;padding-top:80px;padding-bottom:140px;">
+
+    <!-- section: infrastructure -->
+    <div style="margin-bottom:80px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px;">
+        <div style="width:44px;height:44px;background:var(--accent-tint);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="4" rx="1"/><rect x="2" y="10" width="20" height="4" rx="1"/><rect x="2" y="17" width="20" height="4" rx="1"/><circle cx="6" cy="5" r="0.8" fill="var(--accent)"/><circle cx="6" cy="12" r="0.8" fill="var(--accent)"/><circle cx="6" cy="19" r="0.8" fill="var(--accent)"/></svg>
+        </div>
+        <div>
+          <h2 style="font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:2px;">Infrastructure &amp; Hosting</h2>
+          <p style="font-size:14px;color:var(--muted);">How we build and operate the platform</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Cloud infrastructure</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Grange AI runs on cloud providers with SOC 2 Type II certification. Our infrastructure is isolated per environment (production, staging, development) with no shared secrets between environments.</p>
+        </div>
+        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Data isolation</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Each organization's grant data, profiles, and generated content are stored with logical isolation. We do not co-mingle data across organizations. Your data cannot be accessed by or exposed to other customers.</p>
+        </div>
+        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Network security</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">All traffic is routed through a web application firewall (WAF) that blocks common attack patterns. Internal services communicate over private network interfaces and are not exposed to the public internet.</p>
+        </div>
+        <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Uptime &amp; resilience</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">We target 99.9% monthly uptime. Critical services run across multiple availability zones. Automated failover and health checks minimize downtime during incidents.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- section: data protection -->
+    <div style="margin-bottom:80px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px;">
+        <div style="width:44px;height:44px;background:var(--accent-tint);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 6v6c0 5.5 3.5 10.7 8 12 4.5-1.3 8-6.5 8-12V6L12 2z"/></svg>
+        </div>
+        <div>
+          <h2 style="font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:2px;">Data Protection &amp; Encryption</h2>
+          <p style="font-size:14px;color:var(--muted);">How we protect your data at every layer</p>
+        </div>
+      </div>
+      <div style="font-size:15.5px;line-height:1.8;color:var(--ink-soft);display:flex;flex-direction:column;gap:20px;">
+        <div style="display:flex;gap:16px;">
+          <div style="width:28px;height:28px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg></div>
+          <div><strong style="color:var(--ink);">Encryption in transit:</strong> All communication between your browser and Grange AI is encrypted using TLS 1.3, the most current standard. We enforce HTTPS across all endpoints and reject insecure connections.</div>
+        </div>
+        <div style="display:flex;gap:16px;">
+          <div style="width:28px;height:28px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg></div>
+          <div><strong style="color:var(--ink);">Encryption at rest:</strong> All database records and uploaded files are encrypted at rest using AES-256. Encryption keys are managed separately from the data they protect and are rotated on a regular schedule.</div>
+        </div>
+        <div style="display:flex;gap:16px;">
+          <div style="width:28px;height:28px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg></div>
+          <div><strong style="color:var(--ink);">Password security:</strong> Passwords are hashed using bcrypt with a per-user salt. We never store passwords in plain text. Grange AI employees cannot retrieve your password — only a reset is possible.</div>
+        </div>
+        <div style="display:flex;gap:16px;">
+          <div style="width:28px;height:28px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg></div>
+          <div><strong style="color:var(--ink);">Backups:</strong> Your data is backed up daily with point-in-time recovery capability. Backups are encrypted and stored in a geographically separate region. Backup restoration is tested quarterly.</div>
+        </div>
+        <div style="display:flex;gap:16px;">
+          <div style="width:28px;height:28px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg></div>
+          <div><strong style="color:var(--ink);">Payment data:</strong> We do not store credit card numbers or CVV codes. Payments are processed by Stripe, which is PCI DSS Level 1 certified. We store only a payment token and basic billing metadata.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- section: access controls -->
+    <div style="margin-bottom:80px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px;">
+        <div style="width:44px;height:44px;background:var(--accent-tint);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+          <h2 style="font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:2px;">Access Controls</h2>
+          <p style="font-size:14px;color:var(--muted);">Who can see your data and under what conditions</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+        <div style="border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Role-based access</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Internal access to customer data is restricted by role. Only a minimal number of engineers with a legitimate operational need can access production data, and only through a controlled access request process.</p>
+        </div>
+        <div style="border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Multi-factor authentication</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">All internal access to production systems requires multi-factor authentication. We enforce phishing-resistant MFA (hardware keys or authenticator apps) for all team members with production access.</p>
+        </div>
+        <div style="border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Audit logging</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Every internal access to customer data is logged with a timestamp, user identity, and reason. Logs are stored separately from application data and reviewed for anomalies on a regular basis.</p>
+        </div>
+        <div style="border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Principle of least privilege</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Team members are granted only the minimum access required for their role. Access is reviewed and revoked when no longer needed. Contractor access is time-limited and scoped to specific tasks.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- section: application security -->
+    <div style="margin-bottom:80px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px;">
+        <div style="width:44px;height:44px;background:var(--accent-tint);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div>
+          <h2 style="font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:2px;">Application Security</h2>
+          <p style="font-size:14px;color:var(--muted);">How we build and test for security</p>
+        </div>
+      </div>
+      <div style="font-size:15.5px;line-height:1.8;color:var(--ink-soft);display:flex;flex-direction:column;gap:16px;">
+        <p><strong style="color:var(--ink);">Secure development lifecycle:</strong> Security is integrated into our development process from the start. Engineers follow secure coding guidelines, code changes are reviewed by peers before merging, and we run automated static analysis on every pull request.</p>
+        <p><strong style="color:var(--ink);">Dependency management:</strong> We use automated tooling to monitor our software dependencies for known vulnerabilities and apply updates on a regular schedule. Critical security patches are applied as soon as they are available.</p>
+        <p><strong style="color:var(--ink);">Vulnerability scanning:</strong> We run automated vulnerability scans against our infrastructure and application on a regular basis. Findings are triaged by severity and resolved according to a defined SLA.</p>
+        <p><strong style="color:var(--ink);">OWASP Top 10:</strong> Our application is designed and tested against the OWASP Top 10 most common web application security risks, including SQL injection, cross-site scripting (XSS), cross-site request forgery (CSRF), and broken authentication.</p>
+        <p><strong style="color:var(--ink);">Penetration testing:</strong> We conduct penetration tests against our application and infrastructure. Findings are tracked to resolution before the next test cycle.</p>
+      </div>
+    </div>
+
+    <!-- section: incident response -->
+    <div style="margin-bottom:80px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px;">
+        <div style="width:44px;height:44px;background:var(--accent-tint);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <h2 style="font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:2px;">Incident Response</h2>
+          <p style="font-size:14px;color:var(--muted);">What happens if something goes wrong</p>
+        </div>
+      </div>
+      <div style="font-size:15.5px;line-height:1.8;color:var(--ink-soft);display:flex;flex-direction:column;gap:16px;">
+        <p>We maintain a documented incident response plan. When a potential security incident is detected — through monitoring alerts, user reports, or internal discovery — our response process activates immediately.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:4px 0;">
+          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:20px;text-align:center;">
+            <div style="font-size:24px;font-weight:800;color:var(--accent);margin-bottom:6px;">1h</div>
+            <div style="font-size:13px;color:var(--muted);">Internal acknowledgment target</div>
+          </div>
+          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:20px;text-align:center;">
+            <div style="font-size:24px;font-weight:800;color:var(--accent);margin-bottom:6px;">24h</div>
+            <div style="font-size:13px;color:var(--muted);">Containment target for critical issues</div>
+          </div>
+          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:20px;text-align:center;">
+            <div style="font-size:24px;font-weight:800;color:var(--accent);margin-bottom:6px;">72h</div>
+            <div style="font-size:13px;color:var(--muted);">Customer notification if breach confirmed</div>
+          </div>
+        </div>
+        <p>If we confirm a breach that exposed your data, we will notify you by email within 72 hours. The notification will include the nature of the breach, what data was affected, what we have done to contain it, and what steps you can take to protect yourself.</p>
+      </div>
+    </div>
+
+    <!-- section: responsible disclosure -->
+    <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:40px;display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">Responsible Disclosure</div>
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:14px;letter-spacing:-.01em;">Found a vulnerability?</h2>
+        <p style="font-size:15px;color:var(--ink-soft);line-height:1.75;margin-bottom:20px;">We take all security reports seriously. If you have discovered a potential security vulnerability in Grange AI, please report it to us privately before publishing any details. We will:</p>
+        <ul style="padding-left:18px;font-size:14.5px;color:var(--ink-soft);display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">
+          <li>Acknowledge your report within <strong style="color:var(--ink);">48 hours</strong></li>
+          <li>Provide a status update within <strong style="color:var(--ink);">7 days</strong></li>
+          <li>Work to resolve confirmed issues within <strong style="color:var(--ink);">30 days</strong> (critical issues within 7 days)</li>
+          <li>Credit you publicly for your discovery if you wish</li>
+        </ul>
+        <p style="font-size:14px;color:var(--muted);">Please do not publicly disclose the vulnerability until we have had the opportunity to investigate and address it.</p>
+      </div>
+      <div style="flex-shrink:0;">
+        <a href="mailto:executivegrangeai@gmail.com?subject=Security%20Vulnerability%20Report" style="display:inline-flex;align-items:center;gap:8px;padding:14px 24px;background:var(--accent);color:#fff;text-decoration:none;border-radius:var(--r-sm);font-size:15px;font-weight:600;font-family:inherit;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Report a vulnerability
+        </a>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <!-- ════════════════════════ CONTACT ════════════════════════ -->
 <div id="contact" class="screen">
-  <div class="wrap" style="max-width:640px;padding-top:80px;padding-bottom:120px;">
-    <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:48px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back to home
-    </button>
-    <h1 style="font-size:clamp(28px,5vw,42px);font-weight:700;line-height:1.15;margin-bottom:12px;">Contact Us</h1>
-    <p style="font-size:16px;color:var(--ink-soft);margin-bottom:56px;line-height:1.65;">We're a small team building tools for nonprofits. We read every message and typically respond within one business day.</p>
+  <!-- hero -->
+  <div style="background:var(--surface-2);border-bottom:1px solid var(--line);padding:72px 0 64px;">
+    <div class="wrap" style="max-width:860px;">
+      <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:32px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to home</button>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Get in touch</div>
+      <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">We'd love to hear from you.</h1>
+      <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:580px;">Whether you have a question about the product, need help getting started, or want to share feedback — we read every message and respond personally.</p>
+    </div>
+  </div>
 
-    <div style="display:flex;flex-direction:column;gap:20px;">
-      <div>
-        <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px;">Name</label>
-        <input id="contact-name" type="text" placeholder="Your name" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
+  <div class="wrap" style="max-width:1100px;padding-top:72px;padding-bottom:140px;display:flex;gap:80px;align-items:flex-start;flex-wrap:wrap;">
+
+    <!-- left: form -->
+    <div style="flex:1;min-width:320px;">
+      <h2 style="font-size:20px;font-weight:700;color:var(--ink);margin-bottom:6px;">Send us a message</h2>
+      <p style="font-size:14.5px;color:var(--muted);margin-bottom:32px;">We typically respond within one business day.</p>
+
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:140px;">
+            <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">First name <span style="color:var(--accent);">*</span></label>
+            <input id="contact-fname" type="text" placeholder="Maria" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
+          </div>
+          <div style="flex:1;min-width:140px;">
+            <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Last name <span style="color:var(--accent);">*</span></label>
+            <input id="contact-lname" type="text" placeholder="Reyes" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
+          </div>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Work email <span style="color:var(--accent);">*</span></label>
+          <input id="contact-email" type="email" placeholder="maria@hopeharbor.org" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Organization name</label>
+          <input id="contact-org" type="text" placeholder="Hope Harbor Foundation" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Topic <span style="color:var(--accent);">*</span></label>
+          <select id="contact-topic" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;appearance:none;cursor:pointer;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
+            <option value="">Select a topic…</option>
+            <option>General question</option>
+            <option>Product demo request</option>
+            <option>Billing or subscription</option>
+            <option>Technical support</option>
+            <option>Security or privacy</option>
+            <option>Partnership or press</option>
+            <option>Feedback or feature request</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Message <span style="color:var(--accent);">*</span></label>
+          <textarea id="contact-msg" placeholder="Tell us how we can help…" rows="6" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;resize:vertical;transition:border-color 140ms;min-height:140px;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'"></textarea>
+        </div>
+        <div>
+          <button id="contact-btn" onclick="submitContact()" style="width:100%;padding:15px 28px;background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;transition:opacity 140ms;letter-spacing:-.01em;">Send message →</button>
+          <p style="font-size:12.5px;color:var(--muted);margin-top:12px;">By submitting this form you agree to our <button onclick="go('privacy')" style="background:none;border:none;padding:0;color:var(--muted);font-size:inherit;font-family:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px;">Privacy Policy</button>.</p>
+        </div>
+        <div id="contact-success" style="display:none;padding:20px 24px;background:var(--accent-tint);border-radius:var(--r-sm);border-left:3px solid var(--accent);">
+          <p style="font-size:15px;color:var(--accent-ink);font-weight:600;margin-bottom:4px;">Message received!</p>
+          <p style="font-size:14px;color:var(--accent-ink);margin:0;opacity:.85;">Thanks for reaching out. We'll get back to you at the email you provided within one business day.</p>
+        </div>
       </div>
-      <div>
-        <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px;">Email</label>
-        <input id="contact-email" type="email" placeholder="you@yourorg.org" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
-      </div>
-      <div>
-        <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px;">Message</label>
-        <textarea id="contact-msg" placeholder="How can we help?" rows="5" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;resize:vertical;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'"></textarea>
-      </div>
-      <button id="contact-btn" onclick="submitContact()" style="align-self:flex-start;padding:13px 28px;background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;transition:opacity 140ms;">Send message</button>
-      <div id="contact-success" style="display:none;padding:16px 20px;background:var(--accent-tint);border-radius:var(--r-sm);color:var(--accent-ink);font-size:14px;font-weight:500;">Message sent! We'll get back to you within one business day.</div>
     </div>
 
-    <div style="margin-top:56px;padding-top:40px;border-top:1px solid var(--line);">
-      <p style="font-size:14px;color:var(--muted);margin-bottom:4px;">Prefer email?</p>
-      <a href="mailto:executivegrangeai@gmail.com" style="font-size:15px;color:var(--accent);text-decoration:none;font-weight:500;">executivegrangeai@gmail.com</a>
+    <!-- right: info sidebar -->
+    <div style="width:300px;flex-shrink:0;display:flex;flex-direction:column;gap:24px;">
+
+      <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:28px;">
+        <div style="width:36px;height:36px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px;">Email us directly</h3>
+        <p style="font-size:14px;color:var(--ink-soft);margin-bottom:12px;line-height:1.6;">For time-sensitive issues or detailed questions, email us directly.</p>
+        <a href="mailto:executivegrangeai@gmail.com" style="font-size:14px;color:var(--accent);text-decoration:none;font-weight:600;word-break:break-all;">executivegrangeai@gmail.com</a>
+      </div>
+
+      <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:28px;">
+        <div style="width:36px;height:36px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+        </div>
+        <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px;">Response time</h3>
+        <p style="font-size:14px;color:var(--ink-soft);line-height:1.6;">We respond to all messages within <strong style="color:var(--ink);">one business day</strong>, Monday – Friday 9am – 6pm ET. We do not offer weekend support at this time.</p>
+      </div>
+
+      <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:28px;">
+        <div style="width:36px;height:36px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px;">Common questions</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+          <button onclick="go('privacy')" style="background:none;border:none;padding:0;font-size:14px;color:var(--ink-soft);font-family:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:6px;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--ink-soft)'">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Privacy Policy
+          </button>
+          <button onclick="go('terms')" style="background:none;border:none;padding:0;font-size:14px;color:var(--ink-soft);font-family:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:6px;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--ink-soft)'">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Terms of Service
+          </button>
+          <button onclick="go('security')" style="background:none;border:none;padding:0;font-size:14px;color:var(--ink-soft);font-family:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:6px;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--ink-soft)'">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Security
+          </button>
+        </div>
+      </div>
+
+      <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:28px;">
+        <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Looking to demo?</h3>
+        <p style="font-size:14px;color:var(--ink-soft);line-height:1.6;margin-bottom:16px;">See Grange AI in action before committing. Our interactive demo walks through the full grant-writing workflow.</p>
+        <button onclick="go('demo')" style="width:100%;padding:11px 16px;background:transparent;border:1.5px solid var(--accent);color:var(--accent);border-radius:var(--r-sm);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all 140ms;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--accent)'">Watch the demo</button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -3445,20 +3949,20 @@ function go(id) {
   if (id === 'demo')    requestAnimationFrame(() => window._dpReset?.());
 }
 function submitContact() {
-  const name = document.getElementById('contact-name').value.trim();
+  const fname = document.getElementById('contact-fname').value.trim();
+  const lname = document.getElementById('contact-lname').value.trim();
   const email = document.getElementById('contact-email').value.trim();
-  const msg = document.getElementById('contact-msg').value.trim();
-  if (!name || !email || !msg) { alert('Please fill in all fields.'); return; }
-  document.getElementById('contact-btn').style.opacity = '0.5';
-  document.getElementById('contact-btn').disabled = true;
+  const topic = document.getElementById('contact-topic').value;
+  const msg   = document.getElementById('contact-msg').value.trim();
+  if (!fname || !lname || !email || !topic || !msg) { alert('Please fill in all required fields.'); return; }
+  const btn = document.getElementById('contact-btn');
+  btn.style.opacity = '0.5'; btn.disabled = true; btn.textContent = 'Sending…';
   setTimeout(() => {
     document.getElementById('contact-success').style.display = 'block';
-    document.getElementById('contact-name').value = '';
-    document.getElementById('contact-email').value = '';
-    document.getElementById('contact-msg').value = '';
-    document.getElementById('contact-btn').style.opacity = '1';
-    document.getElementById('contact-btn').disabled = false;
-  }, 800);
+    ['contact-fname','contact-lname','contact-email','contact-org','contact-msg'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('contact-topic').value = '';
+    btn.style.opacity = '1'; btn.disabled = false; btn.textContent = 'Send message →';
+  }, 900);
 }
 function goHome() {
   go('landing');
