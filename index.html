@@ -553,8 +553,6 @@ label.field-label {
 .tc-track {
   display:flex; flex-direction:column; gap:16px;
   will-change:transform;
-  transform:translateZ(0);
-  backface-visibility:hidden;
   animation:tc-scroll var(--dur,15s) linear infinite;
 }
 @keyframes tc-scroll { from{transform:translate3d(0,0,0)} to{transform:translate3d(0,-50%,0)} }
@@ -564,7 +562,6 @@ label.field-label {
    causing visible repaints. Box-shadow only keeps everything on one GPU layer. */
 .tc-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg);
   padding:26px; flex-shrink:0; position:relative; overflow:hidden;
-  isolation:isolate;
   transition:border-color 240ms var(--ease), box-shadow 240ms var(--ease); }
 .tc-card:hover {
   border-color:rgba(26,25,22,0.18); box-shadow:0 24px 48px -28px rgba(26,25,22,0.36); }
@@ -2082,15 +2079,6 @@ label.field-label {
   /* Reduce parent blur so GPU compositing of remaining blobs is cheap */
   .grad-container { filter: blur(30px) !important; }
 
-  /* Scroll-hero tilt: disable rotateX during scroll — replace with
-     a simple fade-up via opacity so no 3D repaint on scroll */
-  .scroll-hero-card {
-    transform: none !important;
-    will-change: auto !important;
-  }
-  .scroll-hero-title {
-    will-change: auto !important;
-  }
 }
 
 </style>
