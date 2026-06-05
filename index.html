@@ -551,14 +551,18 @@ label.field-label {
 
 /* The track is doubled; animate from 0 → -50% then loop */
 .tc-track {
-  display:flex; flex-direction:column; gap:16px; will-change:transform;
+  display:flex; flex-direction:column; gap:16px;
+  will-change:transform;
+  transform:translateZ(0);
+  backface-visibility:hidden;
   animation:tc-scroll var(--dur,15s) linear infinite;
 }
-@keyframes tc-scroll { from{transform:translateY(0)} to{transform:translateY(-50%)} }
+@keyframes tc-scroll { from{transform:translate3d(0,0,0)} to{transform:translate3d(0,-50%,0)} }
 
 /* Individual cards */
 .tc-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg);
   padding:26px; flex-shrink:0; position:relative; overflow:hidden;
+  isolation:isolate;
   transition:transform 240ms var(--ease-expo), border-color 240ms var(--ease), box-shadow 240ms var(--ease); }
 .tc-card:hover { transform:translateY(-5px) scale(1.02);
   border-color:rgba(26,25,22,0.18); box-shadow:0 24px 48px -28px rgba(26,25,22,0.36); }
