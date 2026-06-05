@@ -1202,15 +1202,15 @@ label.field-label {
 .dc-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 56px;
+  gap: 20px;
   align-items: center;
 }
 .dc-grid {
   display: grid;
   grid-template-areas: 'stack';
   place-items: center;
-  height: 420px;
-  padding-left: 80px;
+  height: 460px;
+  padding-left: 20px;
 }
 .dc {
   grid-area: stack;
@@ -1227,6 +1227,7 @@ label.field-label {
   flex-direction: column;
   justify-content: space-between;
   transition: transform 0.7s var(--ease), filter 0.7s var(--ease), border-color 0.4s var(--ease);
+  z-index: 1;
   cursor: default;
   user-select: none;
 }
@@ -1258,14 +1259,15 @@ label.field-label {
 .dc:nth-child(4) { transform: skewY(-8deg) translate(9rem, 6.6rem); }
 .dc:nth-child(5) { transform: skewY(-8deg) translate(12rem, 8.8rem); }
 @media (hover: hover) and (pointer: fine) {
-  .dc:nth-child(1):hover { transform: skewY(-8deg) translateY(-40px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
+  .dc:hover { z-index: 10; }
+  .dc:nth-child(1):hover { transform: skewY(-8deg) translateY(-140px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
   .dc:nth-child(1):hover::before { opacity: 0; }
-  .dc:nth-child(2):hover { transform: skewY(-8deg) translate(3rem, -4px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
+  .dc:nth-child(2):hover { transform: skewY(-8deg) translate(3rem, -130px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
   .dc:nth-child(2):hover::before { opacity: 0; }
-  .dc:nth-child(3):hover { transform: skewY(-8deg) translate(6rem, 2rem); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
+  .dc:nth-child(3):hover { transform: skewY(-8deg) translate(6rem, -120px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
   .dc:nth-child(3):hover::before { opacity: 0; }
-  .dc:nth-child(4):hover { transform: skewY(-8deg) translate(9rem, 4.2rem); }
-  .dc:nth-child(5):hover { transform: skewY(-8deg) translate(12rem, 6.4rem); }
+  .dc:nth-child(4):hover { transform: skewY(-8deg) translate(9rem, -110px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
+  .dc:nth-child(5):hover { transform: skewY(-8deg) translate(12rem, -100px); filter: grayscale(0); border-color: rgba(26,25,22,0.18); }
 }
 .dc-row { display: flex; align-items: center; gap: 8px; }
 .dc-icon {
