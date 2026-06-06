@@ -3844,7 +3844,7 @@ label.field-label {
     <main class="app-main">
       <div class="page-head">
         <div>
-          <h1>Good morning, Maria</h1>
+          <h1 id="dash-greeting">Good morning</h1>
           <div class="ps">3 deadlines in the next 30 days and 12 new matches this week.</div>
         </div>
         <button class="btn btn-accent" onclick="go('generator')">New proposal</button>
@@ -4221,6 +4221,7 @@ function go(id) {
   if (id === 'signin')    requestAnimationFrame(() => window._siInit?.());
   if (id === 'demo')      requestAnimationFrame(() => window._dpReset?.());
   if (id === 'discovery') requestAnimationFrame(() => loadDiscoveryGrants());
+  if (id === 'dashboard') requestAnimationFrame(() => updateDashGreeting());
 }
 function submitContact() {
   const fname = document.getElementById('contact-fname').value.trim();
@@ -5380,6 +5381,7 @@ async function signOut() {
 
 function applyOrgIdentity(ctx) {
   rebuildSidebars();
+  updateDashGreeting?.();
 }
 
 /* returning session (page load) + OAuth redirect both come through here */
@@ -5581,6 +5583,42 @@ async function obFinish(skipped) {
 
 <!-- ════════════ GRANT DISCOVERY ENGINE ════════════ -->
 <script>
+/* ── Dashboard greeting ──────────────────────────────────── */
+function updateDashGreeting() {
+  const el = document.getElementById('dash-greeting');
+  if (!el) return;
+
+  // Time-of-day salutation using the browser's local clock
+  const h = new Date().getHours();
+  const salutation = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+
+  // Extract a usable first name from available sources
+  let firstName = '';
+  const ctx = window._grange;
+  if (ctx) {
+    // Try full name from Google OAuth metadata
+    const meta = ctx.user?.user_metadata || {};
+    const fullName = meta.full_name || meta.name || '';
+    if (fullName) {
+      firstName = fullName.trim().split(/\s+/)[0];
+    }
+    // Fall back to the part before @ in the email
+    if (!firstName) {
+      const email = ctx.user?.email || '';
+      const local = email.split('@')[0];
+      if (local) {
+        // Capitalise first segment, strip numbers/punctuation
+        const clean = local.replace(/[^a-zA-Z]/g,' ').trim().split(/\s+/)[0];
+        if (clean.length > 1) {
+          firstName = clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
+        }
+      }
+    }
+  }
+
+  el.textContent = firstName ? `${salutation}, ${firstName}` : salutation;
+}
+
 /* Real, verifiable foundation grant programs. All funders are publicly
    listed organizations; grant amounts and cycles reflect known programs. */
 const CURATED_GRANTS = [
