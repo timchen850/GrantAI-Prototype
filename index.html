@@ -3845,64 +3845,33 @@ label.field-label {
       <div class="page-head">
         <div>
           <h1 id="dash-greeting">Good morning</h1>
-          <div class="ps">3 deadlines in the next 30 days and 12 new matches this week.</div>
+          <div class="ps" id="dash-subtitle">Loading your grants…</div>
         </div>
         <button class="btn btn-accent" onclick="go('generator')">New proposal</button>
       </div>
 
       <div class="kpi">
-        <div class="k"><div class="kl">Grants discovered</div><div class="kv">47</div><div class="kd up">12 new this week</div></div>
-        <div class="k"><div class="kl">Proposals drafted</div><div class="kv">9</div><div class="kd">3 in progress</div></div>
-        <div class="k"><div class="kl">Submitted</div><div class="kv">6</div><div class="kd up">2 this month</div></div>
-        <div class="k"><div class="kl">Awarded</div><div class="kv">$142K</div><div class="kd up">2 grants won</div></div>
+        <div class="k"><div class="kl">Grants discovered</div><div class="kv" id="kpi-discovered">—</div><div class="kd" id="kpi-discovered-sub"></div></div>
+        <div class="k"><div class="kl">Proposals drafted</div><div class="kv" id="kpi-drafted">—</div><div class="kd" id="kpi-drafted-sub"></div></div>
+        <div class="k"><div class="kl">Submitted</div><div class="kv" id="kpi-submitted">—</div><div class="kd" id="kpi-submitted-sub"></div></div>
+        <div class="k"><div class="kl">Awarded</div><div class="kv" id="kpi-awarded">—</div><div class="kd" id="kpi-awarded-sub"></div></div>
       </div>
 
       <div class="grid-2">
         <div class="panel">
           <div class="panel-head"><h3>Grant pipeline</h3><button class="btn btn-ghost btn-sm" onclick="go('discovery')">View all</button></div>
-          <div class="grow">
-            <div class="ring hi" style="--p:94"><span>94</span></div>
-            <div class="gi"><div class="gn">DHHS Healthy Communities Initiative</div><div class="gm">Federal &middot; up to $250,000 <span class="pill pill-acc">Due Jun 15</span></div></div>
-            <button class="btn btn-primary btn-sm" onclick="go('generator')">Draft</button>
-          </div>
-          <div class="grow">
-            <div class="ring hi" style="--p:88"><span>88</span></div>
-            <div class="gi"><div class="gn">Weingart Foundation, Youth Development</div><div class="gm">Foundation &middot; $50K-$150K <span class="pill pill-warn">Due Jul 1</span></div></div>
-            <button class="btn btn-outline btn-sm" onclick="openGrant()">Details</button>
-          </div>
-          <div class="grow">
-            <div class="ring mid" style="--p:76"><span>76</span></div>
-            <div class="gi"><div class="gn">California Community Foundation</div><div class="gm">Foundation &middot; up to $75,000 <span class="pill pill-ok">Due Aug 30</span></div></div>
-            <button class="btn btn-outline btn-sm" onclick="go('generator')">Draft</button>
-          </div>
-          <div class="grow">
-            <div class="ring mid" style="--p:71"><span>71</span></div>
-            <div class="gi"><div class="gn">21st Century Community Learning Centers</div><div class="gm">Federal &middot; up to $150,000 <span class="pill pill-ink">LOI submitted</span></div></div>
-            <button class="btn btn-ghost btn-sm">View LOI</button>
-          </div>
-          <div class="grow">
-            <div class="ring hi" style="--p:91"><span>91</span></div>
-            <div class="gi"><div class="gn">Robert Wood Johnson Foundation</div><div class="gm">Foundation &middot; $75K-$200K <span class="pill pill-ink">Under review</span></div></div>
-            <span class="ps">Submitted</span>
-          </div>
+          <div id="dash-pipeline"></div>
         </div>
 
         <div style="display:flex;flex-direction:column;gap:22px">
           <div class="panel">
             <div class="panel-head"><h3>Upcoming deadlines</h3></div>
-            <div class="dl"><div><div class="dn">DHHS Healthy Communities</div><div class="dt">Full proposal</div></div><div class="dd red">14 days</div></div>
-            <div class="dl"><div><div class="dn">Weingart Foundation</div><div class="dt">Letter of inquiry</div></div><div class="dd amber">30 days</div></div>
-            <div class="dl"><div><div class="dn">CA Community Foundation</div><div class="dt">Full proposal</div></div><div class="dd green">90 days</div></div>
-            <div class="dl"><div><div class="dn">RWJ Foundation</div><div class="dt">Final report</div></div><div class="dd green">105 days</div></div>
+            <div id="dash-deadlines"></div>
           </div>
           <div class="panel">
             <div class="panel-head"><h3>Profile strength</h3></div>
             <p class="ps" style="margin-bottom:16px">A complete profile gets 3.4&times; more matches.</p>
-            <div class="bars">
-              <div class="bar-row"><div class="bl"><span>Mission &amp; NTEE</span><span style="color:var(--ok)">Done</span></div><div class="track"><span class="ok" style="width:100%"></span></div></div>
-              <div class="bar-row"><div class="bl"><span>Financial documents</span><span>67%</span></div><div class="track"><span style="width:67%"></span></div></div>
-              <div class="bar-row"><div class="bl"><span>Logic model</span><span>40%</span></div><div class="track"><span style="width:40%"></span></div></div>
-            </div>
+            <div class="bars" id="dash-profile-bars"></div>
             <button class="btn btn-outline btn-sm btn-block" style="margin-top:18px" onclick="go('profile')">Complete profile</button>
           </div>
         </div>
@@ -4221,7 +4190,7 @@ function go(id) {
   if (id === 'signin')    requestAnimationFrame(() => window._siInit?.());
   if (id === 'demo')      requestAnimationFrame(() => window._dpReset?.());
   if (id === 'discovery') requestAnimationFrame(() => loadDiscoveryGrants());
-  if (id === 'dashboard') requestAnimationFrame(() => updateDashGreeting());
+  if (id === 'dashboard') requestAnimationFrame(() => updateDashboard());
 }
 function submitContact() {
   const fname = document.getElementById('contact-fname').value.trim();
@@ -5560,6 +5529,7 @@ async function signOut() {
 function applyOrgIdentity(ctx) {
   rebuildSidebars();
   updateDashGreeting?.();
+  if (document.getElementById('dashboard')?.classList.contains('active')) updateDashboard?.();
 }
 
 /* returning session (page load) + OAuth redirect both come through here */
@@ -5796,6 +5766,161 @@ function updateDashGreeting() {
 
   el.textContent = firstName ? `${salutation}, ${firstName}` : salutation;
 }
+
+async function updateDashboard() {
+  updateDashGreeting();
+
+  const uid = window._grange?.user?.id;
+
+  // ── 1. Load cached discovery grants ──────────────────────────
+  let discGrants = [];
+  try {
+    const key = 'grange_grants_' + (uid || 'anon');
+    const cached = JSON.parse(localStorage.getItem(key) || 'null');
+    if (cached?.grants) discGrants = cached.grants;
+  } catch(_) {}
+
+  // ── 2. Load proposals & grant pipeline rows from Supabase ────
+  let dbProposals = [], dbGrants = [];
+  if (window.sb && uid) {
+    try {
+      const [pr, gr] = await Promise.all([
+        sb.from('proposals').select('*').eq('user_id', uid),
+        sb.from('grants').select('*').eq('user_id', uid)
+      ]);
+      dbProposals = pr.data || [];
+      dbGrants    = gr.data || [];
+    } catch(_) {}
+  }
+
+  // ── 3. KPIs ──────────────────────────────────────────────────
+  const discovered = discGrants.length;
+  const drafted    = dbProposals.length;
+  const submitted  = dbGrants.filter(g => g.status === 'submitted').length
+                   + dbProposals.filter(p => p.status === 'submitted').length;
+  const awarded    = dbGrants.filter(g => g.status === 'awarded').length;
+
+  const set = (id, val, sub, cls) => {
+    const el = document.getElementById(id);
+    const subEl = document.getElementById(id + '-sub');
+    if (el) el.textContent = val;
+    if (subEl) { subEl.textContent = sub; subEl.className = 'kd' + (cls ? ' ' + cls : ''); }
+  };
+
+  if (discovered > 0) set('kpi-discovered', discovered, 'matched to your org', 'up');
+  else                set('kpi-discovered', '—', 'Run discovery to find grants');
+
+  if (drafted > 0) set('kpi-drafted', drafted, drafted === 1 ? '1 in progress' : drafted + ' in progress');
+  else             set('kpi-drafted', '—', 'No proposals yet');
+
+  if (submitted > 0) set('kpi-submitted', submitted, '', 'up');
+  else               set('kpi-submitted', '—', 'None submitted yet');
+
+  if (awarded > 0) set('kpi-awarded', awarded + ' grant' + (awarded > 1 ? 's' : ''), 'won', 'up');
+  else             set('kpi-awarded', '—', 'None awarded yet');
+
+  // ── 4. Subtitle ──────────────────────────────────────────────
+  const subtitleEl = document.getElementById('dash-subtitle');
+  if (subtitleEl) {
+    const deadlineSoon = discGrants.filter(g => {
+      if (!g.deadline) return false;
+      const days = (new Date(g.deadline) - Date.now()) / 86400000;
+      return days >= 0 && days <= 30;
+    }).length;
+    if (discovered > 0) {
+      subtitleEl.textContent = deadlineSoon > 0
+        ? `${deadlineSoon} deadline${deadlineSoon > 1 ? 's' : ''} in the next 30 days · ${discovered} grants matched.`
+        : `${discovered} grants matched to your organization.`;
+    } else {
+      subtitleEl.textContent = 'Complete your profile and run grant discovery to get started.';
+    }
+  }
+
+  // ── 5. Grant pipeline (top 5 by match score) ─────────────────
+  const pipelineEl = document.getElementById('dash-pipeline');
+  if (pipelineEl) {
+    const top5 = [...discGrants]
+      .filter(g => g.matchScore > 0)
+      .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
+      .slice(0, 5);
+
+    if (top5.length === 0) {
+      pipelineEl.innerHTML = `
+        <div style="text-align:center;padding:32px 16px;color:var(--muted)">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="margin-bottom:12px;opacity:.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <div style="font-size:14px;font-weight:600;margin-bottom:6px">No grants discovered yet</div>
+          <div style="font-size:13px;margin-bottom:16px">Run grant discovery to find opportunities matched to your org.</div>
+          <button class="btn btn-accent btn-sm" onclick="go('discovery')">Discover grants</button>
+        </div>`;
+    } else {
+      pipelineEl.innerHTML = top5.map(g => {
+        const score = g.matchScore || 0;
+        const ringCls = score >= 80 ? 'hi' : score >= 60 ? 'mid' : 'lo';
+        const days = g.deadline ? Math.ceil((new Date(g.deadline) - Date.now()) / 86400000) : null;
+        let pillHtml = '';
+        if (days !== null && days >= 0) {
+          const pillCls = days <= 30 ? 'pill-acc' : days <= 75 ? 'pill-warn' : 'pill-ok';
+          pillHtml = `<span class="pill ${pillCls}">Due in ${days}d</span>`;
+        } else if (g.deadlineLabel) {
+          pillHtml = `<span class="pill pill-ok">${g.deadlineLabel}</span>`;
+        }
+        const meta = [g.type, g.amount].filter(Boolean).join(' · ');
+        return `<div class="grow">
+          <div class="ring ${ringCls}" style="--p:${score}"><span>${score}</span></div>
+          <div class="gi">
+            <div class="gn">${g.title || g.funder}</div>
+            <div class="gm">${meta} ${pillHtml}</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="go('generator')">Draft</button>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ── 6. Upcoming deadlines ────────────────────────────────────
+  const deadlinesEl = document.getElementById('dash-deadlines');
+  if (deadlinesEl) {
+    const upcoming = discGrants
+      .filter(g => g.deadline)
+      .map(g => ({ ...g, daysLeft: Math.ceil((new Date(g.deadline) - Date.now()) / 86400000) }))
+      .filter(g => g.daysLeft >= 0)
+      .sort((a, b) => a.daysLeft - b.daysLeft)
+      .slice(0, 5);
+
+    if (upcoming.length === 0) {
+      deadlinesEl.innerHTML = `<div style="padding:16px 0;color:var(--muted);font-size:13px;text-align:center">No upcoming deadlines. Discover grants to track them here.</div>`;
+    } else {
+      deadlinesEl.innerHTML = upcoming.map(g => {
+        const cls = g.daysLeft <= 30 ? 'red' : g.daysLeft <= 75 ? 'amber' : 'green';
+        return `<div class="dl">
+          <div><div class="dn">${g.funder || g.title}</div><div class="dt">${g.title || ''}</div></div>
+          <div class="dd ${cls}">${g.daysLeft}d</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ── 7. Profile strength ──────────────────────────────────────
+  const barsEl = document.getElementById('dash-profile-bars');
+  if (barsEl) {
+    const p = window._grange?.profile || {};
+    const answers = window._grange?._cachedAnswers || {};
+    const rows = [
+      { label: 'Mission & focus areas', pct: (p.mission || answers.mission) && (answers.focus_areas?.length > 0) ? 100 : (p.mission || answers.mission) ? 60 : 0 },
+      { label: 'Organization details',  pct: (p.org_name && p.ein) ? 100 : p.org_name ? 50 : 0 },
+      { label: 'Programs & location',   pct: (answers.programs?.length > 0 || answers.program_desc) && answers.location ? 100 : answers.location ? 50 : 0 },
+    ];
+    barsEl.innerHTML = rows.map(r => {
+      const done = r.pct === 100;
+      const label = done ? `<span style="color:var(--ok)">Done</span>` : `<span>${r.pct}%</span>`;
+      return `<div class="bar-row">
+        <div class="bl"><span>${r.label}</span>${label}</div>
+        <div class="track"><span class="${done ? 'ok' : ''}" style="width:${r.pct}%"></span></div>
+      </div>`;
+    }).join('');
+  }
+}
+
 
 /* Real, verifiable foundation grant programs. All funders are publicly
    listed organizations; grant amounts and cycles reflect known programs. */
