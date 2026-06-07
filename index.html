@@ -3965,9 +3965,11 @@ label.field-label {
           <div id="out-doc" style="display:none">
             <div class="out-head">
               <div class="oh-l"><div class="ol1" id="gen-out-type">Draft, full grant narrative</div><div class="ol2" id="gen-out-funder">DHHS Healthy Communities</div></div>
-              <div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="copyProposal()">Copy</button><button class="btn btn-accent btn-sm" onclick="exportProposal()">Export .txt</button></div>
+              <div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="copyProposal()">Copy</button><button class="btn btn-accent btn-sm" id="export-btn" onclick="exportProposal()">Export .txt</button></div>
             </div>
+            <div id="ai-policy-banner" style="display:none;padding:0 0 0 0;margin-top:10px"></div>
             <div class="out-body"><div class="doc" id="doc-content"></div></div>
+            <div id="compliance-checklist" style="display:none"></div>
           </div>
         </div>
       </div>
@@ -4425,6 +4427,12 @@ async function generate() {
   btn.disabled         = true;
   btn.textContent      = 'Generating…';
   content.innerHTML    = '';
+  const banner = document.getElementById('ai-policy-banner');
+  if (banner) banner.style.display = 'none';
+  const checklist = document.getElementById('compliance-checklist');
+  if (checklist) { checklist.innerHTML = ''; checklist.style.display = 'none'; }
+  const exportBtn = document.getElementById('export-btn');
+  if (exportBtn) { exportBtn.disabled = false; exportBtn.style.opacity = ''; exportBtn.style.cursor = ''; exportBtn.title = ''; }
 
   // Collect form values
   const fields = {
@@ -4529,6 +4537,9 @@ async function generate() {
       }
     }
 
+    showAIPolicyBanner(selectedGrant);
+    runComplianceChecklist(fields, content);
+
     const elapsed = ((Date.now() - genStart) / 1000).toFixed(1);
     btn.textContent = 'Regenerate';
     toast(`Draft ready in ${elapsed}s — review before submitting`);
@@ -4545,6 +4556,73 @@ async function generate() {
     generating    = false;
     btn.disabled  = false;
     _genAbort     = null;
+  }
+}
+
+function showAIPolicyBanner(grant) {
+  const banner = document.getElementById('ai-policy-banner');
+  if (!banner) return;
+  const type = (grant?.type || '').toLowerCase();
+  if (type === 'federal') {
+    banner.innerHTML = '<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;padding:10px 14px;font-size:13px;color:#991b1b"><strong>Warning:</strong> This funder may prohibit substantially AI-generated content (e.g. NIH NOT-OD-25-132). Use this draft as a structural guide only — the core argument must be yours.</div>';
+    banner.style.display = 'block';
+  } else if (type === 'foundation') {
+    banner.innerHTML = '<div style="background:#fef9c3;border:1px solid #fde047;border-radius:6px;padding:10px 14px;font-size:13px;color:#854d0e"><strong>Notice:</strong> Review this funder\'s guidelines for AI disclosure requirements before submitting.</div>';
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function runComplianceChecklist(fields, contentEl) {
+  const text = contentEl ? (contentEl.innerText || '') : '';
+  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+
+  const requiredSections = [
+    'Executive Summary',
+    'Statement of Need',
+    'Program Design',
+    'Goals & Objectives',
+    'Evaluation Plan',
+    'Organizational Capacity',
+  ];
+
+  const checks = [
+    ...requiredSections.map(sec => ({
+      label: 'Section present: ' + sec,
+      pass: text.toLowerCase().includes(sec.toLowerCase()),
+      critical: false,
+    })),
+    { label: 'Word count within range (200–1200 words)', pass: wordCount >= 200 && wordCount <= 1200, critical: false },
+    { label: 'Requested amount filled in',             pass: !!(fields.amount || '').trim(),      critical: true },
+    { label: 'Project period filled in',               pass: !!(fields.period || '').trim(),      critical: true },
+    { label: 'Population served filled in',            pass: !!(fields.population || '').trim(),  critical: true },
+    { label: '"What this funds" description filled in', pass: !!(fields.description || '').trim(), critical: true },
+  ];
+
+  const criticalFail = checks.some(c => c.critical && !c.pass);
+
+  const exportBtn = document.getElementById('export-btn');
+  if (exportBtn) {
+    exportBtn.disabled     = criticalFail;
+    exportBtn.title        = criticalFail ? 'Fix critical items in the checklist below before exporting' : '';
+    exportBtn.style.opacity = criticalFail ? '0.5' : '';
+    exportBtn.style.cursor  = criticalFail ? 'not-allowed' : '';
+  }
+
+  let rows = '';
+  for (const c of checks) {
+    const icon = c.pass
+      ? '<span style="color:#22c55e;font-size:15px">✓</span>'
+      : '<span style="color:#ef4444;font-size:15px">✗</span>';
+    const badge = c.critical && !c.pass ? ' <span style="font-size:11px;background:#fee2e2;color:#991b1b;border-radius:4px;padding:1px 5px;margin-left:4px">required</span>' : '';
+    rows += `<li style="display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0">${icon}<span>${c.label}${badge}</span></li>`;
+  }
+
+  const el = document.getElementById('compliance-checklist');
+  if (el) {
+    el.innerHTML = `<div style="border-top:1px solid var(--border,#e5e7eb);margin-top:16px;padding:14px 0 4px"><div style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted,#6b7280);margin-bottom:8px">Pre-export checklist</div><ul style="list-style:none;margin:0;padding:0">${rows}</ul></div>`;
+    el.style.display = 'block';
   }
 }
 
