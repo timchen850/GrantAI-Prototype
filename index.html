@@ -3957,29 +3957,29 @@ label.field-label {
               <div style="font-size:13px;color:var(--accent-ink);margin-top:3px">Federal &middot; up to $250,000 &middot; Due Jun 15, 2026 &middot; 94% match</div>
             </div>
             <div class="fieldset"><label class="field-label">Proposal type</label>
-              <select><option>Full grant narrative</option><option>Letter of inquiry</option><option>Concept paper</option><option>Progress report</option></select></div>
+              <select id="gen-proposal-type"><option>Full grant narrative</option><option>Letter of inquiry</option><option>Concept paper</option><option>Progress report</option></select></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div class="fieldset" style="margin:0"><label class="field-label">Requested amount</label><input type="text" value="$175,000"></div>
-              <div class="fieldset" style="margin:0"><label class="field-label">Project period</label><input type="text" value="Jan-Dec 2027"></div>
+              <div class="fieldset" style="margin:0"><label class="field-label">Requested amount</label><input id="gen-amount" type="text" value="$175,000"></div>
+              <div class="fieldset" style="margin:0"><label class="field-label">Project period</label><input id="gen-period" type="text" value="Jan-Dec 2027"></div>
             </div>
           </div>
 
           <div class="panel" style="margin-bottom:18px">
             <div class="panel-head"><h3>Program focus</h3></div>
             <div class="fieldset"><label class="field-label">Program to fund</label>
-              <select><option>After-school tutoring</option><option>College prep track</option><option>Mentorship program</option><option>Summer academy</option></select></div>
-            <div class="fieldset"><label class="field-label">Population served</label><input type="text" value="Youth ages 8 to 18 in Boyle Heights and East LA"></div>
+              <select id="gen-program"><option>After-school tutoring</option><option>College prep track</option><option>Mentorship program</option><option>Summer academy</option></select></div>
+            <div class="fieldset"><label class="field-label">Population served</label><input id="gen-population" type="text" value="Youth ages 8 to 18 in Boyle Heights and East LA"></div>
             <div class="fieldset" style="margin:0"><label class="field-label">What this funds</label>
-              <textarea>Year three of our after-school tutoring and mentorship program, expanding capacity by 60 youth and adding workforce readiness for the 16 to 18 cohort.</textarea></div>
+              <textarea id="gen-description">Year three of our after-school tutoring and mentorship program, expanding capacity by 60 youth and adding workforce readiness for the 16 to 18 cohort.</textarea></div>
           </div>
 
           <div class="panel" style="margin-bottom:18px">
             <div class="panel-head"><h3>Tone</h3></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
               <div class="fieldset" style="margin:0"><label class="field-label">Voice</label>
-                <select><option>Data-driven</option><option selected>Community-centered</option><option>Formal federal</option></select></div>
+                <select id="gen-voice"><option>Data-driven</option><option selected>Community-centered</option><option>Formal federal</option></select></div>
               <div class="fieldset" style="margin:0"><label class="field-label">Emphasis</label>
-                <select><option selected>Need &amp; equity</option><option>Outcomes</option><option>Capacity</option></select></div>
+                <select id="gen-emphasis"><option selected>Need &amp; equity</option><option>Outcomes</option><option>Capacity</option></select></div>
             </div>
           </div>
 
@@ -3996,7 +3996,7 @@ label.field-label {
           <div id="out-doc" style="display:none">
             <div class="out-head">
               <div class="oh-l"><div class="ol1">Draft, full grant narrative</div><div class="ol2">DHHS Healthy Communities</div></div>
-              <div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="toast('Copied to clipboard')">Copy</button><button class="btn btn-accent btn-sm" onclick="toast('Exporting as .docx')">Export</button></div>
+              <div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="copyProposal()">Copy</button><button class="btn btn-accent btn-sm" onclick="exportProposal()">Export .txt</button></div>
             </div>
             <div class="out-body"><div class="doc" id="doc-content"></div></div>
           </div>
@@ -4322,41 +4322,219 @@ document.querySelectorAll('.filters .chip').forEach(c => {
 });
 
 /* ─── proposal generation ───────────────────────────────── */
-const DOC = `
-<h4>Executive summary</h4>
-<p>Eastside Youth Foundation requests $175,000 to fund year three of our after-school and mentorship program, serving 400 low-income youth ages 8 to 18 in Boyle Heights and East Los Angeles, two of the most under-resourced zip codes in the county.</p>
-<h4>Statement of need</h4>
-<p>In our service area, 78% of households earn below the poverty line and youth chronic absenteeism runs at 34%. Educational stability is a social determinant of health: young people who do not finish high school report poor adult health at far higher rates. Our program sits at that intersection.</p>
-<h4>Program design and theory of change</h4>
-<p><b>Inputs.</b> 6 staff, 22 trained mentors, an evidence-based curriculum, and a $342,000 operating budget across 14 funders.</p>
-<p><b>Activities.</b> Daily tutoring, weekly mentor sessions, college counseling, parent workshops, and campus visits.</p>
-<p><b>Outcomes.</b> 94% college enrollment against a 67% district average, 89% grade-level reading, 78% year-over-year retention.</p>
-<h4>Evaluation plan</h4>
-<p>We track attendance, GPA, and enrollment quarterly, paired with twice-yearly family surveys. Our external evaluator at Cal State LA reviews results and reports them to funders on this grant's schedule.</p>
-<h4>Organizational capacity</h4>
-<p>Founded in 2011, Eastside Youth Foundation is a 501(c)(3) with 15 years in Boyle Heights, an independently audited budget, and no material findings in five years.<span class="cursor"></span></p>`;
+
+function getVal(id, fallback = '') {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : fallback;
+}
+
+function buildPrompt(fields, org) {
+  const voiceMap = {
+    'Data-driven':       'precise, evidence-based, metrics-forward',
+    'Community-centered':'warm, human, story-led with data in support',
+    'Formal federal':    'formal, structured, policy-aligned language appropriate for federal reviewers',
+  };
+  const emphMap = {
+    'Need & equity':  'the urgency of community need and equity gaps',
+    'Outcomes':       'measurable results and long-term impact',
+    'Capacity':       'organizational track record, infrastructure, and readiness',
+  };
+
+  return `You are an expert nonprofit grant writer. Write a complete, compelling ${fields.proposalType} for the grant described below.
+
+OUTPUT FORMAT: Use only clean HTML — <h4> for section headings, <p> for paragraphs, <b> for key terms or important phrases. No markdown, no code blocks, no preamble. Output the HTML directly.
+
+SECTIONS TO INCLUDE (in this order):
+1. Executive Summary
+2. Statement of Need
+3. Program Design & Theory of Change (use <b>Inputs.</b>, <b>Activities.</b>, <b>Outcomes.</b> structure)
+4. Goals & Objectives
+5. Evaluation Plan
+6. Organizational Capacity
+
+GRANT DETAILS:
+- Funder: DHHS Healthy Communities Initiative (Federal)
+- Proposal type: ${fields.proposalType}
+- Requested amount: ${fields.amount}
+- Project period: ${fields.period}
+
+ORGANIZATION:
+- Name: ${org.name || 'Our organization'}
+- Mission: ${org.mission || 'To serve our community'}
+- Focus areas: ${org.focusAreas || 'Community health and education'}
+- Geography: ${org.geography || 'Local community'}
+- Annual budget: ${org.budget || 'Not specified'}
+
+PROGRAM:
+- Program name: ${fields.program}
+- Population served: ${fields.population}
+- What this grant funds: ${fields.description}
+
+TONE & STYLE:
+- Voice: ${voiceMap[fields.voice] || fields.voice}
+- Primary emphasis: ${emphMap[fields.emphasis] || fields.emphasis}
+
+IMPORTANT:
+- Use only the data provided above. Do not invent statistics or program details not given.
+- Keep total length to approximately 700-900 words across all sections.
+- Write as if you are the organization — use "we", "our", "us".
+- Every section should directly tie back to the funder's focus on healthy communities.`;
+}
 
 let generating = false;
-function generate(){
+let _genAbort = null;
+
+async function generate() {
   if (generating) return;
+
+  const apiKey = window.GEMINI_API_KEY;
+  if (!apiKey || apiKey === 'YOUR-GEMINI-API-KEY') {
+    toast('Add your Gemini API key to config.js to generate proposals.');
+    return;
+  }
+
   generating = true;
-  const empty = document.getElementById('out-empty');
-  const doc = document.getElementById('out-doc');
-  const prog = document.getElementById('prog');
-  const btn = document.getElementById('gen-btn');
-  empty.style.display = 'none';
-  doc.style.display = 'none';
-  prog.style.display = 'block';
-  btn.textContent = 'Generating...';
-  toast('Reading the RFP and your profile');
-  setTimeout(() => {
-    prog.style.display = 'none';
-    doc.style.display = 'block';
-    document.getElementById('doc-content').innerHTML = DOC;
+  const empty  = document.getElementById('out-empty');
+  const outDoc = document.getElementById('out-doc');
+  const prog   = document.getElementById('prog');
+  const btn    = document.getElementById('gen-btn');
+  const content = document.getElementById('doc-content');
+
+  empty.style.display  = 'none';
+  outDoc.style.display = 'none';
+  prog.style.display   = 'block';
+  btn.disabled         = true;
+  btn.textContent      = 'Generating…';
+  content.innerHTML    = '';
+
+  // Collect form values
+  const fields = {
+    proposalType: getVal('gen-proposal-type', 'Full grant narrative'),
+    amount:       getVal('gen-amount',        '$175,000'),
+    period:       getVal('gen-period',        'Jan-Dec 2027'),
+    program:      getVal('gen-program',       'After-school tutoring'),
+    population:   getVal('gen-population',    ''),
+    description:  getVal('gen-description',   ''),
+    voice:        getVal('gen-voice',         'Community-centered'),
+    emphasis:     getVal('gen-emphasis',      'Need & equity'),
+  };
+
+  // Pull org profile from loaded session state
+  const g = window._grange || {};
+  const answers = g.onboardingAnswers || {};
+  const org = {
+    name:       g.profile?.org_name  || answers.org_name   || '',
+    mission:    g.profile?.mission   || answers.mission    || '',
+    focusAreas: Array.isArray(answers.focus_areas) ? answers.focus_areas.join(', ') : (answers.focus_areas || ''),
+    geography:  answers.geography    || answers.geo_scope  || '',
+    budget:     answers.annual_budget|| answers.budget     || '',
+  };
+
+  const prompt = buildPrompt(fields, org);
+
+  toast('Drafting your proposal…');
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key=${apiKey}&alt=sse`;
+
+  try {
+    _genAbort = new AbortController();
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: _genAbort.signal,
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `API error ${res.status}`);
+    }
+
+    // Show the output panel as soon as streaming starts
+    prog.style.display   = 'none';
+    outDoc.style.display = 'block';
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let rawText = '';
+    const genStart = Date.now();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // keep incomplete line
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr || jsonStr === '[DONE]') continue;
+        try {
+          const chunk = JSON.parse(jsonStr);
+          const text  = chunk?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          if (text) {
+            rawText += text;
+            // Render incrementally — strip any accidental markdown fences
+            const clean = rawText
+              .replace(/```html?\n?/gi, '')
+              .replace(/```\n?/g, '')
+              .trim();
+            content.innerHTML = clean;
+            // Auto-scroll to bottom of output
+            content.scrollIntoView({ block: 'end', behavior: 'smooth' });
+          }
+        } catch (_) { /* skip malformed chunk */ }
+      }
+    }
+
+    const elapsed = ((Date.now() - genStart) / 1000).toFixed(1);
     btn.textContent = 'Regenerate';
-    generating = false;
-    toast('Draft ready in 4.2 seconds');
-  }, 2800);
+    toast(`Draft ready in ${elapsed}s — review before submitting`);
+
+  } catch (err) {
+    prog.style.display = 'none';
+    if (err.name !== 'AbortError') {
+      outDoc.style.display = 'none';
+      empty.style.display  = 'block';
+      toast('Generation failed: ' + (err.message || 'Unknown error'));
+      console.error('[Grange AI] generate():', err);
+    }
+  } finally {
+    generating    = false;
+    btn.disabled  = false;
+    _genAbort     = null;
+  }
+}
+
+function copyProposal() {
+  const content = document.getElementById('doc-content');
+  if (!content || !content.innerText.trim()) { toast('Nothing to copy yet.'); return; }
+  navigator.clipboard.writeText(content.innerText).then(
+    () => toast('Proposal copied to clipboard'),
+    () => toast('Copy failed — please select and copy manually')
+  );
+}
+
+function exportProposal() {
+  const content = document.getElementById('doc-content');
+  if (!content || !content.innerText.trim()) { toast('Nothing to export yet.'); return; }
+  const grantName  = getVal('gen-program', 'proposal').replace(/\s+/g, '_');
+  const orgName    = (window._grange?.profile?.org_name || 'org').replace(/\s+/g, '_');
+  const dateStr    = new Date().toISOString().slice(0, 10);
+  const filename   = `${orgName}_${grantName}_${dateStr}.txt`;
+  const blob       = new Blob([content.innerText], { type: 'text/plain' });
+  const a          = document.createElement('a');
+  a.href           = URL.createObjectURL(blob);
+  a.download       = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast(`Exported as ${filename}`);
 }
 
 /* ─── Google Sign-In (via Supabase OAuth) ────────────────── */

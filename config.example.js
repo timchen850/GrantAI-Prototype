@@ -14,3 +14,7 @@ window.SUPABASE_CONFIG = {
   url: 'https://YOUR-PROJECT-REF.supabase.co',
   anonKey: 'YOUR-ANON-PUBLIC-KEY',
 };
+
+// Gemini API key — get a free key at aistudio.google.com/apikey
+// Dev only — move behind a Supabase Edge Function before production.
+window.GEMINI_API_KEY = 'YOUR-GEMINI-API-KEY';
