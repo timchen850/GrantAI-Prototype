@@ -3922,8 +3922,8 @@ label.field-label {
           <div class="panel" style="margin-bottom:18px">
             <div class="panel-head"><h3>Grant</h3></div>
             <div style="background:var(--accent-tint);border-radius:var(--r);padding:14px 16px;margin-bottom:18px">
-              <div style="font-size:14.5px;font-weight:700;color:var(--ink)">DHHS Healthy Communities Initiative</div>
-              <div style="font-size:13px;color:var(--accent-ink);margin-top:3px">Federal &middot; up to $250,000 &middot; Due Jun 15, 2026 &middot; 94% match</div>
+              <div id="gen-grant-title" style="font-size:14.5px;font-weight:700;color:var(--ink)">DHHS Healthy Communities Initiative</div>
+              <div id="gen-grant-meta" style="font-size:13px;color:var(--accent-ink);margin-top:3px">Federal &middot; up to $250,000 &middot; Due Jun 15, 2026 &middot; 94% match</div>
             </div>
             <div class="fieldset"><label class="field-label">Proposal type</label>
               <select id="gen-proposal-type"><option>Full grant narrative</option><option>Letter of inquiry</option><option>Concept paper</option><option>Progress report</option></select></div>
@@ -3964,7 +3964,7 @@ label.field-label {
           </div>
           <div id="out-doc" style="display:none">
             <div class="out-head">
-              <div class="oh-l"><div class="ol1">Draft, full grant narrative</div><div class="ol2">DHHS Healthy Communities</div></div>
+              <div class="oh-l"><div class="ol1" id="gen-out-type">Draft, full grant narrative</div><div class="ol2" id="gen-out-funder">DHHS Healthy Communities</div></div>
               <div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="copyProposal()">Copy</button><button class="btn btn-accent btn-sm" onclick="exportProposal()">Export .txt</button></div>
             </div>
             <div class="out-body"><div class="doc" id="doc-content"></div></div>
@@ -4055,7 +4055,7 @@ label.field-label {
       <div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--warn-ink)" stroke-width="2.4"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>LOI must come before the full proposal, 2-page limit</div>
     </div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-accent" style="flex:1" onclick="closeGrant();go('generator')">Draft the LOI</button>
+      <button class="btn btn-accent" style="flex:1" onclick="closeGrant();selectGrantForDraft(window._modalGrant||null);go('generator')">Draft the LOI</button>
       <button class="btn btn-outline" onclick="toast('Saved to your list');closeGrant()">Save</button>
     </div>
   </div>
@@ -4191,6 +4191,7 @@ function go(id) {
   if (id === 'demo')      requestAnimationFrame(() => window._dpReset?.());
   if (id === 'discovery') requestAnimationFrame(() => loadDiscoveryGrants());
   if (id === 'dashboard') requestAnimationFrame(() => updateDashboard());
+  if (id === 'generator') requestAnimationFrame(() => populateGeneratorGrant());
 }
 function submitContact() {
   const fname = document.getElementById('contact-fname').value.trim();
@@ -4297,10 +4298,46 @@ function getVal(id, fallback = '') {
   return el ? el.value.trim() : fallback;
 }
 
-function buildPrompt(fields, org) {
+/* ── store a grant for drafting and remember it across navigation ── */
+function selectGrantForDraft(idOrGrant) {
+  let grant = null;
+  if (idOrGrant && typeof idOrGrant === 'object') {
+    grant = idOrGrant;
+  } else if (idOrGrant && window._grantsById) {
+    grant = window._grantsById[idOrGrant] || null;
+  }
+  window._selectedGrant = grant || null;
+}
+
+/* ── update the generator UI with the selected grant ── */
+function populateGeneratorGrant() {
+  const g = window._selectedGrant;
+  const titleEl  = document.getElementById('gen-grant-title');
+  const metaEl   = document.getElementById('gen-grant-meta');
+  const amtEl    = document.getElementById('gen-amount');
+
+  if (!g) return; // no grant selected — leave defaults
+
+  if (titleEl) titleEl.textContent = g.title || g.funder || 'Selected grant';
+
+  // Build a readable meta line
+  const parts = [];
+  if (g.type)          parts.push(g.type);
+  if (g.amount)        parts.push(g.amount);
+  if (g.deadlineLabel) parts.push('Due ' + g.deadlineLabel);
+  if (g.matchScore)    parts.push(g.matchScore + '% match');
+  if (metaEl) metaEl.textContent = parts.join(' · ');
+
+  // Pre-fill requested amount from grant max if user hasn't changed it
+  if (amtEl && g.amountMax) {
+    amtEl.value = '$' + Number(g.amountMax).toLocaleString();
+  }
+}
+
+function buildPrompt(fields, org, grant) {
   const voiceMap = {
-    'Data-driven':       'precise, evidence-based, metrics-forward',
-    'Community-centered':'warm, human, story-led with data in support',
+    'Data-driven':       'precise, evidence-based, metrics-forward language',
+    'Community-centered':'warm, human, story-led writing with data in support',
     'Formal federal':    'formal, structured, policy-aligned language appropriate for federal reviewers',
   };
   const emphMap = {
@@ -4308,6 +4345,12 @@ function buildPrompt(fields, org) {
     'Outcomes':       'measurable results and long-term impact',
     'Capacity':       'organizational track record, infrastructure, and readiness',
   };
+
+  const funderLine = grant
+    ? `${grant.funder}${grant.title && grant.title !== grant.funder ? ' — ' + grant.title : ''} (${grant.type || 'Grant'})`
+    : 'DHHS Healthy Communities Initiative (Federal)';
+
+  const deadlineLine = grant?.deadlineLabel ? `Due ${grant.deadlineLabel}` : 'Rolling';
 
   return `You are an expert nonprofit grant writer. Write a complete, compelling ${fields.proposalType} for the grant described below.
 
@@ -4322,17 +4365,24 @@ SECTIONS TO INCLUDE (in this order):
 6. Organizational Capacity
 
 GRANT DETAILS:
-- Funder: DHHS Healthy Communities Initiative (Federal)
+- Funder: ${funderLine}
 - Proposal type: ${fields.proposalType}
 - Requested amount: ${fields.amount}
 - Project period: ${fields.period}
+- Deadline: ${deadlineLine}
 
 ORGANIZATION:
 - Name: ${org.name || 'Our organization'}
 - Mission: ${org.mission || 'To serve our community'}
-- Focus areas: ${org.focusAreas || 'Community health and education'}
-- Geography: ${org.geography || 'Local community'}
+- Founded: ${org.yearFounded || 'Not specified'}
+- Location: ${org.location || 'Not specified'}
+- Geographic scope: ${org.geoFocus || 'Local'}
 - Annual budget: ${org.budget || 'Not specified'}
+- Full-time staff: ${org.staffCount || 'Not specified'}
+- People served per year: ${org.peopleServed || 'Not specified'}
+- Focus areas: ${org.focusAreas || 'Community health and education'}
+- Who we serve: ${org.beneficiaries || org.population || 'Community members'}
+- Primary programs: ${org.programs || 'Not specified'}
 
 PROGRAM:
 - Program name: ${fields.program}
@@ -4344,10 +4394,10 @@ TONE & STYLE:
 - Primary emphasis: ${emphMap[fields.emphasis] || fields.emphasis}
 
 IMPORTANT:
-- Use only the data provided above. Do not invent statistics or program details not given.
+- Use only the data provided above. Do not invent statistics, dollar amounts, or program details not given.
 - Keep total length to approximately 700-900 words across all sections.
 - Write as if you are the organization — use "we", "our", "us".
-- Every section should directly tie back to the funder's focus on healthy communities.`;
+- Tie each section back to the funder's focus areas and priorities.`;
 }
 
 let generating = false;
@@ -4389,17 +4439,28 @@ async function generate() {
   };
 
   // Pull org profile from loaded session state
-  const g = window._grange || {};
-  const answers = g.onboardingAnswers || {};
+  const ctx     = window._grange || {};
+  const answers = ctx._cachedAnswers || {};
   const org = {
-    name:       g.profile?.org_name  || answers.org_name   || '',
-    mission:    g.profile?.mission   || answers.mission    || '',
-    focusAreas: Array.isArray(answers.focus_areas) ? answers.focus_areas.join(', ') : (answers.focus_areas || ''),
-    geography:  answers.geography    || answers.geo_scope  || '',
-    budget:     answers.annual_budget|| answers.budget     || '',
+    name:         ctx.profile?.org_name || answers.org_name || '',
+    mission:      answers.mission       || '',
+    yearFounded:  answers.year_founded  || '',
+    location:     answers.primary_location || answers.state_incorp || '',
+    geoFocus:     answers.geo_focus     || '',
+    budget:       answers.annual_budget || '',
+    staffCount:   answers.staff_count   || '',
+    peopleServed: answers.people_served || '',
+    focusAreas:   Array.isArray(answers.focus_areas)
+                    ? answers.focus_areas.join(', ')
+                    : (answers.focus_areas || ''),
+    beneficiaries:answers.beneficiaries || '',
+    programs:     Array.isArray(answers.primary_programs)
+                    ? answers.primary_programs.join(', ')
+                    : (answers.primary_programs || ''),
   };
 
-  const prompt = buildPrompt(fields, org);
+  const selectedGrant = window._selectedGrant || null;
+  const prompt = buildPrompt(fields, org, selectedGrant);
 
   toast('Drafting your proposal…');
 
@@ -4421,6 +4482,12 @@ async function generate() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err?.error?.message || `API error ${res.status}`);
     }
+
+    // Update the output header with real grant + proposal type
+    const outType   = document.getElementById('gen-out-type');
+    const outFunder = document.getElementById('gen-out-funder');
+    if (outType)   outType.textContent   = 'Draft, ' + fields.proposalType.toLowerCase();
+    if (outFunder) outFunder.textContent = selectedGrant?.funder || selectedGrant?.title || 'Selected grant';
 
     // Show the output panel as soon as streaming starts
     prog.style.display   = 'none';
@@ -6375,6 +6442,9 @@ function renderDiscovery(grants, answers) {
 
   window._discAllGrants = grants;
   window._discFilter = 'all';
+  // Build a fast id→grant lookup so Draft buttons can retrieve the full object
+  window._grantsById = {};
+  (grants || []).forEach(g => { window._grantsById[g.id] = g; });
 
   if (!grants || grants.length === 0) {
     list.innerHTML = `<div class="disc-loading"><p style="color:var(--muted)">No matches found yet. Try completing more of your profile to improve results.</p></div>`;
@@ -6418,7 +6488,7 @@ function renderGrantCard(g) {
       <div class="amt">${escHtml(g.amount)}</div>
       <div class="due">${duePill}</div>
       <div class="acts">
-        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();go('generator')">Draft proposal</button>
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();selectGrantForDraft('${escHtml(g.id)}');go('generator')">Draft proposal</button>
         ${govLink}
       </div>
     </div>
