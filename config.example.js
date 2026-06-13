@@ -9,12 +9,11 @@
 // NOTE: the anon public key is SAFE to expose in the browser. It only
 // grants whatever Row Level Security allows. The secret/service_role key
 // must NEVER appear in this file or anywhere client-side.
+//
+// The Gemini API key is now stored as a Supabase secret (server-side).
+// See SUPABASE_SETUP.md for instructions.
 // ─────────────────────────────────────────────────────────────
 window.SUPABASE_CONFIG = {
   url: 'https://YOUR-PROJECT-REF.supabase.co',
   anonKey: 'YOUR-ANON-PUBLIC-KEY',
 };
-
-// Gemini API key — get a free key at aistudio.google.com/apikey
-// Dev only — move behind a Supabase Edge Function before production.
-window.GEMINI_API_KEY = 'YOUR-GEMINI-API-KEY';

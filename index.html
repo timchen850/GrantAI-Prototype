@@ -4408,9 +4408,12 @@ let _genAbort = null;
 async function generate() {
   if (generating) return;
 
-  const apiKey = window.GEMINI_API_KEY;
-  if (!apiKey || apiKey === 'YOUR-GEMINI-API-KEY') {
-    toast('Add your Gemini API key to config.js to generate proposals.');
+  // Auth gate — must be signed in to generate
+  if (!window.sb) { toast('Service unavailable — please refresh.'); return; }
+  const { data: { user: _genUser } } = await window.sb.auth.getUser();
+  if (!_genUser) {
+    toast('Sign in to generate proposals.');
+    go('signin');
     return;
   }
 
@@ -4472,13 +4475,17 @@ async function generate() {
 
   toast('Drafting your proposal…');
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key=${apiKey}&alt=sse`;
+  const { data: { session } } = await window.sb.auth.getSession();
+  const edgeFnUrl = window.SUPABASE_CONFIG.url + '/functions/v1/generate-proposal';
 
   try {
     _genAbort = new AbortController();
-    const res = await fetch(url, {
+    const res = await fetch(edgeFnUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+      },
       signal: _genAbort.signal,
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
