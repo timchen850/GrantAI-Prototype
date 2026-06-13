@@ -4337,69 +4337,206 @@ function populateGeneratorGrant() {
 }
 
 function buildPrompt(fields, org, grant) {
+
+  /* ── Voice / emphasis lookup ─────────────────────────────── */
   const voiceMap = {
-    'Data-driven':       'precise, evidence-based, metrics-forward language',
-    'Community-centered':'warm, human, story-led writing with data in support',
-    'Formal federal':    'formal, structured, policy-aligned language appropriate for federal reviewers',
+    'Data-driven':        'precise, evidence-based, metrics-forward — lead every claim with a number or citation; keep sentences tight; avoid emotional appeals unless backed by data',
+    'Community-centered': 'warm, human, and story-led — open with a real community moment or voice, then anchor it with data; use "neighbors," "families," and "young people" over clinical terms',
+    'Formal federal':     'formal, policy-aligned, bureaucratically precise — use passive constructions where appropriate, cite authorizing statutes or federal priority areas, and structure around program goals',
   };
   const emphMap = {
-    'Need & equity':  'the urgency of community need and equity gaps',
-    'Outcomes':       'measurable results and long-term impact',
-    'Capacity':       'organizational track record, infrastructure, and readiness',
+    'Need & equity':  'the urgency of the unmet need and the equity gap it represents — quantify who is left out and why existing systems fail them',
+    'Outcomes':       'measurable, time-bound results — lead each section toward the change you will produce, not the activities you will run',
+    'Capacity':       'organizational track record, infrastructure, and readiness — establish credibility early and reinforce it in every section',
   };
 
-  const funderLine = grant
-    ? `${grant.funder}${grant.title && grant.title !== grant.funder ? ' — ' + grant.title : ''} (${grant.type || 'Grant'})`
-    : 'DHHS Healthy Communities Initiative (Federal)';
+  /* ── Grant context ───────────────────────────────────────── */
+  const funderType  = (grant?.type || 'Grant').trim();
+  const funderName  = grant?.funder || 'this funder';
+  const grantTitle  = (grant?.title && grant.title !== grant.funder) ? grant.title : null;
+  const funderLine  = grantTitle ? `${funderName} — ${grantTitle}` : funderName;
+  const deadline    = grant?.deadlineLabel ? `Due ${grant.deadlineLabel}` : 'Rolling deadline';
+  const matchScore  = grant?.matchScore ? `${grant.matchScore}% match to your profile` : null;
+  const grantAmount = grant?.amount || fields.amount;
 
-  const deadlineLine = grant?.deadlineLabel ? `Due ${grant.deadlineLabel}` : 'Rolling';
+  /* ── Org context ─────────────────────────────────────────── */
+  const orgName    = org.name        || 'our organization';
+  const mission    = org.mission     || '';
+  const founded    = org.yearFounded ? `Founded ${org.yearFounded}` : '';
+  const location   = org.location    || '';
+  const geoFocus   = org.geoFocus    || 'local';
+  const budget     = org.budget      || '';
+  const staff      = org.staffCount  ? `${org.staffCount} full-time staff` : '';
+  const served     = org.peopleServed ? `${org.peopleServed} people served per year` : '';
+  const focusAreas = org.focusAreas  || '';
+  const benefic    = org.beneficiaries || fields.population || 'community members';
+  const programs   = org.programs    || '';
 
-  return `You are an expert nonprofit grant writer. Write a complete, compelling ${fields.proposalType} for the grant described below.
+  /* ── Funder-type-specific reviewer notes ────────────────── */
+  const funderTypeGuide = {
+    Federal:
+      `Federal reviewers score on: (1) significance of the problem, (2) rigor of the approach, (3) innovation, (4) investigator/org qualifications, (5) environment/sustainability. Use SMART objectives (Specific, Measurable, Achievable, Relevant, Time-bound). Reference any relevant federal priority areas or legislation where appropriate. Include a logic model framing (Inputs → Activities → Outputs → Outcomes).`,
+    Foundation:
+      `Foundation program officers read for: (1) alignment with their mission and priority areas, (2) quality of the theory of change, (3) organizational credibility, (4) community rootedness. Lead with story and community voice. Avoid bureaucratic jargon. Show you know this funder's history and priorities.`,
+    Corporate:
+      `Corporate funders look for: (1) alignment with their brand values or employee interests, (2) visibility and recognition opportunities, (3) clear community impact close to their operating area, (4) partnership potential. Frame outcomes in terms of community impact and brand alignment.`,
+    State:
+      `State funders prioritize: (1) alignment with state plans or legislative mandates, (2) geographic reach within the state, (3) sustainability and leverage of state dollars, (4) collaboration with state agencies. Reference relevant state plans or priority areas.`,
+  };
+  const funderNote = funderTypeGuide[funderType] || funderTypeGuide.Foundation;
 
-OUTPUT FORMAT: Use only clean HTML — <h4> for section headings, <p> for paragraphs, <b> for key terms or important phrases. No markdown, no code blocks, no preamble. Output the HTML directly.
+  /* ══════════════════════════════════════════════════════════
+     PROPOSAL-TYPE BRANCHES
+     Each type gets a distinct structure, length, and purpose.
+  ══════════════════════════════════════════════════════════ */
 
-SECTIONS TO INCLUDE (in this order):
-1. Executive Summary
-2. Statement of Need
-3. Program Design & Theory of Change (use <b>Inputs.</b>, <b>Activities.</b>, <b>Outcomes.</b> structure)
-4. Goals & Objectives
-5. Evaluation Plan
-6. Organizational Capacity
+  const proposalType = fields.proposalType || 'Full grant narrative';
+  const voice  = voiceMap[fields.voice]  || fields.voice  || 'professional and compelling';
+  const emph   = emphMap[fields.emphasis] || fields.emphasis || 'community need and outcomes';
 
-GRANT DETAILS:
-- Funder: ${funderLine}
-- Proposal type: ${fields.proposalType}
-- Requested amount: ${fields.amount}
-- Project period: ${fields.period}
-- Deadline: ${deadlineLine}
-
+  const sharedContext = `
 ORGANIZATION:
-- Name: ${org.name || 'Our organization'}
-- Mission: ${org.mission || 'To serve our community'}
-- Founded: ${org.yearFounded || 'Not specified'}
-- Location: ${org.location || 'Not specified'}
-- Geographic scope: ${org.geoFocus || 'Local'}
-- Annual budget: ${org.budget || 'Not specified'}
-- Full-time staff: ${org.staffCount || 'Not specified'}
-- People served per year: ${org.peopleServed || 'Not specified'}
-- Focus areas: ${org.focusAreas || 'Community health and education'}
-- Who we serve: ${org.beneficiaries || org.population || 'Community members'}
-- Primary programs: ${org.programs || 'Not specified'}
+- Name: ${orgName}
+- Mission: ${mission}
+- ${founded}${location ? ' · ' + location : ''}
+- Geographic scope: ${geoFocus}
+- ${budget ? 'Annual budget: ' + budget : ''}
+- ${staff}${served ? ' · ' + served : ''}
+- Focus areas: ${focusAreas}
+- Who we serve: ${benefic}
+- Primary programs: ${programs}
 
-PROGRAM:
+PROGRAM BEING FUNDED:
 - Program name: ${fields.program}
 - Population served: ${fields.population}
 - What this grant funds: ${fields.description}
+- Requested amount: ${grantAmount}
+- Project period: ${fields.period}
 
-TONE & STYLE:
-- Voice: ${voiceMap[fields.voice] || fields.voice}
-- Primary emphasis: ${emphMap[fields.emphasis] || fields.emphasis}
+GRANT:
+- Funder: ${funderLine}
+- Funder type: ${funderType}
+- ${deadline}${matchScore ? '\n- ' + matchScore : ''}
 
-IMPORTANT:
-- Use only the data provided above. Do not invent statistics, dollar amounts, or program details not given.
-- Keep total length to approximately 700-900 words across all sections.
-- Write as if you are the organization — use "we", "our", "us".
-- Tie each section back to the funder's focus areas and priorities.`;
+TONE: ${voice}
+PRIMARY EMPHASIS: ${emph}
+
+FUNDER TYPE GUIDANCE:
+${funderNote}
+
+RULES (follow exactly):
+- Output clean HTML only: <h4> for section headings, <p> for body paragraphs, <b> for key terms. No markdown, no code fences, no preamble, no "Here is your proposal" opener.
+- Write in first-person plural as the organization ("we", "our", "us").
+- Use ONLY the data provided. If a field says "Not specified", work around it — do not invent statistics, staff names, program details, or dollar figures not given.
+- Do not pad. Every sentence must earn its place.
+`.trim();
+
+  /* ── Full grant narrative ─────────────────────────────── */
+  if (proposalType === 'Full grant narrative') {
+    return `You are a senior nonprofit grant writer with 15 years of experience winning 7-figure awards. Write a complete, compelling Full Grant Narrative. Target: 900–1,100 words across all sections.
+
+${sharedContext}
+
+SECTIONS (write in this order — use the exact <h4> titles below):
+
+<h4>Executive Summary</h4>
+2–3 sentences. State: (1) who you are and your mission in one clause, (2) the specific problem and population, (3) exactly what this grant funds and the measurable result you will achieve. This is the only section a busy reviewer may read — make every word count.
+
+<h4>Statement of Need</h4>
+Establish the urgency. Open with a concrete local data point or brief community story that illustrates the gap. Then layer in broader statistics to contextualize scale. Show why existing systems or providers are insufficient. Close by connecting the need directly to this funder's stated priorities. (~200 words)
+
+<h4>Program Design</h4>
+Describe exactly how the program works — who does what, when, and how often. Use an explicit logic model structure:
+<b>Inputs:</b> staff, partners, resources brought to bear.
+<b>Activities:</b> the specific interventions, sessions, or services delivered.
+<b>Outputs:</b> countable units (# sessions, # participants, # hours).
+<b>Short-term Outcomes:</b> changes in knowledge, skills, or behavior within the grant period.
+<b>Long-term Outcomes:</b> the deeper community change this program contributes to.
+Explain any evidence base or best-practice model the program is adapted from. (~250 words)
+
+<h4>Goals & Objectives</h4>
+List 3–4 SMART objectives. Each objective must specify: (a) what will change, (b) by how much, (c) for whom, (d) by when. Format as a short numbered list inside a <p> tag (not a <ul>). Example pattern: "By [date], [X]% of [population] will [measurable change] as measured by [method]."
+
+<h4>Evaluation Plan</h4>
+Describe how you will know if it worked. Specify: (1) what data you will collect (participant surveys, attendance records, pre/post assessments, etc.), (2) who collects it and how often, (3) how you will use findings to improve the program. If you have a learning partner or external evaluator, mention it. (~150 words)
+
+<h4>Organizational Capacity</h4>
+Establish credibility without bragging. Cite track record with similar programs, relevant partnerships, key staff qualifications (roles, not names), and any prior grants successfully managed. Close with one sentence on long-term sustainability of this program beyond the grant period. (~150 words)`;
+  }
+
+  /* ── Letter of Inquiry (LOI) ──────────────────────────── */
+  if (proposalType === 'Letter of inquiry') {
+    return `You are a senior nonprofit grant writer. Write a Letter of Inquiry (LOI) — not a full proposal. An LOI is a concise introduction that gets you invited to submit a full application. Target: 450–600 words, 4–5 tight paragraphs. No section headings.
+
+${sharedContext}
+
+STRUCTURE (4–5 paragraphs, no headings):
+
+Paragraph 1 — HOOK & ASK: Open with a single compelling sentence about the community need or a brief story. Then immediately state: who you are, what you are asking for (dollar amount), and for what program. Do not bury the ask.
+
+Paragraph 2 — THE NEED: Make the case for why this problem is urgent and underserved in your geography. Two or three data points maximum — pick the sharpest ones. Connect to this funder's known priorities without being sycophantic.
+
+Paragraph 3 — YOUR SOLUTION: Describe what you will do, for whom, and the primary outcome you expect. Keep it high-level — 4–6 sentences. This is not the place for a full logic model; it is the place to make the approach sound credible and distinct.
+
+Paragraph 4 — WHY US: Establish credibility in 3–4 sentences. Reference your track record, relevant past outcomes, key partnerships, or years serving this population. Be specific — one concrete number (people served, grant managed, year founded) is worth three adjectives.
+
+Paragraph 5 — CLOSE: Express genuine alignment with the funder's mission (specific, not generic). State next steps: that you welcome the opportunity to submit a full proposal or speak with program staff. Thank them by organization name, not "the funder."`;
+  }
+
+  /* ── Concept Paper ────────────────────────────────────── */
+  if (proposalType === 'Concept paper') {
+    return `You are a senior nonprofit grant writer. Write a Concept Paper — a pre-solicitation document that tests funder interest before a full proposal is invited. It should feel exploratory and collaborative, not final. Target: 600–750 words.
+
+${sharedContext}
+
+SECTIONS:
+
+<h4>Problem Statement</h4>
+Define the problem with precision. Who experiences it, where, and at what scale? What data proves this is real and urgent? Why do current approaches fall short? (~150 words)
+
+<h4>Proposed Approach</h4>
+Describe the solution concept at a high level — what you would do, with whom, and roughly how. This is not a full program design; it is enough to show the idea is sound and that you have thought it through. Mention any evidence base or model you are drawing from. (~200 words)
+
+<h4>Expected Outcomes</h4>
+What would success look like? Identify 2–3 headline outcomes you expect to achieve in the grant period, expressed as changes for the target population. Keep them ambitious but credible given your org's scale. (~100 words)
+
+<h4>Organizational Fit</h4>
+Why is your organization the right entity to do this? Connect your mission, track record, community relationships, and existing infrastructure to this specific program concept. (~120 words)
+
+<h4>Funding Request & Next Steps</h4>
+State the approximate amount you would request for a full proposal, the project period, and what a full proposal would include. Invite the funder's input and express openness to refining the concept based on their priorities. (~80 words)`;
+  }
+
+  /* ── Progress Report ──────────────────────────────────── */
+  if (proposalType === 'Progress report') {
+    return `You are a nonprofit grant manager writing a mid-grant progress report to a funder. The tone is transparent, accountable, and forward-looking. Target: 500–700 words.
+
+${sharedContext}
+
+SECTIONS:
+
+<h4>Program Update</h4>
+Summarize what has been accomplished during this reporting period. What activities have been completed? How many participants have been served? Reference the objectives from the original grant and report on progress toward each one. Be honest — do not overclaim. (~200 words)
+
+<h4>Outcomes to Date</h4>
+What changes are you seeing in participants or the community? Report any data collected (survey results, assessments, attendance trends). If early data is promising, say so with specifics. If it is inconclusive, explain why and what you are doing about it. (~150 words)
+
+<h4>Challenges & Adaptations</h4>
+Describe any significant challenges encountered — staffing, outreach, participant retention, partner delays, etc. For each challenge, describe the adaptation or solution you have put in place. Funders respect honesty here far more than a sanitized report. (~100 words)
+
+<h4>Upcoming Activities</h4>
+What will happen in the next reporting period? List 3–4 key planned activities or milestones. If the timeline has shifted, acknowledge it and give the revised schedule. (~100 words)
+
+<h4>Financial Overview</h4>
+Briefly note whether spending is on track with the approved budget. If there are variances (over or under), explain them. Note any budget modification requests if needed. (~80 words)`;
+  }
+
+  /* ── Fallback (unknown type) ──────────────────────────── */
+  return `You are a senior nonprofit grant writer. Write a compelling grant document of type "${proposalType}". Target: 700–900 words.
+
+${sharedContext}
+
+Organize the content logically for the document type. Use <h4> for section headings, <p> for paragraphs, <b> for key terms. Write in first-person plural as the organization. Do not invent any facts not provided.`;
 }
 
 let generating = false;
