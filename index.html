@@ -2107,6 +2107,37 @@ label.field-label {
 }
 
 </style>
+<style>
+  /* ════════════════ AGENT PLAN — live "what Grange is doing" ════════════════ */
+  #agent-plan{ display:none; padding:16px 16px 6px; }
+  #agent-plan.show{ display:block; }
+  .aplan-head{ display:flex; align-items:center; gap:9px; margin:0 2px 12px; }
+  .aplan-head .ap-dot{ width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px var(--accent-tint); flex-shrink:0; }
+  .aplan-head h4{ font-family:var(--display); font-size:15px; color:var(--ink); margin:0; font-weight:600; }
+  .aplan-head .ap-sub{ font-size:12px; color:var(--muted); margin-left:auto; }
+  .aplan-trow{ display:flex; align-items:center; gap:10px; padding:7px 8px; border-radius:8px; cursor:pointer; transition:background .15s; }
+  .aplan-trow:hover{ background:var(--surface-2); }
+  .aplan-ico{ flex-shrink:0; width:18px; height:18px; display:flex; align-items:center; justify-content:center; }
+  .aplan-ico svg{ width:18px; height:18px; }
+  .aplan-title{ font-size:14px; color:var(--ink); flex:1; transition:color .2s; }
+  .aplan-task.done > .aplan-trow .aplan-title{ color:var(--muted); }
+  .aplan-badge{ font-size:10px; font-weight:600; padding:2px 8px; border-radius:999px; }
+  .aplan-subs{ overflow:hidden; max-height:0; transition:max-height .35s var(--ease); margin-left:8px; position:relative; }
+  .aplan-subs::before{ content:''; position:absolute; left:9px; top:2px; bottom:8px; border-left:1.5px dashed var(--line); }
+  .aplan-task.open .aplan-subs{ max-height:360px; }
+  .aplan-sub{ display:flex; align-items:center; gap:9px; padding:5px 8px 5px 24px; font-size:13px; color:var(--ink-body); }
+  .aplan-sub .aplan-ico{ width:15px; height:15px; } .aplan-sub .aplan-ico svg{ width:15px; height:15px; }
+  .aplan-sub.done .aplan-stitle{ color:var(--muted); text-decoration:line-through; text-decoration-color:var(--line); }
+  .aplan-stitle{ flex:1; }
+  .aplan-tool{ font-size:10px; color:var(--accent-ink); background:var(--accent-tint); border-radius:5px; padding:2px 6px; white-space:nowrap; }
+  .ap-pending{ color:var(--muted); } .ap-active{ color:var(--accent); } .ap-done{ color:var(--ok); } .ap-help{ color:var(--warn-ink); }
+  .ap-spin{ animation:ap-spin 1.1s linear infinite; transform-origin:center; }
+  @keyframes ap-spin{ to{ transform:rotate(360deg); } }
+  .aplan-foot{ display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--muted); padding:12px 8px 4px; line-height:1.5; }
+  .aplan-foot svg{ flex-shrink:0; margin-top:1px; }
+  .ap-preview-btn{ margin-top:16px; font-size:13px; font-weight:600; color:var(--accent); background:none; border:1px solid var(--accent-tint); border-radius:999px; padding:9px 17px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:background .15s; }
+  .ap-preview-btn:hover{ background:var(--accent-tint); }
+</style>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <!-- Supabase backend: config.js (gitignored) holds the project URL + anon key -->
 <script src="config.js"></script>
@@ -3957,10 +3988,12 @@ label.field-label {
 
         <div class="out">
           <div class="gen-progress" id="prog"></div>
+          <div id="agent-plan"></div>
           <div id="out-empty" class="out-empty">
             <div class="oe-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
             <h4>Your draft appears here</h4>
             <p style="max-width:24rem">Fill in the details and generate a tailored proposal in under a minute.</p>
+            <button class="ap-preview-btn" onclick="previewAgentPlan()"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> See what Grange does when it writes</button>
           </div>
           <div id="out-doc" style="display:none">
             <div class="out-head">
@@ -4635,6 +4668,7 @@ async function generate() {
   empty.style.display  = 'none';
   outDoc.style.display = 'none';
   prog.style.display   = 'block';
+  if (window._apStart) window._apStart();   // live agent-plan trace
   btn.disabled         = true;
   btn.textContent      = 'Generating…';
   content.innerHTML    = '';
@@ -4761,6 +4795,7 @@ async function generate() {
 
   } catch (err) {
     prog.style.display = 'none';
+    if (window._apStop) window._apStop();
     if (err.name !== 'AbortError') {
       outDoc.style.display = 'none';
       empty.style.display  = 'block';
@@ -6775,6 +6810,114 @@ function applyDiscFilters(query, type) {
     });
     return res.json();
   };
+</script>
+<script>
+  /* ════════════════ AGENT PLAN ENGINE ════════════════
+     A live, themed "what Grange is doing" task tree shown on the generator
+     while a proposal drafts. Pure vanilla; recreation of the agent-plan
+     component. Plays a realistic grant-writing timeline; the last step ends
+     amber to reinforce human-in-the-loop review. */
+  (function () {
+    const PLAN = [
+      { t: 'Understand your organization', subs: [
+        { s: 'Read your mission & programs', tool: 'Profile' },
+        { s: 'Pull impact & outcome data', tool: 'Outcomes' },
+        { s: 'Find your strongest evidence', tool: 'Org facts' } ] },
+      { t: 'Study the funder & opportunity', subs: [
+        { s: "Read the funder's guidelines", tool: 'RFP' },
+        { s: 'Map the required sections', tool: 'Requirements' },
+        { s: 'Capture word & format limits', tool: 'Compliance' } ] },
+      { t: 'Check eligibility & fit', subs: [
+        { s: 'Match your mission to funder priorities', tool: 'Match engine' },
+        { s: 'Verify 501(c)(3) eligibility', tool: 'Eligibility' },
+        { s: 'Score your fit', tool: 'Fit score' } ] },
+      { t: 'Draft your proposal', subs: [
+        { s: 'Write the statement of need', tool: 'Drafting' },
+        { s: 'Write the project narrative', tool: 'Drafting' },
+        { s: 'Set measurable goals & outcomes', tool: 'Logic model' },
+        { s: 'Justify the budget', tool: 'Budget' } ] },
+      { t: 'Review & compliance check', subs: [
+        { s: 'Check page & format limits', tool: 'Format check' },
+        { s: 'Confirm required attachments', tool: 'Documents' },
+        { s: 'Hand off for your review', tool: 'You', help: true } ] },
+    ];
+
+    function icon(status) {
+      if (status === 'done') return '<svg class="ap-done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>';
+      if (status === 'active') return '<svg class="ap-active ap-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" stroke-dasharray="4 4"/></svg>';
+      if (status === 'help') return '<svg class="ap-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>';
+      return '<svg class="ap-pending" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/></svg>';
+    }
+    const BADGE = { active: ['Working', 'var(--accent-tint)', 'var(--accent-ink)'], done: ['Done', 'var(--ok-tint)', 'var(--ok)'], help: ['Your turn', 'var(--warn-tint)', 'var(--warn-ink)'] };
+
+    function render() {
+      const el = document.getElementById('agent-plan');
+      el.innerHTML =
+        '<div class="aplan-head"><span class="ap-dot"></span><h4>Grange is writing your proposal</h4><span class="ap-sub" id="ap-sub">working…</span></div>' +
+        PLAN.map((task, ti) =>
+          '<div class="aplan-task" id="ap-task-' + ti + '">' +
+            '<div class="aplan-trow" onclick="apToggle(' + ti + ')">' +
+              '<span class="aplan-ico" id="ap-tico-' + ti + '">' + icon('pending') + '</span>' +
+              '<span class="aplan-title">' + task.t + '</span>' +
+              '<span class="aplan-badge" id="ap-tbadge-' + ti + '" style="display:none"></span></div>' +
+            '<div class="aplan-subs">' + task.subs.map((s, si) =>
+              '<div class="aplan-sub" id="ap-sub-' + ti + '-' + si + '">' +
+                '<span class="aplan-ico" id="ap-sico-' + ti + '-' + si + '">' + icon('pending') + '</span>' +
+                '<span class="aplan-stitle">' + s.s + '</span><span class="aplan-tool">' + s.tool + '</span></div>').join('') +
+            '</div></div>').join('') +
+        '<div class="aplan-foot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> You\'re always the author — Grange drafts, you review and revise every section before submitting.</div>';
+    }
+    window.apToggle = function (ti) { document.getElementById('ap-task-' + ti)?.classList.toggle('open'); };
+
+    function setTask(ti, status) {
+      const ico = document.getElementById('ap-tico-' + ti); if (ico) ico.innerHTML = icon(status);
+      const task = document.getElementById('ap-task-' + ti);
+      if (task) { task.classList.toggle('done', status === 'done'); if (status === 'active') task.classList.add('open'); }
+      const b = document.getElementById('ap-tbadge-' + ti);
+      if (b && BADGE[status]) { b.style.display = 'inline-block'; b.textContent = BADGE[status][0]; b.style.background = BADGE[status][1]; b.style.color = BADGE[status][2]; }
+    }
+    function setSub(ti, si, status) {
+      const ico = document.getElementById('ap-sico-' + ti + '-' + si); if (ico) ico.innerHTML = icon(status);
+      document.getElementById('ap-sub-' + ti + '-' + si)?.classList.toggle('done', status === 'done');
+    }
+
+    window.playAgentPlan = function (opts) {
+      opts = opts || {};
+      const step = opts.speed || 600;
+      render();
+      document.getElementById('agent-plan').classList.add('show');
+      const ctl = { cancelled: false, _t: [] };
+      ctl.cancel = function () { ctl.cancelled = true; ctl._t.forEach(clearTimeout); };
+      const at = (fn, d) => { ctl._t.push(setTimeout(() => { if (!ctl.cancelled) fn(); }, d)); };
+      let d = 0;
+      PLAN.forEach((task, ti) => {
+        at(() => { setTask(ti, 'active'); PLAN.forEach((_, k) => { if (k !== ti) document.getElementById('ap-task-' + k)?.classList.remove('open'); }); document.getElementById('ap-task-' + ti)?.classList.add('open'); }, d);
+        d += step * 0.7;
+        task.subs.forEach((s, si) => {
+          at(() => setSub(ti, si, 'active'), d);
+          d += step;
+          at(() => setSub(ti, si, s.help ? 'help' : 'done'), d);
+        });
+        const lastHelp = task.subs[task.subs.length - 1] && task.subs[task.subs.length - 1].help;
+        at(() => setTask(ti, lastHelp ? 'help' : 'done'), d + 50);
+        d += step * 0.5;
+      });
+      at(() => { const sub = document.getElementById('ap-sub'); if (sub) { sub.textContent = 'ready for your review'; sub.style.color = 'var(--warn-ink)'; } if (opts.onDone) opts.onDone(); }, d + 120);
+      ctl.totalMs = d + 120;
+      return ctl;
+    };
+
+    /* Preview (no API key needed) — plays the full plan so you can see the design */
+    window.previewAgentPlan = function () {
+      const empty = document.getElementById('out-empty'); if (empty) empty.style.display = 'none';
+      const outDoc = document.getElementById('out-doc'); if (outDoc) outDoc.style.display = 'none';
+      if (window._apCtl) window._apCtl.cancel();
+      window._apCtl = window.playAgentPlan();
+    };
+    /* Hooks used by generate() */
+    window._apStart = function () { const e = document.getElementById('out-empty'); if (e) e.style.display = 'none'; if (window._apCtl) window._apCtl.cancel(); window._apCtl = window.playAgentPlan(); };
+    window._apStop  = function () { const el = document.getElementById('agent-plan'); if (el) el.classList.remove('show'); if (window._apCtl) window._apCtl.cancel(); };
+  })();
 </script>
 </body>
 </html>
