@@ -145,12 +145,16 @@ These come straight from the funder-rules research and the report:
 | Human review/edit | ✅ section statuses + revisions | UI exists |
 | Export | — | TBD (submission-ready package) |
 
-**Next AI build (your "model integration" phase):** one Edge Function worker that
-drains the `ai_jobs` queue — `score_match`, `check_eligibility`, `draft_section`,
-`write_budget_narrative`, `build_logic_model`, `run_format_check`,
-`extract_org_facts`, `write_report`. It's the same Gemini→Groq call pattern as
-the two functions already deployed, just writing structured results to tables
-instead of streaming prose. The schema is already shaped for it.
+**✅ Built & deployed: the `ai-worker` Edge Function** drains the `ai_jobs`
+queue with five job types live — `score_match`, `check_eligibility`,
+`draft_section`, `write_budget_narrative`, `build_logic_model`. Same
+Gemini→Groq pattern, JSON-mode output written straight to the feature tables,
+RLS-scoped to the caller. Call it from the browser via the global
+`runAiJob(jobType, input)` helper (e.g. `runAiJob('score_match', { opportunity_id })`).
+Verified end-to-end (auth → job row → dispatch → graceful failure without a key);
+produces real structured results once `GEMINI_API_KEY` is set. Remaining types
+to add later: `run_format_check`, `extract_org_facts` (needs doc embeddings),
+`write_report`, `discover_opportunities`.
 
 ---
 

@@ -104,3 +104,45 @@ trains on your data and warns against confidential info, so real grant data need
 **Gemini paid (no-training, still near-free)** or **Groq (no-training even
 free)**. That's the single most important provider decision and it's now
 documented and wired (Gemini primary + Groq fallback).
+
+---
+
+## v2.1 — AI worker + grant-data integrity (2026-06-13)
+
+### `ai-worker` Edge Function — the structured-AI engine
+Deployed & ACTIVE. Drains the `ai_jobs` queue; runs under the user's JWT
+(RLS-scoped). Five job types live, each Gemini JSON-mode (Groq fallback) →
+writes results to feature tables → marks the job done → drops a notification:
+
+| job_type | reads | writes |
+|---|---|---|
+| `score_match` | profile + opportunity | `match_scores` (0-100 + per-dimension rationale) |
+| `check_eligibility` | profile + opportunity.eligibility_rules | `eligibility_checks` + `_items` |
+| `draft_section` | profile + program + opportunity + section template | `proposal_sections.content` |
+| `write_budget_narrative` | budget + line items + categories | `budgets.narrative_intro` + per-line `justification` |
+| `build_logic_model` | profile + program | `logic_models` + `logic_model_items` |
+
+Client helper (in `index.html`): `await runAiJob('score_match', { opportunity_id })`.
+Verified end-to-end: auth gate (401), job creation, state transitions, and
+graceful failure when no API key — real output once `GEMINI_API_KEY` is set.
+
+### Grant-data integrity — curated list cut from 37 → 9 (honest)
+A 10-agent verification swept every curated foundation against its official
+site. Finding: **28 of 37 were invitation-only or discontinued**, and every
+specific deadline was fabricated. Showing them to beginners with a "Draft
+proposal" button is misleading. Action: removed the 28 non-applyable funders;
+kept the 9 with a genuine public application door, each relabeled honestly
+(Rolling / LOI year-round / Expression of interest / Opens annually).
+
+**Kept (applyable):** Walton (K-12 LOI), RWJF (open CFPs), W.K. Kellogg (LOI
+year-round), California Community Foundation (rolling, LA), Walton (Environment
+LOI), Bob Woodruff (rolling, veterans), Open Society (by program/LOI), Robin
+Hood (EOI year-round, NYC), Echoing Green (annual fellowship).
+
+**Strategic implication (important):** most big-name foundations are
+invitation-only — they are NOT the applyable market for small nonprofits. The
+genuinely open opportunities are (1) **federal grants** (Grants.gov, already
+pulled live), (2) **community foundations**, and (3) **smaller funders with open
+applications**. Discovery should lean on those, not marquee foundation names.
+A future discovery upgrade should ingest open-application funders (e.g. via
+Candid/IRS 990-PF data) rather than hand-curated big foundations.
