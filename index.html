@@ -3948,8 +3948,45 @@ label.field-label {
         <div class="stp"><span class="sn">4</span>Review &amp; export</div>
       </div>
 
+      <style>
+        .pbox{ background:var(--surface); border:1.5px solid var(--line); border-radius:18px; padding:14px 16px 10px; margin-bottom:18px; transition:border-color .2s, box-shadow .2s; box-shadow:0 4px 20px rgba(26,25,22,0.04); }
+        .pbox:focus-within{ border-color:var(--accent); box-shadow:0 6px 26px rgba(217,79,48,0.10); }
+        .pbox.rec{ border-color:var(--accent); }
+        .pbox-ta{ width:100%; border:none; background:transparent; resize:none; font:inherit; font-size:15px; color:var(--ink); line-height:1.5; max-height:180px; outline:none; display:block; }
+        .pbox-ta::placeholder{ color:var(--muted); }
+        .pbox-bar{ display:flex; align-items:center; gap:10px; margin-top:8px; }
+        .pbox-hint{ font-size:11.5px; color:var(--muted); flex:1; }
+        .pbox-acts{ display:flex; align-items:center; gap:8px; }
+        .pbox-viz{ display:none; align-items:flex-end; gap:2px; height:18px; }
+        .pbox-viz.on{ display:flex; }
+        .pbox-viz i{ width:3px; background:var(--accent); border-radius:2px; height:6px; animation:pviz .7s ease-in-out infinite; }
+        .pbox-viz i:nth-child(2){ animation-delay:.1s } .pbox-viz i:nth-child(3){ animation-delay:.2s } .pbox-viz i:nth-child(4){ animation-delay:.3s } .pbox-viz i:nth-child(5){ animation-delay:.15s }
+        @keyframes pviz{ 0%,100%{ height:5px } 50%{ height:16px } }
+        .pbox-mic, .pbox-send{ width:38px; height:38px; border-radius:50%; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background .15s, transform .1s; }
+        .pbox-mic{ background:var(--surface-2); color:var(--ink-soft); }
+        .pbox-mic:hover{ background:var(--line-soft); }
+        .pbox-mic.rec, #acp-mic.rec{ background:var(--accent)!important; color:#fff!important; animation:pmic 1.2s ease-in-out infinite; }
+        @keyframes pmic{ 0%,100%{ box-shadow:0 0 0 0 rgba(217,79,48,0.4) } 50%{ box-shadow:0 0 0 6px rgba(217,79,48,0) } }
+        .pbox-send{ background:var(--accent); color:#fff; }
+        .pbox-send:hover{ background:var(--accent-press); } .pbox-send:active{ transform:scale(0.94); }
+      </style>
       <div class="gen-grid">
         <div>
+          <div class="pbox" id="gen-pbox">
+            <textarea id="gen-prompt-text" class="pbox-ta" rows="1" placeholder="Describe what you want Grange to write — e.g. “a full narrative for year three of our after-school program” — or just fill the details below and hit Generate." oninput="pboxAutosize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();genPromptSend();}"></textarea>
+            <div class="pbox-bar">
+              <div class="pbox-hint">✦ Tip: tap the mic to dictate your idea out loud</div>
+              <div class="pbox-acts">
+                <div class="pbox-viz" id="gen-pbox-viz"><i></i><i></i><i></i><i></i><i></i></div>
+                <button class="pbox-mic" id="gen-pbox-mic" type="button" onclick="toggleDictation('gen-prompt-text','gen-pbox-mic','gen-pbox-viz')" aria-label="Dictate" title="Dictate">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
+                </button>
+                <button class="pbox-send" type="button" onclick="genPromptSend()" aria-label="Generate" title="Generate">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
           <div class="panel" style="margin-bottom:18px">
             <div class="panel-head"><h3>Grant</h3></div>
             <div style="background:var(--accent-tint);border-radius:var(--r);padding:14px 16px;margin-bottom:18px">
@@ -6860,6 +6897,9 @@ function applyDiscFilters(query, type) {
   </div>
   <div class="acp-input">
     <textarea id="acp-text" rows="1" placeholder="Ask anything about grants…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();acpSend();}"></textarea>
+    <button id="acp-mic" type="button" onclick="toggleDictation('acp-text','acp-mic',null)" aria-label="Dictate" title="Dictate" style="background:var(--surface-2);color:var(--ink-soft);border:none;width:40px;border-radius:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
+    </button>
     <button id="acp-send" onclick="acpSend()" aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
   </div>
   <div class="acp-disc">Grange can make mistakes. You're always the author — review before you submit.</div>
@@ -7152,6 +7192,54 @@ function applyDiscFilters(query, type) {
     const uid = ctx.user && ctx.user.id;
     if (window.sb && uid) { try { await sb.from('readiness_items').upsert({ user_id: uid, req_key: key, status }, { onConflict: 'user_id,req_key' }); } catch (e) { console.error('readiness save', e); } }
   };
+</script>
+<script>
+  /* ════════════════ PROMPT BOX + VOICE DICTATION ════════════════
+     Light-themed prompt box for the generator + a mic on the chatbot.
+     Voice uses the browser-native Web Speech API — real dictation, no API key. */
+  function pboxAutosize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 180) + 'px'; }
+
+  function genPromptSend() {
+    const ta = document.getElementById('gen-prompt-text');
+    const v = (ta && ta.value || '').trim();
+    if (v) { const d = document.getElementById('gen-description'); if (d) d.value = v; }
+    if (typeof generate === 'function') generate();
+  }
+
+  let _dictRec = null, _dictBtn = null, _dictViz = null;
+  function toggleDictation(targetId, btnId, vizId) {
+    if (_dictRec) { try { _dictRec.stop(); } catch (_) {} return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const target = document.getElementById(targetId);
+    if (!SR) { if (typeof toast === 'function') toast("Voice input isn't supported in this browser — try Chrome or Edge."); return; }
+    if (!target) return;
+    _dictBtn = btnId ? document.getElementById(btnId) : null;
+    _dictViz = vizId ? document.getElementById(vizId) : null;
+    const rec = new SR();
+    _dictRec = rec;
+    rec.lang = 'en-US'; rec.interimResults = true; rec.continuous = true;
+    let finalText = (target.value || '').trim();
+    rec.onresult = (e) => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalText = (finalText + ' ' + t).trim();
+        else interim += t;
+      }
+      target.value = (finalText + (interim ? ' ' + interim : '')).trim();
+      target.dispatchEvent(new Event('input'));
+    };
+    rec.onerror = endDict;
+    rec.onend = endDict;
+    try { rec.start(); } catch (_) { endDict(); return; }
+    if (_dictBtn) { _dictBtn.classList.add('rec'); const pb = _dictBtn.closest('.pbox'); if (pb) pb.classList.add('rec'); }
+    if (_dictViz) _dictViz.classList.add('on');
+  }
+  function endDict() {
+    if (_dictBtn) { _dictBtn.classList.remove('rec'); const pb = _dictBtn.closest('.pbox'); if (pb) pb.classList.remove('rec'); }
+    if (_dictViz) _dictViz.classList.remove('on');
+    _dictRec = null; _dictBtn = null; _dictViz = null;
+  }
 </script>
 </body>
 </html>
