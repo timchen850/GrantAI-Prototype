@@ -114,6 +114,13 @@ async function dispatch(sb: any, uid: string, jobType: string, input: any): Prom
     return { logic_model_id: lm?.id, item_count: (out.items || []).length };
   }
 
+  if (jobType === 'assess_grant') {
+    // Inline assessment for a discovery grant (no catalog row, ephemeral).
+    const g = input.grant || {};
+    const out = await callJSON(`You are a grant advisor deciding whether this nonprofit should pursue this grant. Be honest and concrete; don't invent facts about the org.\n\nORG:\n${org(profile)}\n\nGRANT:\nFunder: ${g.funder || ''}\nTitle: ${g.title || ''}\nType: ${g.type || ''}\nAmount: ${g.amount || ''}\nDeadline: ${g.deadlineLabel || g.deadline || ''}\nDescription: ${(g.desc || g.description || '').slice(0, 1400)}\n\nOutput JSON: {"score":<int 0-100 fit>,"verdict":"strong|good|weak|poor","rationale":"<1-2 sentence why>","eligibility":[{"label":"<requirement, e.g. 501(c)(3) status>","status":"likely|unclear|unlikely","note":"<short>"}],"recommendation":"<one concrete next step>"}. For eligibility infer the usual gates (501c3, geography, applicant type, budget fit) from what you know; use "unclear" when the org profile lacks the info.`);
+    return { score: Math.max(0, Math.min(100, Math.round(out.score || 0))), verdict: out.verdict || null, rationale: out.rationale || '', eligibility: out.eligibility || [], recommendation: out.recommendation || '' };
+  }
+
   throw new Error(`unsupported job_type: ${jobType}`);
 }
 

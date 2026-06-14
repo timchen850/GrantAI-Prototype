@@ -4096,6 +4096,28 @@ label.field-label {
   .rdy-elig .lbl small{ display:block; font-size:12px; color:var(--muted); font-weight:400; margin-top:1px; }
   .rdy-elig .act{ font-size:12px; color:var(--accent); cursor:pointer; white-space:nowrap; }
   .rdy-fed-pill{ display:inline-block; font-size:10px; font-weight:600; color:var(--accent-ink); background:var(--accent-tint); border-radius:999px; padding:2px 8px; margin-left:8px; vertical-align:middle; }
+  /* inline AI assessment on discovery cards */
+  .gc-assess-btn.on{ border-color:var(--accent); color:var(--accent); }
+  .gc-assess{ grid-column:1 / -1; max-height:0; overflow:hidden; transition:max-height .35s var(--ease); }
+  .gc-assess.open{ max-height:640px; }
+  .gc-assess-inner{ border-top:1px solid var(--line); padding-top:15px; margin-top:4px; }
+  .gca-loading{ display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13.5px; padding:6px 0; }
+  .gca-spin{ width:16px; height:16px; border-radius:50%; border:2px solid var(--accent-tint); border-top-color:var(--accent); animation:ap-spin .9s linear infinite; flex-shrink:0; }
+  .gca-key{ background:var(--accent-tint); border-radius:12px; padding:15px 17px; }
+  .gca-key strong{ color:var(--accent-ink); font-size:14px; }
+  .gca-key p{ font-size:13px; color:var(--ink-body); margin:6px 0 0; line-height:1.55; }
+  .gca-msg{ font-size:13.5px; color:var(--ink-body); padding:8px 0; }
+  .gca-msg a{ color:var(--accent); cursor:pointer; }
+  .gca-result{ display:flex; gap:18px; align-items:flex-start; }
+  .gca-score{ flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:7px; }
+  .gca-verdict{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:2px 9px; border-radius:999px; }
+  .gca-main{ flex:1; min-width:0; }
+  .gca-rationale{ font-size:13.5px; color:var(--ink); line-height:1.55; margin-bottom:12px; }
+  .gca-elig-title{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:6px; }
+  .gca-elig{ display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--ink-body); padding:3px 0; }
+  .gca-elig .ic{ flex-shrink:0; width:15px; height:15px; margin-top:2px; }
+  .gca-rec{ margin-top:12px; font-size:13px; color:var(--ink-body); background:var(--surface-2); border-radius:9px; padding:10px 12px; line-height:1.5; }
+  .gca-rec b{ color:var(--ink); }
 </style>
 <div id="readiness" class="screen">
   <div class="app">
@@ -6696,10 +6718,64 @@ function renderGrantCard(g) {
       <div class="due">${duePill}</div>
       <div class="acts">
         <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();selectGrantForDraft('${escHtml(g.id)}');go('generator')">Draft proposal</button>
+        <button class="btn btn-outline btn-sm gc-assess-btn" onclick="event.stopPropagation();assessGrant('${escHtml(g.id)}')"><span style="color:var(--accent)">✦</span>&nbsp;AI assessment</button>
         ${govLink}
       </div>
     </div>
+    <div class="gc-assess" id="gca-${escHtml(g.id)}"></div>
   </div>`;
+}
+
+/* ─── inline AI assessment (per discovery card) ─── */
+async function assessGrant(id) {
+  const panel = document.getElementById('gca-' + id);
+  if (!panel) return;
+  const card = panel.closest('.gcard');
+  const btn = card && card.querySelector('.gc-assess-btn');
+  if (panel.classList.contains('open')) { panel.classList.remove('open'); if (btn) btn.classList.remove('on'); return; }
+  panel.classList.add('open'); if (btn) btn.classList.add('on');
+
+  const ck = 'grange_assess_' + id;
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem(ck) || 'null'); } catch (_) {}
+  if (cached) { panel.innerHTML = assessHTML(cached); return; }
+
+  if (!window.sb) { panel.innerHTML = wrapAssess(assessMsgHTML('Service unavailable — please refresh.')); return; }
+  const { data: { session } } = await window.sb.auth.getSession();
+  if (!session) { panel.innerHTML = wrapAssess(assessMsgHTML('Sign in to run an AI assessment of your fit.', true)); return; }
+
+  panel.innerHTML = wrapAssess('<div class="gca-loading"><span class="gca-spin"></span> Grange is assessing your fit for this grant…</div>');
+  const g = (window._grantsById && window._grantsById[id]) || {};
+  try {
+    const r = await runAiJob('assess_grant', { grant: { funder: g.funder, title: g.title, type: g.type, amount: g.amount, desc: g.desc, deadlineLabel: g.deadlineLabel } });
+    if (r && r.ok && r.output) { try { localStorage.setItem(ck, JSON.stringify(r.output)); } catch (_) {} panel.innerHTML = assessHTML(r.output); }
+    else { panel.innerHTML = wrapAssess(assessKeyHTML()); }
+  } catch (e) { panel.innerHTML = wrapAssess(assessMsgHTML('Could not run the assessment. Please try again.')); }
+}
+function wrapAssess(inner) { return '<div class="gc-assess-inner">' + inner + '</div>'; }
+function assessMsgHTML(msg, signin) { return '<div class="gca-msg">' + escHtml(msg) + (signin ? ' <a onclick="go(\'signin\')">Sign in →</a>' : '') + '</div>'; }
+function assessKeyHTML() {
+  return '<div class="gca-key"><strong>✦ AI assessment is ready to switch on</strong><p>Add a Gemini API key on the server (Supabase → Edge Functions → Secrets) and Grange will score your fit and flag eligibility for this grant instantly — grounded in your org profile. Until then, use the match score and Draft proposal.</p></div>';
+}
+function assessVColor(v) { return v === 'strong' ? 'var(--ok)' : v === 'good' ? '#4f8a4f' : v === 'weak' ? 'var(--warn-ink)' : 'var(--accent)'; }
+function assessEligIcon(s) {
+  if (s === 'likely') return '<svg class="ic" style="color:var(--ok)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>';
+  if (s === 'unlikely') return '<svg class="ic" style="color:var(--accent)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+  return '<svg class="ic" style="color:var(--warn-ink)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>';
+}
+function assessHTML(o) {
+  const score = o.score || 0;
+  const cls = score >= 80 ? 'hi' : score >= 60 ? 'mid' : '';
+  const elig = (o.eligibility || []).map(e => '<div class="gca-elig">' + assessEligIcon(e.status) + '<span>' + escHtml(e.label) + (e.note ? ' — <span style="color:var(--muted)">' + escHtml(e.note) + '</span>' : '') + '</span></div>').join('');
+  return wrapAssess(
+    '<div class="gca-result"><div class="gca-score">' +
+      '<div class="ring ' + cls + ' cring" style="--p:' + score + ';width:56px;height:56px;font-size:15px"><span>' + score + '</span></div>' +
+      '<div class="gca-verdict" style="background:' + assessVColor(o.verdict) + '22;color:' + assessVColor(o.verdict) + '">' + escHtml(o.verdict || '') + '</div></div>' +
+    '<div class="gca-main">' +
+      '<div class="gca-rationale">' + escHtml(o.rationale || '') + '</div>' +
+      (elig ? '<div class="gca-elig-title">Eligibility read</div>' + elig : '') +
+      (o.recommendation ? '<div class="gca-rec"><b>Next step:</b> ' + escHtml(o.recommendation) + '</div>' : '') +
+    '</div></div>');
 }
 
 function dueUrgency(deadline) {
