@@ -3984,49 +3984,53 @@ label.field-label {
     <main class="app-main">
       <div class="page-head">
         <div><h1>Organization profile</h1><div class="ps">Your profile powers every match and every proposal.</div></div>
-        <button class="btn btn-accent" onclick="toast('Profile saved')">Save changes</button>
+        <button class="btn btn-accent" onclick="saveProfile()">Save changes</button>
       </div>
 
       <div class="complete">
-        <div class="ring hi cring"><span>72%</span></div>
-        <div class="msg"><strong>Your profile is 72% complete.</strong> Add your program descriptions and logic model to unlock higher match scores. Complete profiles see 3.4&times; more matches.</div>
+        <div class="ring hi cring" id="pf-ring"><span id="pf-ring-pct">0%</span></div>
+        <div class="msg" id="pf-complete-msg"><strong>Finish your profile to unlock better matches.</strong> A complete profile powers every grant match and every proposal draft.</div>
       </div>
 
       <div class="pform">
         <div class="divider">Basics</div>
-        <div class="fieldset"><label class="field-label">Legal name</label><input type="text" value="Eastside Youth Foundation"></div>
-        <div class="fieldset"><label class="field-label">EIN</label><input type="text" value="47-1234567"></div>
+        <div class="fieldset"><label class="field-label">Legal name</label><input id="pf-legal-name" type="text" placeholder="Your organization's legal name"></div>
+        <div class="fieldset"><label class="field-label">EIN</label><input id="pf-ein" type="text" placeholder="00-0000000"></div>
         <div class="fieldset full"><label class="field-label">Mission statement</label>
-          <textarea style="min-height:100px">Eastside Youth Foundation gives underserved youth in East Los Angeles a path to opportunity through after-school programming, mentorship, and college preparation.</textarea></div>
+          <textarea id="pf-mission" style="min-height:100px" placeholder="What is your organization's mission?"></textarea></div>
         <div class="fieldset"><label class="field-label">Primary NTEE code</label>
-          <select><option>B20, Elementary &amp; Secondary Education</option><option selected>O50, Youth Development</option><option>P20, Human Services</option></select></div>
-        <div class="fieldset"><label class="field-label">Annual budget</label><input type="text" value="$342,000"></div>
+          <select id="pf-ntee">
+            <option value="">Select…</option>
+            <option value="B20">B20, Elementary &amp; Secondary Education</option>
+            <option value="O50">O50, Youth Development</option>
+            <option value="P20">P20, Human Services</option>
+            <option value="E70">E70, Public Health</option>
+            <option value="S20">S20, Community Improvement</option>
+            <option value="A20">A20, Arts &amp; Culture</option>
+            <option value="C30">C30, Environment</option>
+          </select></div>
+        <div class="fieldset"><label class="field-label">Annual budget</label><input id="pf-budget" type="text" placeholder="$0"></div>
 
         <div class="divider">Programs</div>
         <div class="fieldset full"><label class="field-label">Programs &amp; services</label>
-          <div class="tags-input">
-            <span class="tg">After-school tutoring <button onclick="this.parentElement.remove()">&times;</button></span>
-            <span class="tg">College prep <button onclick="this.parentElement.remove()">&times;</button></span>
-            <span class="tg">Mentorship <button onclick="this.parentElement.remove()">&times;</button></span>
-            <span class="tg">Summer camps <button onclick="this.parentElement.remove()">&times;</button></span>
-          </div>
-          <textarea placeholder="Describe your main program: who you serve, where, and the numbers.">We serve 340 youth a year (ages 8 to 18) in Boyle Heights and East LA, five days a week, year round. 94% of our seniors enroll in college, against a 67% district average.</textarea></div>
+          <div class="tags-input" id="pf-programs-tags"></div>
+          <textarea id="pf-program-desc" placeholder="Describe your main program: who you serve, where, and the numbers."></textarea></div>
 
         <div class="divider">Financial documents</div>
         <div class="fieldset"><label class="field-label">IRS Form 990</label>
-          <div class="upl has"><div class="fn">990_EYF_2024.pdf</div><div class="ok">Uploaded Jan 15, 2026</div></div></div>
+          <div class="upl" onclick="toast('Document upload is coming soon')">Drop a file or click to upload</div></div>
         <div class="fieldset"><label class="field-label">IRS determination letter</label>
-          <div class="upl" onclick="toast('File picker would open')">Drop a file or click to upload</div></div>
+          <div class="upl" onclick="toast('Document upload is coming soon')">Drop a file or click to upload</div></div>
         <div class="fieldset"><label class="field-label">Audited financials</label>
-          <div class="upl has"><div class="fn">Audit_2024_EYF.pdf</div><div class="ok">Uploaded Feb 3, 2026</div></div></div>
+          <div class="upl" onclick="toast('Document upload is coming soon')">Drop a file or click to upload</div></div>
         <div class="fieldset"><label class="field-label">SAM.gov registration</label>
-          <div class="upl" onclick="toast('File picker would open')">Required for federal grants</div></div>
+          <div class="upl" onclick="toast('Required for federal grants')">Required for federal grants</div></div>
 
         <div class="divider">Logic model</div>
-        <div class="fieldset"><label class="field-label">Inputs</label><textarea>6 staff, 22 trained volunteers, a 3,400 sq ft center, and an evidence-based curriculum.</textarea></div>
-        <div class="fieldset"><label class="field-label">Activities</label><textarea>Daily tutoring, weekly mentor sessions, college counseling, and monthly parent workshops.</textarea></div>
-        <div class="fieldset"><label class="field-label">Outputs</label><textarea>340 youth served, 5,200 contact hours, 85 seniors in the college prep track.</textarea></div>
-        <div class="fieldset"><label class="field-label">Outcomes</label><textarea>94% college enrollment, 89% grade-level reading, 78% year-over-year retention.</textarea></div>
+        <div class="fieldset"><label class="field-label">Inputs</label><textarea id="pf-inputs" placeholder="Staff, volunteers, facilities, curriculum, budget…"></textarea></div>
+        <div class="fieldset"><label class="field-label">Activities</label><textarea id="pf-activities" placeholder="What your program actually does, week to week."></textarea></div>
+        <div class="fieldset"><label class="field-label">Outputs</label><textarea id="pf-outputs" placeholder="Countable results: people served, hours delivered…"></textarea></div>
+        <div class="fieldset"><label class="field-label">Outcomes</label><textarea id="pf-outcomes" placeholder="The measurable change: enrollment, retention, test gains…"></textarea></div>
       </div>
     </main>
   </div>
@@ -4194,6 +4198,73 @@ function go(id) {
   if (id === 'discovery') requestAnimationFrame(() => loadDiscoveryGrants());
   if (id === 'dashboard') requestAnimationFrame(() => updateDashboard());
   if (id === 'generator') requestAnimationFrame(() => populateGeneratorGrant());
+  if (id === 'profile')   requestAnimationFrame(() => populateProfile());
+}
+
+/* ── Profile: render the signed-in org's REAL data (no placeholder identity) ── */
+function populateProfile() {
+  const ctx = window._grange || {};
+  const a = ctx._cachedAnswers || {};
+  const p = ctx.profile || {};
+  const esc = s => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+  const arr = x => Array.isArray(x) ? x : (x ? [x] : []);
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = (v == null ? '' : v); };
+
+  setVal('pf-legal-name', p.org_name || a.org_name || '');
+  setVal('pf-ein', a.ein || p.ein || '');
+  setVal('pf-mission', a.mission || p.mission || '');
+  setVal('pf-budget', a.annual_budget || (p.annual_budget ? '$' + p.annual_budget : ''));
+  setVal('pf-program-desc', a.people_served || a.beneficiaries || '');
+
+  const ntee = (p.ntee_code || a.ntee_code || '').toString().slice(0, 3).toUpperCase();
+  const sel = document.getElementById('pf-ntee');
+  if (sel) sel.value = [...sel.options].some(o => o.value === ntee) ? ntee : '';
+
+  const tagsEl = document.getElementById('pf-programs-tags');
+  if (tagsEl) {
+    const progs = arr(a.primary_programs);
+    tagsEl.innerHTML = progs.length
+      ? progs.map(t => `<span class="tg">${esc(t)} <button onclick="this.parentElement.remove()">&times;</button></span>`).join('')
+      : '<span style="font-size:13px;color:var(--muted)">No programs added yet — add them in onboarding or save here.</span>';
+  }
+
+  // completeness ring
+  const textFields = ['pf-legal-name', 'pf-ein', 'pf-mission', 'pf-budget', 'pf-program-desc'];
+  const filled = textFields.filter(id => (document.getElementById(id)?.value || '').trim()).length
+    + (document.getElementById('pf-ntee')?.value ? 1 : 0)
+    + (arr(a.primary_programs).length ? 1 : 0);
+  const pct = Math.round((filled / (textFields.length + 2)) * 100);
+  const pctEl = document.getElementById('pf-ring-pct'); if (pctEl) pctEl.textContent = pct + '%';
+  const msgEl = document.getElementById('pf-complete-msg');
+  if (msgEl) msgEl.innerHTML = pct >= 80
+    ? `<strong>Your profile is ${pct}% complete.</strong> Looking great — this powers every match and draft.`
+    : `<strong>Your profile is ${pct}% complete.</strong> Fill in the rest to unlock better grant matches and stronger drafts.`;
+}
+
+/* ── Profile: persist edits to Supabase (profiles + onboarding_answers) ── */
+async function saveProfile() {
+  const uid = window._grange?.user?.id;
+  if (!window.sb || !uid) { toast('Sign in to save your profile.'); return; }
+  const get = id => (document.getElementById(id)?.value || '').trim();
+  const orgName = get('pf-legal-name'), mission = get('pf-mission'), ein = get('pf-ein');
+  const ntee = document.getElementById('pf-ntee')?.value || null;
+  const budget = get('pf-budget');
+  try {
+    await sb.from('profiles').update({
+      org_name: orgName || null, mission: mission || null, ein: ein || null, ntee_code: ntee,
+    }).eq('user_id', uid);
+    const ups = [];
+    const put = (k, v) => { if (v) ups.push({ user_id: uid, question_key: k, answer: v }); };
+    put('org_name', orgName); put('mission', mission); put('ein', ein); put('annual_budget', budget);
+    if (ups.length) await sb.from('onboarding_answers').upsert(ups, { onConflict: 'user_id,question_key' });
+    if (window._grange) {
+      window._grange.profile = { ...(window._grange.profile || {}), org_name: orgName, mission, ein, ntee_code: ntee };
+      window._grange._cachedAnswers = { ...(window._grange._cachedAnswers || {}), org_name: orgName, mission, ein, annual_budget: budget };
+    }
+    if (typeof applyOrgIdentity === 'function') applyOrgIdentity(window._grange);
+    populateProfile();
+    toast('Profile saved.');
+  } catch (e) { console.error('saveProfile failed', e); toast('Could not save — please try again.'); }
 }
 function submitContact() {
   const fname = document.getElementById('contact-fname').value.trim();
@@ -6755,6 +6826,103 @@ function applyDiscFilters(query, type) {
   document.getElementById('disc-subtitle').textContent =
     `${visible} of ${all.length} opportunities shown.`;
 }
+</script>
+
+<!-- ════════════════════════ AI CHATBOT ════════════════════════ -->
+<style>
+  #ai-chat-fab{position:fixed;right:22px;bottom:22px;z-index:9000;width:58px;height:58px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(217,79,48,.42);transition:transform .18s}
+  #ai-chat-fab:hover{transform:scale(1.06)}
+  body[data-screen="dashboard"] #ai-chat-fab,
+  body[data-screen="discovery"] #ai-chat-fab,
+  body[data-screen="generator"] #ai-chat-fab,
+  body[data-screen="profile"] #ai-chat-fab{display:flex}
+  #ai-chat-panel{position:fixed;right:22px;bottom:90px;z-index:9001;width:min(380px,calc(100vw - 32px));height:min(560px,calc(100vh - 130px));background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px rgba(26,25,22,.28);display:none;flex-direction:column;overflow:hidden}
+  #ai-chat-panel.open{display:flex}
+  .acp-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+  .acp-head .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);flex-shrink:0}
+  .acp-head b{font-family:var(--display);font-size:15px;color:var(--ink);display:block;line-height:1.1}
+  .acp-head .sub{font-size:11px;color:var(--muted)}
+  .acp-head .x{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px;line-height:1}
+  .acp-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+  .acp-msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+  .acp-msg.user{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:4px}
+  .acp-msg.bot{align-self:flex-start;background:var(--surface-2);color:var(--ink-body);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .acp-msg.typing{color:var(--muted)}
+  .acp-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px}
+  .acp-chip{font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink-body);border-radius:999px;padding:6px 11px;cursor:pointer}
+  .acp-chip:hover{border-color:var(--accent);color:var(--accent)}
+  .acp-input{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+  .acp-input textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padding:9px 12px;font:inherit;font-size:13.5px;max-height:90px;background:var(--surface);color:var(--ink)}
+  .acp-input button{background:var(--accent);color:#fff;border:none;border-radius:12px;width:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .acp-input button:disabled{opacity:.5;cursor:default}
+  .acp-disc{font-size:10.5px;color:var(--muted);text-align:center;padding:0 12px 11px}
+</style>
+<button id="ai-chat-fab" aria-label="Open Grange AI assistant" onclick="acpToggle()">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg>
+</button>
+<div id="ai-chat-panel" role="dialog" aria-label="Grange AI assistant">
+  <div class="acp-head"><span class="dot"></span><div><b>Grange Assistant</b><span class="sub">Your AI grant advisor</span></div><button class="x" onclick="acpToggle()" aria-label="Close">&times;</button></div>
+  <div class="acp-log" id="acp-log"></div>
+  <div class="acp-chips" id="acp-chips">
+    <button class="acp-chip" onclick="acpQuick('How do I get started with grants if I have never applied?')">How do I start?</button>
+    <button class="acp-chip" onclick="acpQuick('What documents do I need to gather before I apply for a grant?')">What documents do I need?</button>
+    <button class="acp-chip" onclick="acpQuick('What are my upcoming grant deadlines?')">My deadlines</button>
+  </div>
+  <div class="acp-input">
+    <textarea id="acp-text" rows="1" placeholder="Ask anything about grants…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();acpSend();}"></textarea>
+    <button id="acp-send" onclick="acpSend()" aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+  </div>
+  <div class="acp-disc">Grange can make mistakes. You're always the author — review before you submit.</div>
+</div>
+<script>
+  (function(){
+    let history = [], busy = false, greeted = false;
+    window.acpToggle = function(){
+      const p = document.getElementById('ai-chat-panel');
+      p.classList.toggle('open');
+      if (p.classList.contains('open')) {
+        if (!greeted) { acpAdd('bot', "Hi! I'm Grange, your AI grant advisor. I can help you find grants, figure out what documents you need, understand the process, or check your deadlines. What would you like to do?"); greeted = true; }
+        setTimeout(() => document.getElementById('acp-text').focus(), 60);
+      }
+    };
+    function acpAdd(role, text){
+      const log = document.getElementById('acp-log');
+      const el = document.createElement('div');
+      el.className = 'acp-msg ' + (role === 'user' ? 'user' : 'bot');
+      el.textContent = text;
+      log.appendChild(el); log.scrollTop = log.scrollHeight;
+      return el;
+    }
+    window.acpQuick = function(q){ document.getElementById('acp-text').value = q; acpSend(); };
+    window.acpSend = async function(){
+      const ta = document.getElementById('acp-text');
+      const msg = (ta.value || '').trim();
+      if (!msg || busy) return;
+      ta.value = ''; acpAdd('user', msg); history.push({ role: 'user', content: msg });
+      busy = true; document.getElementById('acp-send').disabled = true;
+      const typing = acpAdd('bot', 'Thinking…'); typing.classList.add('typing');
+      try {
+        if (!window.sb) { typing.textContent = 'Assistant is unavailable right now.'; }
+        else {
+          const { data: { session } } = await window.sb.auth.getSession();
+          if (!session) { typing.classList.remove('typing'); typing.textContent = 'Please sign in to use the assistant.'; }
+          else {
+            const res = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/ai-chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+              body: JSON.stringify({ message: msg, history: history.slice(0, -1) }),
+            });
+            const d = await res.json().catch(() => ({}));
+            typing.classList.remove('typing');
+            if (d.reply) { typing.textContent = d.reply; history.push({ role: 'assistant', content: d.reply }); }
+            else { typing.textContent = d.error || 'Sorry, something went wrong. Please try again.'; }
+          }
+        }
+      } catch (e) { typing.classList.remove('typing'); typing.textContent = 'Network error. Please try again.'; }
+      busy = false; document.getElementById('acp-send').disabled = false;
+      document.getElementById('acp-text').focus();
+    };
+  })();
 </script>
 </body>
 </html>
