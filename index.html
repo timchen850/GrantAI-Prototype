@@ -4069,6 +4069,46 @@ label.field-label {
   </div>
 </div>
 
+<!-- ════════════════════════ APP: READINESS ════════════════════════ -->
+<style>
+  .rdy-section-title{ font-family:var(--display); font-size:16px; color:var(--ink); margin:28px 0 3px; font-weight:600; }
+  .rdy-section-sub{ font-size:13px; color:var(--muted); margin-bottom:13px; }
+  .rdy-item{ border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:10px; background:var(--surface); }
+  .rdy-top{ display:flex; align-items:flex-start; gap:12px; }
+  .rdy-ic{ flex-shrink:0; width:22px; height:22px; margin-top:1px; }
+  .rdy-ic svg{ width:22px; height:22px; }
+  .rdy-body{ flex:1; min-width:0; }
+  .rdy-label{ font-size:14.5px; font-weight:600; color:var(--ink); }
+  .rdy-why{ font-size:13px; color:var(--ink-body); margin-top:3px; line-height:1.5; }
+  .rdy-how{ font-size:12.5px; color:var(--muted); margin-top:9px; padding-top:9px; border-top:1px dashed var(--line); display:none; line-height:1.55; }
+  .rdy-item.open .rdy-how{ display:block; }
+  .rdy-how-t{ font-size:12px; color:var(--accent); cursor:pointer; margin-top:8px; display:inline-flex; align-items:center; gap:4px; }
+  .rdy-seg{ display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; margin-top:11px; }
+  .rdy-seg button{ font-size:12px; padding:6px 13px; background:none; border:none; cursor:pointer; color:var(--muted); border-right:1px solid var(--line); transition:background .15s; }
+  .rdy-seg button:last-child{ border-right:none; }
+  .rdy-seg button:hover{ background:var(--surface-2); }
+  .rdy-seg button.on-have{ background:var(--ok-tint); color:var(--ok); font-weight:600; }
+  .rdy-seg button.on-prog{ background:var(--warn-tint); color:var(--warn-ink); font-weight:600; }
+  .rdy-seg button.on-need{ background:var(--accent-tint); color:var(--accent-ink); font-weight:600; }
+  .rdy-elig{ display:flex; align-items:center; gap:11px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; margin-bottom:8px; background:var(--surface); }
+  .rdy-elig .ic{ flex-shrink:0; width:20px; height:20px; } .rdy-elig .ic svg{ width:20px; height:20px; }
+  .rdy-elig .lbl{ font-size:14px; color:var(--ink); flex:1; }
+  .rdy-elig .lbl small{ display:block; font-size:12px; color:var(--muted); font-weight:400; margin-top:1px; }
+  .rdy-elig .act{ font-size:12px; color:var(--accent); cursor:pointer; white-space:nowrap; }
+  .rdy-fed-pill{ display:inline-block; font-size:10px; font-weight:600; color:var(--accent-ink); background:var(--accent-tint); border-radius:999px; padding:2px 8px; margin-left:8px; vertical-align:middle; }
+</style>
+<div id="readiness" class="screen">
+  <div class="app">
+    <aside class="side" id="side-readiness"></aside>
+    <main class="app-main">
+      <div class="page-head">
+        <div><h1>Grant readiness</h1><div class="ps">What to have ready before you apply — so nothing trips you up at submission.</div></div>
+      </div>
+      <div id="rdy-content"><div style="padding:40px;text-align:center;color:var(--muted)">Loading your readiness…</div></div>
+    </main>
+  </div>
+</div>
+
 <!-- ════════════════════════ GRANT MODAL ════════════════════════ -->
 <div class="overlay" id="grant-modal">
   <div class="modal">
@@ -4134,6 +4174,8 @@ function SIDE(active) {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
     <a href="#" onclick="go('discovery')" class="${active==='discovery'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Grant discovery</a>
+    <a href="#" onclick="go('readiness')" class="${active==='readiness'?'on':''}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l1.8 1.8L15 12"/></svg>Readiness</a>
     <a href="#" onclick="go('generator')" class="${active==='generator'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Proposal generator</a>
     <a href="#" onclick="go('profile')" class="${active==='profile'?'on':''}">
@@ -4148,7 +4190,7 @@ function SIDE(active) {
   </div>`;
 }
 function rebuildSidebars() {
-  ['dashboard','discovery','generator','profile'].forEach(s => {
+  ['dashboard','discovery','readiness','generator','profile'].forEach(s => {
     const el = document.getElementById('side-' + s);
     if (el) el.innerHTML = SIDE(s);
   });
@@ -4164,7 +4206,7 @@ window._currentScreen = 'landing';
 document.body.dataset.screen = 'landing';
 
 /* ─── navigation ────────────────────────────────────────── */
-const SCREENS = ['landing','login','signin','onboarding','demo','dashboard','discovery','generator','profile','privacy','terms','security','contact'];
+const SCREENS = ['landing','login','signin','onboarding','demo','dashboard','discovery','readiness','generator','profile','privacy','terms','security','contact'];
 
 /* ─── mobile hamburger drawer (phones only) ─────────────── */
 function mNavMarkup() {
@@ -4232,6 +4274,7 @@ function go(id) {
   if (id === 'dashboard') requestAnimationFrame(() => updateDashboard());
   if (id === 'generator') requestAnimationFrame(() => populateGeneratorGrant());
   if (id === 'profile')   requestAnimationFrame(() => populateProfile());
+  if (id === 'readiness') requestAnimationFrame(() => loadReadiness());
 }
 
 /* ── Profile: render the signed-in org's REAL data (no placeholder identity) ── */
@@ -6918,6 +6961,121 @@ function applyDiscFilters(query, type) {
     window._apStart = function () { const e = document.getElementById('out-empty'); if (e) e.style.display = 'none'; if (window._apCtl) window._apCtl.cancel(); window._apCtl = window.playAgentPlan(); };
     window._apStop  = function () { const el = document.getElementById('agent-plan'); if (el) el.classList.remove('show'); if (window._apCtl) window._apCtl.cancel(); };
   })();
+</script>
+<script>
+  /* ════════════════ READINESS CENTER ════════════════
+     Org-level grant readiness: eligibility basics auto-checked from the
+     profile + the prerequisite-document checklist (v2 readiness_requirements).
+     Works with no API key; statuses persist to readiness_items per user. */
+  const RDY_REQS = [
+    { key:'determination_letter', applies_to:'both', label:'IRS 501(c)(3) determination letter', why:'The gate — almost every funder asks for it first. No letter, no grant.', how:'The IRS issued it when you got tax-exempt status. Lost it? Request a free 147C letter from the IRS.' },
+    { key:'ein', applies_to:'both', label:'Employer Identification Number (EIN)', why:'Your federal tax ID; required on virtually every application.', how:'From the IRS — you already have it if your organization is incorporated.' },
+    { key:'bylaws', applies_to:'both', label:'Bylaws & articles of incorporation', why:'Funders confirm you are a real, governed nonprofit.', how:'Your incorporation documents from your state filing.' },
+    { key:'board_list', applies_to:'both', label:'Board of directors roster', why:'Shows independent governance and credibility; funders check for conflicts.', how:'Keep a current list with names, affiliations, and roles.' },
+    { key:'org_budget', applies_to:'both', label:'Board-approved organizational budget', why:'Demonstrates financial health and that you can manage the money.', how:'Your annual operating budget, approved by the board.' },
+    { key:'form_990', applies_to:'both', label:'Most recent IRS Form 990', why:'Funders read your 990 closely to confirm you are current and sound.', how:'You file it annually with the IRS (or a 990-N for small orgs).' },
+    { key:'financials', applies_to:'both', label:'Recent financial statements / audit', why:'Larger grants want audited financials to show you can steward funds.', how:'From your accountant; an audit if your budget crosses state/funder thresholds.' },
+    { key:'mission_track_record', applies_to:'both', label:'Mission statement & track record', why:'The narrative backbone of every proposal; new orgs are less competitive without evidence.', how:'Write it once and reuse it — Grange stores it on your profile.' },
+    { key:'uei', applies_to:'federal', label:'Unique Entity ID (UEI)', why:'Required to apply for ANY federal grant; issued via SAM.gov.', how:'Register free at SAM.gov. Start 60+ days before a deadline.' },
+    { key:'sam_active', applies_to:'federal', label:'Active SAM.gov registration', why:'You cannot submit a federal application without it, and it expires every 365 days.', how:'At SAM.gov — your legal name must match IRS records exactly. Renew annually.' },
+  ];
+  let _rdyStatus = {};
+
+  function rdyIcon(status) {
+    if (status === 'have') return '<svg class="ap-done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>';
+    if (status === 'in_progress') return '<svg class="ap-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/></svg>';
+    if (status === 'missing') return '<svg style="color:var(--accent)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>';
+    return '<svg class="ap-pending" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/></svg>';
+  }
+
+  function rdyEligBasics(p, a) {
+    const arr = x => Array.isArray(x) ? x : (x ? [x] : []);
+    return [
+      { label:'501(c)(3) tax-exempt status', ok: !!(p.tax_exempt_status && p.tax_exempt_status !== 'unknown'), detail:'Required by almost every funder — it is the gate.', fix:'Set your tax status' },
+      { label:'EIN on file', ok: !!(a.ein || p.ein), detail:'Your federal tax ID, asked for on every application.', fix:'Add your EIN' },
+      { label:'Service area defined', ok: !!(a.geo_focus || a.primary_location || (p.service_geographies && p.service_geographies.length)), detail:'Funders fund specific places — this drives eligibility.', fix:'Add your location' },
+      { label:'Annual budget on file', ok: !!(a.annual_budget || p.annual_budget), detail:'Many funders screen applicants by organization size.', fix:'Add your budget' },
+      { label:'Mission & focus areas set', ok: !!((a.mission || p.mission) && arr(a.focus_areas).length), detail:'Drives grant matching and funder-priority fit.', fix:'Add your mission' },
+    ];
+  }
+
+  function rdyScore(p, a) {
+    const elig = rdyEligBasics(p, a);
+    let pts = elig.filter(e => e.ok).length;
+    RDY_REQS.forEach(r => { const s = _rdyStatus[r.key]; if (s === 'have') pts += 1; else if (s === 'in_progress') pts += 0.5; });
+    return Math.round(pts / (elig.length + RDY_REQS.length) * 100);
+  }
+
+  window.loadReadiness = async function () {
+    const ctx = window._grange || {};
+    const p = ctx.profile || {}, a = ctx._cachedAnswers || {};
+    const uid = ctx.user && ctx.user.id;
+    _rdyStatus = {};
+    if (window.sb && uid) {
+      try { const { data } = await sb.from('readiness_items').select('req_key,status').eq('user_id', uid); (data || []).forEach(r => { _rdyStatus[r.req_key] = r.status; }); } catch (_) {}
+    }
+    renderReadiness(p, a);
+  };
+
+  function renderReadiness(p, a) {
+    const el = document.getElementById('rdy-content');
+    const elig = rdyEligBasics(p, a);
+    const pct = rdyScore(p, a);
+    const both = RDY_REQS.filter(r => r.applies_to === 'both');
+    const fed = RDY_REQS.filter(r => r.applies_to === 'federal');
+
+    const item = r => {
+      const s = _rdyStatus[r.key] || 'unknown';
+      return '<div class="rdy-item" id="rdy-' + r.key + '"><div class="rdy-top">' +
+        '<span class="rdy-ic" id="rdy-ic-' + r.key + '">' + rdyIcon(s) + '</span><div class="rdy-body">' +
+        '<div class="rdy-label">' + r.label + '</div><div class="rdy-why">' + r.why + '</div>' +
+        '<div class="rdy-seg">' +
+          '<button class="' + (s === 'have' ? 'on-have' : '') + '" onclick="rdySet(\'' + r.key + '\',\'have\')">Have it</button>' +
+          '<button class="' + (s === 'in_progress' ? 'on-prog' : '') + '" onclick="rdySet(\'' + r.key + '\',\'in_progress\')">Working on it</button>' +
+          '<button class="' + (s === 'missing' ? 'on-need' : '') + '" onclick="rdySet(\'' + r.key + '\',\'missing\')">Need it</button>' +
+        '</div>' +
+        '<div class="rdy-how-t" onclick="document.getElementById(\'rdy-' + r.key + '\').classList.toggle(\'open\')">How to get it ›</div>' +
+        '<div class="rdy-how">' + r.how + '</div></div></div></div>';
+    };
+
+    el.innerHTML =
+      '<div class="complete"><div class="ring ' + (pct >= 70 ? 'hi' : 'mid') + ' cring" style="--p:' + pct + '"><span>' + pct + '%</span></div>' +
+        '<div class="msg"><strong>You\'re ' + pct + '% grant-ready.</strong> ' + (pct >= 80 ? 'You\'re in great shape — the basics most funders ask for are covered.' : 'Work through the items below. Each is something a funder will ask for; having them ready means you never lose a grant over paperwork.') + '</div></div>' +
+      '<div class="rdy-section-title">Eligibility basics</div>' +
+      '<div class="rdy-section-sub">The universal gates almost every funder checks — auto-filled from your profile.</div>' +
+      elig.map(e => '<div class="rdy-elig"><span class="ic">' + (e.ok ? rdyIcon('have') : rdyIcon('missing')) + '</span>' +
+        '<span class="lbl">' + e.label + '<small>' + e.detail + '</small></span>' +
+        (e.ok ? '<span style="font-size:12px;color:var(--ok);font-weight:600">Confirmed</span>' : '<span class="act" onclick="go(\'profile\')">' + e.fix + ' →</span>') + '</div>').join('') +
+      '<div class="rdy-section-title">Documents every grant needs</div>' +
+      '<div class="rdy-section-sub">The recurring attachment kit funders request. Mark what you have so Grange can flag gaps before a deadline.</div>' +
+      both.map(item).join('') +
+      '<div class="rdy-section-title">For federal grants <span class="rdy-fed-pill">Federal</span></div>' +
+      '<div class="rdy-section-sub">Extra registrations to apply on Grants.gov. Start these 60+ days early — they\'re slow and trip up first-timers.</div>' +
+      fed.map(item).join('');
+  }
+
+  window.rdySet = async function (key, status) {
+    _rdyStatus[key] = status;
+    const ic = document.getElementById('rdy-ic-' + key); if (ic) ic.innerHTML = rdyIcon(status);
+    const itemEl = document.getElementById('rdy-' + key);
+    if (itemEl) {
+      const btns = itemEl.querySelectorAll('.rdy-seg button');
+      btns.forEach(b => b.className = '');
+      const cls = { have: 'on-have', in_progress: 'on-prog', missing: 'on-need' }[status];
+      const idx = { have: 0, in_progress: 1, missing: 2 }[status];
+      if (btns[idx]) btns[idx].className = cls;
+    }
+    // recompute ring
+    const ctx = window._grange || {};
+    const pct = rdyScore(ctx.profile || {}, ctx._cachedAnswers || {});
+    const ring = document.querySelector('#rdy-content .ring');
+    if (ring) { ring.querySelector('span').textContent = pct + '%'; ring.style.setProperty('--p', pct); ring.classList.toggle('hi', pct >= 70); ring.classList.toggle('mid', pct < 70); }
+    const strong = document.querySelector('#rdy-content .complete .msg strong');
+    if (strong) strong.textContent = "You're " + pct + '% grant-ready.';
+    // persist
+    const uid = ctx.user && ctx.user.id;
+    if (window.sb && uid) { try { await sb.from('readiness_items').upsert({ user_id: uid, req_key: key, status }, { onConflict: 'user_id,req_key' }); } catch (e) { console.error('readiness save', e); } }
+  };
 </script>
 </body>
 </html>
