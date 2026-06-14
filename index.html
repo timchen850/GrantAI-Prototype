@@ -4193,8 +4193,8 @@ label.field-label {
       <div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--warn-ink)" stroke-width="2.4"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>LOI must come before the full proposal, 2-page limit</div>
     </div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-accent" style="flex:1" onclick="closeGrant();selectGrantForDraft(window._modalGrant||null);go('generator')">Draft the LOI</button>
-      <button class="btn btn-outline" onclick="toast('Saved to your list');closeGrant()">Save</button>
+      <button class="btn btn-accent" style="flex:1" onclick="selectGrantForDraft(window._modalGrant||null);saveGrantToPipeline(window._modalGrant,'drafting');closeGrant();go('generator')">Draft the LOI</button>
+      <button class="btn btn-outline" onclick="saveGrantToPipeline(window._modalGrant,'saved');closeGrant()">Save</button>
     </div>
   </div>
 </div>
@@ -6737,7 +6737,7 @@ function renderGrantCard(g) {
 
   const govLink = g.govId
     ? `<a href="https://www.grants.gov/search-results-detail/${g.govId}" target="_blank" rel="noopener" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">View on Grants.gov</a>`
-    : `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();toast('Saved to your list')">Save</button>`;
+    : `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();saveGrantToPipeline(window._grantsById&&window._grantsById['${escHtml(g.id)}'],'saved')">Save</button>`;
 
   return `<div class="gcard" data-type="${escHtml(g.type)}" data-id="${escHtml(g.id)}">
     <div class="gc-ring">
@@ -6754,7 +6754,7 @@ function renderGrantCard(g) {
       <div class="amt">${escHtml(g.amount)}</div>
       <div class="due">${duePill}</div>
       <div class="acts">
-        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();selectGrantForDraft('${escHtml(g.id)}');go('generator')">Draft proposal</button>
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();draftGrant('${escHtml(g.id)}')">Draft proposal</button>
         <button class="btn btn-outline btn-sm gc-assess-btn" onclick="event.stopPropagation();assessGrant('${escHtml(g.id)}')"><span style="color:var(--accent)">✦</span>&nbsp;AI assessment</button>
         ${govLink}
       </div>
@@ -6825,6 +6825,51 @@ function dueUrgency(deadline) {
 
 function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ─── Save a discovery grant into the user's real pipeline ───
+   Creates a grants row (auto-seeds its document checklist) and, when the grant
+   has a real deadline, a deadlines row (auto-seeds 30/14/7-day reminders).
+   Dedupes by title so re-saving just updates the status. */
+async function saveGrantToPipeline(grant, status) {
+  if (!grant) return null;
+  status = status || 'saved';
+  const uid = window._grange && window._grange.user && window._grange.user.id;
+  if (!window.sb || !uid) { toast('Sign in to save grants to your pipeline.'); return null; }
+  try {
+    const { data: existing } = await sb.from('grants').select('id,status').eq('user_id', uid).eq('title', grant.title).maybeSingle();
+    let gid;
+    if (existing) {
+      gid = existing.id;
+      // don't downgrade a further-along status back to "saved"
+      if (!(status === 'saved' && existing.status && existing.status !== 'saved')) {
+        await sb.from('grants').update({ status }).eq('id', gid);
+      }
+    } else {
+      const { data: ins, error } = await sb.from('grants').insert({
+        user_id: uid, title: grant.title, funder: grant.funder || null,
+        amount: grant.amount || null, deadline: grant.deadline || null, status,
+      }).select('id').single();
+      if (error) throw error;
+      gid = ins.id;
+      if (grant.deadline) {
+        await sb.from('deadlines').insert({
+          user_id: uid, grant_id: gid, kind: 'proposal',
+          title: (grant.funder || grant.title) + ' — proposal due', due_date: grant.deadline,
+        });
+      }
+    }
+    toast(status === 'drafting' ? 'Added to your pipeline — drafting' : 'Saved to your pipeline');
+    return gid;
+  } catch (e) { console.error('saveGrantToPipeline', e); toast('Could not save — please try again.'); return null; }
+}
+
+/* Draft flow: select the grant, save it to the pipeline, open the generator. */
+function draftGrant(id) {
+  selectGrantForDraft(id);
+  const g = window._grantsById && window._grantsById[id];
+  if (g) saveGrantToPipeline(g, 'drafting');
+  go('generator');
 }
 
 function filterDiscGrants(query) {
