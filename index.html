@@ -8044,6 +8044,22 @@ function applyDiscFilters(query, type) {
   .acp-resize::before{content:"";position:absolute;top:6px;left:6px;width:7px;height:7px;border-top:2px solid var(--muted);border-left:2px solid var(--muted);border-top-left-radius:3px;opacity:.5}
   .acp-resize:hover::before{opacity:.9}
   #ai-chat-panel.dock .acp-resize{display:none}
+  /* ColorOrb — vanilla recreation of the spinning gradient orb */
+  @property --gorb-a{ syntax:"<angle>"; inherits:false; initial-value:0deg; }
+  .gorb{ position:relative; border-radius:50%; overflow:hidden; flex-shrink:0; transform:scale(1.07); background:#16151a; display:inline-block; }
+  .gorb::before{ content:""; position:absolute; inset:0; border-radius:50%;
+    background:
+      conic-gradient(from calc(var(--gorb-a) * 2) at 25% 70%, var(--gorb-3), transparent 20% 80%, var(--gorb-3)),
+      conic-gradient(from calc(var(--gorb-a) * 2) at 45% 75%, var(--gorb-2), transparent 30% 60%, var(--gorb-2)),
+      conic-gradient(from calc(var(--gorb-a) * -3) at 80% 20%, var(--gorb-1), transparent 40% 60%, var(--gorb-1)),
+      conic-gradient(from calc(var(--gorb-a) * 1) at 20% 80%, var(--gorb-1), transparent 10% 90%, var(--gorb-1)),
+      conic-gradient(from calc(var(--gorb-a) * -2) at 85% 10%, var(--gorb-3), transparent 20% 80%, var(--gorb-3));
+    filter: blur(var(--gorb-blur,3px)) contrast(1.6);
+    animation: gorb-spin var(--gorb-dur,16s) linear infinite; }
+  @keyframes gorb-spin{ to{ --gorb-a:360deg; } }
+  :root{ --gorb-1:oklch(75% 0.15 350); --gorb-2:oklch(80% 0.12 200); --gorb-3:oklch(78% 0.14 280); }
+  @media (prefers-reduced-motion: reduce){ .gorb::before{ animation:none } }
+  #ai-chat-fab .gorb{ width:60px; height:60px; }
   @media(max-width:768px){.acp-head .acp-dock-btn{display:none}}
 </style>
 <!-- proactive contextual nudge: appears per screen, offers the next step -->
@@ -8091,6 +8107,12 @@ function applyDiscFilters(query, type) {
         + '<path d="M13.4 25.4c1.9 2.5 4 3.7 6.6 3.7s4.7-1.2 6.6-3.7" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>'
         + '<path d="M30.6 7.4l.95 2.55 2.55.95-2.55.95-.95 2.55-.95-2.55-2.55-.95 2.55-.95z" fill="#fff"/>'
         + '</svg>';
+    };
+
+    /* ── Grange orb: the spinning ColorOrb used as the assistant avatar ── */
+    window.grangeOrb = function(size){
+      const blur = Math.max(size * 0.05, 1.5).toFixed(1);
+      return '<span class="gorb" style="width:' + size + 'px;height:' + size + 'px;--gorb-blur:' + blur + 'px" aria-hidden="true"></span>';
     };
 
     /* ── Per-screen context: the assistant knows where you are and what's next ── */
@@ -8259,7 +8281,7 @@ function applyDiscFilters(query, type) {
       if (role !== 'user') {
         const ava = document.createElement('span');
         ava.className = 'acp-rava';
-        ava.innerHTML = window.grangeFace(26, true);
+        ava.innerHTML = window.grangeOrb(26);
         row.appendChild(ava);
       }
       const el = document.createElement('div');
@@ -8274,11 +8296,11 @@ function applyDiscFilters(query, type) {
     /* paint the static avatars once the DOM is ready */
     (function paintFaces(){
       const fab = document.getElementById('acp-fab-face');
-      if (fab) fab.innerHTML = window.grangeFace(60, false);
+      if (fab) fab.innerHTML = window.grangeOrb(60);
       const head = document.getElementById('acp-head-ava');
-      if (head) head.insertAdjacentHTML('afterbegin', window.grangeFace(34, true));
+      if (head) head.insertAdjacentHTML('afterbegin', window.grangeOrb(34));
       const nud = document.getElementById('acp-nudge-ava');
-      if (nud) nud.innerHTML = window.grangeFace(22, true);
+      if (nud) nud.innerHTML = window.grangeOrb(22);
     })();
     window.acpSend = async function(){
       const ta = document.getElementById('acp-text');
