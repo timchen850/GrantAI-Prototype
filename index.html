@@ -4696,6 +4696,7 @@ function go(id) {
   if (id === 'profile')   requestAnimationFrame(() => populateProfile());
   if (id === 'readiness') requestAnimationFrame(() => loadReadiness());
   if (id === 'manage')    requestAnimationFrame(() => loadPostAward());
+  window._acpOnScreen?.(id);
 }
 
 /* ── Profile: render the signed-in org's REAL data (no placeholder identity) ── */
@@ -7750,44 +7751,81 @@ function applyDiscFilters(query, type) {
 
 <!-- ════════════════════════ AI CHATBOT ════════════════════════ -->
 <style>
-  #ai-chat-fab{position:fixed;right:22px;bottom:22px;z-index:9000;width:58px;height:58px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(217,79,48,.42);transition:transform .18s}
-  #ai-chat-fab:hover{transform:scale(1.06)}
+  #ai-chat-fab{position:fixed;right:22px;bottom:22px;z-index:9000;width:60px;height:60px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(217,79,48,.42);transition:transform .18s,box-shadow .18s;padding:0;overflow:hidden}
+  #ai-chat-fab:hover{transform:scale(1.06);box-shadow:0 14px 36px rgba(217,79,48,.5)}
+  #ai-chat-fab svg{width:60px;height:60px;display:block}
+  #ai-chat-fab .fab-on{position:absolute;right:5px;bottom:5px;width:13px;height:13px;border-radius:50%;background:var(--ok);border:2.5px solid var(--accent)}
   body[data-screen="dashboard"] #ai-chat-fab,
   body[data-screen="discovery"] #ai-chat-fab,
   body[data-screen="generator"] #ai-chat-fab,
+  body[data-screen="readiness"] #ai-chat-fab,
+  body[data-screen="manage"] #ai-chat-fab,
   body[data-screen="profile"] #ai-chat-fab{display:flex}
-  #ai-chat-panel{position:fixed;right:22px;bottom:90px;z-index:9001;width:min(380px,calc(100vw - 32px));height:min(560px,calc(100vh - 130px));background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px rgba(26,25,22,.28);display:none;flex-direction:column;overflow:hidden}
+  /* proactive contextual nudge */
+  #acp-nudge{position:fixed;right:24px;bottom:94px;z-index:8999;width:252px;background:var(--surface);border:1px solid var(--line);border-radius:16px 16px 4px 16px;box-shadow:0 16px 44px rgba(26,25,22,.2);padding:13px 14px;display:none;animation:acp-pop .26s var(--ease-expo,cubic-bezier(.16,1,.3,1))}
+  #acp-nudge.show{display:block}
+  @keyframes acp-pop{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+  .acp-nudge-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .acp-nudge-top b{font-family:var(--display);font-size:13px;color:var(--ink)}
+  .acp-nudge-top .x{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);font-size:17px;line-height:1;padding:0}
+  #acp-nudge p{font-size:12.5px;color:var(--ink-body);line-height:1.5;margin:0 0 9px}
+  #acp-nudge .acp-nudge-cta{font-size:12.5px;font-weight:600;color:var(--accent);background:var(--accent-tint);border:none;border-radius:9px;padding:7px 12px;cursor:pointer;width:100%}
+  #acp-nudge .acp-nudge-cta:hover{filter:brightness(.97)}
+  #ai-chat-panel{position:fixed;right:22px;bottom:90px;z-index:9001;width:min(380px,calc(100vw - 32px));height:min(560px,calc(100vh - 130px));background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px rgba(26,25,22,.28);display:none;flex-direction:column;overflow:hidden;transition:width .26s var(--ease-expo,cubic-bezier(.16,1,.3,1)),height .26s var(--ease-expo,cubic-bezier(.16,1,.3,1)),border-radius .26s}
   #ai-chat-panel.open{display:flex}
-  .acp-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--surface-2)}
-  .acp-head .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);flex-shrink:0}
-  .acp-head b{font-family:var(--display);font-size:15px;color:var(--ink);display:block;line-height:1.1}
+  /* docked sidebar mode */
+  #ai-chat-panel.dock{top:0;right:0;bottom:0;height:100vh;width:min(404px,100vw);border-radius:0;border-top:none;border-right:none;border-bottom:none;box-shadow:-18px 0 60px rgba(26,25,22,.16)}
+  @media(min-width:1100px){body.acp-docked .app{padding-right:404px}}
+  .acp-head{display:flex;align-items:center;gap:10px;padding:13px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+  .acp-head .acp-ava{flex-shrink:0;position:relative;width:34px;height:34px}
+  .acp-head .acp-ava .dot{position:absolute;right:-1px;bottom:-1px;width:9px;height:9px;border-radius:50%;background:var(--ok);border:2px solid var(--surface-2)}
+  .acp-head b{font-family:var(--display);font-size:15px;color:var(--ink);display:block;line-height:1.15}
   .acp-head .sub{font-size:11px;color:var(--muted)}
-  .acp-head .x{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px;line-height:1}
-  .acp-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
-  .acp-msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
-  .acp-msg.user{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:4px}
-  .acp-msg.bot{align-self:flex-start;background:var(--surface-2);color:var(--ink-body);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .acp-head .acp-htools{margin-left:auto;display:flex;align-items:center;gap:2px}
+  .acp-head .acp-htools button{background:none;border:none;cursor:pointer;color:var(--muted);width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+  .acp-head .acp-htools button:hover{background:var(--line-soft);color:var(--ink)}
+  .acp-head .acp-htools .x{font-size:21px;line-height:1}
+  .acp-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+  .acp-row{display:flex;gap:8px;align-items:flex-end;max-width:88%}
+  .acp-row.user{align-self:flex-end;flex-direction:row-reverse}
+  .acp-row.bot{align-self:flex-start}
+  .acp-row .acp-rava{flex-shrink:0;width:26px;height:26px;margin-bottom:2px}
+  .acp-msg{padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+  .acp-row.user .acp-msg{background:var(--ink);color:#fff;border-bottom-right-radius:4px}
+  .acp-row.bot .acp-msg{background:var(--surface-2);color:var(--ink-body);border:1px solid var(--line);border-bottom-left-radius:4px}
   .acp-msg.typing{color:var(--muted)}
   .acp-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px}
-  .acp-chip{font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink-body);border-radius:999px;padding:6px 11px;cursor:pointer}
+  .acp-chip{font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink-body);border-radius:999px;padding:6px 11px;cursor:pointer;text-align:left}
   .acp-chip:hover{border-color:var(--accent);color:var(--accent)}
   .acp-input{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
   .acp-input textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padding:9px 12px;font:inherit;font-size:13.5px;max-height:90px;background:var(--surface);color:var(--ink)}
   .acp-input button{background:var(--accent);color:#fff;border:none;border-radius:12px;width:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
   .acp-input button:disabled{opacity:.5;cursor:default}
   .acp-disc{font-size:10.5px;color:var(--muted);text-align:center;padding:0 12px 11px}
+  @media(max-width:768px){.acp-head .acp-dock-btn{display:none}}
 </style>
-<button id="ai-chat-fab" aria-label="Open Grange AI assistant" onclick="acpToggle()">
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg>
+<!-- proactive contextual nudge: appears per screen, offers the next step -->
+<div id="acp-nudge" role="status">
+  <div class="acp-nudge-top"><span id="acp-nudge-ava" style="width:22px;height:22px;display:inline-flex"></span><b>Grange</b><button class="x" onclick="acpNudgeDismiss()" aria-label="Dismiss">&times;</button></div>
+  <p id="acp-nudge-text"></p>
+  <button class="acp-nudge-cta" id="acp-nudge-cta" onclick="acpNudgeOpen()">Ask Grange</button>
+</div>
+<button id="ai-chat-fab" aria-label="Open Grange, your grant assistant" onclick="acpToggle()">
+  <span id="acp-fab-face"></span><span class="fab-on"></span>
 </button>
-<div id="ai-chat-panel" role="dialog" aria-label="Grange AI assistant">
-  <div class="acp-head"><span class="dot"></span><div><b>Grange Assistant</b><span class="sub">Your AI grant advisor</span></div><button class="x" onclick="acpToggle()" aria-label="Close">&times;</button></div>
-  <div class="acp-log" id="acp-log"></div>
-  <div class="acp-chips" id="acp-chips">
-    <button class="acp-chip" onclick="acpQuick('How do I get started with grants if I have never applied?')">How do I start?</button>
-    <button class="acp-chip" onclick="acpQuick('What documents do I need to gather before I apply for a grant?')">What documents do I need?</button>
-    <button class="acp-chip" onclick="acpQuick('What are my upcoming grant deadlines?')">My deadlines</button>
+<div id="ai-chat-panel" role="dialog" aria-label="Grange assistant">
+  <div class="acp-head">
+    <span class="acp-ava" id="acp-head-ava"><span class="dot"></span></span>
+    <div><b>Grange</b><span class="sub">Your grant assistant</span></div>
+    <div class="acp-htools">
+      <button class="acp-dock-btn" id="acp-dock-btn" onclick="acpDock()" aria-label="Dock to side" title="Dock to side">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="15" y1="4" x2="15" y2="20"/></svg>
+      </button>
+      <button class="x" onclick="acpToggle()" aria-label="Close">&times;</button>
+    </div>
   </div>
+  <div class="acp-log" id="acp-log"></div>
+  <div class="acp-chips" id="acp-chips"></div>
   <div class="acp-input">
     <textarea id="acp-text" rows="1" placeholder="Ask anything about grants…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();acpSend();}"></textarea>
     <button id="acp-mic" type="button" onclick="toggleDictation('acp-text','acp-mic',null)" aria-label="Dictate" title="Dictate" style="background:var(--surface-2);color:var(--ink-soft);border:none;width:40px;border-radius:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">
@@ -7795,28 +7833,132 @@ function applyDiscFilters(query, type) {
     </button>
     <button id="acp-send" onclick="acpSend()" aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
   </div>
-  <div class="acp-disc">Grange can make mistakes. You're always the author — review before you submit.</div>
+  <div class="acp-disc">Grange can make mistakes. You're the author, so review everything before you submit.</div>
 </div>
 <script>
   (function(){
     let history = [], busy = false, greeted = false;
+
+    /* ── Grange face: a friendly avatar so the assistant reads as a someone ── */
+    window.grangeFace = function(size, withBg){
+      const bg = withBg ? '<circle cx="20" cy="20" r="20" fill="var(--accent)"/>' : '';
+      return '<svg viewBox="0 0 40 40" width="'+size+'" height="'+size+'" fill="none" aria-hidden="true" style="display:block">'
+        + bg
+        + '<circle cx="14.6" cy="19" r="2.4" fill="#fff"/><circle cx="25.4" cy="19" r="2.4" fill="#fff"/>'
+        + '<path d="M13.4 25.4c1.9 2.5 4 3.7 6.6 3.7s4.7-1.2 6.6-3.7" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>'
+        + '<path d="M30.6 7.4l.95 2.55 2.55.95-2.55.95-.95 2.55-.95-2.55-2.55-.95 2.55-.95z" fill="#fff"/>'
+        + '</svg>';
+    };
+
+    /* ── Per-screen context: the assistant knows where you are and what's next ── */
+    const CTX = {
+      dashboard: { tip: "Not sure what to do next? I read your grant journey and point you to the one step that moves things forward.",
+        chips: [['What should I do next?','Based on where I am right now, what is the single next step I should take?'],
+                ['Explain my dashboard','Walk me through what each part of my dashboard means.']] },
+      discovery: { tip: "I can explain any match score, or tell you whether you qualify before you spend time applying.",
+        chips: [['Am I eligible?','For the grants showing on my discovery list, am I likely eligible? What would disqualify me?'],
+                ['How are matches scored?','How does Grange score how well a grant matches my organization?']] },
+      readiness: { tip: "Tell me which documents to gather and where each one actually comes from.",
+        chips: [['Which documents do I need?','Which documents do I need ready before I can apply, and where do I get each one?'],
+                ['Get a SAM.gov number','How do I register for SAM.gov and a UEI, and how long does it take?']] },
+      generator: { tip: "I can help you frame the proposal before you generate, so the draft comes back stronger.",
+        chips: [['What should I emphasize?','For this grant, what should my proposal emphasize to stand out to the funder?'],
+                ['Draft my summary','Help me write a two-sentence project summary I can drop into the generator.']] },
+      manage: { tip: "Once you win, I track what is due and when, so nothing slips through reporting.",
+        chips: [['My compliance deadlines','What compliance requirements and report deadlines do I have on my awarded grants?'],
+                ['How do I log an expense?','How do I record an expenditure and stay under the awarded budget?']] },
+      profile: { tip: "A complete profile means better matches. I'll tell you exactly what's missing.",
+        chips: [["What's missing?",'Look at my organization profile and tell me what is missing or worth improving for better matches.'],
+                ['Which documents go here?','Which financial documents belong on my profile, and why does each one matter?']] },
+    };
+    const DEFAULT_CHIPS = [
+      ['How do I start?','How do I get started with grants if I have never applied?'],
+      ['Documents I need','What documents do I need to gather before I apply for a grant?'],
+      ['My deadlines','What are my upcoming grant deadlines?'],
+    ];
+    function curCtx(){ return CTX[window._currentScreen] || null; }
+
+    function renderChips(){
+      const wrap = document.getElementById('acp-chips'); if(!wrap) return;
+      const list = (curCtx()?.chips) || DEFAULT_CHIPS;
+      wrap.innerHTML = list.map(([label,q]) =>
+        '<button class="acp-chip" onclick="acpQuick(this.dataset.q)" data-q="'+q.replace(/"/g,'&quot;')+'">'+label+'</button>'
+      ).join('');
+    }
+
     window.acpToggle = function(){
       const p = document.getElementById('ai-chat-panel');
+      const opening = !p.classList.contains('open');
       p.classList.toggle('open');
-      if (p.classList.contains('open')) {
-        if (!greeted) { acpAdd('bot', "Hi! I'm Grange, your AI grant advisor. I can help you find grants, figure out what documents you need, understand the process, or check your deadlines. What would you like to do?"); greeted = true; }
+      if (opening) {
+        acpNudgeDismiss();
+        if (!greeted) { acpAdd('bot', "Hi, I'm Grange. Ask me anything about your grants: finding them, the documents you need, your deadlines, or what to do next."); greeted = true; }
+        renderChips();
         setTimeout(() => document.getElementById('acp-text').focus(), 60);
+      } else if (p.classList.contains('dock')) {
+        p.classList.remove('dock'); document.body.classList.remove('acp-docked');
       }
     };
+
+    /* ── Dock / undock as a right-side sidebar ── */
+    window.acpDock = function(){
+      const p = document.getElementById('ai-chat-panel');
+      const docked = p.classList.toggle('dock');
+      document.body.classList.toggle('acp-docked', docked);
+      const btn = document.getElementById('acp-dock-btn');
+      btn.title = docked ? 'Pop out' : 'Dock to side';
+      btn.setAttribute('aria-label', btn.title);
+    };
+
+    /* ── Proactive contextual nudge ── */
+    const nudgedThisSession = {};
+    let nudgeTimer = null;
+    window._acpOnScreen = function(id){
+      const nudge = document.getElementById('acp-nudge');
+      const panel = document.getElementById('ai-chat-panel');
+      clearTimeout(nudgeTimer);
+      nudge.classList.remove('show');
+      if (panel.classList.contains('open')) { renderChips(); return; }
+      const ctx = CTX[id];
+      if (!ctx || nudgedThisSession[id] || sessionStorage.getItem('acp_nudge_off')==='1') return;
+      nudgeTimer = setTimeout(() => {
+        if (document.getElementById('ai-chat-panel').classList.contains('open')) return;
+        document.getElementById('acp-nudge-text').textContent = ctx.tip;
+        nudge.classList.add('show');
+        nudgedThisSession[id] = true;
+      }, 1100);
+    };
+    window.acpNudgeDismiss = function(){ document.getElementById('acp-nudge').classList.remove('show'); };
+    window.acpNudgeOpen = function(){ acpNudgeDismiss(); if(!document.getElementById('ai-chat-panel').classList.contains('open')) acpToggle(); };
+
     function acpAdd(role, text){
       const log = document.getElementById('acp-log');
+      const row = document.createElement('div');
+      row.className = 'acp-row ' + (role === 'user' ? 'user' : 'bot');
+      if (role !== 'user') {
+        const ava = document.createElement('span');
+        ava.className = 'acp-rava';
+        ava.innerHTML = window.grangeFace(26, true);
+        row.appendChild(ava);
+      }
       const el = document.createElement('div');
-      el.className = 'acp-msg ' + (role === 'user' ? 'user' : 'bot');
+      el.className = 'acp-msg';
       el.textContent = text;
-      log.appendChild(el); log.scrollTop = log.scrollHeight;
+      row.appendChild(el);
+      log.appendChild(row); log.scrollTop = log.scrollHeight;
       return el;
     }
     window.acpQuick = function(q){ document.getElementById('acp-text').value = q; acpSend(); };
+
+    /* paint the static avatars once the DOM is ready */
+    (function paintFaces(){
+      const fab = document.getElementById('acp-fab-face');
+      if (fab) fab.innerHTML = window.grangeFace(60, false);
+      const head = document.getElementById('acp-head-ava');
+      if (head) head.insertAdjacentHTML('afterbegin', window.grangeFace(34, true));
+      const nud = document.getElementById('acp-nudge-ava');
+      if (nud) nud.innerHTML = window.grangeFace(22, true);
+    })();
     window.acpSend = async function(){
       const ta = document.getElementById('acp-text');
       const msg = (ta.value || '').trim();
