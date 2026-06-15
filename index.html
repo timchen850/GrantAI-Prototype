@@ -4257,11 +4257,11 @@ label.field-label {
         </div>
       </section>
 
-      <div class="steps">
-        <div class="stp done"><span class="sn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span>Select grant</div>
-        <div class="stp now"><span class="sn">2</span>Configure</div>
-        <div class="stp"><span class="sn">3</span>Generate</div>
-        <div class="stp"><span class="sn">4</span>Review &amp; export</div>
+      <div class="steps" id="gen-steps">
+        <div class="stp done" id="gen-step-1"><span class="sn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span>Select grant</div>
+        <div class="stp now" id="gen-step-2"><span class="sn">2</span>Configure</div>
+        <div class="stp" id="gen-step-3"><span class="sn">3</span>Generate</div>
+        <div class="stp" id="gen-step-4"><span class="sn">4</span>Review &amp; export</div>
       </div>
 
       <style>
@@ -4293,9 +4293,41 @@ label.field-label {
         .pbox-generate:active{ transform:scale(0.97); }
         .pbox-generate:disabled{ opacity:.6; cursor:default; }
         .pbox-generate svg{ flex-shrink:0; }
+
+        /* Step 3 "Generate" view — collapse the config, give the draft the full width */
+        .gen-grid.gen-writing{ grid-template-columns:1fr; }
+        .gen-grid.gen-writing .gen-config{ display:none; }
+        .gen-grid.gen-writing .out{ max-width:780px; margin:0 auto; width:100%; }
+
+        /* "Generating" loader (vanilla recreation of the ai-loader) */
+        .gen-loader{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding:54px 0 46px; }
+        .ai-loader-wrap{ position:relative; width:168px; height:168px; display:flex; align-items:center; justify-content:center; border-radius:50%; }
+        .ai-loader-letter{ display:inline-block; opacity:.4; font-family:var(--display); font-weight:700; font-size:13.5px; letter-spacing:.5px; color:var(--ink); z-index:2; animation:loader-letter-anim 3s infinite; }
+        .ai-loader-ring{ position:absolute; inset:0; border-radius:50%; box-shadow:0 10px 20px 0 #fff inset, 0 20px 30px 0 #ad5fff inset, 0 60px 60px 0 #471eec inset; animation:loader-rotate 3s linear infinite; }
+        .ai-loader-letter:nth-child(1){ animation-delay:0s } .ai-loader-letter:nth-child(2){ animation-delay:.1s }
+        .ai-loader-letter:nth-child(3){ animation-delay:.2s } .ai-loader-letter:nth-child(4){ animation-delay:.3s }
+        .ai-loader-letter:nth-child(5){ animation-delay:.4s } .ai-loader-letter:nth-child(6){ animation-delay:.5s }
+        .ai-loader-letter:nth-child(7){ animation-delay:.6s } .ai-loader-letter:nth-child(8){ animation-delay:.7s }
+        .ai-loader-letter:nth-child(9){ animation-delay:.8s } .ai-loader-letter:nth-child(10){ animation-delay:.9s }
+        .gen-loader-cap{ font-size:13.5px; color:var(--muted); font-weight:500; }
+        @keyframes loader-rotate{
+          0%{ transform:rotate(90deg); box-shadow:0 10px 20px 0 #fff inset, 0 20px 30px 0 #ad5fff inset, 0 60px 60px 0 #471eec inset; }
+          50%{ transform:rotate(270deg); box-shadow:0 10px 20px 0 #fff inset, 0 20px 10px 0 #d60a47 inset, 0 40px 60px 0 #311e80 inset; }
+          100%{ transform:rotate(450deg); box-shadow:0 10px 20px 0 #fff inset, 0 20px 30px 0 #ad5fff inset, 0 60px 60px 0 #471eec inset; }
+        }
+        @keyframes loader-letter-anim{
+          0%,100%{ opacity:.4; transform:translateY(0); }
+          20%{ opacity:1; transform:scale(1.15); }
+          40%{ opacity:.7; transform:translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce){ .ai-loader-ring{ animation:none } .ai-loader-letter{ animation:none; opacity:.8 } }
+        /* "Grange's angle" strategy note above the draft */
+        .gen-strat{ margin:0 0 16px; padding:13px 15px; background:var(--accent-tint); border-radius:12px; }
+        .gen-strat-h{ display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--accent-ink); margin-bottom:5px; }
+        .gen-strat-b{ font-size:13px; line-height:1.55; color:var(--ink-body); white-space:pre-wrap; }
       </style>
-      <div class="gen-grid">
-        <div>
+      <div class="gen-grid" id="gen-grid">
+        <div class="gen-config">
           <div class="pbox" id="gen-pbox">
             <textarea id="gen-prompt-text" class="pbox-ta" rows="1" placeholder="Describe what you want Grange to write, like “a full narrative for year three of our after-school program.” Or just fill in the details below and hit Generate." oninput="pboxAutosize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();genPromptSend();}"></textarea>
             <div class="pbox-bar">
@@ -4350,6 +4382,14 @@ label.field-label {
         <div class="out">
           <div class="gen-progress" id="prog"></div>
           <div id="agent-plan"></div>
+          <div id="gen-loader" class="gen-loader" style="display:none">
+            <div class="ai-loader-wrap">
+              <span class="ai-loader-letter">G</span><span class="ai-loader-letter">e</span><span class="ai-loader-letter">n</span><span class="ai-loader-letter">e</span><span class="ai-loader-letter">r</span><span class="ai-loader-letter">a</span><span class="ai-loader-letter">t</span><span class="ai-loader-letter">i</span><span class="ai-loader-letter">n</span><span class="ai-loader-letter">g</span>
+              <div class="ai-loader-ring"></div>
+            </div>
+            <div class="gen-loader-cap" id="gen-loader-cap">Studying the funder…</div>
+          </div>
+          <div id="gen-strategy-note" style="display:none"></div>
           <div id="out-empty" class="out-empty">
             <div class="oe-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
             <h4>Your draft appears here</h4>
@@ -4358,7 +4398,7 @@ label.field-label {
           <div id="out-doc" style="display:none">
             <div class="out-head">
               <div class="oh-l"><div class="ol1" id="gen-out-type">Draft, full grant narrative</div><div class="ol2" id="gen-out-funder">DHHS Healthy Communities</div></div>
-              <div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="copyProposal()">Copy</button><button class="btn btn-accent btn-sm" id="export-btn" onclick="exportProposal()">Export .txt</button></div>
+              <div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="genShowConfig()" title="Back to the configuration form">&larr; Configure</button><button class="btn btn-outline btn-sm" onclick="copyProposal()">Copy</button><button class="btn btn-accent btn-sm" id="export-btn" onclick="exportProposal()">Export .txt</button></div>
             </div>
             <div id="ai-policy-banner" style="display:none;padding:0 0 0 0;margin-top:10px"></div>
             <div class="out-body"><div class="doc" id="doc-content"></div></div>
@@ -4724,7 +4764,7 @@ function go(id) {
   const t = document.getElementById(id);
   if (t) { t.classList.add('active'); requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0,0))); }
   if (id === 'tutorial')  requestAnimationFrame(() => window._tutEnsure?.());
-  if (id === 'landing')   requestAnimationFrame(() => window._tlActivateHome?.());
+  if (id === 'landing')   requestAnimationFrame(() => { window._tlActivateHome?.(); window._scrollHeroReset?.(); });
   if (id === 'signin')    requestAnimationFrame(() => window._siInit?.());
   if (id === 'demo')      requestAnimationFrame(() => window._dpReset?.());
   if (id === 'discovery') requestAnimationFrame(() => loadDiscoveryGrants());
@@ -5236,6 +5276,37 @@ async function runStrategyPass(prompt, token, signal) {
   return (d.reply || '').trim();
 }
 
+/* ── Generator view: the 4-step rail + the "Generate" full-width writing view ── */
+function genSetStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('gen-step-' + i);
+    if (!el) continue;
+    el.classList.remove('done', 'now');
+    if (i < n) el.classList.add('done'); else if (i === n) el.classList.add('now');
+  }
+}
+function genWritingView(on) {
+  document.getElementById('gen-grid')?.classList.toggle('gen-writing', !!on);
+}
+function genLoaderCap(t) { const e = document.getElementById('gen-loader-cap'); if (e) e.textContent = t; }
+function showStrategyNote(text) {
+  const n = document.getElementById('gen-strategy-note');
+  if (!n || !text) return;
+  const esc = s => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+  n.innerHTML = '<div class="gen-strat"><div class="gen-strat-h"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.1L19 9l-5.1 1.9L12 16l-1.9-5.1L5 9l5.1-1.9L12 2z"/></svg>' +
+    "Grange's angle for this grant</div><div class=\"gen-strat-b\">" + esc(text) + '</div></div>';
+  n.style.display = 'block';
+}
+/* Back to the configuration form (step 2) — used by the "← Configure" button + on error */
+function genShowConfig() {
+  if (generating) return;
+  genWritingView(false);
+  genSetStep(2);
+  ['gen-loader', 'out-doc', 'gen-strategy-note'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
+  const empty = document.getElementById('out-empty'); if (empty) empty.style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
 let generating = false;
 let _genAbort = null;
 
@@ -5258,10 +5329,18 @@ async function generate() {
   const btn    = document.getElementById('gen-btn');
   const content = document.getElementById('doc-content');
 
+  const loader = document.getElementById('gen-loader');
   empty.style.display  = 'none';
   outDoc.style.display = 'none';
-  prog.style.display   = 'block';
-  if (window._apStart) window._apStart();   // live agent-plan trace
+  prog.style.display   = 'none';
+  document.getElementById('agent-plan')?.classList.remove('show');
+  const stratNote = document.getElementById('gen-strategy-note');
+  if (stratNote) { stratNote.style.display = 'none'; stratNote.innerHTML = ''; }
+  genWritingView(true);                       // collapse the config, give the draft full width
+  genSetStep(3);                              // → step 3: Generate
+  if (loader) loader.style.display = 'flex';  // the "Generating" loader replaces the old trace
+  genLoaderCap('Studying the funder…');
+  window.scrollTo(0, 0);
   btn.disabled         = true;
   setGenBtnLabel('Generating…');
   content.innerHTML    = '';
@@ -5317,20 +5396,19 @@ async function generate() {
     // PASS 1 — think about the strongest angle for this specific grant
     let prompt = writePrompt;
     try {
-      const apSub = document.getElementById('ap-sub');
-      if (apSub) { apSub.textContent = 'planning the strongest angle for this grant…'; }
+      genLoaderCap('Planning the strongest angle for this grant…');
       toast('Studying the funder…');
       const strategy = await runStrategyPass(
         buildStrategyPrompt(fields, org, selectedGrant), session.access_token, _genAbort.signal);
       if (strategy) {
-        window._apShowStrategy?.(strategy);
+        showStrategyNote(strategy);
         prompt = writePrompt +
-          '\n\nSTRATEGY BRIEF (internal — let this shape the angle, emphasis, and what you lead with; do not quote it verbatim):\n' + strategy;
+          '\n\nSTRATEGY BRIEF (internal, let this shape the angle, emphasis, and what you lead with; do not quote it verbatim):\n' + strategy;
       }
-      if (apSub) apSub.textContent = 'working…';
+      genLoaderCap('Writing your draft…');
     } catch (e) {
       if (e.name === 'AbortError') throw e;   // user cancelled — bail out cleanly
-      /* strategy is best-effort; draft anyway */
+      genLoaderCap('Writing your draft…');    // strategy is best-effort; draft anyway
     }
 
     toast('Drafting your proposal…');
@@ -5359,8 +5437,8 @@ async function generate() {
     if (outType)   outType.textContent   = 'Draft, ' + fields.proposalType.toLowerCase();
     if (outFunder) outFunder.textContent = selectedGrant?.funder || selectedGrant?.title || 'Selected grant';
 
-    // Show the output panel as soon as streaming starts
-    prog.style.display   = 'none';
+    // Hide the loader and reveal the draft as soon as streaming starts
+    if (loader) loader.style.display = 'none';
     outDoc.style.display = 'block';
 
     const reader  = res.body.getReader();
@@ -5394,13 +5472,12 @@ async function generate() {
             content.innerHTML = clean;
             // Auto-scroll to bottom of output
             content.scrollIntoView({ block: 'end', behavior: 'smooth' });
-            if (window._apCtl && window._apCtl.draftTick) window._apCtl.draftTick(Math.min(0.92, rawText.length / 3500));
           }
         } catch (_) { /* skip malformed chunk */ }
       }
     }
 
-    if (window._apCtl && window._apCtl.finish) window._apCtl.finish();
+    genSetStep(4);                            // → step 4: Review & export
     showAIPolicyBanner(selectedGrant);
     runComplianceChecklist(fields, content);
 
@@ -5409,11 +5486,10 @@ async function generate() {
     toast(`Draft ready in ${elapsed}s. Review before submitting.`);
 
   } catch (err) {
-    prog.style.display = 'none';
-    if (window._apStop) window._apStop();
+    if (loader) loader.style.display = 'none';
     if (err.name !== 'AbortError') {
-      outDoc.style.display = 'none';
-      empty.style.display  = 'block';
+      generating = false;                     // let genShowConfig() run
+      genShowConfig();
       toast('Generation failed: ' + (err.message || 'Unknown error'));
       console.error('[Grange AI] generate():', err);
     }
@@ -5824,6 +5900,15 @@ async function signInWithGoogle() {
   window.addEventListener('scroll', update, { passive: true });
   window.addEventListener('resize', update, { passive: true });
   update();
+  // Bulletproof reset for when we land on the hero without a scroll event firing
+  // (e.g. sign-out from an app screen where scrollTo(0,0) is a no-op). Without this
+  // the title stays stuck at its last translate3d and renders cut off under the navbar.
+  window._scrollHeroReset = function () {
+    window.scrollTo(0, 0);
+    title.style.transform = '';
+    card.style.transform = '';
+    update();
+  };
 })();
 
 /* ─── DEMO MOCKUP — 3-phase AI grant process loop ────────── */
@@ -7954,6 +8039,11 @@ function applyDiscFilters(query, type) {
   .acp-input button{background:var(--accent);color:#fff;border:none;border-radius:12px;width:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
   .acp-input button:disabled{opacity:.5;cursor:default}
   .acp-disc{font-size:10.5px;color:var(--muted);text-align:center;padding:0 12px 11px}
+  /* drag the top-left corner to resize (floating mode only) */
+  .acp-resize{position:absolute;top:0;left:0;width:18px;height:18px;cursor:nwse-resize;z-index:5;touch-action:none}
+  .acp-resize::before{content:"";position:absolute;top:6px;left:6px;width:7px;height:7px;border-top:2px solid var(--muted);border-left:2px solid var(--muted);border-top-left-radius:3px;opacity:.5}
+  .acp-resize:hover::before{opacity:.9}
+  #ai-chat-panel.dock .acp-resize{display:none}
   @media(max-width:768px){.acp-head .acp-dock-btn{display:none}}
 </style>
 <!-- proactive contextual nudge: appears per screen, offers the next step -->
@@ -7966,6 +8056,7 @@ function applyDiscFilters(query, type) {
   <span id="acp-fab-face"></span><span class="fab-on"></span>
 </button>
 <div id="ai-chat-panel" role="dialog" aria-label="Grange assistant">
+  <div class="acp-resize" id="acp-resize" aria-label="Resize" title="Drag to resize"></div>
   <div class="acp-head">
     <span class="acp-ava" id="acp-head-ava"><span class="dot"></span></span>
     <div><b>Grange</b><span class="sub">Your grant assistant</span></div>
@@ -8057,8 +8148,8 @@ function applyDiscFilters(query, type) {
       const p = document.getElementById('ai-chat-panel');
       const docked = p.classList.toggle('dock');
       document.body.classList.toggle('acp-docked', docked);
-      // inline drag offsets fight the docked layout — clear them either way
-      p.style.left = p.style.top = p.style.right = p.style.bottom = '';
+      // inline drag/resize styles fight the docked layout — clear them either way
+      p.style.left = p.style.top = p.style.right = p.style.bottom = p.style.width = p.style.height = '';
       const btn = document.getElementById('acp-dock-btn');
       btn.title = docked ? 'Pop out' : 'Dock to side';
       btn.setAttribute('aria-label', btn.title);
@@ -8100,6 +8191,44 @@ function applyDiscFilters(query, type) {
       };
       head.addEventListener('pointerup', end);
       head.addEventListener('pointercancel', end);
+    })();
+
+    /* ── Resize the panel from its top-left corner (floating mode only) ── */
+    (function enableResize(){
+      const handle = document.getElementById('acp-resize');
+      if (!handle) return;
+      const MINW = 300, MINH = 360;
+      let resizing = false, sx = 0, sy = 0, sw = 0, sh = 0;
+      handle.addEventListener('pointerdown', (e) => {
+        const p = document.getElementById('ai-chat-panel');
+        if (p.classList.contains('dock')) return;
+        const r = p.getBoundingClientRect();
+        // anchor by bottom-right so dragging the top-left corner keeps that corner fixed
+        p.style.right = (window.innerWidth - r.right) + 'px';
+        p.style.bottom = (window.innerHeight - r.bottom) + 'px';
+        p.style.left = 'auto'; p.style.top = 'auto';
+        resizing = true; sx = e.clientX; sy = e.clientY; sw = r.width; sh = r.height;
+        p.classList.add('acp-dragging');
+        handle.setPointerCapture(e.pointerId);
+        e.preventDefault(); e.stopPropagation();
+      });
+      handle.addEventListener('pointermove', (e) => {
+        if (!resizing) return;
+        const p = document.getElementById('ai-chat-panel');
+        const maxW = Math.min(window.innerWidth * 0.92, 720);
+        const maxH = window.innerHeight * 0.92;
+        const nw = Math.max(MINW, Math.min(sw + (sx - e.clientX), maxW));
+        const nh = Math.max(MINH, Math.min(sh + (sy - e.clientY), maxH));
+        p.style.width = nw + 'px'; p.style.height = nh + 'px';
+      });
+      const end = (e) => {
+        if (!resizing) return;
+        resizing = false;
+        document.getElementById('ai-chat-panel').classList.remove('acp-dragging');
+        try { handle.releasePointerCapture(e.pointerId); } catch (_) {}
+      };
+      handle.addEventListener('pointerup', end);
+      handle.addEventListener('pointercancel', end);
     })();
 
     /* ── Proactive contextual nudge ── */
