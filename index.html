@@ -662,9 +662,26 @@ label.field-label {
 .side-nav a.on svg { color: var(--accent); }
 .side-foot { padding: 16px 18px 0; border-top: 1px solid var(--line); margin: 0 14px; }
 .org-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r);
-  padding: 12px 14px; margin-bottom: 12px; }
-.org-card .nm { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  padding: 12px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 11px; }
+.org-card .oc-ava { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  background: var(--accent-tint); color: var(--accent-ink); display: flex; align-items: center;
+  justify-content: center; font-family: var(--display); font-size: 15px; font-weight: 700;
+  overflow: hidden; background-size: cover; background-position: center; }
+.org-card .oc-ava img { width: 100%; height: 100%; object-fit: cover; }
+.org-card .oc-text { min-width: 0; }
+.org-card .nm { font-size: 13.5px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .org-card .pl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+/* org profile photo uploader */
+.pf-photo { display: flex; align-items: center; gap: 18px; padding: 18px; border: 1px solid var(--line);
+  border-radius: 14px; background: var(--surface); margin-bottom: 24px; }
+.pf-photo-ava { width: 76px; height: 76px; border-radius: 50%; flex-shrink: 0; background: var(--accent-tint);
+  color: var(--accent-ink); display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-size: 28px; font-weight: 700; overflow: hidden;
+  background-size: cover; background-position: center; }
+.pf-photo-ava img { width: 100%; height: 100%; object-fit: cover; }
+.pf-photo-title { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.pf-photo-sub { font-size: 12.5px; color: var(--muted); margin: 2px 0 11px; }
+.pf-photo-acts { display: flex; gap: 8px; }
 .side-foot .links { display: flex; justify-content: space-between; }
 .side-foot .links a { font-size: 13px; color: var(--muted); }
 .side-foot .links a:hover { color: var(--ink); }
@@ -4369,6 +4386,18 @@ label.field-label {
       </div>
 
       <div class="pform">
+        <div class="pf-photo full">
+          <div class="pf-photo-ava" id="pf-photo-ava" data-org-avatar></div>
+          <div>
+            <div class="pf-photo-title">Organization photo</div>
+            <div class="pf-photo-sub">A logo or photo of your team. It shows on your profile and in the sidebar.</div>
+            <div class="pf-photo-acts">
+              <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('pf-photo-input').click()">Upload photo</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="pf-photo-remove" onclick="pfPhotoRemove()" style="display:none">Remove</button>
+            </div>
+          </div>
+          <input type="file" id="pf-photo-input" accept="image/png,image/jpeg,image/webp" hidden onchange="pfPhotoPick(event)">
+        </div>
         <div class="divider">Basics</div>
         <div class="fieldset"><label class="field-label">Legal name</label><input id="pf-legal-name" type="text" placeholder="Your organization's legal name"></div>
         <div class="fieldset"><label class="field-label">EIN</label><input id="pf-ein" type="text" placeholder="00-0000000"></div>
@@ -4604,7 +4633,7 @@ function SIDE(active) {
     ${showSurveyBtn ? `<button class="side-survey-btn" onclick="go('onboarding')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
       Complete your profile →</button>` : ''}
-    <div class="org-card"><div class="nm" data-org-name>Your organization</div><div class="pl">Grange AI</div></div>
+    <div class="org-card"><div class="oc-ava" data-org-avatar></div><div class="oc-text"><div class="nm" data-org-name>Your organization</div><div class="pl">Grange AI</div></div></div>
     <div class="links"><a href="#" onclick="go('profile')">Settings</a><a href="#" onclick="signOut();return false;">Sign out</a></div>
   </div>`;
 }
@@ -4617,6 +4646,7 @@ function rebuildSidebars() {
     const name = (window._grange && window._grange.profile && window._grange.profile.org_name) || 'Your organization';
     el.textContent = name;
   });
+  if (typeof setOrgAvatars === 'function') setOrgAvatars();
 }
 rebuildSidebars();
 
@@ -4700,6 +4730,56 @@ function go(id) {
 }
 
 /* ── Profile: render the signed-in org's REAL data (no placeholder identity) ── */
+/* ── Organization photo: stored client-side as a downscaled data URL, keyed per user ── */
+function orgPhotoKey() { return 'grange_org_photo_' + (window._grange?.user?.id || 'anon'); }
+function getOrgPhoto() { try { return localStorage.getItem(orgPhotoKey()); } catch (_) { return null; } }
+function orgInitials() {
+  const name = (window._grange?.profile?.org_name || '').trim();
+  if (!name) return '';
+  return name.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
+function setOrgAvatars() {
+  const photo = getOrgPhoto();
+  const initials = orgInitials();
+  document.querySelectorAll('[data-org-avatar]').forEach(el => {
+    if (photo) { el.innerHTML = `<img src="${photo}" alt="Organization photo">`; el.style.background = ''; }
+    else { el.innerHTML = initials || '<span style="opacity:.6">+</span>'; }
+  });
+  const rm = document.getElementById('pf-photo-remove');
+  if (rm) rm.style.display = photo ? '' : 'none';
+}
+function pfPhotoPick(e) {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  if (!/^image\/(png|jpe?g|webp)$/.test(file.type)) { toast('Please choose a PNG, JPG, or WebP image.'); return; }
+  if (file.size > 8 * 1024 * 1024) { toast('That image is over 8MB — please pick a smaller one.'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      // downscale to a 256px square so it stays small in localStorage
+      const S = 256, c = document.createElement('canvas');
+      c.width = c.height = S;
+      const ctx2 = c.getContext('2d');
+      const side = Math.min(img.width, img.height);
+      ctx2.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S);
+      const url = c.toDataURL('image/jpeg', 0.85);
+      try { localStorage.setItem(orgPhotoKey(), url); } catch (_) { toast('Could not save the photo on this device.'); return; }
+      setOrgAvatars();
+      toast('Organization photo updated.');
+    };
+    img.onerror = () => toast('That file did not load as an image.');
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function pfPhotoRemove() {
+  try { localStorage.removeItem(orgPhotoKey()); } catch (_) {}
+  setOrgAvatars();
+  toast('Organization photo removed.');
+}
+
 function populateProfile() {
   const ctx = window._grange || {};
   const a = ctx._cachedAnswers || {};
@@ -4735,8 +4815,9 @@ function populateProfile() {
   const pctEl = document.getElementById('pf-ring-pct'); if (pctEl) pctEl.textContent = pct + '%';
   const msgEl = document.getElementById('pf-complete-msg');
   if (msgEl) msgEl.innerHTML = pct >= 80
-    ? `<strong>Your profile is ${pct}% complete.</strong> Looking great — this powers every match and draft.`
+    ? `<strong>Your profile is ${pct}% complete.</strong> Looking great. This powers every match and draft.`
     : `<strong>Your profile is ${pct}% complete.</strong> Fill in the rest to unlock better grant matches and stronger drafts.`;
+  setOrgAvatars();
 }
 
 /* ── Profile: persist edits to Supabase (profiles + onboarding_answers) ── */
