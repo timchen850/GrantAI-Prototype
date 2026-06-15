@@ -4883,11 +4883,13 @@ async function generate() {
             content.innerHTML = clean;
             // Auto-scroll to bottom of output
             content.scrollIntoView({ block: 'end', behavior: 'smooth' });
+            if (window._apCtl && window._apCtl.draftTick) window._apCtl.draftTick(Math.min(0.92, rawText.length / 3500));
           }
         } catch (_) { /* skip malformed chunk */ }
       }
     }
 
+    if (window._apCtl && window._apCtl.finish) window._apCtl.finish();
     showAIPolicyBanner(selectedGrant);
     runComplianceChecklist(fields, content);
 
@@ -7090,18 +7092,48 @@ function applyDiscFilters(query, type) {
       const step = opts.speed || 600;
       render();
       document.getElementById('agent-plan').classList.add('show');
-      const ctl = { cancelled: false, _t: [] };
+      const ctl = { cancelled: false, _t: [], _draftDone: 0 };
       ctl.cancel = function () { ctl.cancelled = true; ctl._t.forEach(clearTimeout); };
       const at = (fn, d) => { ctl._t.push(setTimeout(() => { if (!ctl.cancelled) fn(); }, d)); };
+      const openOnly = ti => { PLAN.forEach((_, k) => { if (k !== ti) document.getElementById('ap-task-' + k)?.classList.remove('open'); }); document.getElementById('ap-task-' + ti)?.classList.add('open'); };
+      const DRAFT = 3; // "Draft your proposal"
       let d = 0;
+
+      if (opts.live) {
+        // Prep phases (0–2) play quickly; the Draft phase is driven by the real stream.
+        const ps = 240;
+        for (let ti = 0; ti <= 2; ti++) {
+          at((function (t) { return function () { setTask(t, 'active'); openOnly(t); }; })(ti), d); d += ps * 0.6;
+          PLAN[ti].subs.forEach((s, si) => { at(() => setSub(ti, si, 'active'), d); d += ps; at(() => setSub(ti, si, 'done'), d); });
+          at((function (t) { return function () { setTask(t, 'done'); }; })(ti), d + 40); d += ps * 0.4;
+        }
+        at(() => { setTask(DRAFT, 'active'); openOnly(DRAFT); setSub(DRAFT, 0, 'active'); }, d);
+        ctl.draftTick = function (frac) {
+          const n = PLAN[DRAFT].subs.length;
+          const target = Math.min(n - 1, Math.floor(frac * n));
+          while (ctl._draftDone < target) { setSub(DRAFT, ctl._draftDone, 'done'); ctl._draftDone++; setSub(DRAFT, ctl._draftDone, 'active'); }
+        };
+        ctl.finish = function () {
+          ctl.cancelled = false;
+          for (let si = ctl._draftDone; si < PLAN[DRAFT].subs.length; si++) setSub(DRAFT, si, 'done');
+          setTask(DRAFT, 'done');
+          let dd = 60; const rs = PLAN[4].subs;
+          at(() => { setTask(4, 'active'); openOnly(4); }, dd); dd += 220;
+          rs.forEach((s, si) => { at(() => setSub(4, si, 'active'), dd); dd += 300; at(() => setSub(4, si, s.help ? 'help' : 'done'), dd); });
+          at(() => { setTask(4, rs[rs.length - 1].help ? 'help' : 'done'); const sub = document.getElementById('ap-sub'); if (sub) { sub.textContent = 'ready for your review'; sub.style.color = 'var(--warn-ink)'; } }, dd + 50);
+        };
+        ctl.fail = function (msg) {
+          setSub(DRAFT, ctl._draftDone, 'help'); setTask(DRAFT, 'help');
+          const sub = document.getElementById('ap-sub'); if (sub) { sub.textContent = msg || 'paused'; sub.style.color = 'var(--warn-ink)'; }
+        };
+        return ctl;
+      }
+
+      // Full auto timeline (preview, no key needed)
       PLAN.forEach((task, ti) => {
-        at(() => { setTask(ti, 'active'); PLAN.forEach((_, k) => { if (k !== ti) document.getElementById('ap-task-' + k)?.classList.remove('open'); }); document.getElementById('ap-task-' + ti)?.classList.add('open'); }, d);
+        at(() => { setTask(ti, 'active'); openOnly(ti); }, d);
         d += step * 0.7;
-        task.subs.forEach((s, si) => {
-          at(() => setSub(ti, si, 'active'), d);
-          d += step;
-          at(() => setSub(ti, si, s.help ? 'help' : 'done'), d);
-        });
+        task.subs.forEach((s, si) => { at(() => setSub(ti, si, 'active'), d); d += step; at(() => setSub(ti, si, s.help ? 'help' : 'done'), d); });
         const lastHelp = task.subs[task.subs.length - 1] && task.subs[task.subs.length - 1].help;
         at(() => setTask(ti, lastHelp ? 'help' : 'done'), d + 50);
         d += step * 0.5;
@@ -7119,7 +7151,7 @@ function applyDiscFilters(query, type) {
       window._apCtl = window.playAgentPlan();
     };
     /* Hooks used by generate() */
-    window._apStart = function () { const e = document.getElementById('out-empty'); if (e) e.style.display = 'none'; if (window._apCtl) window._apCtl.cancel(); window._apCtl = window.playAgentPlan(); };
+    window._apStart = function () { const e = document.getElementById('out-empty'); if (e) e.style.display = 'none'; if (window._apCtl) window._apCtl.cancel(); window._apCtl = window.playAgentPlan({ live: true }); };
     window._apStop  = function () { const el = document.getElementById('agent-plan'); if (el) el.classList.remove('show'); if (window._apCtl) window._apCtl.cancel(); };
   })();
 </script>
