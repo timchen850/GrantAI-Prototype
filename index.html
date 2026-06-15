@@ -4168,6 +4168,40 @@ label.field-label {
   </div>
 </div>
 
+<!-- ════════════════════════ APP: GRANT MANAGEMENT (post-award) ════════════════════════ -->
+<style>
+  .pa-card{ border:1px solid var(--line); border-radius:14px; background:var(--surface); margin-bottom:18px; overflow:hidden; }
+  .pa-head{ padding:16px 18px; border-bottom:1px solid var(--line); display:flex; align-items:flex-start; gap:14px; flex-wrap:wrap; }
+  .pa-head .pa-t{ font-family:var(--display); font-size:16px; font-weight:600; color:var(--ink); }
+  .pa-head .pa-f{ font-size:13px; color:var(--muted); margin-top:2px; }
+  .pa-money{ margin-left:auto; text-align:right; } .pa-money .v{ font-size:18px; font-weight:700; color:var(--ink); } .pa-money .l{ font-size:11px; color:var(--muted); }
+  .pa-body{ padding:16px 18px; }
+  .pa-sub{ font-size:12.5px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em; margin:4px 0 10px; }
+  .pa-cmp{ display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-top:1px solid var(--line-soft); }
+  .pa-cmp:first-of-type{ border-top:none; }
+  .pa-cmp .ic{ flex-shrink:0; width:18px; height:18px; margin-top:1px; cursor:pointer; } .pa-cmp .ic svg{ width:18px; height:18px; }
+  .pa-cmp .bd b{ font-size:13.5px; color:var(--ink); font-weight:600; } .pa-cmp .bd p{ font-size:12.5px; color:var(--ink-body); margin:2px 0 0; line-height:1.45; }
+  .pa-cmp.done .bd b{ color:var(--muted); text-decoration:line-through; text-decoration-color:var(--line); }
+  .pa-spend{ margin-top:16px; padding-top:16px; border-top:1px solid var(--line); }
+  .pa-bars{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:12px; }
+  .pa-stat{ background:var(--surface-2); border-radius:10px; padding:10px 14px; flex:1; min-width:120px; } .pa-stat .l{ font-size:11px; color:var(--muted); } .pa-stat .v{ font-size:18px; font-weight:700; color:var(--ink); } .pa-stat.over .v{ color:var(--accent); }
+  .pa-track{ height:8px; border-radius:999px; background:var(--line-soft); overflow:hidden; margin-bottom:14px; } .pa-track > i{ display:block; height:100%; background:var(--ok); border-radius:999px; } .pa-track > i.over{ background:var(--accent); }
+  .pa-exp-row{ display:flex; align-items:center; gap:10px; font-size:13px; padding:6px 0; border-top:1px solid var(--line-soft); color:var(--ink-body); }
+  .pa-exp-row .cat{ font-size:11px; color:var(--accent-ink); background:var(--accent-tint); border-radius:5px; padding:1px 7px; white-space:nowrap; } .pa-exp-row .amt{ margin-left:auto; font-weight:600; color:var(--ink); }
+  .pa-addform{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; align-items:center; }
+  .pa-addform select, .pa-addform input{ border:1px solid var(--line); border-radius:8px; padding:7px 10px; font:inherit; font-size:13px; background:var(--surface); color:var(--ink); }
+  .pa-addform input.desc{ flex:1; min-width:140px; } .pa-addform input.num{ width:110px; }
+</style>
+<div id="manage" class="screen">
+  <div class="app">
+    <aside class="side" id="side-manage"></aside>
+    <main class="app-main">
+      <div class="page-head"><div><h1>Grant management</h1><div class="ps">After you win: track compliance and where the money goes, so funders never claw it back.</div></div></div>
+      <div id="pa-content"><div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div></div>
+    </main>
+  </div>
+</div>
+
 <!-- ════════════════════════ GRANT MODAL ════════════════════════ -->
 <div class="overlay" id="grant-modal">
   <div class="modal">
@@ -4237,6 +4271,8 @@ function SIDE(active) {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l1.8 1.8L15 12"/></svg>Readiness</a>
     <a href="#" onclick="go('generator')" class="${active==='generator'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Proposal generator</a>
+    <a href="#" onclick="go('manage')" class="${active==='manage'?'on':''}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>Grant management</a>
     <a href="#" onclick="go('profile')" class="${active==='profile'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Org profile</a>
   </nav>
@@ -4249,7 +4285,7 @@ function SIDE(active) {
   </div>`;
 }
 function rebuildSidebars() {
-  ['dashboard','discovery','readiness','generator','profile'].forEach(s => {
+  ['dashboard','discovery','readiness','generator','manage','profile'].forEach(s => {
     const el = document.getElementById('side-' + s);
     if (el) el.innerHTML = SIDE(s);
   });
@@ -4265,7 +4301,7 @@ window._currentScreen = 'landing';
 document.body.dataset.screen = 'landing';
 
 /* ─── navigation ────────────────────────────────────────── */
-const SCREENS = ['landing','login','signin','onboarding','demo','dashboard','discovery','readiness','generator','profile','privacy','terms','security','contact'];
+const SCREENS = ['landing','login','signin','onboarding','demo','dashboard','discovery','readiness','generator','manage','profile','privacy','terms','security','contact'];
 
 /* ─── mobile hamburger drawer (phones only) ─────────────── */
 function mNavMarkup() {
@@ -4334,6 +4370,7 @@ function go(id) {
   if (id === 'generator') requestAnimationFrame(() => populateGeneratorGrant());
   if (id === 'profile')   requestAnimationFrame(() => populateProfile());
   if (id === 'readiness') requestAnimationFrame(() => loadReadiness());
+  if (id === 'manage')    requestAnimationFrame(() => loadPostAward());
 }
 
 /* ── Profile: render the signed-in org's REAL data (no placeholder identity) ── */
@@ -7317,6 +7354,101 @@ function applyDiscFilters(query, type) {
     if (_dictViz) _dictViz.classList.remove('on');
     _dictRec = null; _dictBtn = null; _dictViz = null;
   }
+</script>
+<script>
+  /* ════════════════ GRANT MANAGEMENT (post-award) ════════════════
+     Surfaces the clawback-prevention backend: awards → auto-seeded
+     compliance_requirements + expenditure-vs-budget tracking. No AI key. */
+  let _paCats = null;
+  const _paIcon = done => done
+    ? '<svg class="ap-done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>'
+    : '<svg class="ap-pending" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/></svg>';
+  const _paFmt = n => '$' + Math.round(n).toLocaleString();
+  function paEmpty(msg) { return '<div class="pa-card"><div class="pa-body" style="text-align:center;padding:34px;color:var(--muted);font-size:14px;line-height:1.6">' + msg + '</div></div>'; }
+
+  window.loadPostAward = async function () {
+    const el = document.getElementById('pa-content');
+    const uid = window._grange && window._grange.user && window._grange.user.id;
+    if (!window.sb || !uid) { el.innerHTML = paEmpty('Sign in to manage your awarded grants.'); return; }
+    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div>';
+    try {
+      if (!_paCats) { const { data } = await sb.from('budget_categories').select('key,label').order('sort_order'); _paCats = data || []; }
+      const { data: awards } = await sb.from('awards').select('id,grant_id,amount_awarded,period_start,period_end,grants(title,funder)').eq('user_id', uid).order('created_at', { ascending: false });
+      const { data: grants } = await sb.from('grants').select('id,title,funder').eq('user_id', uid).eq('archived', false);
+      const awardedIds = new Set((awards || []).map(a => a.grant_id));
+      const candidates = (grants || []).filter(g => !awardedIds.has(g.id));
+      let html = '<div class="pa-card"><div class="pa-body"><div class="pa-sub">Record a win</div>' +
+        (candidates.length
+          ? '<div class="pa-addform"><select id="pa-award-grant"><option value="">Choose a grant you won…</option>' +
+            candidates.map(g => '<option value="' + g.id + '">' + escHtml(g.title) + (g.funder ? ' — ' + escHtml(g.funder) : '') + '</option>').join('') + '</select>' +
+            '<input class="num" id="pa-award-amt" type="text" placeholder="$ awarded"><button class="btn btn-accent btn-sm" onclick="markAwarded()">Mark as awarded</button></div>' +
+            '<p style="font-size:12px;color:var(--muted);margin-top:8px">Marking a grant awarded sets up its compliance checklist and spending tracker automatically.</p>'
+          : '<p style="font-size:13px;color:var(--muted)">Save grants in Discovery first, then mark them awarded here when you win.</p>') +
+        '</div></div>';
+      if (!(awards || []).length) {
+        html += paEmpty('No awarded grants yet. When you win one, this is where you keep the money safe — compliance tasks and spend-vs-budget tracking that stop a clawback before it starts.');
+      } else {
+        for (const a of awards) html += await renderAward(a);
+      }
+      el.innerHTML = html;
+    } catch (e) { console.error('loadPostAward', e); el.innerHTML = paEmpty('Could not load. Please try again.'); }
+  };
+
+  async function renderAward(a) {
+    const [{ data: reqs }, { data: exps }] = await Promise.all([
+      sb.from('compliance_requirements').select('id,label,detail,status').eq('award_id', a.id).order('created_at'),
+      sb.from('expenditures').select('id,category_key,description,amount').eq('award_id', a.id).order('spent_on', { ascending: false }),
+    ]);
+    const awarded = Number(a.amount_awarded || 0);
+    const spent = (exps || []).reduce((s, e) => s + Number(e.amount || 0), 0);
+    const remaining = awarded - spent;
+    const over = awarded > 0 && spent > awarded;
+    const catLabel = k => { const c = (_paCats || []).find(x => x.key === k); return c ? c.label : k; };
+    return '<div class="pa-card"><div class="pa-head">' +
+      '<div><div class="pa-t">' + escHtml((a.grants && a.grants.title) || 'Awarded grant') + '</div><div class="pa-f">' + escHtml((a.grants && a.grants.funder) || '') + (a.period_start ? ' · ' + a.period_start + ' → ' + (a.period_end || 'ongoing') : '') + '</div></div>' +
+      '<div class="pa-money"><div class="v">' + _paFmt(awarded) + '</div><div class="l">awarded</div></div></div>' +
+      '<div class="pa-body"><div class="pa-sub">Compliance — keep the money</div>' +
+        (reqs || []).map(r => '<div class="pa-cmp ' + (r.status === 'satisfied' ? 'done' : '') + '" id="pacmp-' + r.id + '"><span class="ic" onclick="toggleCompliance(\'' + r.id + '\')">' + _paIcon(r.status === 'satisfied') + '</span><div class="bd"><b>' + escHtml(r.label) + '</b><p>' + escHtml(r.detail || '') + '</p></div></div>').join('') +
+        '<div class="pa-spend"><div class="pa-sub">Spending vs budget — the clawback guardrail</div>' +
+          '<div class="pa-bars"><div class="pa-stat"><div class="l">Spent</div><div class="v">' + _paFmt(spent) + '</div></div>' +
+            '<div class="pa-stat ' + (over ? 'over' : '') + '"><div class="l">' + (over ? 'Over by' : 'Remaining') + '</div><div class="v">' + _paFmt(Math.abs(remaining)) + '</div></div></div>' +
+          '<div class="pa-track"><i class="' + (over ? 'over' : '') + '" style="width:' + Math.min(100, awarded ? spent / awarded * 100 : 0) + '%"></i></div>' +
+          (over ? '<p style="font-size:12.5px;color:var(--accent-ink);margin:-4px 0 12px">⚠ You\'ve spent more than the award — exactly what triggers a clawback. Move costs to another funder or cut spend.</p>' : '') +
+          (exps || []).map(e => '<div class="pa-exp-row"><span class="cat">' + escHtml(catLabel(e.category_key)) + '</span>' + escHtml(e.description || '') + '<span class="amt">' + _paFmt(Number(e.amount || 0)) + '</span></div>').join('') +
+          '<div class="pa-addform"><select id="paexp-cat-' + a.id + '">' + (_paCats || []).map(c => '<option value="' + c.key + '">' + escHtml(c.label) + '</option>').join('') + '</select>' +
+            '<input class="desc" id="paexp-desc-' + a.id + '" type="text" placeholder="What was it for?"><input class="num" id="paexp-amt-' + a.id + '" type="text" placeholder="$ amount"><button class="btn btn-outline btn-sm" onclick="addExpense(\'' + a.id + '\')">Add</button></div>' +
+        '</div></div></div>';
+  }
+
+  window.markAwarded = async function () {
+    const uid = window._grange && window._grange.user && window._grange.user.id;
+    const gid = (document.getElementById('pa-award-grant') || {}).value;
+    const amt = parseFloat((((document.getElementById('pa-award-amt') || {}).value) || '').replace(/[^0-9.]/g, '')) || null;
+    if (!gid) { toast('Pick a grant first.'); return; }
+    try {
+      await sb.from('grants').update({ status: 'awarded', decided_at: new Date().toISOString() }).eq('id', gid);
+      await sb.from('awards').insert({ user_id: uid, grant_id: gid, amount_awarded: amt });
+      toast('Recorded — compliance checklist created.');
+      loadPostAward();
+    } catch (e) { console.error('markAwarded', e); toast('Could not record — try again.'); }
+  };
+  window.toggleCompliance = async function (id) {
+    const el = document.getElementById('pacmp-' + id);
+    const next = (el && el.classList.contains('done')) ? 'open' : 'satisfied';
+    try {
+      await sb.from('compliance_requirements').update({ status: next }).eq('id', id);
+      if (el) { el.classList.toggle('done', next === 'satisfied'); const ic = el.querySelector('.ic'); if (ic) ic.innerHTML = _paIcon(next === 'satisfied'); }
+    } catch (e) { console.error('toggleCompliance', e); }
+  };
+  window.addExpense = async function (awardId) {
+    const uid = window._grange && window._grange.user && window._grange.user.id;
+    const cat = (document.getElementById('paexp-cat-' + awardId) || {}).value;
+    const desc = (((document.getElementById('paexp-desc-' + awardId) || {}).value) || '').trim();
+    const amt = parseFloat((((document.getElementById('paexp-amt-' + awardId) || {}).value) || '').replace(/[^0-9.]/g, '')) || 0;
+    if (!desc || !amt) { toast('Add a description and an amount.'); return; }
+    try { await sb.from('expenditures').insert({ user_id: uid, award_id: awardId, category_key: cat, description: desc, amount: amt }); loadPostAward(); }
+    catch (e) { console.error('addExpense', e); toast('Could not add expense.'); }
+  };
 </script>
 </body>
 </html>
