@@ -4294,10 +4294,12 @@ label.field-label {
         .pbox-generate:disabled{ opacity:.6; cursor:default; }
         .pbox-generate svg{ flex-shrink:0; }
 
-        /* Step 3 "Generate" view — collapse the config, give the draft the full width */
-        .gen-grid.gen-writing{ grid-template-columns:1fr; }
+        /* Single column: Configure shows the form only; the draft appears in the Generate step */
+        .gen-grid{ grid-template-columns:1fr; }
+        .gen-grid .gen-config{ max-width:680px; margin:0 auto; width:100%; }
+        .gen-grid .out{ display:none; }
         .gen-grid.gen-writing .gen-config{ display:none; }
-        .gen-grid.gen-writing .out{ max-width:780px; margin:0 auto; width:100%; }
+        .gen-grid.gen-writing .out{ display:block; max-width:800px; margin:0 auto; width:100%; }
 
         /* "Generating" loader (vanilla recreation of the ai-loader) */
         .gen-loader{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding:54px 0 46px; }
@@ -4328,22 +4330,6 @@ label.field-label {
       </style>
       <div class="gen-grid" id="gen-grid">
         <div class="gen-config">
-          <div class="pbox" id="gen-pbox">
-            <textarea id="gen-prompt-text" class="pbox-ta" rows="1" placeholder="Describe what you want Grange to write, like “a full narrative for year three of our after-school program.” Or just fill in the details below and hit Generate." oninput="pboxAutosize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();genPromptSend();}"></textarea>
-            <div class="pbox-bar">
-              <div class="pbox-hint">✦ Describe what you want, or fine-tune the details below, then generate. Tap the mic to dictate.</div>
-              <div class="pbox-acts">
-                <div class="pbox-viz" id="gen-pbox-viz"><i></i><i></i><i></i><i></i><i></i></div>
-                <button class="pbox-mic" id="gen-pbox-mic" type="button" onclick="toggleDictation('gen-prompt-text','gen-pbox-mic','gen-pbox-viz')" aria-label="Dictate" title="Dictate">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
-                </button>
-                <button class="pbox-generate" id="gen-btn" type="button" onclick="genPromptSend()">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.1L19 9l-5.1 1.9L12 16l-1.9-5.1L5 9l5.1-1.9L12 2z"/></svg>
-                  <span id="gen-btn-label">Generate proposal</span>
-                </button>
-              </div>
-            </div>
-          </div>
           <div class="panel" style="margin-bottom:18px">
             <div class="panel-head"><h3>Grant</h3></div>
             <div style="background:var(--accent-tint);border-radius:var(--r);padding:14px 16px;margin-bottom:18px">
@@ -4374,6 +4360,23 @@ label.field-label {
                 <select id="gen-voice"><option>Data-driven</option><option selected>Community-centered</option><option>Formal federal</option></select></div>
               <div class="fieldset" style="margin:0"><label class="field-label">Emphasis</label>
                 <select id="gen-emphasis"><option selected>Need &amp; equity</option><option>Outcomes</option><option>Capacity</option></select></div>
+            </div>
+          </div>
+
+          <div class="pbox" id="gen-pbox" style="margin-top:4px">
+            <textarea id="gen-prompt-text" class="pbox-ta" rows="1" placeholder="Anything else Grange should know or emphasize? Optional, the details above are enough to generate." oninput="pboxAutosize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();genPromptSend();}"></textarea>
+            <div class="pbox-bar">
+              <div class="pbox-hint">✦ Fill in the details above, add anything extra here, then generate. Tap the mic to dictate.</div>
+              <div class="pbox-acts">
+                <div class="pbox-viz" id="gen-pbox-viz"><i></i><i></i><i></i><i></i><i></i></div>
+                <button class="pbox-mic" id="gen-pbox-mic" type="button" onclick="toggleDictation('gen-prompt-text','gen-pbox-mic','gen-pbox-viz')" aria-label="Dictate" title="Dictate">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
+                </button>
+                <button class="pbox-generate" id="gen-btn" type="button" onclick="genPromptSend()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.1L19 9l-5.1 1.9L12 16l-1.9-5.1L5 9l5.1-1.9L12 2z"/></svg>
+                  <span id="gen-btn-label">Generate proposal</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -7984,10 +7987,12 @@ function applyDiscFilters(query, type) {
 
 <!-- ════════════════════════ AI CHATBOT ════════════════════════ -->
 <style>
-  #ai-chat-fab{position:fixed;right:22px;bottom:22px;z-index:9000;width:60px;height:60px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(217,79,48,.42);transition:transform .18s,box-shadow .18s;padding:0;overflow:hidden}
-  #ai-chat-fab:hover{transform:scale(1.06);box-shadow:0 14px 36px rgba(217,79,48,.5)}
-  #ai-chat-fab svg{width:60px;height:60px;display:block}
-  #ai-chat-fab .fab-on{position:absolute;right:5px;bottom:5px;width:13px;height:13px;border-radius:50%;background:var(--ok);border:2.5px solid var(--accent)}
+  #ai-chat-fab{position:fixed;right:22px;bottom:22px;z-index:9000;height:56px;border-radius:30px;background:var(--surface);color:var(--ink);border:1px solid var(--line);cursor:pointer;display:none;align-items:center;gap:10px;box-shadow:0 12px 32px rgba(26,25,22,.18);transition:transform .2s var(--ease-expo,cubic-bezier(.16,1,.3,1)),box-shadow .18s,opacity .22s;padding:0 18px 0 6px;overflow:visible}
+  #ai-chat-fab:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(26,25,22,.24)}
+  #ai-chat-fab.acp-hide{opacity:0;transform:scale(.7);pointer-events:none}
+  #ai-chat-fab .acp-fab-orb{position:relative;width:44px;height:44px;flex-shrink:0}
+  #ai-chat-fab .acp-fab-label{font-family:var(--display);font-size:14.5px;font-weight:600;white-space:nowrap}
+  #ai-chat-fab .fab-on{position:absolute;right:0;bottom:1px;width:11px;height:11px;border-radius:50%;background:var(--ok);border:2.5px solid var(--surface)}
   body[data-screen="dashboard"] #ai-chat-fab,
   body[data-screen="discovery"] #ai-chat-fab,
   body[data-screen="generator"] #ai-chat-fab,
@@ -8004,8 +8009,8 @@ function applyDiscFilters(query, type) {
   #acp-nudge p{font-size:12.5px;color:var(--ink-body);line-height:1.5;margin:0 0 9px}
   #acp-nudge .acp-nudge-cta{font-size:12.5px;font-weight:600;color:var(--accent);background:var(--accent-tint);border:none;border-radius:9px;padding:7px 12px;cursor:pointer;width:100%}
   #acp-nudge .acp-nudge-cta:hover{filter:brightness(.97)}
-  #ai-chat-panel{position:fixed;right:22px;bottom:90px;z-index:9001;width:min(380px,calc(100vw - 32px));height:min(560px,calc(100vh - 130px));background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px rgba(26,25,22,.28);display:none;flex-direction:column;overflow:hidden;transition:width .26s var(--ease-expo,cubic-bezier(.16,1,.3,1)),height .26s var(--ease-expo,cubic-bezier(.16,1,.3,1)),border-radius .26s}
-  #ai-chat-panel.open{display:flex}
+  #ai-chat-panel{position:fixed;right:22px;bottom:90px;z-index:9001;width:min(380px,calc(100vw - 32px));height:min(560px,calc(100vh - 130px));background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px rgba(26,25,22,.28);display:flex;flex-direction:column;overflow:hidden;opacity:0;visibility:hidden;transform:scale(.86) translateY(18px);transform-origin:bottom right;pointer-events:none;transition:opacity .2s ease,transform .42s cubic-bezier(.34,1.42,.5,1),visibility 0s linear .26s,width .26s var(--ease-expo,cubic-bezier(.16,1,.3,1)),height .26s var(--ease-expo,cubic-bezier(.16,1,.3,1)),border-radius .26s}
+  #ai-chat-panel.open{opacity:1;visibility:visible;transform:none;pointer-events:auto;transition:opacity .18s ease,transform .42s cubic-bezier(.34,1.42,.5,1),width .26s var(--ease-expo,cubic-bezier(.16,1,.3,1)),height .26s var(--ease-expo,cubic-bezier(.16,1,.3,1)),border-radius .26s}
   /* docked sidebar mode */
   #ai-chat-panel.dock{top:0;right:0;bottom:0;height:100vh;width:min(404px,100vw);border-radius:0;border-top:none;border-right:none;border-bottom:none;box-shadow:-18px 0 60px rgba(26,25,22,.16)}
   @media(min-width:1100px){body.acp-docked .app{padding-right:404px}}
@@ -8046,7 +8051,8 @@ function applyDiscFilters(query, type) {
   #ai-chat-panel.dock .acp-resize{display:none}
   /* ColorOrb — vanilla recreation of the spinning gradient orb */
   @property --gorb-a{ syntax:"<angle>"; inherits:false; initial-value:0deg; }
-  .gorb{ position:relative; border-radius:50%; overflow:hidden; flex-shrink:0; transform:scale(1.07); background:#16151a; display:inline-block; }
+  .gorb{ position:relative; border-radius:50%; overflow:hidden; flex-shrink:0; transform:scale(1.07); background:#3a1d12; display:inline-block; }
+  .gorb-face{ position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; }
   .gorb::before{ content:""; position:absolute; inset:0; border-radius:50%;
     background:
       conic-gradient(from calc(var(--gorb-a) * 2) at 25% 70%, var(--gorb-3), transparent 20% 80%, var(--gorb-3)),
@@ -8057,9 +8063,15 @@ function applyDiscFilters(query, type) {
     filter: blur(var(--gorb-blur,3px)) contrast(1.6);
     animation: gorb-spin var(--gorb-dur,16s) linear infinite; }
   @keyframes gorb-spin{ to{ --gorb-a:360deg; } }
-  :root{ --gorb-1:oklch(75% 0.15 350); --gorb-2:oklch(80% 0.12 200); --gorb-3:oklch(78% 0.14 280); }
+  /* warm, on-brand orb: vermilion, amber, deep rust */
+  :root{ --gorb-1:oklch(64% 0.19 33); --gorb-2:oklch(83% 0.13 62); --gorb-3:oklch(54% 0.16 22); }
   @media (prefers-reduced-motion: reduce){ .gorb::before{ animation:none } }
-  #ai-chat-fab .gorb{ width:60px; height:60px; }
+  #ai-chat-fab .gorb{ width:44px; height:44px; }
+  /* chat "generating" typing dots */
+  .acp-dots{ display:inline-flex; gap:4px; align-items:center; padding:3px 1px; }
+  .acp-dots i{ width:6px; height:6px; border-radius:50%; background:var(--accent); animation:acp-bounce 1.2s infinite ease-in-out; }
+  .acp-dots i:nth-child(2){ animation-delay:.16s } .acp-dots i:nth-child(3){ animation-delay:.32s }
+  @keyframes acp-bounce{ 0%,80%,100%{ transform:scale(.55); opacity:.4 } 40%{ transform:scale(1); opacity:1 } }
   @media(max-width:768px){.acp-head .acp-dock-btn{display:none}}
 </style>
 <!-- proactive contextual nudge: appears per screen, offers the next step -->
@@ -8069,7 +8081,8 @@ function applyDiscFilters(query, type) {
   <button class="acp-nudge-cta" id="acp-nudge-cta" onclick="acpNudgeOpen()">Ask Grange</button>
 </div>
 <button id="ai-chat-fab" aria-label="Open Grange, your grant assistant" onclick="acpToggle()">
-  <span id="acp-fab-face"></span><span class="fab-on"></span>
+  <span class="acp-fab-orb"><span id="acp-fab-face"></span><span class="fab-on"></span></span>
+  <span class="acp-fab-label">Ask Grange</span>
 </button>
 <div id="ai-chat-panel" role="dialog" aria-label="Grange assistant">
   <div class="acp-resize" id="acp-resize" aria-label="Resize" title="Drag to resize"></div>
@@ -8109,10 +8122,14 @@ function applyDiscFilters(query, type) {
         + '</svg>';
     };
 
-    /* ── Grange orb: the spinning ColorOrb used as the assistant avatar ── */
+    /* ── Grange orb: the spinning ColorOrb + a friendly face, used as the avatar ── */
     window.grangeOrb = function(size){
       const blur = Math.max(size * 0.05, 1.5).toFixed(1);
-      return '<span class="gorb" style="width:' + size + 'px;height:' + size + 'px;--gorb-blur:' + blur + 'px" aria-hidden="true"></span>';
+      const face = '<svg class="gorb-face" viewBox="0 0 40 40" fill="none" aria-hidden="true">'
+        + '<circle cx="14.8" cy="18.5" r="2.3" fill="#fff"/><circle cx="25.2" cy="18.5" r="2.3" fill="#fff"/>'
+        + '<path d="M13.6 24.8c1.8 2.4 3.9 3.6 6.4 3.6s4.6-1.2 6.4-3.6" stroke="#fff" stroke-width="2.3" stroke-linecap="round"/>'
+        + '</svg>';
+      return '<span class="gorb" style="width:' + size + 'px;height:' + size + 'px;--gorb-blur:' + blur + 'px" aria-hidden="true">' + face + '</span>';
     };
 
     /* ── Per-screen context: the assistant knows where you are and what's next ── */
@@ -8150,11 +8167,38 @@ function applyDiscFilters(query, type) {
         '<button class="acp-chip" onclick="acpQuick(this.dataset.q)" data-q="'+q.replace(/"/g,'&quot;')+'">'+label+'</button>'
       ).join('');
     }
+    function paintChips(items){
+      const wrap = document.getElementById('acp-chips'); if(!wrap || !items.length) return;
+      const esc = s => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+      wrap.innerHTML = items.slice(0,3).map(q =>
+        '<button class="acp-chip" onclick="acpQuick(this.dataset.q)" data-q="'+String(q).replace(/"/g,'&quot;')+'">'+esc(q)+'</button>'
+      ).join('');
+    }
+    /* Suggested follow-ups that build on the conversation — refreshed after each reply */
+    async function acpSuggest(){
+      try {
+        if (!window.sb) return;
+        const { data: { session } } = await window.sb.auth.getSession();
+        if (!session) return;
+        const convo = history.slice(-6).map(m => (m.role === 'user' ? 'User' : 'Grange') + ': ' + m.content).join('\n');
+        const res = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/ai-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+          body: JSON.stringify({ message: 'Based on this conversation, suggest 3 short follow-up questions I might ask you next. Each under 7 words, specific to what we discussed. Reply ONLY with a JSON array of strings, nothing else.\n\n' + convo, history: [] }),
+        });
+        const d = await res.json().catch(() => ({}));
+        const m = (d.reply || '').match(/\[[\s\S]*\]/);
+        if (!m) return;
+        const arr = JSON.parse(m[0]);
+        if (Array.isArray(arr)) paintChips(arr.filter(x => typeof x === 'string' && x.trim()));
+      } catch (_) { /* keep the existing chips */ }
+    }
 
     window.acpToggle = function(){
       const p = document.getElementById('ai-chat-panel');
       const opening = !p.classList.contains('open');
       p.classList.toggle('open');
+      document.getElementById('ai-chat-fab')?.classList.toggle('acp-hide', opening);
       if (opening) {
         acpNudgeDismiss();
         if (!greeted) { acpAdd('bot', "Hi, I'm Grange. Ask me anything about your grants: finding them, the documents you need, your deadlines, or what to do next."); greeted = true; }
@@ -8296,7 +8340,7 @@ function applyDiscFilters(query, type) {
     /* paint the static avatars once the DOM is ready */
     (function paintFaces(){
       const fab = document.getElementById('acp-fab-face');
-      if (fab) fab.innerHTML = window.grangeOrb(60);
+      if (fab) fab.innerHTML = window.grangeOrb(44);
       const head = document.getElementById('acp-head-ava');
       if (head) head.insertAdjacentHTML('afterbegin', window.grangeOrb(34));
       const nud = document.getElementById('acp-nudge-ava');
@@ -8308,7 +8352,8 @@ function applyDiscFilters(query, type) {
       if (!msg || busy) return;
       ta.value = ''; acpAdd('user', msg); history.push({ role: 'user', content: msg });
       busy = true; document.getElementById('acp-send').disabled = true;
-      const typing = acpAdd('bot', 'Thinking…'); typing.classList.add('typing');
+      const typing = acpAdd('bot', ''); typing.classList.add('typing');
+      typing.innerHTML = '<span class="acp-dots"><i></i><i></i><i></i></span>';
       try {
         if (!window.sb) { typing.textContent = 'Assistant is unavailable right now.'; }
         else {
@@ -8322,7 +8367,7 @@ function applyDiscFilters(query, type) {
             });
             const d = await res.json().catch(() => ({}));
             typing.classList.remove('typing');
-            if (d.reply) { typing.textContent = d.reply; history.push({ role: 'assistant', content: d.reply }); }
+            if (d.reply) { typing.textContent = d.reply; history.push({ role: 'assistant', content: d.reply }); acpSuggest(); }
             else { typing.textContent = d.error || 'Sorry, something went wrong. Please try again.'; }
           }
         }
