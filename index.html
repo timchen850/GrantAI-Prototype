@@ -3986,6 +3986,30 @@ label.field-label {
 .tut-tool svg { width: 14px; height: 14px; color: var(--accent); }
 .tut-action svg { width: 17px; height: 17px; vertical-align: -3px; }
 .tut-assess b svg { width: 16px; height: 16px; flex: none; color: var(--ok); }
+/* ── demo-grade mockups inside the tour (reuse landing .dp-* kit) ── */
+.tut-split { display: grid; grid-template-columns: .82fr 1.18fr; gap: 46px; align-items: center; }
+.tut-split .tut-copy, .tut-split .tut-mock { min-width: 0; }
+.tut-split .tut-h { font-size: clamp(26px, 3.1vw, 38px); }
+.tut-split .tut-sub { margin-bottom: 22px; }
+.tut-mock .dp-card { opacity: 1; transform: none; box-shadow: 0 24px 60px -34px rgba(26,25,22,.45); }
+.tut-mock.play .dp-prog-bar { width: 100%; }
+@media (max-width: 800px) { .tut-split { grid-template-columns: 1fr; gap: 26px; } .tut-split .tut-mock { order: 2; } }
+/* interactive compliance rows (manage step), styled like dp-check */
+.tut-cmp { display: flex; flex-direction: column; gap: 10px; }
+.tut-cmp .row { display: flex; align-items: center; gap: 12px; padding: 11px 13px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); cursor: pointer; transition: border-color .18s var(--ease), background .18s var(--ease); }
+@media (hover: hover) { .tut-cmp .row:hover { border-color: rgba(217,79,48,.4); } }
+.tut-cmp .row .ck { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; flex: none; color: #fff; transition: background .22s var(--ease-expo), border-color .22s var(--ease-expo); }
+.tut-cmp .row .ck svg { width: 12px; height: 12px; opacity: 0; transform: scale(.5); transition: opacity .2s, transform .22s var(--ease-expo); }
+.tut-cmp .row.on .ck { background: var(--ok); border-color: var(--ok); }
+.tut-cmp .row.on .ck svg { opacity: 1; transform: none; }
+.tut-cmp .row .lbl { font-size: 13px; color: var(--ink); }
+.tut-cmp .row.on .lbl { color: var(--muted); }
+.tut-spend2 { margin-top: 16px; }
+.tut-spend2 .hd { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 7px; }
+.tut-spend2 .hd .l { color: var(--muted); } .tut-spend2 .hd .v { font-weight: 700; color: var(--ink); }
+.tut-spend2 .bar { height: 9px; border-radius: var(--r-pill); background: var(--line); overflow: hidden; }
+.tut-spend2 .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #f0954b, #e2533b); transition: width .7s var(--ease-expo); }
+@media (max-width: 800px) { .tut-split .tut-cta-row .btn { width: 100%; } }
 /* recap grid */
 .tut-recap { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 12px; margin-top: 4px; }
 .tut-recap .c { padding: 18px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); opacity: 0; transform: translateY(10px) scale(.98); animation: tutRise .5s var(--ease-expo) both; }
@@ -6598,6 +6622,50 @@ const TUT_ICON = {
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>',
 };
 
+/* Drafted-proposal copy reused from the landing demo, so the tour matches it 1:1 */
+const TUT_T1 = 'In Boyle Heights and East Los Angeles, 78% of households earn below the poverty line and youth chronic absenteeism runs at 34%. Educational stability is a social determinant of health, and our program addresses both.';
+const TUT_T2 = 'Inputs: 6 staff, 22 mentors, and a $342K operating budget. Activities: daily tutoring, mentor sessions, and college counseling. Outcomes: 94% college enrollment against a 67% district average.';
+
+/* Reveal every [data-delay] child in `scope` on its own timeline (mirrors the
+   landing demo's activatePhase), then fire `cb` after the last one lands. */
+function tutReveal(scope, cb) {
+  let max = 0;
+  scope.querySelectorAll('[data-delay]').forEach(el => {
+    const d = parseInt(el.dataset.delay) || 0;
+    max = Math.max(max, d);
+    setTimeout(() => el.classList.add('vis'), d);
+  });
+  if (cb) setTimeout(cb, max + 320);
+}
+
+/* Eased count-up (cubic ease-out), same shape as the demo counter */
+function tutCount(el, target, dur) {
+  if (!el) return;
+  const t0 = performance.now();
+  (function tick(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))).toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+  })(performance.now());
+}
+
+/* Typewriter with a blinking cursor (same component as the demo) */
+function tutType(el, text, spd, cb) {
+  if (!el) { cb && cb(); return; }
+  el.innerHTML = '';
+  const tn = document.createTextNode('');
+  const cursor = document.createElement('span'); cursor.className = 'demo-cursor';
+  el.appendChild(tn); el.appendChild(cursor);
+  let i = 0;
+  (function tick() {
+    if (i > text.length) { if (cursor.parentNode) cursor.remove(); cb && cb(); return; }
+    tn.nodeValue = text.slice(0, i++);
+    setTimeout(tick, spd + (Math.random() > 0.88 ? 55 : 0));
+  })();
+}
+
+const TUT_DOTS = '<span class="dp-dot" style="background:#ff5f56"></span><span class="dp-dot" style="background:#ffbe2e"></span><span class="dp-dot" style="background:#27c93f"></span>';
+
 /* Each step: { gate? requires an interaction before Continue unlocks;
    render() -> HTML; onShow() -> wire interactions & animations.
    Call tutUnlock() inside onShow when the user completes the required action. */
@@ -6646,192 +6714,177 @@ const TUT_STEPS = [
       };
     } },
 
-  /* 2 — Profile */
-  { gate: true, hint: 'Build the profile to continue',
+  /* 2 — Profile (reuses the landing's "Reading 990" mockup) */
+  { gate: true, hint: 'Read the 990 to continue',
     render: () => `
-      <div class="tut-step">
-        <div class="tut-eyebrow">Step 1 · Profile</div>
-        <h2 class="tut-h">It starts with your story.</h2>
-        <p class="tut-sub">You tell Grange about your nonprofit once. Everything downstream — matching, eligibility, drafting — is powered by this. Watch it come together.</p>
-        <div class="tut-panel">
-          <div id="tut-pf">
-            <div class="tut-pf-row"><span class="l">Organization</span><span class="v">Eastside Youth Foundation</span></div>
-            <div class="tut-pf-row"><span class="l">501(c)(3) status</span><span class="v">Confirmed</span></div>
-            <div class="tut-pf-row"><span class="l">Focus areas</span><span class="v">Youth · Education</span></div>
-            <div class="tut-pf-row"><span class="l">Location &amp; reach</span><span class="v">Los Angeles, CA · 340/yr</span></div>
-            <div class="tut-pf-row"><span class="l">Annual budget</span><span class="v">$480,000</span></div>
-          </div>
-          <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-build">Build my profile</button></div>
+      <div class="tut-step"><div class="tut-split">
+        <div class="tut-copy">
+          <div class="tut-eyebrow">Step 1 · Profile</div>
+          <h2 class="tut-h">We read your whole organization.</h2>
+          <p class="tut-sub">Upload your 990 or paste your mission. Grange pulls your programs, geography, NTEE code, and budget into one profile that powers every match and draft.</p>
+          <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-build">${TUT_ICON.profile}&nbsp; Read my 990</button></div>
+          <div class="tut-tools"><span class="tut-tool">${TUT_ICON.spark} Auto-extracted profile</span></div>
         </div>
-      </div>`,
+        <div class="tut-mock" id="tut-m2">
+          <div class="dp-card">
+            <div class="dp-card-bar">${TUT_DOTS}<span class="dp-bar-label">Reading 990 — Eastside Youth Foundation.pdf</span></div>
+            <div class="dp-card-body">
+              <div class="dp-field" data-delay="250"><div class="dp-flabel">Organization</div><div class="dp-fval">Eastside Youth Foundation</div><div class="dp-fbar"><div class="dp-fbar-fill" style="--w:100%"></div></div></div>
+              <div class="dp-field" data-delay="600"><div class="dp-flabel">Mission &amp; focus area</div><div class="dp-fval">Youth education &amp; health equity · Los Angeles</div><div class="dp-fbar"><div class="dp-fbar-fill" style="--w:94%"></div></div></div>
+              <div class="dp-field" data-delay="950"><div class="dp-flabel">NTEE Classification</div><div class="dp-fval">B94 · Youth Development Programs</div><div class="dp-fbar"><div class="dp-fbar-fill" style="--w:88%"></div></div></div>
+              <div class="dp-field" data-delay="1300"><div class="dp-flabel">Budget &amp; eligibility</div><div class="dp-fval">$250K–$500K operating · 501(c)(3) confirmed</div><div class="dp-fbar"><div class="dp-fbar-fill" style="--w:100%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div></div>`,
     onShow: () => {
       document.getElementById('tut-build').onclick = (e) => {
         e.currentTarget.disabled = true;
-        const rows = [...document.querySelectorAll('#tut-pf .tut-pf-row')];
-        rows.forEach((r, i) => setTimeout(() => r.classList.add('in'), i * 110));
-        setTimeout(tutUnlock, rows.length * 110 + 200);
+        tutReveal(document.getElementById('tut-m2'), tutUnlock);
       };
     } },
 
-  /* 3 — Discover */
-  { gate: true, hint: 'Scan for grants to continue',
+  /* 3 — Discover (reuses the live-scan mockup) */
+  { gate: true, hint: 'Run discovery to continue',
     render: () => `
-      <div class="tut-step">
-        <div class="tut-eyebrow">Step 2 · Discover</div>
-        <h2 class="tut-h">We find grants you can actually win.</h2>
-        <p class="tut-sub">Grange scans live federal opportunities (Grants.gov) and vetted foundations, then ranks them by how well they fit <i>your</i> profile — no more endless searching.</p>
-        <div class="tut-panel">
-          <button class="btn btn-accent tut-action" id="tut-scan">${TUT_ICON.discover}&nbsp; Scan for matching grants</button>
-          <div class="tut-prog" id="tut-prog-wrap" style="display:none"><i id="tut-prog"></i></div>
-          <div id="tut-scan-status" class="tut-sub" style="margin:10px 0 0;font-size:13px"></div>
-          <div id="tut-cards" style="margin-top:14px"></div>
+      <div class="tut-step"><div class="tut-split">
+        <div class="tut-copy">
+          <div class="tut-eyebrow">Step 2 · Discovery</div>
+          <h2 class="tut-h">Scanning millions of grants, daily.</h2>
+          <p class="tut-sub">Grange indexes Grants.gov, Candid, state portals, and hundreds of foundations every day — scoring each one against your mission, geography, and budget.</p>
+          <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-scan">${TUT_ICON.discover}&nbsp; Run discovery</button></div>
+          <div class="tut-tools"><span class="tut-tool">${TUT_ICON.spark} Smart match scoring</span></div>
         </div>
-        <div class="tut-tools"><span class="tut-tool">${TUT_ICON.spark} Smart match scoring</span></div>
-      </div>`,
+        <div class="tut-mock" id="tut-m3">
+          <div class="dp-card">
+            <div class="dp-card-bar">${TUT_DOTS}<span class="dp-bar-label">Grant discovery · running daily</span><span class="demo-spinner" style="margin-left:auto;flex-shrink:0"></span></div>
+            <div class="dp-card-body">
+              <div class="dp-scan-stat"><span class="dp-scan-count" id="tut-scan-n">0</span><span class="dp-scan-sub">grants scored today</span></div>
+              <div class="dp-prog-track"><div class="dp-prog-bar"></div></div>
+              <div class="dp-scan-items">
+                <div class="dp-scan-row" data-delay="500"><span class="dp-scan-tick">✓</span><span>Grants.gov — <span class="dp-scan-hl">1,247 matched</span></span></div>
+                <div class="dp-scan-row" data-delay="1000"><span class="dp-scan-tick">✓</span><span>Candid Foundation — <span class="dp-scan-hl">834 matched</span></span></div>
+                <div class="dp-scan-row" data-delay="1500"><span class="dp-scan-tick">✓</span><span>California Grants Portal — <span class="dp-scan-hl">312 matched</span></span></div>
+                <div class="dp-scan-row" data-delay="2000" style="color:var(--accent);font-weight:600"><span style="color:var(--accent);font-size:13px">→</span><span>Scoring against your profile…</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>`,
     onShow: () => {
-      const CARDS = [
-        { t: 'Youth Education Innovation Fund', f: 'Walton Family Foundation', amt: '$75,000', p: 94 },
-        { t: 'After-School Excellence Grant', f: 'U.S. Dept. of Education', amt: '$120,000', p: 88 },
-        { t: 'Community Impact Award', f: 'California Community Foundation', amt: '$40,000', p: 81 },
-      ];
       document.getElementById('tut-scan').onclick = (e) => {
         e.currentTarget.disabled = true;
-        const wrap = document.getElementById('tut-prog-wrap');
-        const bar = document.getElementById('tut-prog');
-        const status = document.getElementById('tut-scan-status');
-        wrap.style.display = 'block';
-        status.textContent = 'Searching Grants.gov + foundation catalog…';
-        // single eased transition (linear fill) instead of a ticking interval
-        requestAnimationFrame(() => { bar.style.width = '100%'; });
-        setTimeout(() => {
-          status.textContent = '3 strong matches found for Eastside Youth Foundation';
-          const host = document.getElementById('tut-cards');
-          host.innerHTML = CARDS.map(c => `
-            <div class="tut-gc">
-              <div class="tut-ring"><i>${c.p}%</i></div>
-              <div class="meta"><b>${c.t}</b><span>${c.f} · up to ${c.amt}</span></div>
-            </div>`).join('');
-          const els = [...host.querySelectorAll('.tut-gc')];
-          els.forEach((el, i) => setTimeout(() => {
-            el.classList.add('in');
-            el.querySelector('.tut-ring').style.setProperty('--p', CARDS[i].p);
-          }, i * 70));
-          setTimeout(tutUnlock, els.length * 70 + 300);
-        }, 950);
+        const mock = document.getElementById('tut-m3');
+        mock.classList.add('play');                       // drives the 3s prog-bar fill
+        tutCount(document.getElementById('tut-scan-n'), 2847, 3000);
+        tutReveal(mock, tutUnlock);
       };
     } },
 
-  /* 4 — Assess / eligibility */
-  { gate: true, hint: 'Open a grant to see its AI read',
+  /* 4 — Matching (reuses the ranked-matches mockup) */
+  { gate: true, hint: 'Score your matches to continue',
     render: () => `
-      <div class="tut-step">
-        <div class="tut-eyebrow">Step 3 · Prepare</div>
-        <h2 class="tut-h">Know your odds before you spend time.</h2>
-        <p class="tut-sub">Tap a grant and Grange's AI reads the funder's rules against your profile — a fit score, an eligibility verdict, and what to shore up first.</p>
-        <div class="tut-panel">
-          <div class="tut-gc" id="tut-assess-card">
-            <div class="tut-ring" id="tut-assess-ring"><i>94%</i></div>
-            <div class="meta"><b>Youth Education Innovation Fund</b><span>Walton Family Foundation · tap to assess →</span></div>
-          </div>
-          <div class="tut-assess" id="tut-assess-panel">
-            <b style="color:var(--accent-ink);display:flex;align-items:center;gap:7px">${TUT_ICON.check} Strong fit — likely eligible</b>
-            <ul style="margin:11px 0 0;padding-left:18px;font-size:13.5px;line-height:1.75">
-              <li>501(c)(3) confirmed — meets the core requirement</li>
-              <li>Youth + education focus aligns with funder priorities</li>
-              <li>Geography (California) is in scope</li>
-              <li><b>To strengthen:</b> add two outcome metrics from last year</li>
-            </ul>
+      <div class="tut-step"><div class="tut-split">
+        <div class="tut-copy">
+          <div class="tut-eyebrow">Step 3 · Matching</div>
+          <h2 class="tut-h">Your top matches, ranked by fit.</h2>
+          <p class="tut-sub">Every grant gets a 0–100 score from your mission, geography, and eligibility — with an AI read on whether you actually qualify. You only see the ones worth your time.</p>
+          <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-score">${TUT_ICON.prepare}&nbsp; Score my matches</button></div>
+          <div class="tut-tools"><span class="tut-tool">${TUT_ICON.spark} AI eligibility read</span><span class="tut-tool">${TUT_ICON.prepare} Readiness checklist</span></div>
+        </div>
+        <div class="tut-mock" id="tut-m4">
+          <div class="dp-card">
+            <div class="dp-card-bar">${TUT_DOTS}<span class="dp-bar-label">12 new matches this week</span></div>
+            <div class="dp-card-body">
+              <div class="dp-grant-list">
+                <div class="dp-grant-row" data-delay="200"><span class="dp-score-badge dp-score-hi">94%</span><div class="dp-grant-info"><div class="dp-grant-title">DHHS Healthy Communities Initiative</div><div class="dp-grant-meta">Federal · up to $250,000 · Due Jun 15</div></div><span class="dp-grant-cta">Draft →</span></div>
+                <div class="dp-grant-row" data-delay="500"><span class="dp-score-badge dp-score-hi">91%</span><div class="dp-grant-info"><div class="dp-grant-title">Robert Wood Johnson Foundation</div><div class="dp-grant-meta">Foundation · $75K–$200K · Due Aug 1</div></div><span class="dp-grant-cta">Draft →</span></div>
+                <div class="dp-grant-row" data-delay="800"><span class="dp-score-badge dp-score-hi">88%</span><div class="dp-grant-info"><div class="dp-grant-title">Weingart Foundation, Youth Dev</div><div class="dp-grant-meta">Foundation · $50K–$150K · LOI Jul 1</div></div><span class="dp-grant-cta">Draft →</span></div>
+                <div class="dp-grant-row" data-delay="1100"><span class="dp-score-badge dp-score-mid">76%</span><div class="dp-grant-info"><div class="dp-grant-title">California Community Foundation</div><div class="dp-grant-meta">Foundation · up to $75,000 · Due Aug 30</div></div><span class="dp-grant-cta">Draft →</span></div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="tut-tools"><span class="tut-tool">${TUT_ICON.spark} AI eligibility assessment</span><span class="tut-tool">${TUT_ICON.prepare} Readiness checklist</span></div>
-      </div>`,
+      </div></div>`,
     onShow: () => {
-      const card = document.getElementById('tut-assess-card');
-      card.onclick = () => {
-        if (card.classList.contains('sel')) return;
-        card.classList.add('sel');
-        document.getElementById('tut-assess-panel').classList.add('show');
-        requestAnimationFrame(() => document.getElementById('tut-assess-ring').style.setProperty('--p', 94));
-        tutUnlock();
+      document.getElementById('tut-score').onclick = (e) => {
+        e.currentTarget.disabled = true;
+        tutReveal(document.getElementById('tut-m4'), tutUnlock);
       };
     } },
 
-  /* 5 — Write */
+  /* 5 — Write (reuses the AI-drafting mockup w/ typewriter) */
   { gate: true, hint: 'Draft with AI to continue',
     render: () => `
-      <div class="tut-step">
-        <div class="tut-eyebrow">Step 4 · Write</div>
-        <h2 class="tut-h">Draft in minutes, not weeks.</h2>
-        <p class="tut-sub">Describe what you need (or dictate it), and Grange's AI agent works the proposal section by section — grounded in your real profile. You stay the author; it does the drafting.</p>
-        <div class="tut-panel">
-          <button class="btn btn-accent tut-action" id="tut-draft">${TUT_ICON.write}&nbsp; Draft my proposal with AI</button>
-          <ul class="tut-ap" id="tut-ap" style="margin-top:18px">
-            <li><span class="s"></span>Understand your organization</li>
-            <li><span class="s"></span>Study the funder's priorities</li>
-            <li><span class="s"></span>Check eligibility &amp; fit</li>
-            <li><span class="s"></span>Draft the proposal sections</li>
-            <li><span class="s"></span>Review &amp; hand back to you</li>
-          </ul>
-          <div class="tut-type" id="tut-type" style="display:none"></div>
+      <div class="tut-step"><div class="tut-split">
+        <div class="tut-copy">
+          <div class="tut-eyebrow">Step 4 · Drafting</div>
+          <h2 class="tut-h">A full proposal, drafted in minutes.</h2>
+          <p class="tut-sub">Click draft (or just dictate) and Grange writes every section — statement of need, theory of change, evaluation — each sentence grounded in your real 990. You stay the author.</p>
+          <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-draft">${TUT_ICON.write}&nbsp; Draft with AI</button></div>
+          <div class="tut-tools"><span class="tut-tool">${TUT_ICON.spark} AI proposal generator</span><span class="tut-tool">${TUT_ICON.mic} Voice dictation</span></div>
         </div>
-        <div class="tut-tools"><span class="tut-tool">${TUT_ICON.spark} AI proposal generator</span><span class="tut-tool">${TUT_ICON.mic} Voice dictation</span></div>
-      </div>`,
+        <div class="tut-mock" id="tut-m5">
+          <div class="dp-card">
+            <div class="dp-card-bar">${TUT_DOTS}<span class="dp-bar-label">Drafting · DHHS Healthy Communities</span><span class="dp-ai-chip" id="tut-aichip" style="margin-left:auto;flex-shrink:0;display:none">AI writing</span></div>
+            <div class="dp-card-body">
+              <div class="dp-doc-section"><div class="dp-doc-h" id="tut-doc-h1">Statement of Need</div><div class="dp-doc-p" id="tut-doc-p1"></div></div>
+              <div class="dp-doc-section"><div class="dp-doc-h" id="tut-doc-h2">Theory of Change</div><div class="dp-doc-p" id="tut-doc-p2"></div></div>
+            </div>
+          </div>
+        </div>
+      </div></div>`,
     onShow: () => {
       document.getElementById('tut-draft').onclick = (e) => {
         e.currentTarget.disabled = true;
-        const items = [...document.querySelectorAll('#tut-ap li')];
-        let i = 0;
-        const step = () => {
-          if (i > 0) { items[i - 1].classList.remove('work'); items[i - 1].classList.add('done'); }
-          if (i < items.length) { items[i].classList.add('work'); i++; setTimeout(step, 560); }
-          else typeProposal();
-        };
-        step();
+        document.getElementById('tut-aichip').style.display = '';
+        const h1 = document.getElementById('tut-doc-h1'), p1 = document.getElementById('tut-doc-p1');
+        const h2 = document.getElementById('tut-doc-h2'), p2 = document.getElementById('tut-doc-p2');
+        h1.classList.add('vis');
+        tutType(p1, TUT_T1, 7, () => setTimeout(() => {
+          h2.classList.add('vis');
+          tutType(p2, TUT_T2, 7, tutUnlock);
+        }, 220));
       };
-      function typeProposal() {
-        const el = document.getElementById('tut-type');
-        el.style.display = 'block';
-        const txt = 'Eastside Youth Foundation respectfully requests $75,000 to expand its after-school STEM program serving 340 low-income youth in East Los Angeles. Over the past year, 87% of participants improved their math proficiency…';
-        el.innerHTML = '<span class="cur">&nbsp;</span>';
-        let n = 0;
-        const iv = setInterval(() => {
-          n += 3;
-          el.innerHTML = txt.slice(0, n) + '<span class="cur">&nbsp;</span>';
-          if (n >= txt.length) { clearInterval(iv); el.innerHTML = txt; tutUnlock(); }
-        }, 16);
-      }
     } },
 
-  /* 6 — Manage */
-  { gate: true, hint: 'Check all three items to continue',
+  /* 6 — Manage (post-award; interactive compliance + spend) */
+  { gate: true, hint: 'Clear all three items to continue',
     render: () => `
-      <div class="tut-step">
-        <div class="tut-eyebrow">Step 5 · Manage</div>
-        <h2 class="tut-h">Won it? We help you keep it.</h2>
-        <p class="tut-sub">After the award, Grange tracks your compliance requirements and spending so nothing slips — and warns you before you ever risk a clawback. Check each item off.</p>
-        <div class="tut-panel">
-          <div id="tut-chklist">
-            <div class="tut-chk"><span class="box">${TUT_ICON.check}</span><span class="t">File quarterly progress report</span></div>
-            <div class="tut-chk"><span class="box">${TUT_ICON.check}</span><span class="t">Submit budget reconciliation</span></div>
-            <div class="tut-chk"><span class="box">${TUT_ICON.check}</span><span class="t">Document participant outcomes</span></div>
-          </div>
-          <div class="tut-spend">
-            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span style="color:var(--muted)">Spent vs. award</span><span id="tut-spend-lbl" style="font-weight:700;color:var(--ink)">$0 / $75,000</span></div>
-            <div class="bar"><i id="tut-spend-bar"></i></div>
+      <div class="tut-step"><div class="tut-split">
+        <div class="tut-copy">
+          <div class="tut-eyebrow">Step 5 · Manage</div>
+          <h2 class="tut-h">Won it? We help you keep it.</h2>
+          <p class="tut-sub">After the award, Grange tracks every compliance requirement and dollar spent — and warns you before you ever risk a clawback. Clear each item to see your spend stay in bounds.</p>
+          <div class="tut-tools"><span class="tut-tool">${TUT_ICON.manage} Grant management &amp; compliance</span></div>
+        </div>
+        <div class="tut-mock">
+          <div class="dp-card">
+            <div class="dp-card-bar">${TUT_DOTS}<span class="dp-bar-label">DHHS Healthy Communities · award management</span></div>
+            <div class="dp-card-body">
+              <div class="tut-cmp" id="tut-cmp">
+                <div class="row"><span class="ck">${TUT_ICON.check}</span><span class="lbl">File quarterly progress report</span></div>
+                <div class="row"><span class="ck">${TUT_ICON.check}</span><span class="lbl">Submit budget reconciliation</span></div>
+                <div class="row"><span class="ck">${TUT_ICON.check}</span><span class="lbl">Document participant outcomes</span></div>
+              </div>
+              <div class="tut-spend2">
+                <div class="hd"><span class="l">Spent vs. award</span><span class="v" id="tut-spend-lbl">$0 / $250,000</span></div>
+                <div class="bar"><i id="tut-spend-bar"></i></div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="tut-tools"><span class="tut-tool">${TUT_ICON.manage} Grant management &amp; compliance</span></div>
-      </div>`,
+      </div></div>`,
     onShow: () => {
       let done = 0;
-      document.querySelectorAll('#tut-chklist .tut-chk').forEach(c => {
+      document.querySelectorAll('#tut-cmp .row').forEach(c => {
         c.onclick = () => {
           if (c.classList.contains('on')) return;
           c.classList.add('on');
           done++;
-          const pct = done / 3 * 64;
+          const pct = done / 3 * 72;
           document.getElementById('tut-spend-bar').style.width = pct + '%';
-          document.getElementById('tut-spend-lbl').textContent = '$' + Math.round(pct / 100 * 75000).toLocaleString() + ' / $75,000';
+          document.getElementById('tut-spend-lbl').textContent = '$' + Math.round(pct / 100 * 250000).toLocaleString() + ' / $250,000';
           if (done === 3) tutUnlock();
         };
       });
