@@ -7776,7 +7776,11 @@ function applyDiscFilters(query, type) {
   /* docked sidebar mode */
   #ai-chat-panel.dock{top:0;right:0;bottom:0;height:100vh;width:min(404px,100vw);border-radius:0;border-top:none;border-right:none;border-bottom:none;box-shadow:-18px 0 60px rgba(26,25,22,.16)}
   @media(min-width:1100px){body.acp-docked .app{padding-right:404px}}
-  .acp-head{display:flex;align-items:center;gap:10px;padding:13px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+  .acp-head{display:flex;align-items:center;gap:10px;padding:13px 14px;border-bottom:1px solid var(--line);background:var(--surface-2);cursor:grab;touch-action:none;user-select:none}
+  .acp-head.acp-grabbing{cursor:grabbing}
+  .acp-head .acp-htools button{cursor:pointer}
+  #ai-chat-panel.dock .acp-head{cursor:default}
+  #ai-chat-panel.acp-dragging{transition:none}
   .acp-head .acp-ava{flex-shrink:0;position:relative;width:34px;height:34px}
   .acp-head .acp-ava .dot{position:absolute;right:-1px;bottom:-1px;width:9px;height:9px;border-radius:50%;background:var(--ok);border:2px solid var(--surface-2)}
   .acp-head b{font-family:var(--display);font-size:15px;color:var(--ink);display:block;line-height:1.15}
@@ -7905,10 +7909,50 @@ function applyDiscFilters(query, type) {
       const p = document.getElementById('ai-chat-panel');
       const docked = p.classList.toggle('dock');
       document.body.classList.toggle('acp-docked', docked);
+      // inline drag offsets fight the docked layout — clear them either way
+      p.style.left = p.style.top = p.style.right = p.style.bottom = '';
       const btn = document.getElementById('acp-dock-btn');
       btn.title = docked ? 'Pop out' : 'Dock to side';
       btn.setAttribute('aria-label', btn.title);
     };
+
+    /* ── Drag the panel by its header (floating mode only) ── */
+    (function enableDrag(){
+      const head = document.querySelector('#ai-chat-panel .acp-head');
+      if (!head) return;
+      let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+      head.addEventListener('pointerdown', (e) => {
+        const p = document.getElementById('ai-chat-panel');
+        if (p.classList.contains('dock')) return;          // docked = no drag
+        if (e.target.closest('button')) return;            // let header buttons work
+        const r = p.getBoundingClientRect();
+        // pin to left/top so the drag math is absolute, not right/bottom anchored
+        p.style.left = r.left + 'px'; p.style.top = r.top + 'px';
+        p.style.right = 'auto'; p.style.bottom = 'auto';
+        dragging = true; sx = e.clientX; sy = e.clientY; ox = r.left; oy = r.top;
+        head.classList.add('acp-grabbing'); p.classList.add('acp-dragging');
+        head.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      });
+      head.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const p = document.getElementById('ai-chat-panel');
+        const w = p.offsetWidth, h = p.offsetHeight, m = 8;
+        let nx = ox + (e.clientX - sx), ny = oy + (e.clientY - sy);
+        nx = Math.max(m, Math.min(nx, window.innerWidth  - w - m));
+        ny = Math.max(m, Math.min(ny, window.innerHeight - h - m));
+        p.style.left = nx + 'px'; p.style.top = ny + 'px';
+      });
+      const end = (e) => {
+        if (!dragging) return;
+        dragging = false;
+        head.classList.remove('acp-grabbing');
+        document.getElementById('ai-chat-panel').classList.remove('acp-dragging');
+        try { head.releasePointerCapture(e.pointerId); } catch (_) {}
+      };
+      head.addEventListener('pointerup', end);
+      head.addEventListener('pointercancel', end);
+    })();
 
     /* ── Proactive contextual nudge ── */
     const nudgedThisSession = {};
