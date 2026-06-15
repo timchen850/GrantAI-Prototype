@@ -4260,7 +4260,7 @@ label.field-label {
       </section>
 
       <div class="steps" id="gen-steps">
-        <div class="stp done" id="gen-step-1"><span class="sn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span>Select grant</div>
+        <div class="stp done" id="gen-step-1" onclick="genShowSelect()" title="Pick a different grant"><span class="sn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span>Select grant</div>
         <div class="stp now" id="gen-step-2"><span class="sn">2</span>Configure</div>
         <div class="stp" id="gen-step-3"><span class="sn">3</span>Generate</div>
         <div class="stp" id="gen-step-4"><span class="sn">4</span>Review &amp; export</div>
@@ -4302,6 +4302,23 @@ label.field-label {
         .gen-grid .out{ display:none; }
         .gen-grid.gen-writing .gen-config{ display:none; }
         .gen-grid.gen-writing .out{ display:block; max-width:800px; margin:0 auto; width:100%; }
+        /* Step 1: Select grant — the picker */
+        .gen-grid.gen-selecting .gen-config, .gen-grid.gen-selecting .out{ display:none; }
+        .gen-select{ max-width:680px; margin:0 auto; width:100%; }
+        .gsel-h{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:6px 0 11px; }
+        #gsel-saved .gsel-h{ margin-top:26px; }
+        .gsel-row{ display:flex; align-items:center; gap:14px; padding:15px 17px; border:1px solid var(--line); border-radius:14px; background:var(--surface); cursor:pointer; margin-bottom:10px; transition:border-color .15s, transform .1s, box-shadow .15s; }
+        .gsel-row:hover{ border-color:var(--accent); transform:translateY(-1px); box-shadow:0 6px 20px rgba(26,25,22,.07); }
+        .gsel-ic{ width:38px; height:38px; border-radius:10px; background:var(--accent-tint); color:var(--accent-ink); display:grid; place-items:center; flex-shrink:0; }
+        .gsel-main{ flex:1; min-width:0; }
+        .gsel-t{ font-size:15px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .gsel-m{ font-size:13px; color:var(--muted); margin-top:2px; }
+        .gsel-badge{ font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:var(--accent-tint); color:var(--accent-ink); flex-shrink:0; }
+        .gsel-badge.alt{ background:var(--surface-2); color:var(--ink-soft); }
+        .gsel-empty{ font-size:13.5px; color:var(--muted); padding:4px 2px 10px; line-height:1.5; }
+        .gsel-foot{ margin-top:22px; font-size:13.5px; color:var(--muted); }
+        .gsel-foot a{ color:var(--accent); cursor:pointer; font-weight:600; }
+        #gen-steps .stp{ cursor:pointer; }
 
         /* "Generating" loader (vanilla recreation of the ai-loader) */
         .gen-loader{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding:54px 0 46px; }
@@ -4331,6 +4348,11 @@ label.field-label {
         .gen-strat-b{ font-size:13px; line-height:1.55; color:var(--ink-body); white-space:pre-wrap; }
       </style>
       <div class="gen-grid" id="gen-grid">
+        <div class="gen-select" id="gen-select" style="display:none">
+          <div id="gsel-drafts"></div>
+          <div id="gsel-saved"></div>
+          <div class="gsel-foot">Looking for a new grant? <a onclick="go('discovery')">Browse discovery →</a></div>
+        </div>
         <div class="gen-config">
           <div class="panel" style="margin-bottom:18px">
             <div class="panel-head"><h3>Grant</h3></div>
@@ -4630,7 +4652,7 @@ label.field-label {
       <div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--warn-ink)" stroke-width="2.4"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>LOI must come before the full proposal, 2-page limit</div>
     </div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-accent" style="flex:1" onclick="selectGrantForDraft(window._modalGrant||null);saveGrantToPipeline(window._modalGrant,'drafting');closeGrant();go('generator')">Draft the LOI</button>
+      <button class="btn btn-accent" style="flex:1" onclick="selectGrantForDraft(window._modalGrant||null);saveGrantToPipeline(window._modalGrant,'drafting');window._genDirectGrant=true;closeGrant();go('generator')">Draft the LOI</button>
       <button class="btn btn-outline" onclick="saveGrantToPipeline(window._modalGrant,'saved');closeGrant()">Save</button>
     </div>
   </div>
@@ -5022,30 +5044,14 @@ function selectGrantForDraft(idOrGrant) {
 /* ── update the generator UI with the selected grant ── */
 function populateGeneratorGrant() {
   bindGenAutosave();
-  const restored = restoreGenDraft();   // brings back your grant + inputs + draft if you have one
-  if (!restored) genShowConfig();       // fresh: start on the config form
-
-  const g = window._selectedGrant;
-  const titleEl  = document.getElementById('gen-grant-title');
-  const metaEl   = document.getElementById('gen-grant-meta');
-  const amtEl    = document.getElementById('gen-amount');
-
-  if (!g) return; // no grant selected — leave defaults
-
-  if (titleEl) titleEl.textContent = g.title || g.funder || 'Selected grant';
-
-  // Build a readable meta line
-  const parts = [];
-  if (g.type)          parts.push(g.type);
-  if (g.amount)        parts.push(g.amount);
-  if (g.deadlineLabel) parts.push('Due ' + g.deadlineLabel);
-  if (g.matchScore)    parts.push(g.matchScore + '% match');
-  if (metaEl) metaEl.textContent = parts.join(' · ');
-
-  // Pre-fill requested amount from grant max only on a fresh start (never clobber a restored draft)
-  if (!restored && amtEl && g.amountMax) {
-    amtEl.value = '$' + Number(g.amountMax).toLocaleString();
+  // Came straight from a "Draft proposal" click on a specific grant → skip the picker
+  if (window._genDirectGrant) {
+    window._genDirectGrant = false;
+    loadGrantIntoGenerator(window._selectedGrant);
+    return;
   }
+  // Otherwise (opened the Generator from the nav) → show the grant picker first
+  genShowSelect();
 }
 
 function buildPrompt(fields, org, grant) {
@@ -5316,16 +5322,102 @@ function showStrategyNote(text) {
 function genShowConfig() {
   if (generating) return;
   genWritingView(false);
+  document.getElementById('gen-grid')?.classList.remove('gen-selecting');
+  const sel = document.getElementById('gen-select'); if (sel) sel.style.display = 'none';
   genSetStep(2);
   ['gen-loader', 'out-doc', 'gen-strategy-note'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
   const empty = document.getElementById('out-empty'); if (empty) empty.style.display = 'block';
   window.scrollTo(0, 0);
 }
 
+/* ── Step 1: the grant picker (your drafts + saved pipeline grants) ── */
+async function genShowSelect() {
+  if (generating) return;
+  const grid = document.getElementById('gen-grid');
+  grid.classList.remove('gen-writing');
+  grid.classList.add('gen-selecting');
+  document.getElementById('gen-select').style.display = 'block';
+  genSetStep(1);
+  window.scrollTo(0, 0);
+  await renderGrantPicker();
+}
+async function renderGrantPicker() {
+  const esc = s => String(s == null ? '' : s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+  const fileIc = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+  const drafts = listDrafts();
+  window._genDrafts = drafts;
+  const dEl = document.getElementById('gsel-drafts');
+  dEl.innerHTML = '<div class="gsel-h">Your drafts</div>' + (drafts.length
+    ? drafts.map((d, i) => {
+        const g = d.grant || {}; const title = g.title || g.funder || 'Untitled draft';
+        const sub = (g.funder && g.funder !== title ? esc(g.funder) + ' · ' : '') + (d.doc ? 'Draft started' : 'In progress');
+        return '<div class="gsel-row" onclick="pickDraft(' + i + ')"><span class="gsel-ic">' + fileIc + '</span><div class="gsel-main"><div class="gsel-t">' + esc(title) + '</div><div class="gsel-m">' + sub + '</div></div><span class="gsel-badge">Draft</span></div>';
+      }).join('')
+    : '<div class="gsel-empty">No drafts yet. Pick a saved grant below to start one.</div>');
+
+  let pipeline = [];
+  try {
+    const uid = window._grange?.user?.id;
+    if (window.sb && uid) {
+      const { data } = await sb.from('grants').select('*').eq('user_id', uid).in('status', ['saved', 'drafting']).order('created_at', { ascending: false });
+      pipeline = data || [];
+    }
+  } catch (_) {}
+  const draftTitles = new Set(drafts.map(d => (d.grant?.title || '')));
+  pipeline = pipeline.filter(p => !draftTitles.has(p.title));
+  window._genPipeline = pipeline;
+  const sEl = document.getElementById('gsel-saved');
+  sEl.innerHTML = '<div class="gsel-h">Saved grants</div>' + (pipeline.length
+    ? pipeline.map(p => '<div class="gsel-row" onclick="pickSaved(this.dataset.id)" data-id="' + esc(p.id) + '"><span class="gsel-ic">' + fileIc + '</span><div class="gsel-main"><div class="gsel-t">' + esc(p.title) + '</div><div class="gsel-m">' + (p.funder ? esc(p.funder) : 'Saved grant') + '</div></div><span class="gsel-badge alt">Start</span></div>').join('')
+    : '<div class="gsel-empty">No saved grants yet. Save grants from discovery and they show up here.</div>');
+}
+function loadGrantIntoGenerator(g) {
+  if (g) window._selectedGrant = g;
+  const grid = document.getElementById('gen-grid');
+  grid.classList.remove('gen-selecting');
+  document.getElementById('gen-select').style.display = 'none';
+  const restored = restoreGenDraft();
+  if (!restored) genShowConfig();
+  setGrantCard(window._selectedGrant, restored);
+}
+function pickDraft(i) { const d = (window._genDrafts || [])[i]; if (d) loadGrantIntoGenerator(d.grant || null); }
+function pickSaved(id) {
+  const p = (window._genPipeline || []).find(x => String(x.id) === String(id));
+  if (p) loadGrantIntoGenerator({ id: p.id, title: p.title, funder: p.funder, amount: p.amount, deadline: p.deadline });
+}
+function setGrantCard(g, restored) {
+  const titleEl = document.getElementById('gen-grant-title');
+  const metaEl  = document.getElementById('gen-grant-meta');
+  const amtEl   = document.getElementById('gen-amount');
+  if (!g) return;
+  if (titleEl) titleEl.textContent = g.title || g.funder || 'Selected grant';
+  const parts = [];
+  if (g.type)          parts.push(g.type);
+  if (g.amount)        parts.push(g.amount);
+  if (g.deadlineLabel) parts.push('Due ' + g.deadlineLabel);
+  if (g.matchScore)    parts.push(g.matchScore + '% match');
+  if (metaEl) metaEl.textContent = parts.join(' · ') || (g.funder || '');
+  if (!restored && amtEl && g.amountMax) amtEl.value = '$' + Number(g.amountMax).toLocaleString();
+}
+
 /* ── Draft autosave: your config + draft persist per user so leaving and
    returning never resets you to the demo org. ── */
 const GEN_FIELD_IDS = ['gen-proposal-type','gen-amount','gen-period','gen-program','gen-population','gen-description','gen-voice','gen-emphasis'];
-function genDraftKey() { return 'grange_gendraft_' + (window._grange?.user?.id || 'anon'); }
+function genDraftPrefix() { return 'grange_gendraft_' + (window._grange?.user?.id || 'anon') + '_'; }
+/* key drafts by TITLE — the pipeline dedupes by title, so a draft started from
+   discovery still matches when the same grant is later picked from saved grants */
+function grantKeyOf(g) { const x = g || window._selectedGrant; return encodeURIComponent(String(x?.title || x?.id || 'none')); }
+function genDraftKey(g) { return genDraftPrefix() + grantKeyOf(g); }
+function listDrafts() {
+  const out = [], prefix = genDraftPrefix();
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(prefix)) { try { const d = JSON.parse(localStorage.getItem(k)); if (d) out.push(d); } catch (_) {} }
+    }
+  } catch (_) {}
+  return out.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+}
 function saveGenDraft() {
   try {
     const fields = {};
@@ -8018,6 +8110,7 @@ function draftGrant(id) {
   selectGrantForDraft(id);
   const g = window._grantsById && window._grantsById[id];
   if (g) saveGrantToPipeline(g, 'drafting');
+  window._genDirectGrant = true;   // skip the picker — go straight to this grant
   go('generator');
 }
 
