@@ -12,6 +12,11 @@ name: Build Grange AI Desktop App
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag to publish (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
   push:
     tags: ['v*']
 
@@ -111,7 +116,6 @@ jobs:
     name: Publish Release
     needs: [build-mac, build-windows, build-linux]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Download all installers
         uses: actions/download-artifact@v4
@@ -121,9 +125,10 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: installers/**/*
+          tag_name: ${{ github.event.inputs.version || github.ref_name }}
           draft: false
           generate_release_notes: true
-          name: Grange AI ${{ github.ref_name }}
+          name: Grange AI ${{ github.event.inputs.version || github.ref_name }}
           body: |
             ## Download Grange AI — the desktop app
 
