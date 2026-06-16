@@ -657,7 +657,7 @@ label.field-label {
 .app-card-note { display: block; margin-top: 12px; font-size: 13px;
   color: #8fe3ad; font-weight: 600; }
 .ios-share { display: inline-block; }
-.ios-steps { max-width: 680px; margin: 36px auto 0; padding: 28px 32px;
+.ios-steps { max-width: 680px; margin: 24px auto 0; padding: 28px 32px;
   background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r);
   display: flex; flex-direction: column; gap: 16px; }
 .ios-step { display: flex; align-items: flex-start; gap: 14px; font-size: 15px;
@@ -665,10 +665,38 @@ label.field-label {
 .ios-step-n { flex-shrink: 0; width: 26px; height: 26px; border-radius: 99px;
   background: var(--accent); color: #fff; font-size: 13px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; }
+
+/* macOS Gatekeeper guide */
+.mac-gk-toggle { background: none; border: none; padding: 8px 0 0;
+  color: var(--accent); font-size: 12px; font-weight: 600; cursor: pointer;
+  letter-spacing: .02em; text-decoration: underline; text-underline-offset: 3px; }
+.mac-gk-guide { max-width: 720px; margin: 28px auto 0; overflow: hidden;
+  max-height: 0; transition: max-height .35s ease, opacity .3s ease; opacity: 0; }
+.mac-gk-guide.mac-gk-open { max-height: 600px; opacity: 1; }
+.mac-gk-inner { background: rgba(232,92,58,.07); border: 1px solid rgba(232,92,58,.3);
+  border-radius: var(--r); padding: 24px 28px; }
+.mac-gk-header { display: flex; align-items: center; gap: 10px; font-size: 15px;
+  color: #f0a090; margin-bottom: 10px; flex-wrap: wrap; }
+.mac-gk-badge { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 99px; padding: 3px 10px; color: var(--ink-dim); margin-left: auto; }
+.mac-gk-desc { font-size: 14px; color: var(--ink-body); margin: 0 0 16px; line-height: 1.6; }
+.mac-gk-desc em { color: #f0a090; font-style: normal; font-weight: 500; }
+.mac-gk-steps { margin: 0 0 20px; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
+.mac-gk-steps li { font-size: 14px; color: var(--ink-body); line-height: 1.55; }
+.mac-gk-steps li strong { color: var(--ink-head); }
+.mac-gk-alt { background: rgba(0,0,0,.25); border-radius: 10px; padding: 14px 18px;
+  font-size: 13px; color: var(--ink-body); line-height: 1.6; }
+.mac-gk-alt code { display: block; margin-top: 8px; font-family: 'SF Mono', ui-monospace, monospace;
+  font-size: 12px; color: #8fe3ad; background: rgba(0,0,0,.35); border-radius: 6px;
+  padding: 8px 12px; letter-spacing: .03em; user-select: all; }
+
 @media (max-width: 860px) {
   .get-app { padding: 48px 24px; }
   .get-app-grid { grid-template-columns: 1fr; }
   .ios-steps { padding: 22px 20px; }
+  .mac-gk-inner { padding: 20px; }
+  .mac-gk-badge { margin-left: 0; }
 }
 
 /* ─── CTA BAND ──────────────────────────────────────────── */
@@ -2934,6 +2962,7 @@ label.field-label {
             <h3>macOS</h3>
             <p>Universal — works on Apple Silicon &amp; Intel. Drag to Applications.</p>
             <a class="btn btn-outline btn-block" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-mac.dmg" target="_blank" rel="noopener">Download .dmg</a>
+            <button class="mac-gk-toggle" onclick="document.getElementById('mac-gk-guide').classList.toggle('mac-gk-open')" type="button">First launch? See how to open it ›</button>
           </div>
 
           <!-- Windows -->
@@ -2977,9 +3006,33 @@ label.field-label {
           </div>
         </div>
 
-        <!-- First-launch help -->
+        <!-- macOS Gatekeeper guide (toggled from card) -->
+        <div class="mac-gk-guide" id="mac-gk-guide">
+          <div class="mac-gk-inner">
+            <div class="mac-gk-header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <strong>One-time Mac security step</strong>
+              <span class="mac-gk-badge">Free unsigned build — completely safe</span>
+            </div>
+            <p class="mac-gk-desc">Apple blocks unsigned apps by default. If you see <em>"Grange AI Not Opened — Apple could not verify…"</em> follow these steps once:</p>
+            <ol class="mac-gk-steps">
+              <li><strong>Click "Done"</strong> in that dialog (do NOT click "Move to Trash").</li>
+              <li>Open <strong>System Settings</strong> (Apple menu → System Settings).</li>
+              <li>Click <strong>Privacy &amp; Security</strong> in the left sidebar.</li>
+              <li>Scroll down until you see <em>"Grange AI was blocked from use because it is not from an identified developer."</em></li>
+              <li>Click <strong>Open Anyway</strong> and enter your Mac password when asked.</li>
+              <li>The app opens — Mac remembers your choice and never asks again.</li>
+            </ol>
+            <div class="mac-gk-alt">
+              <strong>Faster way (Terminal):</strong> paste this command, press Enter, then open the app normally.<br>
+              <code>xattr -cr "/Applications/Grange AI.app"</code>
+            </div>
+          </div>
+        </div>
+
+        <!-- Platform-specific tips -->
         <div class="ios-steps" id="ios-steps">
-          <div class="ios-step"><span class="ios-step-n">!</span><span><strong>First launch on Mac:</strong> right-click the app and choose <strong>Open</strong> (just once) to get past the "unidentified developer" notice. On Windows, click <strong>More info → Run anyway</strong> if SmartScreen appears. These are free unsigned builds — completely safe.</span></div>
+          <div class="ios-step"><span class="ios-step-n">🪟</span><span><strong>Windows:</strong> if SmartScreen appears, click <strong>More info → Run anyway</strong>. These are free unsigned builds — completely safe.</span></div>
           <div class="ios-step"><span class="ios-step-n">📱</span><span><strong>Android:</strong> after downloading, tap the .apk and allow installs from your browser when prompted. <strong>iPhone:</strong> open this page in Safari, tap <strong>Share</strong>, then <a href="#" id="pwa-fallback-link" style="color:var(--accent);font-weight:600;">Add to Home Screen</a> — a full App Store app is on the way.</span></div>
         </div>
       </div>
@@ -9284,6 +9337,9 @@ function applyDiscFilters(query, type) {
     if (heroNote)  heroNote.textContent = 'App Store app coming soon • add to home screen now';
   } else if (isMac()) {
     setHero(DL.mac, 'Download for macOS', 'Download for Mac');
+    // Auto-expand the Gatekeeper guide for Mac visitors — they'll need it.
+    var gkGuide = document.getElementById('mac-gk-guide');
+    if (gkGuide) gkGuide.classList.add('mac-gk-open');
   } else if (isWindows()) {
     setHero(DL.windows, 'Download for Windows', 'Download for Windows');
   } else {
