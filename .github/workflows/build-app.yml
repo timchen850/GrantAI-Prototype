@@ -1,148 +1,140 @@
 name: Build Grange AI Desktop App
 
-# Desktop installer builds run only on demand (manual trigger) or when a
-# release is tagged (v*). They are NOT run on every push/PR because signing
-# certificates are required and are not configured yet — leaving them on
-# push would surface noisy red ✗ checks. Trigger manually from the Actions
-# tab once Apple/Microsoft signing secrets are in place.
+# Builds real, installable desktop apps (.dmg for Mac, .exe for Windows,
+# .AppImage/.deb for Linux) for FREE — no code-signing certificates needed.
+# The apps are unsigned, so on first launch users click through a one-time
+# "unidentified developer" prompt (instructions are on the download page).
+#
+# Trigger:
+#   • Push a version tag (e.g. v1.0.0) → builds all platforms AND publishes
+#     a public GitHub Release with the installers attached.
+#   • Or run manually from the Actions tab (uploads installers as artifacts).
+
 on:
   workflow_dispatch:
   push:
     tags: ['v*']
 
+permissions:
+  contents: write
+
 jobs:
   build-mac:
-    name: Build macOS (Apple Silicon + Intel)
+    name: Build macOS (.dmg)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: app/package.json
-
       - name: Install dependencies
         working-directory: app
         run: npm ci
-
       - name: Create .env
         working-directory: app
         run: |
           echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env
           echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> .env
-
-      - name: Build macOS app
+      - name: Build unsigned macOS app
         working-directory: app
         run: npm run build:mac
         env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-
-      - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - uses: actions/upload-artifact@v4
         with:
           name: grange-ai-mac
-          path: app/release/*.dmg
+          path: |
+            app/release/*.dmg
+            app/release/*.zip
 
   build-windows:
-    name: Build Windows (x64)
+    name: Build Windows (.exe)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: app/package.json
-
       - name: Install dependencies
         working-directory: app
         run: npm ci
-
       - name: Create .env
         working-directory: app
         shell: bash
         run: |
           echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env
           echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> .env
-
-      - name: Build Windows app
+      - name: Build unsigned Windows app
         working-directory: app
         run: npm run build:win
         env:
-          CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-
-      - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - uses: actions/upload-artifact@v4
         with:
           name: grange-ai-windows
           path: |
             app/release/*.exe
-            app/release/*.appx
 
   build-linux:
-    name: Build Linux
+    name: Build Linux (.AppImage / .deb)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: app/package.json
-
       - name: Install dependencies
         working-directory: app
         run: npm ci
-
-      - name: Install Linux build dependencies
-        run: sudo apt-get install -y rpm
-
       - name: Create .env
         working-directory: app
         run: |
           echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env
           echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> .env
-
       - name: Build Linux app
         working-directory: app
         run: npm run build:linux
-
-      - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: grange-ai-linux
           path: |
             app/release/*.AppImage
             app/release/*.deb
-            app/release/*.snap
 
   release:
-    name: Create Release
+    name: Publish Release
     needs: [build-mac, build-windows, build-linux]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - name: Download all artifacts
+      - name: Download all installers
         uses: actions/download-artifact@v4
-
-      - name: Create GitHub Release
+        with:
+          path: installers
+      - name: Publish GitHub Release with installers
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            grange-ai-mac/*
-            grange-ai-windows/*
-            grange-ai-linux/*
-          draft: true
+          files: installers/**/*
+          draft: false
           generate_release_notes: true
+          name: Grange AI ${{ github.ref_name }}
+          body: |
+            ## Download Grange AI — the desktop app
+
+            Pick your platform below. These are real, installable applications.
+
+            | Platform | File | How to install |
+            |----------|------|----------------|
+            | **macOS** | `.dmg` | Open it, drag Grange AI to Applications. First launch: **right-click the app → Open** to bypass the unidentified-developer prompt (one time only). |
+            | **Windows** | `Grange AI Setup .exe` | Run it. If SmartScreen appears, click **More info → Run anyway** (one time only). |
+            | **Linux** | `.AppImage` | `chmod +x` it and run, or use the `.deb`. |
+
+            These builds are unsigned (free distribution). They are safe — the
+            warnings simply mean we haven't paid Apple/Microsoft for a signing
+            certificate yet.
