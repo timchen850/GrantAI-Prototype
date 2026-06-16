@@ -4292,20 +4292,206 @@ label.field-label {
 .t2-secfoot { font-size: 12.5px; color: var(--accent-ink); font-weight: 600; margin-top: 12px; opacity: 0; transition: opacity .4s; }
 .t2-secfoot.vis { opacity: 1; }
 @media (max-width: 800px) { .t2-profile { grid-template-columns: 1fr; justify-items: center; text-align: center; } .t2-srcs { grid-template-columns: repeat(2,1fr); } }
+
+/* ════════════════════ IMMERSIVE TUTORIAL — "AURORA STAGE" ════════════════════ */
+:root{ --ios-drawer: cubic-bezier(0.32,0.72,0,1); --ease-strong: cubic-bezier(0.77,0,0.175,1); --spring-soft: cubic-bezier(0.34,1.42,0.5,1); }
+#tutorial{ background:#1a1006; }
+
+/* PLANE 0 — aurora (homescreen gradient), fades up from dark */
+.tut-sky{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; opacity:0; filter:brightness(.45) blur(10px); animation:tutSkyIn 1100ms var(--ease-expo) forwards; }
+@keyframes tutSkyIn{ to{ opacity:1; filter:brightness(1) blur(0); } }
+.tut-sky .grad-anim-bg{ position:absolute; inset:0; }
+.tut-tint{ position:absolute; inset:0; mix-blend-mode:soft-light; transition:background 900ms var(--ios-drawer); }
+.tut-tint[data-focus="1"]{ background:radial-gradient(60vw 60vw at 18% 22%, rgba(251,200,110,.5), transparent 70%); }
+.tut-tint[data-focus="2"]{ background:radial-gradient(60vw 60vw at 82% 22%, rgba(226,83,59,.5), transparent 70%); }
+.tut-tint[data-focus="3"]{ background:radial-gradient(60vw 60vw at 50% 50%, rgba(120,180,120,.42), transparent 70%); }
+.tut-tint[data-focus="4"]{ background:radial-gradient(60vw 60vw at 20% 80%, rgba(214,90,114,.5), transparent 70%); }
+.tut-tint[data-focus="5"]{ background:radial-gradient(60vw 60vw at 80% 80%, rgba(240,165,77,.5), transparent 70%); }
+.tut-bloom{ position:absolute; width:58vw; height:58vw; left:21vw; top:14vh; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.12), transparent 60%); filter:blur(40px); transform:translate3d(var(--bx,0),var(--by,0),0); transition:transform 1200ms var(--ios-drawer); will-change:transform; }
+.tut-veil{ position:absolute; inset:0; background:radial-gradient(120% 120% at 50% 45%, transparent 55%, rgba(40,12,8,.24)); mix-blend-mode:multiply; }
+.tut-veil::after{ content:''; position:absolute; inset:0; opacity:.045; mix-blend-mode:overlay; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+/* PLANE 2 — the persistent glass slab */
+.tut-slab{ position:relative; z-index:2; width:min(1120px,92vw); height:min(76vh,740px); margin:max(4vh,32px) auto; border-radius:30px; background:rgba(255,255,255,.10); -webkit-backdrop-filter:blur(26px) saturate(170%); backdrop-filter:blur(26px) saturate(170%); border:1px solid rgba(255,255,255,.5); box-shadow:inset 0 1px 0 rgba(255,255,255,.65), 0 40px 120px -50px rgba(40,12,8,.65); display:flex; flex-direction:column; overflow:hidden; transition:transform 460ms var(--ios-drawer), width 560ms var(--ios-drawer), height 560ms var(--ios-drawer); }
+.tut-slab::before{ content:''; position:absolute; inset:0; pointer-events:none; border-radius:inherit; background:linear-gradient(135deg, rgba(255,255,255,.2), transparent 42%); }
+.tut-slab--intro{ width:min(660px,92vw); height:auto; min-height:440px; }
+.tut-slab-top{ display:flex; align-items:center; gap:16px; padding:16px 22px; border-bottom:1px solid rgba(255,255,255,.18); flex:none; }
+.tut-slab-top .brand{ color:#fff; font-weight:700; gap:9px; }
+.tut-slab-top .brand-mark{ width:26px; height:26px; }
+.tut-slab .tut-stage{ flex:1; min-height:0; }
+.tut-badge--glass{ background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.42); color:#fff; -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
+.tut-badge--glass .pip{ background:#fff; }
+.glass-tile{ background:rgba(255,255,255,.18); -webkit-backdrop-filter:blur(16px) saturate(150%); backdrop-filter:blur(16px) saturate(150%); border:1px solid rgba(255,255,255,.6); box-shadow:inset 0 1px 0 rgba(255,255,255,.55); border-radius:16px; }
+.glass-bright{ background:rgba(255,255,255,.66); -webkit-backdrop-filter:blur(18px) saturate(140%); backdrop-filter:blur(18px) saturate(140%); border:1px solid rgba(255,255,255,.72); box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 26px 60px -32px rgba(40,12,8,.55); border-radius:20px; }
+.tut-foot--glass{ background:rgba(255,255,255,.14); -webkit-backdrop-filter:blur(22px) saturate(160%); backdrop-filter:blur(22px) saturate(160%); border-top:1px solid rgba(255,255,255,.4); }
+.tut-foot--glass .hint{ color:rgba(255,255,255,.85); } .tut-foot--glass .hint.pulse{ color:#fff; font-weight:600; }
+.tut-ghost-glass{ color:#fff; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.4); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){ .tut-slab{ background:rgba(40,16,8,.42); } .glass-tile,.tut-foot--glass,.tut-badge--glass,.tut-ghost-glass{ background:rgba(40,16,8,.4); } .glass-bright{ background:rgba(255,255,255,.9); } }
+
+/* text reveal — Apple blur-stagger */
+.rev{ opacity:0; transform:translateY(12px); filter:blur(8px); will-change:transform,filter,opacity; transition:opacity 720ms var(--ease-expo), transform 720ms var(--ease-expo), filter 720ms var(--ease-expo); }
+.rev.vis{ opacity:1; transform:none; filter:blur(0); }
+.tut-h-big{ font-family:var(--display); font-weight:800; letter-spacing:-.035em; line-height:1.03; font-size:clamp(30px,4.6vw,60px); margin:0; color:#fff; text-shadow:0 1px 14px rgba(40,12,8,.28); }
+.tut-h-big .w{ display:inline-block; }
+
+/* horizontal push transitions (override the old tutPage* selectors) */
+@keyframes tutPushInFwd{ from{ opacity:0; transform:translateX(11%) scale(.99); filter:blur(8px);} to{ opacity:1; transform:none; filter:blur(0);} }
+@keyframes tutPushInBack{ from{ opacity:0; transform:translateX(-11%) scale(.99); filter:blur(8px);} to{ opacity:1; transform:none; filter:blur(0);} }
+@keyframes tutPushOutFwd{ from{ opacity:1; transform:none; filter:blur(0);} to{ opacity:0; transform:translateX(-9%) scale(.985); filter:blur(8px);} }
+@keyframes tutPushOutBack{ from{ opacity:1; transform:none; filter:blur(0);} to{ opacity:0; transform:translateX(9%) scale(.985); filter:blur(8px);} }
+.tut-stage[data-dir="fwd"] .tut-step.show{ animation:tutPushInFwd 560ms var(--ios-drawer) both; }
+.tut-stage[data-dir="back"] .tut-step.show{ animation:tutPushInBack 560ms var(--ios-drawer) both; }
+.tut-step.leaving{ animation:tutPushOutFwd 460ms var(--ease-strong) both; }
+.tut-stage[data-dir="back"] .tut-step.leaving{ animation:tutPushOutBack 460ms var(--ease-strong) both; }
+
+/* per-step layout: 38/62 split, alternating anchor */
+.tut-step{ height:100%; }
+.tut-2col{ display:grid; grid-template-columns:38% 62%; height:100%; align-items:center; gap:30px; padding:30px 42px; }
+.tut-2col.dir-r{ grid-template-columns:62% 38%; }
+.tut-2col.dir-r .tut-rail-copy{ order:2; } .tut-2col.dir-r .tut-bay{ order:1; }
+.tut-rail-copy{ display:flex; flex-direction:column; align-items:flex-start; gap:15px; min-width:0; }
+.tut-rail-copy .tut-h-big{ font-size:clamp(28px,3.4vw,46px); }
+.tut-eyebrow-chip{ display:inline-flex; align-items:center; gap:7px; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#fff; padding:6px 12px; border-radius:var(--r-pill); background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.42); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
+.tut-copy-sub{ font-size:clamp(14px,1.4vw,17px); line-height:1.55; color:rgba(255,255,255,.86); max-width:40ch; margin:0; text-shadow:0 1px 8px rgba(40,12,8,.22); }
+.tut-role-chip{ font-style:italic; font-size:13px; color:rgba(255,255,255,.72); }
+.tut-bay{ position:relative; height:100%; display:grid; place-items:center; min-width:0; }
+.tut-bay::before{ content:''; position:absolute; width:72%; height:72%; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.12), transparent 62%); filter:blur(44px); }
+.tut-bay > *{ position:relative; }
+
+/* progress rail = frosted capsules */
+.tut-rail{ display:flex; gap:6px; flex:1; max-width:300px; }
+.tut-rail .seg{ flex:1; height:4px; border-radius:99px; background:rgba(255,255,255,.25); overflow:hidden; }
+.tut-rail .seg i{ display:block; height:100%; width:100%; transform:scaleX(0); transform-origin:left; background:#fff; transition:transform 600ms var(--ease-expo); }
+.tut-rail .seg.done i, .tut-rail .seg.active i{ transform:scaleX(1); }
+
+/* gate button (glassy) + press feedback */
+.tut-gate-btn{ display:inline-flex; align-items:center; gap:8px; font-family:var(--display); font-weight:600; font-size:14px; color:#fff; padding:11px 19px; border-radius:var(--r-pill); cursor:pointer; background:rgba(255,255,255,.18); -webkit-backdrop-filter:blur(16px) saturate(150%); backdrop-filter:blur(16px) saturate(150%); border:1px solid rgba(255,255,255,.55); box-shadow:inset 0 1px 0 rgba(255,255,255,.5); transition:transform .14s var(--ease-out), background .2s; }
+.tut-gate-btn svg{ width:16px; height:16px; }
+@media (hover:hover){ .tut-gate-btn:hover{ background:rgba(255,255,255,.28); } }
+.tut-gate-btn:active{ transform:scale(.97); } .tut-gate-btn:disabled{ opacity:.55; cursor:default; }
+.tut-next:active,.tut-back:active{ transform:scale(.97); transition:transform 140ms var(--ease-out); }
+
+/* INTRO */
+.tut-intro{ display:grid; place-items:center; padding:48px 40px 44px; }
+.tut-intro-col{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:20px; max-width:520px; }
+.tut-intro .tut-h-big{ font-size:clamp(34px,5.6vw,68px); }
+.tut-intro-sub{ font-size:clamp(15px,1.7vw,19px); line-height:1.55; color:rgba(255,255,255,.82); margin:0; text-shadow:0 1px 8px rgba(40,12,8,.22); }
+.tut-intro-cta{ margin-top:8px; font-size:15px; padding:13px 24px; }
+.tut-intro-cta .arr{ display:inline-block; animation:tutArrow 2.4s var(--ease-soft) infinite alternate; }
+@keyframes tutArrow{ to{ transform:translateX(4px); } }
+
+/* ── HERO INSTRUMENTS ── */
+/* 1 Profile — living dossier */
+.tut-dossier{ width:min(380px,86%); padding:22px 22px 18px; }
+.tut-id-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:16px; }
+.tut-id-name{ font-family:var(--display); font-weight:800; font-size:18px; color:var(--ink); line-height:1.15; }
+.tut-id-sub{ font-size:12.5px; color:var(--accent-ink); margin-top:3px; }
+.tut-ring{ --p:0; width:58px; height:58px; border-radius:50%; display:grid; place-items:center; flex:none; background:conic-gradient(var(--accent) calc(var(--p)*1%), rgba(26,25,22,.12) 0); transition:--p 1.4s var(--ease-expo); }
+.tut-ring i{ width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.92); display:grid; place-items:center; font-family:var(--display); font-weight:800; font-size:13px; color:var(--ink); font-style:normal; }
+.tut-id-rows{ display:grid; gap:9px; }
+.tut-id-row{ display:flex; align-items:center; gap:10px; font-size:12.8px; color:var(--ink-body); }
+.tut-id-row b{ color:var(--ink); font-weight:700; }
+.tut-id-row .d{ width:7px; height:7px; border-radius:50%; background:var(--accent); flex:none; }
+.tut-gate-wrap{ margin-top:18px; display:flex; }
+
+/* 2 Discovery — funder constellation */
+.tut-constel{ width:min(440px,94%); padding:20px; }
+.tut-constel-top{ display:flex; align-items:baseline; gap:10px; margin-bottom:16px; }
+.tut-constel-n{ font-family:var(--display); font-weight:800; font-size:34px; letter-spacing:-.03em; color:var(--ink); line-height:1; }
+.tut-constel-sub{ font-size:12px; color:var(--accent-ink); }
+.tut-src-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+.tut-srcn{ border-radius:12px; padding:10px 11px; background:rgba(255,255,255,.4); border:1px solid rgba(255,255,255,.55); transition:background .4s var(--ease-out), border-color .4s, box-shadow .4s, transform .4s var(--spring-soft); transform:scale(.96); }
+.tut-srcn.lit{ background:var(--accent-tint); border-color:rgba(217,79,48,.45); box-shadow:0 10px 24px -14px rgba(217,79,48,.6); transform:scale(1); }
+.tut-srcn .nm{ font-size:12px; font-weight:700; color:var(--ink); }
+.tut-srcn .sc{ font-size:11.5px; color:var(--muted); margin-top:2px; } .tut-srcn.lit .sc{ color:var(--accent-ink); font-weight:700; }
+.tut-shortlist{ display:flex; gap:8px; }
+.tut-shortlist .pill{ flex:1; text-align:center; padding:8px; border-radius:11px; background:rgba(255,255,255,.55); border:1px solid rgba(255,255,255,.6); opacity:0; transform:translateY(8px); transition:opacity .5s var(--ease-expo), transform .5s var(--spring-soft); }
+.tut-shortlist .pill.in{ opacity:1; transform:none; }
+.tut-shortlist .pill b{ font-family:var(--display); font-weight:800; font-size:18px; color:var(--accent); }
+.tut-shortlist .pill span{ display:block; font-size:10.5px; color:var(--muted); margin-top:1px; }
+
+/* 3 Fit — verdict gauge */
+.tut-fit{ width:min(420px,94%); padding:24px; display:flex; flex-direction:column; align-items:center; gap:16px; }
+.tut-gauge{ --p:0; width:160px; height:160px; border-radius:50%; display:grid; place-items:center; background:conic-gradient(var(--ok) calc(var(--p)*1%), rgba(26,25,22,.10) 0); transition:--p 1.4s var(--ease-expo); }
+.tut-gauge i{ width:124px; height:124px; border-radius:50%; background:rgba(255,255,255,.9); display:flex; flex-direction:column; align-items:center; justify-content:center; font-style:normal; }
+.tut-gauge .num{ font-family:var(--display); font-weight:800; font-size:42px; color:var(--ink); line-height:1; }
+.tut-gauge .lab{ font-size:11px; color:var(--muted); margin-top:2px; letter-spacing:.03em; }
+.tut-verdicts{ display:flex; flex-wrap:wrap; gap:7px; justify-content:center; }
+.tut-vchip{ font-size:11.5px; font-weight:700; padding:5px 11px; border-radius:var(--r-pill); background:rgba(255,255,255,.6); border:1px solid rgba(255,255,255,.65); color:var(--ink); opacity:0; transform:scale(.9); transition:opacity .45s var(--ease-out), transform .45s var(--spring-soft); }
+.tut-vchip.in{ opacity:1; transform:none; }
+.tut-vchip.ok{ background:var(--ok-tint); color:var(--ok); }
+.tut-fit .tut-cmp{ width:100%; }
+
+/* 4 Write — living manuscript */
+.tut-ms{ width:min(440px,94%); height:min(70%,420px); padding:24px 26px 22px 30px; position:relative; overflow:hidden; }
+.tut-ms::before{ content:''; position:absolute; left:14px; top:18px; bottom:18px; width:2.5px; border-radius:2px; background:var(--accent); opacity:.7; }
+.tut-ms-h{ font-family:var(--display); font-weight:800; font-size:15px; color:var(--ink); margin-bottom:12px; }
+.tut-ms-body{ font-size:13.5px; line-height:1.7; color:var(--ink-body); min-height:120px; }
+.tut-ms-foot{ margin-top:14px; font-size:11.5px; color:var(--accent-ink); opacity:0; transition:opacity .5s var(--ease-out); display:inline-flex; align-items:center; gap:6px; }
+.tut-ms-foot.in{ opacity:1; }
+.tut-ms-author{ position:absolute; right:18px; bottom:16px; font-size:11px; color:var(--muted); font-style:italic; }
+
+/* 5 Manage — stewardship console */
+.tut-console{ width:min(440px,94%); padding:22px; }
+.tut-console .tut-spend2{ margin-top:0; margin-bottom:18px; }
+.tut-console .tut-spend2 .hd .l, .tut-console .tut-spend2 .hd .v{ color:var(--ink); }
+.tut-console .tut-spend2 .bar{ background:rgba(26,25,22,.10); }
+.tut-bay .tut-cmp .row{ background:rgba(255,255,255,.5); border-color:rgba(255,255,255,.6); }
+.tut-bay .tut-cmp .row.due{ border-color:rgba(217,79,48,.5); box-shadow:0 0 0 0 rgba(217,79,48,.4); animation:tutDue 2s var(--ease-soft) infinite; }
+@keyframes tutDue{ 0%,100%{ box-shadow:0 0 0 0 rgba(217,79,48,.35);} 60%{ box-shadow:0 0 0 7px rgba(217,79,48,0);} }
+.tut-bay .tut-cmp .row .lbl{ color:var(--ink); }
+.tut-cmp .row.due .ck{ border-color:var(--accent); color:var(--accent); }
+
+/* responsive: stack on narrow */
+@media (max-width: 820px){
+  .tut-slab{ height:min(82vh,800px); }
+  .tut-2col, .tut-2col.dir-r{ grid-template-columns:1fr; align-content:center; gap:20px; padding:24px; overflow-y:auto; }
+  .tut-2col.dir-r .tut-rail-copy{ order:1; } .tut-2col.dir-r .tut-bay{ order:2; }
+  .tut-rail-copy{ align-items:center; text-align:center; }
+  .tut-bay{ height:auto; }
+  .tut-slab-top .tut-rail{ display:none; }
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion:reduce){
+  .tut-sky{ animation:none; opacity:1; filter:none; }
+  .tut-bloom,.tut-slab,.tut-tint{ transition:none; }
+  .rev{ opacity:1; transform:none; filter:none; transition:opacity 200ms linear; }
+  .tut-step.show,.tut-step.leaving{ animation:none; opacity:1; transform:none; filter:none; }
+  .tut-sky .grad-blob{ animation:none; }
+}
 </style>
 <div id="tutorial" class="screen">
-  <div class="tut-aura" aria-hidden="true"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
-  <div class="tut-shell">
-    <div class="tut-top">
-      <a class="brand" href="#" onclick="return false"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
-      <span class="tut-badge"><span class="pip"></span><span id="tut-badge-label">Guided tour</span></span>
+  <!-- PLANE 0: full-bleed living aurora = homescreen gradient, reused verbatim, fades up from dark -->
+  <div class="tut-sky" aria-hidden="true">
+    <div class="grad-anim-bg">
+      <div class="grad-container">
+        <div class="grad-blob grad-first"></div>
+        <div class="grad-blob grad-second"></div>
+        <div class="grad-blob grad-third"></div>
+        <div class="grad-blob grad-fourth"></div>
+        <div class="grad-blob grad-fifth"></div>
+      </div>
     </div>
-    <div class="tut-rail" id="tut-rail"></div>
+    <div class="tut-tint" id="tut-tint" data-focus="0"></div>
+    <div class="tut-bloom" id="tut-bloom"></div>
+    <div class="tut-veil"></div>
+  </div>
+
+  <!-- PLANE 2: the persistent glass slab (the one piece of chrome) -->
+  <div class="tut-slab tut-slab--intro" id="tut-slab">
+    <header class="tut-slab-top">
+      <a class="brand brand--light" href="#" onclick="return false"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+      <div class="tut-rail" id="tut-rail"></div>
+      <span class="tut-badge tut-badge--glass"><span class="pip"></span><span id="tut-badge-label">Guided tour</span></span>
+    </header>
     <div class="tut-stage" id="tut-stage" data-dir="fwd"></div>
   </div>
-  <div class="tut-foot">
+
+  <!-- PLANE 3: frosted footer plank -->
+  <div class="tut-foot tut-foot--glass" id="tut-foot">
     <div class="inner">
-      <button class="btn btn-ghost tut-back" id="tut-back" onclick="tutBack()">Back</button>
+      <button class="btn tut-back tut-ghost-glass" id="tut-back" onclick="tutBack()">Back</button>
       <span class="hint" id="tut-hint"></span>
       <button class="btn btn-accent tut-next" id="tut-next" onclick="tutNext()">Continue</button>
     </div>
@@ -7306,302 +7492,289 @@ const TUT_DOTS = '<span class="dp-dot" style="background:#ff5f56"></span><span c
    render() -> HTML; onShow() -> wire interactions & animations.
    Call tutUnlock() inside onShow when the user completes the required action. */
 const TUT_STEPS = [
-  /* 0 — Welcome */
-  { render: () => `
-      <div class="tut-step tut-hero">
-        <div class="orbit">
-          <div class="ring"></div><div class="ring r2"></div>
-          <div class="sat" style="transform:rotate(0deg) translateY(-104px) rotate(0deg)">${TUT_ICON.profile}</div>
-          <div class="sat" style="transform:rotate(72deg) translateY(-104px) rotate(-72deg)">${TUT_ICON.discover}</div>
-          <div class="sat" style="transform:rotate(144deg) translateY(-104px) rotate(-144deg)">${TUT_ICON.prepare}</div>
-          <div class="sat" style="transform:rotate(216deg) translateY(-104px) rotate(-216deg)">${TUT_ICON.write}</div>
-          <div class="sat" style="transform:rotate(288deg) translateY(-104px) rotate(-288deg)">${TUT_ICON.manage}</div>
-          <div class="core">${TUT_ICON.grange}</div>
-        </div>
-        <div class="tut-eyebrow">Welcome to Grange AI</div>
-        <h2 class="tut-h">Let's win your next grant, together.</h2>
-        <p class="tut-sub" style="margin-inline:auto">Grant funding is a journey: know your org, find the right funders, prove you're ready, write the proposal, and manage the award. This short, hands-on tour walks you through every step and the AI tools that do the heavy lifting. Try each one as you go.</p>
-      </div>` },
-
-  /* 1 — Lifecycle overview */
-  { gate: true, hint: 'Tap “Trace the path” to continue',
-    render: () => `
-      <div class="tut-step">
-        <div class="tut-eyebrow">The big picture</div>
-        <h2 class="tut-h">Five steps, start to finish.</h2>
-        <p class="tut-sub">Every grant follows the same arc. Grange gives you a dedicated tool for each, and that is exactly how your portal is organized.</p>
-        <div class="tut-panel">
-          <div class="tut-flow" id="tut-flow">
-            <div class="node"><div class="ic">${TUT_ICON.profile}</div><b>Profile</b><span>Your org</span></div>
-            <div class="node"><div class="ic">${TUT_ICON.discover}</div><b>Discover</b><span>Find grants</span></div>
-            <div class="node"><div class="ic">${TUT_ICON.prepare}</div><b>Prepare</b><span>Readiness</span></div>
-            <div class="node"><div class="ic">${TUT_ICON.write}</div><b>Write</b><span>AI drafts</span></div>
-            <div class="node"><div class="ic">${TUT_ICON.manage}</div><b>Manage</b><span>Post-award</span></div>
-          </div>
-          <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-reveal">Trace the path →</button></div>
+  /* 0 — Intro: fades in over the homescreen gradient, gates on "Show me the process" */
+  { focus: 0, render: () => `
+      <div class="tut-step tut-intro">
+        <div class="tut-intro-col">
+          <span class="tut-eyebrow-chip rev" data-delay="0">A guided walkthrough · 5 phases</span>
+          <h2 class="tut-h-big" aria-label="Winning a grant is a journey.">${tutWords('Winning a grant is a journey.')}</h2>
+          <p class="tut-intro-sub rev" data-delay="560">Five moves, start to finish: profile, discovery, fit, the writing, and the money after. We'll walk all five, and you'll try each one.</p>
+          <button class="tut-gate-btn tut-intro-cta rev" data-delay="720" id="tut-go">Show me the process <span class="arr">→</span></button>
         </div>
       </div>`,
     onShow: () => {
-      document.getElementById('tut-reveal').onclick = (e) => {
-        e.currentTarget.disabled = true;
-        const nodes = [...document.querySelectorAll('#tut-flow .node')];
-        nodes.forEach((n, i) => setTimeout(() => n.classList.add('lit'), i * 140));
-        setTimeout(tutUnlock, nodes.length * 140 + 200);
+      tutRevealStep(document.querySelector('.tut-intro'));
+      const go = document.getElementById('tut-go');
+      setTimeout(() => go && go.focus(), 820);
+      go.onclick = () => {
+        go.style.transform = 'scale(.96)';
+        const col = document.querySelector('.tut-intro-col');
+        col.style.transition = 'transform 520ms var(--ease-strong), opacity 520ms var(--ease-strong), filter 520ms var(--ease-strong)';
+        col.style.transform = 'translateY(-40px)'; col.style.filter = 'blur(10px)'; col.style.opacity = '0';
+        setTimeout(() => { tutState.unlocked = true; tutState.idx = 1; tutRender('fwd'); }, 460);
       };
     } },
 
-  /* 2 — Profile */
-  { gate: true, hint: 'Build your profile to continue',
+  /* 1 — Profile: living dossier + completeness ring */
+  { gate: true, focus: 1, bloom: ['-18vw', '-14vh'], hint: 'Read your 990 to continue',
     render: () => `
-      <div class="tut-step"><div class="tut-split">
-        <div class="tut-copy">
-          <div class="tut-eyebrow">Step 1 · Profile</div>
-          <h2 class="tut-h">Set up your org once.</h2>
-          <p class="tut-sub">Grange turns your 990 and mission into one reusable profile: programs, geography, NTEE code, budget, and eligibility. Every match and every draft pulls from it, so you enter this only once.</p>
-          <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-build">${TUT_ICON.profile}&nbsp; Build my profile</button></div>
-          <div class="t2-teach">
-            <div class="t2-teach-h">${TUT_ICON.spark} How you'll use it</div>
-            <ul>
-              <li><span class="k">1</span><span>Open <b>Org Profile</b> in the sidebar and upload your 990, or fill the fields by hand.</span></li>
-              <li><span class="k">2</span><span>Add your mission and a profile photo so matches and drafts sound like <b>you</b>.</span></li>
-              <li><span class="k">★</span><span>In grant terms this is your <b>case for support</b> — the facts every application reuses.</span></li>
-            </ul>
-          </div>
+      <div class="tut-step"><div class="tut-2col dir-l">
+        <div class="tut-rail-copy">
+          <span class="tut-eyebrow-chip rev" data-delay="0">Phase 01 · Profile</span>
+          <h2 class="tut-h-big" aria-label="Tell us once who you are.">${tutWords('Tell us once who you are.')}</h2>
+          <p class="tut-copy-sub rev" data-delay="540">Grange turns your 990 and mission into one living profile, programs, geography, NTEE, budget, eligibility, that every later step reads from.</p>
+          <span class="tut-role-chip rev" data-delay="660">Your case for support.</span>
         </div>
-        <div class="tut-mock"><div class="t2-stage" id="tut-m2">
-          <div class="t2-cap"><span class="live"></span> Building your organization profile</div>
-          <div class="t2-profile">
-            <div class="t2-bigring" id="tut-pring" style="--p:0"><i><span id="tut-pring-n">0</span>%</i></div>
-            <div class="t2-attrs">
-              <div class="t2-attr t2-rev" data-delay="250"><span class="d"></span><span><b>Mission</b> · youth education &amp; health equity</span></div>
-              <div class="t2-attr t2-rev" data-delay="650"><span class="d"></span><span><b>NTEE</b> · B94 Youth Development</span></div>
-              <div class="t2-attr t2-rev" data-delay="1050"><span class="d"></span><span><b>Geography</b> · Los Angeles County</span></div>
-              <div class="t2-attr t2-rev" data-delay="1450"><span class="d"></span><span><b>Budget</b> · $250K–$500K · 501(c)(3)</span></div>
+        <div class="tut-bay">
+          <div class="tut-dossier glass-bright rev" data-delay="180">
+            <div class="tut-id-top">
+              <div><div class="tut-id-name">Eastside Youth Foundation</div><div class="tut-id-sub">501(c)(3) · Alameda County, CA</div></div>
+              <div class="tut-ring" id="tut-pr"><i><span id="tut-prn">0</span>%</i></div>
             </div>
-          </div>
-        </div></div>
-      </div></div>`,
-    onShow: () => {
-      document.getElementById('tut-build').onclick = (e) => {
-        e.currentTarget.disabled = true;
-        document.getElementById('tut-pring').style.setProperty('--p', 100);
-        tutCount(document.getElementById('tut-pring-n'), 100, 1600);
-        tutReveal(document.getElementById('tut-m2'), tutUnlock);
-      };
-    } },
-
-  /* 3 — Discover (sources grid lighting up) */
-  { gate: true, hint: 'Run discovery to continue',
-    render: () => `
-      <div class="tut-step"><div class="tut-split">
-        <div class="tut-copy">
-          <div class="tut-eyebrow">Step 2 · Discovery</div>
-          <h2 class="tut-h">Find the funders you'd never spot.</h2>
-          <p class="tut-sub">Grange checks Grants.gov, Candid, SAM.gov, state portals, and hundreds of foundations every day and scores each one against your profile, so you skip the ones you can't win.</p>
-          <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-scan">${TUT_ICON.discover}&nbsp; Run discovery</button></div>
-          <div class="t2-teach">
-            <div class="t2-teach-h">${TUT_ICON.spark} How you'll use it</div>
-            <ul>
-              <li><span class="k">1</span><span>Open <b>Grant discovery</b> to see this week's matches, freshest first.</span></li>
-              <li><span class="k">2</span><span>Filter by funder type, amount, and deadline to fit your capacity.</span></li>
-              <li><span class="k">★</span><span>In grant terms this is <b>prospect research</b> — building your funder pipeline.</span></li>
-            </ul>
-          </div>
-        </div>
-        <div class="tut-mock"><div class="t2-stage" id="tut-m3">
-          <div class="t2-cap"><span class="live"></span> Scanning grant sources, scoring to your profile</div>
-          <div class="t2-counter" id="tut-scan-n">0</div><div class="t2-cnt-sub">grants scored against your profile today</div>
-          <div class="t2-srcs">
-            <div class="t2-src t2-rev" data-delay="300"><div class="nm">Grants.gov</div><div class="ct">1,247 matched</div></div>
-            <div class="t2-src t2-rev" data-delay="600"><div class="nm">Candid</div><div class="ct">834 matched</div></div>
-            <div class="t2-src t2-rev" data-delay="900"><div class="nm">SAM.gov</div><div class="ct">eligibility ✓</div></div>
-            <div class="t2-src t2-rev" data-delay="1200"><div class="nm">CA Grants</div><div class="ct">312 matched</div></div>
-            <div class="t2-src t2-rev" data-delay="1500"><div class="nm">Foundations</div><div class="ct">421 matched</div></div>
-            <div class="t2-src t2-rev" data-delay="1800"><div class="nm">Local & civic</div><div class="ct">96 matched</div></div>
-          </div>
-        </div></div>
-      </div></div>`,
-    onShow: () => {
-      document.getElementById('tut-scan').onclick = (e) => {
-        e.currentTarget.disabled = true;
-        const mock = document.getElementById('tut-m3');
-        tutCount(document.getElementById('tut-scan-n'), 2847, 2400);
-        tutReveal(mock, tutUnlock);
-      };
-    } },
-
-  /* 4 — Matching / readiness (score rings + eligibility verdict) */
-  { gate: true, hint: 'Score your matches to continue',
-    render: () => `
-      <div class="tut-step"><div class="tut-split">
-        <div class="tut-copy">
-          <div class="tut-eyebrow">Step 3 · Fit & readiness</div>
-          <h2 class="tut-h">Know if you'll win before you write.</h2>
-          <p class="tut-sub">Each grant gets a 0–100 fit score plus an AI eligibility read, so you spend your time only where you're competitive. Then Grange lists exactly which documents to have ready.</p>
-          <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-score">${TUT_ICON.prepare}&nbsp; Score my matches</button></div>
-          <div class="t2-teach">
-            <div class="t2-teach-h">${TUT_ICON.spark} How you'll use it</div>
-            <ul>
-              <li><span class="k">1</span><span>On a discovery card, hit <b>AI assessment</b> to see the score and whether you qualify.</span></li>
-              <li><span class="k">2</span><span>Open <b>Readiness</b> to check off the documents funders will ask for.</span></li>
-              <li><span class="k">★</span><span>In grant terms this is <b>eligibility & readiness</b> — the gate before you apply.</span></li>
-            </ul>
-          </div>
-        </div>
-        <div class="tut-mock"><div class="t2-stage" id="tut-m4">
-          <div class="t2-cap"><span class="live"></span> Scoring fit and reading eligibility</div>
-          <div class="t2-match t2-rev" data-delay="200"><div class="ring hi" style="--p:94"><span>94</span></div><div class="mi"><div class="mt">DHHS Healthy Communities</div><div class="mm">Federal · up to $250,000 · Due Jun 15</div></div><span class="t2-elig likely">Likely</span></div>
-          <div class="t2-match t2-rev" data-delay="550"><div class="ring hi" style="--p:91"><span>91</span></div><div class="mi"><div class="mt">Robert Wood Johnson Fdn</div><div class="mm">Foundation · $75K–$200K · Due Aug 1</div></div><span class="t2-elig likely">Likely</span></div>
-          <div class="t2-match t2-rev" data-delay="900"><div class="ring hi" style="--p:88"><span>88</span></div><div class="mi"><div class="mt">Weingart Foundation</div><div class="mm">Foundation · $50K–$150K · LOI Jul 1</div></div><span class="t2-elig likely">Likely</span></div>
-          <div class="t2-match t2-rev" data-delay="1250"><div class="ring mid" style="--p:71"><span>71</span></div><div class="mi"><div class="mt">California Community Fdn</div><div class="mm">Foundation · up to $75,000 · Due Aug 30</div></div><span class="t2-elig check">Check geo</span></div>
-        </div></div>
-      </div></div>`,
-    onShow: () => {
-      document.getElementById('tut-score').onclick = (e) => {
-        e.currentTarget.disabled = true;
-        tutReveal(document.getElementById('tut-m4'), tutUnlock);
-      };
-    } },
-
-  /* 5 — Write (sections drafting in, with a progress bar) */
-  { gate: true, hint: 'Draft with AI to continue',
-    render: () => `
-      <div class="tut-step"><div class="tut-split">
-        <div class="tut-copy">
-          <div class="tut-eyebrow">Step 4 · Drafting</div>
-          <h2 class="tut-h">A full proposal, drafted in minutes.</h2>
-          <p class="tut-sub">Grange studies the funder, plans the strongest angle, then writes every required section grounded in your real 990. You review, edit, and stay the author of every word.</p>
-          <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-draft">${TUT_ICON.write}&nbsp; Draft with AI</button></div>
-          <div class="t2-teach">
-            <div class="t2-teach-h">${TUT_ICON.spark} How you'll use it</div>
-            <ul>
-              <li><span class="k">1</span><span>Open the <b>Proposal generator</b>, fill the short form (or dictate), and hit Generate.</span></li>
-              <li><span class="k">2</span><span>Edit the draft, then use the pre-export checklist before you submit.</span></li>
-              <li><span class="k">★</span><span>In grant terms this is the <b>narrative</b> — need, approach, outcomes, and budget.</span></li>
-            </ul>
-          </div>
-        </div>
-        <div class="tut-mock"><div class="t2-stage" id="tut-m5">
-          <div class="t2-cap"><span class="live"></span> <span id="tut-draft-cap">Drafting · DHHS Healthy Communities</span></div>
-          <div class="t2-secs">
-            <div class="t2-sec t2-sec-i" data-i="0"><span class="ck">${TUT_ICON.check}</span><span>Statement of Need</span></div>
-            <div class="t2-sec t2-sec-i" data-i="1"><span class="ck">${TUT_ICON.check}</span><span>Theory of Change</span></div>
-            <div class="t2-sec t2-sec-i" data-i="2"><span class="ck">${TUT_ICON.check}</span><span>Goals &amp; Measurable Outcomes</span></div>
-            <div class="t2-sec t2-sec-i" data-i="3"><span class="ck">${TUT_ICON.check}</span><span>Evaluation Plan</span></div>
-            <div class="t2-sec t2-sec-i" data-i="4"><span class="ck">${TUT_ICON.check}</span><span>Budget Justification</span></div>
-          </div>
-          <div class="t2-secbar"><i style="--w:100%"></i></div>
-          <div class="t2-secfoot" id="tut-secfoot">✓ Draft ready for your review</div>
-        </div></div>
-      </div></div>`,
-    onShow: () => {
-      document.getElementById('tut-draft').onclick = (e) => {
-        e.currentTarget.disabled = true;
-        const stage = document.getElementById('tut-m5');
-        stage.classList.add('play');                       // fills the progress bar over ~2.4s
-        const secs = [...document.querySelectorAll('#tut-m5 .t2-sec-i')];
-        secs.forEach((s, i) => setTimeout(() => s.classList.add('vis'), 300 + i * 440));
-        setTimeout(() => {
-          document.getElementById('tut-secfoot').classList.add('vis');
-          document.getElementById('tut-draft-cap').textContent = 'Draft complete · DHHS Healthy Communities';
-          tutUnlock();
-        }, 300 + secs.length * 440 + 200);
-      };
-    } },
-
-  /* 6 — Manage (post-award; interactive compliance + spend) */
-  { gate: true, hint: 'Clear all three items to continue',
-    render: () => `
-      <div class="tut-step"><div class="tut-split">
-        <div class="tut-copy">
-          <div class="tut-eyebrow">Step 5 · Manage</div>
-          <h2 class="tut-h">Won it? We help you keep it.</h2>
-          <p class="tut-sub">After the award, Grange tracks every compliance requirement and dollar spent, then warns you before you ever risk a clawback. Clear each item to see your spend stay in bounds.</p>
-          <div class="tut-tools"><span class="tut-tool">${TUT_ICON.manage} Grant management &amp; compliance</span></div>
-        </div>
-        <div class="tut-mock">
-          <div class="dp-card">
-            <div class="dp-card-bar">${TUT_DOTS}<span class="dp-bar-label">DHHS Healthy Communities · award management</span></div>
-            <div class="dp-card-body">
-              <div class="tut-cmp" id="tut-cmp">
-                <div class="row"><span class="ck">${TUT_ICON.check}</span><span class="lbl">File quarterly progress report</span></div>
-                <div class="row"><span class="ck">${TUT_ICON.check}</span><span class="lbl">Submit budget reconciliation</span></div>
-                <div class="row"><span class="ck">${TUT_ICON.check}</span><span class="lbl">Document participant outcomes</span></div>
-              </div>
-              <div class="tut-spend2">
-                <div class="hd"><span class="l">Spent vs. award</span><span class="v" id="tut-spend-lbl">$0 / $250,000</span></div>
-                <div class="bar"><i id="tut-spend-bar"></i></div>
-              </div>
+            <div class="tut-id-rows" id="tut-prows">
+              <div class="tut-id-row"><span class="d"></span><span><b>Programs</b> · after-school tutoring + mentorship</span></div>
+              <div class="tut-id-row"><span class="d"></span><span><b>Geography</b> · Alameda County, CA</span></div>
+              <div class="tut-id-row"><span class="d"></span><span><b>NTEE</b> · B · Education</span></div>
+              <div class="tut-id-row"><span class="d"></span><span><b>Annual budget</b> · $1.2M</span></div>
+              <div class="tut-id-row"><span class="d"></span><span><b>Staff</b> · 6 across 3 programs</span></div>
+              <div class="tut-id-row"><span class="d"></span><span><b>Eligibility</b> · 501(c)(3) confirmed ✓</span></div>
             </div>
+            <div class="tut-gate-wrap"><button class="tut-gate-btn" id="tut-read">${TUT_ICON.profile} Read my 990</button></div>
           </div>
         </div>
       </div></div>`,
     onShow: () => {
-      let done = 0;
-      document.querySelectorAll('#tut-cmp .row').forEach(c => {
-        c.onclick = () => {
-          if (c.classList.contains('on')) return;
-          c.classList.add('on');
-          done++;
-          const pct = done / 3 * 72;
-          document.getElementById('tut-spend-bar').style.width = pct + '%';
-          document.getElementById('tut-spend-lbl').textContent = '$' + Math.round(pct / 100 * 250000).toLocaleString() + ' / $250,000';
-          if (done === 3) tutUnlock();
-        };
-      });
+      tutRevealStep(document.querySelector('.tut-step'));
+      const rows = [...document.querySelectorAll('#tut-prows .tut-id-row')];
+      rows.forEach(r => { r.style.opacity = '0'; r.style.transform = 'translateX(-10px)'; r.style.filter = 'blur(6px)'; r.style.transition = 'opacity .5s var(--ease-out), transform .5s var(--spring-soft), filter .5s'; });
+      const RM = matchMedia('(prefers-reduced-motion: reduce)').matches, S = tutState.replay ? 0.5 : 1;
+      const reveal = () => rows.forEach((r, i) => setTimeout(() => { r.style.opacity = '1'; r.style.transform = 'none'; r.style.filter = 'none'; }, i * 90 * S));
+      const fill = () => { document.getElementById('tut-pr').style.setProperty('--p', 100); tutCount(document.getElementById('tut-prn'), 100, 1400); };
+      const btn = document.getElementById('tut-read');
+      if (RM) { rows.forEach(r => { r.style.opacity = '1'; r.style.transform = 'none'; r.style.filter = 'none'; }); fill(); btn.disabled = true; tutUnlock(); return; }
+      btn.onclick = () => { btn.disabled = true; reveal(); fill(); setTimeout(tutUnlock, rows.length * 90 * S + 500); };
     } },
 
-  /* 7 — Finish */
-  { finish: true,
-    render: () => {
-      const cards = [
-        ['profile', 'Profile', 'Your org, captured once'],
-        ['discover', 'Discover', 'Smart-matched grants'],
-        ['prepare', 'Prepare', 'AI eligibility + readiness'],
-        ['write', 'Write', 'AI proposal drafting'],
-        ['manage', 'Manage', 'Compliance + spend tracking'],
-      ];
-      const sub = tutState.replay
-        ? "You've walked the whole journey. Jump back into your portal whenever you're ready, and you can replay this tour anytime from the sidebar."
-        : "You've seen every step and the AI tools behind each one. Next, a short survey tailors all of this to your organization, then your portal opens.";
-      return `
-      <div class="tut-step">
-        <div class="tut-eyebrow">You're ready</div>
-        <h2 class="tut-h">That's the whole journey.</h2>
-        <p class="tut-sub">${sub}</p>
-        <div class="tut-recap">
-          ${cards.map(([k, t, d], i) => `<div class="c" style="animation-delay:${i * 60}ms"><div class="ic">${TUT_ICON[k]}</div><b>${t}</b><span>${d}</span></div>`).join('')}
+  /* 2 — Discovery: funder constellation lighting up */
+  { gate: true, focus: 2, bloom: ['18vw', '-14vh'], hint: "Run today's scan to continue",
+    render: () => `
+      <div class="tut-step"><div class="tut-2col dir-r">
+        <div class="tut-rail-copy">
+          <span class="tut-eyebrow-chip rev" data-delay="0">Phase 02 · Discovery</span>
+          <h2 class="tut-h-big" aria-label="See the funders you would never find.">${tutWords("See the funders you'd never find.")}</h2>
+          <p class="tut-copy-sub rev" data-delay="540">Every day we scan Grants.gov, Candid, SAM.gov, state portals and hundreds of foundations, scoring each against your profile, so you skip the ones you can't win.</p>
+          <span class="tut-role-chip rev" data-delay="660">Your funder pipeline.</span>
         </div>
-      </div>`;
+        <div class="tut-bay">
+          <div class="tut-constel glass-bright rev" data-delay="180">
+            <div class="tut-constel-top"><span class="tut-constel-n" id="tut-scn">0</span><span class="tut-constel-sub">opportunities scanned today</span></div>
+            <div class="tut-src-grid" id="tut-srcs">
+              <div class="tut-srcn"><div class="nm">Grants.gov</div><div class="sc">scanning…</div></div>
+              <div class="tut-srcn"><div class="nm">Candid</div><div class="sc">scanning…</div></div>
+              <div class="tut-srcn"><div class="nm">SAM.gov</div><div class="sc">scanning…</div></div>
+              <div class="tut-srcn"><div class="nm">CA Grants</div><div class="sc">scanning…</div></div>
+              <div class="tut-srcn"><div class="nm">Joyce Fdn</div><div class="sc">scanning…</div></div>
+              <div class="tut-srcn"><div class="nm">Weingart</div><div class="sc">scanning…</div></div>
+              <div class="tut-srcn"><div class="nm">RWJF</div><div class="sc">scanning…</div></div>
+              <div class="tut-srcn"><div class="nm">Kresge</div><div class="sc">scanning…</div></div>
+              <div class="tut-srcn"><div class="nm">RFP feeds</div><div class="sc">scanning…</div></div>
+            </div>
+            <div class="tut-shortlist" id="tut-short">
+              <div class="pill"><b>94</b><span>Healthy Communities</span></div>
+              <div class="pill"><b>88</b><span>RWJF Equity</span></div>
+              <div class="pill"><b>81</b><span>Weingart Youth</span></div>
+            </div>
+            <div class="tut-gate-wrap" style="margin-top:14px"><button class="tut-gate-btn" id="tut-scan">${TUT_ICON.discover} Run today's scan</button></div>
+          </div>
+        </div>
+      </div></div>`,
+    onShow: () => {
+      tutRevealStep(document.querySelector('.tut-step'));
+      const nodes = [...document.querySelectorAll('#tut-srcs .tut-srcn')];
+      const labels = ['1,247 matched', '834 matched', 'eligibility ✓', '312 matched', '120 matched', '64 matched', '188 matched', '37 matched', 'RFP feeds'];
+      const RM = matchMedia('(prefers-reduced-motion: reduce)').matches, S = tutState.replay ? 0.5 : 1;
+      const winners = () => document.querySelectorAll('#tut-short .pill').forEach((p, i) => setTimeout(() => p.classList.add('in'), i * 120 * S));
+      const btn = document.getElementById('tut-scan');
+      if (RM) { nodes.forEach((n, i) => { n.classList.add('lit'); n.querySelector('.sc').textContent = labels[i] || 'matched'; }); document.getElementById('tut-scn').textContent = '2,847'; winners(); btn.disabled = true; tutUnlock(); return; }
+      btn.onclick = () => {
+        btn.disabled = true; tutCount(document.getElementById('tut-scn'), 2847, 1600);
+        nodes.forEach((n, i) => setTimeout(() => { n.classList.add('lit'); n.querySelector('.sc').textContent = labels[i] || 'matched'; }, 200 + i * 120 * S));
+        setTimeout(winners, 200 + nodes.length * 120 * S);
+        setTimeout(tutUnlock, 200 + nodes.length * 120 * S + 500);
+      };
+    } },
+
+  /* 3 — Fit & readiness: verdict gauge + checklist (two-beat gate) */
+  { gate: true, focus: 3, bloom: ['0', '0'], hint: 'Score this match to continue',
+    render: () => `
+      <div class="tut-step"><div class="tut-2col dir-l">
+        <div class="tut-rail-copy">
+          <span class="tut-eyebrow-chip rev" data-delay="0">Phase 03 · Fit & readiness</span>
+          <h2 class="tut-h-big" aria-label="Know if you are ready before you write.">${tutWords("Know if you're ready before you write.")}</h2>
+          <p class="tut-copy-sub rev" data-delay="540">A 0 to 100 fit score, a plain-English eligibility read, and a document checklist tell you exactly where you stand and what's still missing.</p>
+          <span class="tut-role-chip rev" data-delay="660">Your eligibility gate.</span>
+        </div>
+        <div class="tut-bay">
+          <div class="tut-fit glass-bright rev" data-delay="180">
+            <div class="tut-gauge" id="tut-g"><i><span class="num" id="tut-gn">0</span><span class="lab">FIT SCORE</span></i></div>
+            <div class="tut-verdicts" id="tut-verd">
+              <span class="tut-vchip ok">Likely eligible ✓</span>
+              <span class="tut-vchip ok">In service area ✓</span>
+              <span class="tut-vchip">Match 1:1 ⚠</span>
+            </div>
+            <div class="tut-cmp" id="tut-rdy">
+              <div class="row on"><span class="ck">${TUT_ICON.check}</span><span class="lbl">IRS Form 990</span></div>
+              <div class="row on"><span class="ck">${TUT_ICON.check}</span><span class="lbl">Board roster</span></div>
+              <div class="row on"><span class="ck">${TUT_ICON.check}</span><span class="lbl">Audited financials</span></div>
+              <div class="row due"><span class="ck">${TUT_ICON.check}</span><span class="lbl">Letter of support</span></div>
+            </div>
+            <div class="tut-gate-wrap" style="margin-top:2px"><button class="tut-gate-btn" id="tut-score">${TUT_ICON.prepare} Score this match</button></div>
+          </div>
+        </div>
+      </div></div>`,
+    onShow: () => {
+      tutRevealStep(document.querySelector('.tut-step'));
+      const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const chips = [...document.querySelectorAll('#tut-verd .tut-vchip')];
+      const doScore = () => { document.getElementById('tut-g').style.setProperty('--p', 87); tutCount(document.getElementById('tut-gn'), 87, 1400); chips.forEach((c, i) => setTimeout(() => c.classList.add('in'), 400 + i * 140)); };
+      const dueRow = document.querySelector('#tut-rdy .row.due'), btn = document.getElementById('tut-score');
+      const arm = () => { dueRow.onclick = () => { if (dueRow.classList.contains('on')) return; dueRow.classList.add('on'); dueRow.classList.remove('due'); tutUnlock(); }; };
+      if (RM) { doScore(); chips.forEach(c => c.classList.add('in')); arm(); return; }
+      btn.onclick = () => { btn.disabled = true; doScore(); arm(); const h = document.getElementById('tut-hint'); h.textContent = 'Tap the open item to mark it in progress'; h.classList.add('pulse'); };
+    } },
+
+  /* 4 — Write: living manuscript types itself */
+  { gate: true, focus: 4, bloom: ['-18vw', '14vh'], hint: 'Draft the need statement to continue',
+    render: () => `
+      <div class="tut-step"><div class="tut-2col dir-r">
+        <div class="tut-rail-copy">
+          <span class="tut-eyebrow-chip rev" data-delay="0">Phase 04 · Write</span>
+          <h2 class="tut-h-big" aria-label="A first draft, grounded in your truth.">${tutWords('A first draft, grounded in your truth.')}</h2>
+          <p class="tut-copy-sub rev" data-delay="540">The generator writes every section, need, theory of change, goals, evaluation, budget, from your real numbers. You edit, approve, and stay the author.</p>
+          <span class="tut-role-chip rev" data-delay="660">Your narrative.</span>
+        </div>
+        <div class="tut-bay">
+          <div class="tut-ms glass-bright rev" data-delay="180">
+            <div class="tut-ms-h">Statement of Need</div>
+            <div class="tut-ms-body" id="tut-msb"></div>
+            <div class="tut-ms-foot" id="tut-msf">${TUT_ICON.spark} grounded in your profile · 990 · ACS data</div>
+            <div class="tut-ms-author">You stay the author</div>
+            <div class="tut-gate-wrap" style="margin-top:16px"><button class="tut-gate-btn" id="tut-draft">${TUT_ICON.write} Draft the need statement</button></div>
+          </div>
+        </div>
+      </div></div>`,
+    onShow: () => {
+      tutRevealStep(document.querySelector('.tut-step'));
+      const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const body = document.getElementById('tut-msb'), foot = document.getElementById('tut-msf'), btn = document.getElementById('tut-draft');
+      if (RM) { body.textContent = TUT_T1; foot.classList.add('in'); btn.disabled = true; tutUnlock(); return; }
+      btn.onclick = () => { btn.disabled = true; btn.style.display = 'none'; setTimeout(() => foot.classList.add('in'), 1600); tutType(body, TUT_T1, tutState.replay ? 9 : 18, tutUnlock); };
+    } },
+
+  /* 5 — Manage: stewardship console (finish) */
+  { gate: true, finish: true, focus: 5, bloom: ['18vw', '14vh'], hint: 'Open the console to continue',
+    render: () => `
+      <div class="tut-step"><div class="tut-2col dir-l">
+        <div class="tut-rail-copy">
+          <span class="tut-eyebrow-chip rev" data-delay="0">Phase 05 · Manage</span>
+          <h2 class="tut-h-big" aria-label="Win it, then keep it.">${tutWords('Win it, then keep it.')}</h2>
+          <p class="tut-copy-sub rev" data-delay="540">After the award, track every report deadline and watch spend against budget, so a guardrail flags drift before it becomes a finding.</p>
+          <span class="tut-role-chip rev" data-delay="660">Your stewardship.</span>
+        </div>
+        <div class="tut-bay">
+          <div class="tut-console glass-bright rev" data-delay="180">
+            <div class="tut-spend2"><div class="hd"><span class="l">Spent vs. award</span><span class="v" id="tut-spv">$0 / $342,000</span></div><div class="bar"><i id="tut-spb"></i></div></div>
+            <div class="tut-cmp" id="tut-mil">
+              <div class="row on"><span class="ck">${TUT_ICON.check}</span><span class="lbl">Q1 progress report</span></div>
+              <div class="row on"><span class="ck">${TUT_ICON.check}</span><span class="lbl">Q2 progress report</span></div>
+              <div class="row due"><span class="ck">${TUT_ICON.check}</span><span class="lbl">Mid-year narrative · due soon</span></div>
+              <div class="row"><span class="ck">${TUT_ICON.check}</span><span class="lbl">Final report</span></div>
+            </div>
+            <div class="tut-gate-wrap" style="margin-top:2px"><button class="tut-gate-btn" id="tut-steward">${TUT_ICON.manage} Open the console</button></div>
+          </div>
+        </div>
+      </div></div>`,
+    onShow: () => {
+      tutRevealStep(document.querySelector('.tut-step'));
+      const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const dueRow = document.querySelector('#tut-mil .row.due'), btn = document.getElementById('tut-steward');
+      const fill = () => { document.getElementById('tut-spb').style.width = '62%'; document.getElementById('tut-spv').textContent = '$212,000 / $342,000'; };
+      const arm = () => { dueRow.onclick = () => { if (dueRow.classList.contains('on')) return; dueRow.classList.add('on'); dueRow.classList.remove('due'); tutUnlock(); }; };
+      if (RM) { fill(); arm(); return; }
+      btn.onclick = () => { btn.disabled = true; fill(); arm(); const h = document.getElementById('tut-hint'); h.textContent = 'Schedule the due report to continue'; h.classList.add('pulse'); };
     } },
 ];
 
-function tutRender(dir) {
-  const rail = document.getElementById('tut-rail');
-  rail.innerHTML = TUT_STEPS.map((_, i) =>
-    `<div class="tut-dot ${i < tutState.idx ? 'done' : i === tutState.idx ? 'active' : ''}"><i></i></div>`).join('');
-  const step = TUT_STEPS[tutState.idx];
-  const stage = document.getElementById('tut-stage');
-  stage.dataset.dir = dir || 'fwd';
-  stage.innerHTML = step.render();
-  // re-trigger the entrance animation cleanly
-  requestAnimationFrame(() => requestAnimationFrame(() => stage.querySelector('.tut-step')?.classList.add('show')));
+/* Split a headline into per-word spans for the Apple-style staggered blur reveal.
+   aria-label on the <h2> carries the full string for screen readers. */
+function tutWords(str) {
+  return str.split(' ').map(w => '<span class="w rev">' + w + '</span>').join(' ');
+}
 
+/* Cinematic reveal: word-split headlines stagger first, then [data-delay] lines cascade.
+   Replay halves the timing so a second viewing isn't punishing. */
+function tutRevealStep(scope) {
+  const S = tutState.replay ? 0.5 : 1;
+  scope.querySelectorAll('.tut-h-big .w').forEach((w, i) => {
+    w.style.transitionDelay = Math.round((120 + i * 50) * S) + 'ms';
+    requestAnimationFrame(() => w.classList.add('vis'));
+  });
+  scope.querySelectorAll('[data-delay]').forEach(el => {
+    setTimeout(() => el.classList.add('vis'), Math.round((parseInt(el.dataset.delay) || 0) * S));
+  });
+}
+
+function tutApplyState() {
+  const step = TUT_STEPS[tutState.idx];
   const badge = document.getElementById('tut-badge-label');
   if (badge) badge.textContent = tutState.replay ? 'Replaying tour' : 'Guided tour';
-
-  tutState.unlocked = !step.gate; // info steps are always passable
-  document.getElementById('tut-back').style.visibility = tutState.idx === 0 ? 'hidden' : 'visible';
+  tutState.unlocked = !step.gate;
+  // footer: hidden entirely on the intro (advancement routes through the in-canvas pill)
+  const foot = document.getElementById('tut-foot');
+  if (foot) foot.style.visibility = tutState.idx === 0 ? 'hidden' : 'visible';
+  document.getElementById('tut-back').style.visibility = tutState.idx <= 1 ? 'hidden' : 'visible';
   const next = document.getElementById('tut-next');
-  next.textContent = step.finish
-    ? (tutState.replay ? 'Back to portal →' : 'Set up my account →')
-    : (tutState.idx === 0 ? "Let's go →" : 'Continue →');
+  next.textContent = step.finish ? (tutState.replay ? 'Back to portal →' : 'Set up my account →') : 'Continue →';
   next.disabled = !tutState.unlocked;
   const hint = document.getElementById('tut-hint');
   hint.textContent = step.gate && !tutState.unlocked ? (step.hint || 'Complete the step above to continue') : '';
   hint.classList.toggle('pulse', !!(step.gate && !tutState.unlocked));
+}
 
-  if (step.onShow) step.onShow();
+function tutRender(dir) {
+  dir = dir || 'fwd';
+  const stage = document.getElementById('tut-stage');
+  const prev = stage.querySelector('.tut-step');
+
+  const swap = () => {
+    const step = TUT_STEPS[tutState.idx];
+    // frosted progress rail (segments fill as you advance)
+    const rail = document.getElementById('tut-rail');
+    rail.innerHTML = TUT_STEPS.map((_, i) =>
+      `<span class="seg ${i < tutState.idx ? 'done' : i === tutState.idx ? 'active' : ''}"><i></i></span>`).join('');
+    // the slab is wide for steps, narrow for the intro
+    document.getElementById('tut-slab').classList.toggle('tut-slab--intro', tutState.idx === 0);
+    // background choreography rides the same gesture
+    const tint = document.getElementById('tut-tint'); if (tint) tint.dataset.focus = step.focus || 0;
+    const bloom = document.getElementById('tut-bloom');
+    if (bloom && step.bloom) { bloom.style.setProperty('--bx', step.bloom[0]); bloom.style.setProperty('--by', step.bloom[1]); }
+    // sympathetic slab squash
+    const slab = document.getElementById('tut-slab');
+    slab.style.transform = 'scale(.992)'; setTimeout(() => slab.style.transform = '', 230);
+
+    stage.dataset.dir = dir;
+    stage.innerHTML = step.render();
+    tutApplyState();
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const el = stage.querySelector('.tut-step');
+      if (el) el.classList.add('show');
+      if (step.onShow) step.onShow();
+    }));
+  };
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prev && !reduce) { prev.classList.add('leaving'); setTimeout(swap, 200); }
+  else swap();
 }
 
 function tutUnlock() {
