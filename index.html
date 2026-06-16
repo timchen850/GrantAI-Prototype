@@ -4052,6 +4052,72 @@ label.field-label {
   .tut-flow .node::after { display: none; }
   .tut-h { font-size: 30px; }
 }
+
+/* ════ FRESH per-step tutorial visuals (t2-*) — distinct from the landing dp-* kit ════ */
+.t2-teach { margin-top: 20px; border-top: 1px dashed var(--line); padding-top: 16px; }
+.t2-teach-h { display:flex; align-items:center; gap:7px; font-size: 11.5px; font-weight: 700; letter-spacing:.05em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 11px; }
+.t2-teach-h svg { width: 14px; height: 14px; color: var(--accent); }
+.t2-teach ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.t2-teach li { display: flex; gap: 9px; font-size: 13.5px; line-height: 1.5; color: var(--ink-body); }
+.t2-teach li b { color: var(--ink); font-weight: 700; }
+.t2-teach li .k { flex-shrink: 0; width: 19px; height: 19px; border-radius: 6px; background: var(--accent-tint); color: var(--accent-ink); display: grid; place-items: center; font-size: 11px; font-weight: 800; margin-top: 1px; }
+
+/* the visual panel that holds each step's animation */
+.t2-stage { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px; box-shadow: 0 26px 64px -36px rgba(26,25,22,.5); position: relative; overflow: hidden; }
+.t2-stage::before { content:''; position:absolute; inset:0 0 auto 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(217,79,48,.35), transparent); }
+.t2-cap { font-size: 11.5px; font-weight: 600; color: var(--muted); display:flex; align-items:center; gap:7px; margin-bottom: 16px; }
+.t2-cap .live { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 0 rgba(47,125,79,.5); animation: t2pulse 1.8s ease-out infinite; }
+@keyframes t2pulse { 0%{ box-shadow:0 0 0 0 rgba(47,125,79,.45);} 70%{ box-shadow:0 0 0 7px rgba(47,125,79,0);} 100%{ box-shadow:0 0 0 0 rgba(47,125,79,0);} }
+
+/* reveal helper for t2 children (driven by tutReveal → .vis) */
+.t2-rev { opacity: 0; transform: translateY(8px); transition: opacity .5s var(--ease-expo), transform .5s var(--ease-expo); }
+.t2-rev.vis { opacity: 1; transform: none; }
+
+/* Step 2 — profile completeness ring + attribute chips */
+.t2-profile { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center; }
+.t2-bigring { width: 116px; height: 116px; border-radius: 50%; display: grid; place-items: center; position: relative; --rc: var(--accent); }
+.t2-bigring::before { content:''; position:absolute; inset:0; border-radius:50%; background: conic-gradient(var(--rc) calc(var(--p)*1%), rgba(26,25,22,.07) 0); transition: --p 1.4s var(--ease-expo); }
+.t2-bigring i { position: relative; width: 92px; height: 92px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 25px; color: var(--ink); font-style: normal; white-space: nowrap; letter-spacing: -.02em; }
+.t2-attrs { display: grid; gap: 8px; }
+.t2-attr { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-body); }
+.t2-attr .d { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.t2-attr b { color: var(--ink); font-weight: 600; }
+
+/* Step 3 — source grid lighting up + running counter */
+.t2-counter { font-family: var(--display); font-weight: 800; font-size: 34px; letter-spacing: -.03em; color: var(--ink); line-height: 1; }
+.t2-counter + .t2-cnt-sub { font-size: 12.5px; color: var(--muted); margin: 4px 0 16px; }
+.t2-srcs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.t2-src { border: 1px solid var(--line); border-radius: 12px; padding: 12px 11px; background: var(--surface-2); transition: border-color .35s, background .35s, box-shadow .35s; }
+.t2-src.vis { border-color: rgba(217,79,48,.4); background: var(--accent-tint); box-shadow: 0 8px 20px -12px rgba(217,79,48,.5); }
+.t2-src .nm { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+.t2-src .ct { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.t2-src.vis .ct { color: var(--accent-ink); font-weight: 600; }
+
+/* Step 4 — ranked matches with score rings + eligibility verdicts */
+.t2-match { display: flex; align-items: center; gap: 13px; padding: 12px 0; border-top: 1px solid var(--line); }
+.t2-match:first-child { border-top: none; }
+.t2-match .ring { width: 46px; height: 46px; font-size: 12.5px; }
+.t2-match .mi { flex: 1; min-width: 0; }
+.t2-match .mt { font-size: 13.5px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.t2-match .mm { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.t2-elig { flex-shrink: 0; font-size: 11px; font-weight: 700; border-radius: var(--r-pill); padding: 4px 10px; }
+.t2-elig.likely { background: var(--ok-tint); color: var(--ok); }
+.t2-elig.check { background: var(--warn-tint); color: var(--warn-ink); }
+
+/* Step 5 — proposal sections writing in, with a progress bar */
+.t2-secs { display: grid; gap: 8px; margin-bottom: 16px; }
+.t2-sec { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--muted); }
+.t2-sec .ck { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line); flex-shrink: 0; display: grid; place-items: center; transition: background .3s, border-color .3s; }
+.t2-sec .ck svg { width: 12px; height: 12px; color: #fff; opacity: 0; transition: opacity .3s; }
+.t2-sec.vis { color: var(--ink); font-weight: 600; }
+.t2-sec.vis .ck { background: var(--accent); border-color: var(--accent); }
+.t2-sec.vis .ck svg { opacity: 1; }
+.t2-secbar { height: 7px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+.t2-secbar i { display: block; height: 100%; width: 0; border-radius: 5px; background: linear-gradient(90deg, var(--accent), #e8623f); transition: width 2.4s var(--ease-expo); }
+.t2-stage.play .t2-secbar i { width: var(--w, 100%); }
+.t2-secfoot { font-size: 12.5px; color: var(--accent-ink); font-weight: 600; margin-top: 12px; opacity: 0; transition: opacity .4s; }
+.t2-secfoot.vis { opacity: 1; }
+@media (max-width: 800px) { .t2-profile { grid-template-columns: 1fr; justify-items: center; text-align: center; } .t2-srcs { grid-template-columns: repeat(2,1fr); } }
 </style>
 <div id="tutorial" class="screen">
   <div class="tut-aura" aria-hidden="true"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
@@ -7107,97 +7173,111 @@ const TUT_STEPS = [
       };
     } },
 
-  /* 2 — Profile (reuses the landing's "Reading 990" mockup) */
-  { gate: true, hint: 'Read the 990 to continue',
+  /* 2 — Profile */
+  { gate: true, hint: 'Build your profile to continue',
     render: () => `
       <div class="tut-step"><div class="tut-split">
         <div class="tut-copy">
           <div class="tut-eyebrow">Step 1 · Profile</div>
-          <h2 class="tut-h">We read your whole organization.</h2>
-          <p class="tut-sub">Upload your 990 or paste your mission. Grange pulls your programs, geography, NTEE code, and budget into one profile that powers every match and draft.</p>
-          <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-build">${TUT_ICON.profile}&nbsp; Read my 990</button></div>
-          <div class="tut-tools"><span class="tut-tool">${TUT_ICON.spark} Auto-extracted profile</span></div>
-        </div>
-        <div class="tut-mock" id="tut-m2">
-          <div class="dp-card">
-            <div class="dp-card-bar">${TUT_DOTS}<span class="dp-bar-label">Reading 990: Eastside Youth Foundation.pdf</span></div>
-            <div class="dp-card-body">
-              <div class="dp-field" data-delay="250"><div class="dp-flabel">Organization</div><div class="dp-fval">Eastside Youth Foundation</div><div class="dp-fbar"><div class="dp-fbar-fill" style="--w:100%"></div></div></div>
-              <div class="dp-field" data-delay="600"><div class="dp-flabel">Mission &amp; focus area</div><div class="dp-fval">Youth education &amp; health equity · Los Angeles</div><div class="dp-fbar"><div class="dp-fbar-fill" style="--w:94%"></div></div></div>
-              <div class="dp-field" data-delay="950"><div class="dp-flabel">NTEE Classification</div><div class="dp-fval">B94 · Youth Development Programs</div><div class="dp-fbar"><div class="dp-fbar-fill" style="--w:88%"></div></div></div>
-              <div class="dp-field" data-delay="1300"><div class="dp-flabel">Budget &amp; eligibility</div><div class="dp-fval">$250K–$500K operating · 501(c)(3) confirmed</div><div class="dp-fbar"><div class="dp-fbar-fill" style="--w:100%"></div></div></div>
-            </div>
+          <h2 class="tut-h">Set up your org once.</h2>
+          <p class="tut-sub">Grange turns your 990 and mission into one reusable profile: programs, geography, NTEE code, budget, and eligibility. Every match and every draft pulls from it, so you enter this only once.</p>
+          <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-build">${TUT_ICON.profile}&nbsp; Build my profile</button></div>
+          <div class="t2-teach">
+            <div class="t2-teach-h">${TUT_ICON.spark} How you'll use it</div>
+            <ul>
+              <li><span class="k">1</span><span>Open <b>Org Profile</b> in the sidebar and upload your 990, or fill the fields by hand.</span></li>
+              <li><span class="k">2</span><span>Add your mission and a profile photo so matches and drafts sound like <b>you</b>.</span></li>
+              <li><span class="k">★</span><span>In grant terms this is your <b>case for support</b> — the facts every application reuses.</span></li>
+            </ul>
           </div>
         </div>
+        <div class="tut-mock"><div class="t2-stage" id="tut-m2">
+          <div class="t2-cap"><span class="live"></span> Building your organization profile</div>
+          <div class="t2-profile">
+            <div class="t2-bigring" id="tut-pring" style="--p:0"><i><span id="tut-pring-n">0</span>%</i></div>
+            <div class="t2-attrs">
+              <div class="t2-attr t2-rev" data-delay="250"><span class="d"></span><span><b>Mission</b> · youth education &amp; health equity</span></div>
+              <div class="t2-attr t2-rev" data-delay="650"><span class="d"></span><span><b>NTEE</b> · B94 Youth Development</span></div>
+              <div class="t2-attr t2-rev" data-delay="1050"><span class="d"></span><span><b>Geography</b> · Los Angeles County</span></div>
+              <div class="t2-attr t2-rev" data-delay="1450"><span class="d"></span><span><b>Budget</b> · $250K–$500K · 501(c)(3)</span></div>
+            </div>
+          </div>
+        </div></div>
       </div></div>`,
     onShow: () => {
       document.getElementById('tut-build').onclick = (e) => {
         e.currentTarget.disabled = true;
+        document.getElementById('tut-pring').style.setProperty('--p', 100);
+        tutCount(document.getElementById('tut-pring-n'), 100, 1600);
         tutReveal(document.getElementById('tut-m2'), tutUnlock);
       };
     } },
 
-  /* 3 — Discover (reuses the live-scan mockup) */
+  /* 3 — Discover (sources grid lighting up) */
   { gate: true, hint: 'Run discovery to continue',
     render: () => `
       <div class="tut-step"><div class="tut-split">
         <div class="tut-copy">
           <div class="tut-eyebrow">Step 2 · Discovery</div>
-          <h2 class="tut-h">Scanning millions of grants, daily.</h2>
-          <p class="tut-sub">Grange indexes Grants.gov, Candid, state portals, and hundreds of foundations every day, scoring each one against your mission, geography, and budget.</p>
+          <h2 class="tut-h">Find the funders you'd never spot.</h2>
+          <p class="tut-sub">Grange checks Grants.gov, Candid, SAM.gov, state portals, and hundreds of foundations every day and scores each one against your profile, so you skip the ones you can't win.</p>
           <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-scan">${TUT_ICON.discover}&nbsp; Run discovery</button></div>
-          <div class="tut-tools"><span class="tut-tool">${TUT_ICON.spark} Smart match scoring</span></div>
-        </div>
-        <div class="tut-mock" id="tut-m3">
-          <div class="dp-card">
-            <div class="dp-card-bar">${TUT_DOTS}<span class="dp-bar-label">Grant discovery · running daily</span><span class="demo-spinner" style="margin-left:auto;flex-shrink:0"></span></div>
-            <div class="dp-card-body">
-              <div class="dp-scan-stat"><span class="dp-scan-count" id="tut-scan-n">0</span><span class="dp-scan-sub">grants scored today</span></div>
-              <div class="dp-prog-track"><div class="dp-prog-bar"></div></div>
-              <div class="dp-scan-items">
-                <div class="dp-scan-row" data-delay="500"><span class="dp-scan-tick">✓</span><span>Grants.gov: <span class="dp-scan-hl">1,247 matched</span></span></div>
-                <div class="dp-scan-row" data-delay="1000"><span class="dp-scan-tick">✓</span><span>Candid Foundation: <span class="dp-scan-hl">834 matched</span></span></div>
-                <div class="dp-scan-row" data-delay="1500"><span class="dp-scan-tick">✓</span><span>California Grants Portal: <span class="dp-scan-hl">312 matched</span></span></div>
-                <div class="dp-scan-row" data-delay="2000" style="color:var(--accent);font-weight:600"><span style="color:var(--accent);font-size:13px">→</span><span>Scoring against your profile…</span></div>
-              </div>
-            </div>
+          <div class="t2-teach">
+            <div class="t2-teach-h">${TUT_ICON.spark} How you'll use it</div>
+            <ul>
+              <li><span class="k">1</span><span>Open <b>Grant discovery</b> to see this week's matches, freshest first.</span></li>
+              <li><span class="k">2</span><span>Filter by funder type, amount, and deadline to fit your capacity.</span></li>
+              <li><span class="k">★</span><span>In grant terms this is <b>prospect research</b> — building your funder pipeline.</span></li>
+            </ul>
           </div>
         </div>
+        <div class="tut-mock"><div class="t2-stage" id="tut-m3">
+          <div class="t2-cap"><span class="live"></span> Scanning grant sources, scoring to your profile</div>
+          <div class="t2-counter" id="tut-scan-n">0</div><div class="t2-cnt-sub">grants scored against your profile today</div>
+          <div class="t2-srcs">
+            <div class="t2-src t2-rev" data-delay="300"><div class="nm">Grants.gov</div><div class="ct">1,247 matched</div></div>
+            <div class="t2-src t2-rev" data-delay="600"><div class="nm">Candid</div><div class="ct">834 matched</div></div>
+            <div class="t2-src t2-rev" data-delay="900"><div class="nm">SAM.gov</div><div class="ct">eligibility ✓</div></div>
+            <div class="t2-src t2-rev" data-delay="1200"><div class="nm">CA Grants</div><div class="ct">312 matched</div></div>
+            <div class="t2-src t2-rev" data-delay="1500"><div class="nm">Foundations</div><div class="ct">421 matched</div></div>
+            <div class="t2-src t2-rev" data-delay="1800"><div class="nm">Local & civic</div><div class="ct">96 matched</div></div>
+          </div>
+        </div></div>
       </div></div>`,
     onShow: () => {
       document.getElementById('tut-scan').onclick = (e) => {
         e.currentTarget.disabled = true;
         const mock = document.getElementById('tut-m3');
-        mock.classList.add('play');                       // drives the 3s prog-bar fill
-        tutCount(document.getElementById('tut-scan-n'), 2847, 3000);
+        tutCount(document.getElementById('tut-scan-n'), 2847, 2400);
         tutReveal(mock, tutUnlock);
       };
     } },
 
-  /* 4 — Matching (reuses the ranked-matches mockup) */
+  /* 4 — Matching / readiness (score rings + eligibility verdict) */
   { gate: true, hint: 'Score your matches to continue',
     render: () => `
       <div class="tut-step"><div class="tut-split">
         <div class="tut-copy">
-          <div class="tut-eyebrow">Step 3 · Matching</div>
-          <h2 class="tut-h">Your top matches, ranked by fit.</h2>
-          <p class="tut-sub">Every grant gets a 0–100 score from your mission, geography, and eligibility, plus an AI read on whether you actually qualify. You only see the ones worth your time.</p>
+          <div class="tut-eyebrow">Step 3 · Fit & readiness</div>
+          <h2 class="tut-h">Know if you'll win before you write.</h2>
+          <p class="tut-sub">Each grant gets a 0–100 fit score plus an AI eligibility read, so you spend your time only where you're competitive. Then Grange lists exactly which documents to have ready.</p>
           <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-score">${TUT_ICON.prepare}&nbsp; Score my matches</button></div>
-          <div class="tut-tools"><span class="tut-tool">${TUT_ICON.spark} AI eligibility read</span><span class="tut-tool">${TUT_ICON.prepare} Readiness checklist</span></div>
-        </div>
-        <div class="tut-mock" id="tut-m4">
-          <div class="dp-card">
-            <div class="dp-card-bar">${TUT_DOTS}<span class="dp-bar-label">12 new matches this week</span></div>
-            <div class="dp-card-body">
-              <div class="dp-grant-list">
-                <div class="dp-grant-row" data-delay="200"><span class="dp-score-badge dp-score-hi">94%</span><div class="dp-grant-info"><div class="dp-grant-title">DHHS Healthy Communities Initiative</div><div class="dp-grant-meta">Federal · up to $250,000 · Due Jun 15</div></div><span class="dp-grant-cta">Draft →</span></div>
-                <div class="dp-grant-row" data-delay="500"><span class="dp-score-badge dp-score-hi">91%</span><div class="dp-grant-info"><div class="dp-grant-title">Robert Wood Johnson Foundation</div><div class="dp-grant-meta">Foundation · $75K–$200K · Due Aug 1</div></div><span class="dp-grant-cta">Draft →</span></div>
-                <div class="dp-grant-row" data-delay="800"><span class="dp-score-badge dp-score-hi">88%</span><div class="dp-grant-info"><div class="dp-grant-title">Weingart Foundation, Youth Dev</div><div class="dp-grant-meta">Foundation · $50K–$150K · LOI Jul 1</div></div><span class="dp-grant-cta">Draft →</span></div>
-                <div class="dp-grant-row" data-delay="1100"><span class="dp-score-badge dp-score-mid">76%</span><div class="dp-grant-info"><div class="dp-grant-title">California Community Foundation</div><div class="dp-grant-meta">Foundation · up to $75,000 · Due Aug 30</div></div><span class="dp-grant-cta">Draft →</span></div>
-              </div>
-            </div>
+          <div class="t2-teach">
+            <div class="t2-teach-h">${TUT_ICON.spark} How you'll use it</div>
+            <ul>
+              <li><span class="k">1</span><span>On a discovery card, hit <b>AI assessment</b> to see the score and whether you qualify.</span></li>
+              <li><span class="k">2</span><span>Open <b>Readiness</b> to check off the documents funders will ask for.</span></li>
+              <li><span class="k">★</span><span>In grant terms this is <b>eligibility & readiness</b> — the gate before you apply.</span></li>
+            </ul>
           </div>
         </div>
+        <div class="tut-mock"><div class="t2-stage" id="tut-m4">
+          <div class="t2-cap"><span class="live"></span> Scoring fit and reading eligibility</div>
+          <div class="t2-match t2-rev" data-delay="200"><div class="ring hi" style="--p:94"><span>94</span></div><div class="mi"><div class="mt">DHHS Healthy Communities</div><div class="mm">Federal · up to $250,000 · Due Jun 15</div></div><span class="t2-elig likely">Likely</span></div>
+          <div class="t2-match t2-rev" data-delay="550"><div class="ring hi" style="--p:91"><span>91</span></div><div class="mi"><div class="mt">Robert Wood Johnson Fdn</div><div class="mm">Foundation · $75K–$200K · Due Aug 1</div></div><span class="t2-elig likely">Likely</span></div>
+          <div class="t2-match t2-rev" data-delay="900"><div class="ring hi" style="--p:88"><span>88</span></div><div class="mi"><div class="mt">Weingart Foundation</div><div class="mm">Foundation · $50K–$150K · LOI Jul 1</div></div><span class="t2-elig likely">Likely</span></div>
+          <div class="t2-match t2-rev" data-delay="1250"><div class="ring mid" style="--p:71"><span>71</span></div><div class="mi"><div class="mt">California Community Fdn</div><div class="mm">Foundation · up to $75,000 · Due Aug 30</div></div><span class="t2-elig check">Check geo</span></div>
+        </div></div>
       </div></div>`,
     onShow: () => {
       document.getElementById('tut-score').onclick = (e) => {
@@ -7206,38 +7286,49 @@ const TUT_STEPS = [
       };
     } },
 
-  /* 5 — Write (reuses the AI-drafting mockup w/ typewriter) */
+  /* 5 — Write (sections drafting in, with a progress bar) */
   { gate: true, hint: 'Draft with AI to continue',
     render: () => `
       <div class="tut-step"><div class="tut-split">
         <div class="tut-copy">
           <div class="tut-eyebrow">Step 4 · Drafting</div>
           <h2 class="tut-h">A full proposal, drafted in minutes.</h2>
-          <p class="tut-sub">Click draft (or just dictate) and Grange writes every section: statement of need, theory of change, evaluation. Each sentence is grounded in your real 990, and you stay the author.</p>
+          <p class="tut-sub">Grange studies the funder, plans the strongest angle, then writes every required section grounded in your real 990. You review, edit, and stay the author of every word.</p>
           <div class="tut-cta-row"><button class="btn btn-accent tut-action" id="tut-draft">${TUT_ICON.write}&nbsp; Draft with AI</button></div>
-          <div class="tut-tools"><span class="tut-tool">${TUT_ICON.spark} AI proposal generator</span><span class="tut-tool">${TUT_ICON.mic} Voice dictation</span></div>
-        </div>
-        <div class="tut-mock" id="tut-m5">
-          <div class="dp-card">
-            <div class="dp-card-bar">${TUT_DOTS}<span class="dp-bar-label">Drafting · DHHS Healthy Communities</span><span class="dp-ai-chip" id="tut-aichip" style="margin-left:auto;flex-shrink:0;display:none">AI writing</span></div>
-            <div class="dp-card-body">
-              <div class="dp-doc-section"><div class="dp-doc-h" id="tut-doc-h1">Statement of Need</div><div class="dp-doc-p" id="tut-doc-p1"></div></div>
-              <div class="dp-doc-section"><div class="dp-doc-h" id="tut-doc-h2">Theory of Change</div><div class="dp-doc-p" id="tut-doc-p2"></div></div>
-            </div>
+          <div class="t2-teach">
+            <div class="t2-teach-h">${TUT_ICON.spark} How you'll use it</div>
+            <ul>
+              <li><span class="k">1</span><span>Open the <b>Proposal generator</b>, fill the short form (or dictate), and hit Generate.</span></li>
+              <li><span class="k">2</span><span>Edit the draft, then use the pre-export checklist before you submit.</span></li>
+              <li><span class="k">★</span><span>In grant terms this is the <b>narrative</b> — need, approach, outcomes, and budget.</span></li>
+            </ul>
           </div>
         </div>
+        <div class="tut-mock"><div class="t2-stage" id="tut-m5">
+          <div class="t2-cap"><span class="live"></span> <span id="tut-draft-cap">Drafting · DHHS Healthy Communities</span></div>
+          <div class="t2-secs">
+            <div class="t2-sec t2-sec-i" data-i="0"><span class="ck">${TUT_ICON.check}</span><span>Statement of Need</span></div>
+            <div class="t2-sec t2-sec-i" data-i="1"><span class="ck">${TUT_ICON.check}</span><span>Theory of Change</span></div>
+            <div class="t2-sec t2-sec-i" data-i="2"><span class="ck">${TUT_ICON.check}</span><span>Goals &amp; Measurable Outcomes</span></div>
+            <div class="t2-sec t2-sec-i" data-i="3"><span class="ck">${TUT_ICON.check}</span><span>Evaluation Plan</span></div>
+            <div class="t2-sec t2-sec-i" data-i="4"><span class="ck">${TUT_ICON.check}</span><span>Budget Justification</span></div>
+          </div>
+          <div class="t2-secbar"><i style="--w:100%"></i></div>
+          <div class="t2-secfoot" id="tut-secfoot">✓ Draft ready for your review</div>
+        </div></div>
       </div></div>`,
     onShow: () => {
       document.getElementById('tut-draft').onclick = (e) => {
         e.currentTarget.disabled = true;
-        document.getElementById('tut-aichip').style.display = '';
-        const h1 = document.getElementById('tut-doc-h1'), p1 = document.getElementById('tut-doc-p1');
-        const h2 = document.getElementById('tut-doc-h2'), p2 = document.getElementById('tut-doc-p2');
-        h1.classList.add('vis');
-        tutType(p1, TUT_T1, 7, () => setTimeout(() => {
-          h2.classList.add('vis');
-          tutType(p2, TUT_T2, 7, tutUnlock);
-        }, 220));
+        const stage = document.getElementById('tut-m5');
+        stage.classList.add('play');                       // fills the progress bar over ~2.4s
+        const secs = [...document.querySelectorAll('#tut-m5 .t2-sec-i')];
+        secs.forEach((s, i) => setTimeout(() => s.classList.add('vis'), 300 + i * 440));
+        setTimeout(() => {
+          document.getElementById('tut-secfoot').classList.add('vis');
+          document.getElementById('tut-draft-cap').textContent = 'Draft complete · DHHS Healthy Communities';
+          tutUnlock();
+        }, 300 + secs.length * 440 + 200);
       };
     } },
 
