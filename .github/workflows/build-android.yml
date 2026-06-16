@@ -1,0 +1,77 @@
+name: Build Grange AI Android App
+
+# Builds a free, installable Android APK — no Google Play account needed.
+# Users download the .apk and install it directly (enabling "install unknown
+# apps" once). The APK is signed with the standard Android debug key, which is
+# fine for direct distribution.
+#
+# Trigger manually (Actions tab) or on a v* tag. Attaches the APK to the
+# matching GitHub Release alongside the desktop installers.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag to attach the APK to (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    name: Build Android (.apk)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mobile/package.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm install
+
+      - name: Build web assets
+        working-directory: mobile
+        run: npm run build
+
+      - name: Generate Android project
+        working-directory: mobile
+        run: npx cap add android
+
+      - name: Build debug APK
+        working-directory: mobile/android
+        run: ./gradlew assembleDebug
+
+      - name: Rename APK
+        working-directory: mobile
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/debug/app-debug.apk out/Grange-AI-android.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: grange-ai-android
+          path: mobile/out/Grange-AI-android.apk
+
+      - name: Attach APK to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: mobile/out/Grange-AI-android.apk
+          tag_name: ${{ github.event.inputs.version || github.ref_name }}
+          draft: false
