@@ -666,37 +666,30 @@ label.field-label {
   background: var(--accent); color: #fff; font-size: 13px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; }
 
-/* macOS Gatekeeper guide */
-.mac-gk-toggle { background: none; border: none; padding: 8px 0 0;
-  color: var(--accent); font-size: 12px; font-weight: 600; cursor: pointer;
-  letter-spacing: .02em; text-decoration: underline; text-underline-offset: 3px; }
-.mac-gk-guide { max-width: 720px; margin: 28px auto 0; overflow: hidden;
-  max-height: 0; transition: max-height .35s ease, opacity .3s ease; opacity: 0; }
-.mac-gk-guide.mac-gk-open { max-height: 600px; opacity: 1; }
-.mac-gk-inner { background: rgba(232,92,58,.07); border: 1px solid rgba(232,92,58,.3);
-  border-radius: var(--r); padding: 24px 28px; }
-.mac-gk-header { display: flex; align-items: center; gap: 10px; font-size: 15px;
-  color: #f0a090; margin-bottom: 10px; flex-wrap: wrap; }
-.mac-gk-badge { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
-  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
-  border-radius: 99px; padding: 3px 10px; color: var(--ink-dim); margin-left: auto; }
-.mac-gk-desc { font-size: 14px; color: var(--ink-body); margin: 0 0 16px; line-height: 1.6; }
-.mac-gk-desc em { color: #f0a090; font-style: normal; font-weight: 500; }
-.mac-gk-steps { margin: 0 0 20px; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
-.mac-gk-steps li { font-size: 14px; color: var(--ink-body); line-height: 1.55; }
-.mac-gk-steps li strong { color: var(--ink-head); }
-.mac-gk-alt { background: rgba(0,0,0,.25); border-radius: 10px; padding: 14px 18px;
-  font-size: 13px; color: var(--ink-body); line-height: 1.6; }
-.mac-gk-alt code { display: block; margin-top: 8px; font-family: 'SF Mono', ui-monospace, monospace;
-  font-size: 12px; color: #8fe3ad; background: rgba(0,0,0,.35); border-radius: 6px;
-  padding: 8px 12px; letter-spacing: .03em; user-select: all; }
+/* macOS install command block */
+.mac-install-cmd { position: relative; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px; padding: 10px 44px 10px 12px; margin: 12px 0 8px;
+  display: flex; align-items: center; overflow: hidden; }
+.mac-install-cmd code { font-family: 'SF Mono', ui-monospace, monospace; font-size: 11px;
+  color: #8fe3ad; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex: 1; line-height: 1.5; }
+.mac-cmd-copy { position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 6px;
+  padding: 4px 8px; cursor: pointer; display: flex; align-items: center; gap: 5px;
+  color: var(--ink-dim); font-size: 11px; font-weight: 600; white-space: nowrap;
+  transition: background .15s, color .15s; }
+.mac-cmd-copy:hover { background: rgba(255,255,255,.15); color: #fff; }
+.mac-cmd-copy.copied { color: #8fe3ad; border-color: #8fe3ad; }
+.mac-install-hint { font-size: 12px; color: var(--ink-dim); margin: 0 0 10px; line-height: 1.5; }
+.mac-dmg-link { font-size: 12px; color: var(--ink-dim); text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,.15); transition: color .15s; }
+.mac-dmg-link:hover { color: var(--ink-body); }
 
 @media (max-width: 860px) {
   .get-app { padding: 48px 24px; }
   .get-app-grid { grid-template-columns: 1fr; }
   .ios-steps { padding: 22px 20px; }
-  .mac-gk-inner { padding: 20px; }
-  .mac-gk-badge { margin-left: 0; }
+  .mac-install-cmd code { font-size: 10px; }
 }
 
 /* ─── CTA BAND ──────────────────────────────────────────── */
@@ -2955,14 +2948,21 @@ label.field-label {
         <!-- All platforms -->
         <div class="get-app-grid">
           <!-- macOS -->
-          <div class="app-card">
+          <div class="app-card app-card-mac">
             <div class="app-card-ico">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c.1 1-.3 2-1 2.8-.7.8-1.7 1.4-2.7 1.3-.1-1 .4-2 1-2.7.7-.8 1.8-1.4 2.7-1.4zM19 17.3c-.5 1.1-.7 1.6-1.3 2.6-.9 1.4-2.1 3.1-3.6 3.1-1.4 0-1.7-.9-3.5-.9s-2.2.9-3.5.9c-1.5 0-2.7-1.6-3.5-2.9C1.5 17.3.9 13 2.4 10.3c.9-1.6 2.5-2.6 4-2.6 1.4 0 2.3.9 3.5.9 1.1 0 1.8-.9 3.5-.9 1.3 0 2.7.7 3.6 1.9-3.2 1.7-2.7 6.3.5 7.7z"/></svg>
             </div>
             <h3>macOS</h3>
-            <p>Universal — works on Apple Silicon &amp; Intel. Drag to Applications.</p>
-            <a class="btn btn-outline btn-block" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-mac.dmg" target="_blank" rel="noopener">Download .dmg</a>
-            <button class="mac-gk-toggle" onclick="document.getElementById('mac-gk-guide').classList.toggle('mac-gk-open')" type="button">First launch? See how to open it ›</button>
+            <p>Universal — Apple Silicon &amp; Intel. Installs silently, no security warnings.</p>
+            <div class="mac-install-cmd" id="mac-install-cmd">
+              <code id="mac-cmd-text">curl -fsSL https://raw.githubusercontent.com/timchen850/GrantAI-Prototype/main/install-mac.sh | bash</code>
+              <button class="mac-cmd-copy" id="mac-cmd-copy" onclick="copyMacCmd()" title="Copy to clipboard">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span id="mac-cmd-copy-label">Copy</span>
+              </button>
+            </div>
+            <p class="mac-install-hint">Open <strong>Terminal</strong>, paste &amp; press Enter — app opens automatically.</p>
+            <a class="mac-dmg-link" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-mac.dmg" target="_blank" rel="noopener">or download .dmg manually ›</a>
           </div>
 
           <!-- Windows -->
@@ -3006,33 +3006,10 @@ label.field-label {
           </div>
         </div>
 
-        <!-- macOS Gatekeeper guide (toggled from card) -->
-        <div class="mac-gk-guide" id="mac-gk-guide">
-          <div class="mac-gk-inner">
-            <div class="mac-gk-header">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <strong>One-time Mac security step</strong>
-              <span class="mac-gk-badge">Free unsigned build — completely safe</span>
-            </div>
-            <p class="mac-gk-desc">Apple blocks unsigned apps by default. If you see <em>"Grange AI Not Opened — Apple could not verify…"</em> follow these steps once:</p>
-            <ol class="mac-gk-steps">
-              <li><strong>Click "Done"</strong> in that dialog (do NOT click "Move to Trash").</li>
-              <li>Open <strong>System Settings</strong> (Apple menu → System Settings).</li>
-              <li>Click <strong>Privacy &amp; Security</strong> in the left sidebar.</li>
-              <li>Scroll down until you see <em>"Grange AI was blocked from use because it is not from an identified developer."</em></li>
-              <li>Click <strong>Open Anyway</strong> and enter your Mac password when asked.</li>
-              <li>The app opens — Mac remembers your choice and never asks again.</li>
-            </ol>
-            <div class="mac-gk-alt">
-              <strong>Faster way (Terminal):</strong> paste this command, press Enter, then open the app normally.<br>
-              <code>xattr -cr "/Applications/Grange AI.app"</code>
-            </div>
-          </div>
-        </div>
-
         <!-- Platform-specific tips -->
         <div class="ios-steps" id="ios-steps">
-          <div class="ios-step"><span class="ios-step-n">🪟</span><span><strong>Windows:</strong> if SmartScreen appears, click <strong>More info → Run anyway</strong>. These are free unsigned builds — completely safe.</span></div>
+          <div class="ios-step"><span class="ios-step-n">🍎</span><span><strong>Mac (downloaded .dmg instead):</strong> if you see "Grange AI Not Opened", go to <strong>System Settings → Privacy &amp; Security → Open Anyway</strong>. Use the Terminal install above to skip this entirely.</span></div>
+          <div class="ios-step"><span class="ios-step-n">🪟</span><span><strong>Windows:</strong> if SmartScreen appears, click <strong>More info → Run anyway</strong>. Free unsigned builds — completely safe.</span></div>
           <div class="ios-step"><span class="ios-step-n">📱</span><span><strong>Android:</strong> after downloading, tap the .apk and allow installs from your browser when prompted. <strong>iPhone:</strong> open this page in Safari, tap <strong>Share</strong>, then <a href="#" id="pwa-fallback-link" style="color:var(--accent);font-weight:600;">Add to Home Screen</a> — a full App Store app is on the way.</span></div>
         </div>
       </div>
@@ -9336,10 +9313,18 @@ function applyDiscFilters(query, type) {
     if (heroTitle) heroTitle.textContent = 'Get Grange AI on your iPhone';
     if (heroNote)  heroNote.textContent = 'App Store app coming soon • add to home screen now';
   } else if (isMac()) {
-    setHero(DL.mac, 'Download for macOS', 'Download for Mac');
-    // Auto-expand the Gatekeeper guide for Mac visitors — they'll need it.
-    var gkGuide = document.getElementById('mac-gk-guide');
-    if (gkGuide) gkGuide.classList.add('mac-gk-open');
+    // For Mac, primary action is the install command (no Gatekeeper warning).
+    if (heroBtn) {
+      heroBtn.textContent = 'Install on Mac';
+      heroBtn.setAttribute('href', '#download');
+      heroBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var card = document.querySelector('.app-card-mac');
+        if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      });
+    }
+    if (heroTitle) heroTitle.textContent = 'Install Grange AI on Mac';
+    if (heroNote)  heroNote.textContent = 'Free • one command • no security warnings';
   } else if (isWindows()) {
     setHero(DL.windows, 'Download for Windows', 'Download for Windows');
   } else {
@@ -9383,6 +9368,26 @@ function applyDiscFilters(query, type) {
     if (target && typeof go === 'function') setTimeout(function () { go(target); }, 400);
   } catch (e) {}
 })();
+
+// Copy-to-clipboard for macOS install command
+function copyMacCmd() {
+  var cmd = (document.getElementById('mac-cmd-text') || {}).textContent || '';
+  var btn = document.getElementById('mac-cmd-copy');
+  var lbl = document.getElementById('mac-cmd-copy-label');
+  if (!cmd) return;
+  (navigator.clipboard ? navigator.clipboard.writeText(cmd) : Promise.resolve()).then(function () {
+    if (btn) btn.classList.add('copied');
+    if (lbl) lbl.textContent = 'Copied!';
+    setTimeout(function () {
+      if (btn) btn.classList.remove('copied');
+      if (lbl) lbl.textContent = 'Copy';
+    }, 2000);
+  }).catch(function () {
+    // Fallback: select the text
+    var el = document.getElementById('mac-cmd-text');
+    if (el) { var r = document.createRange(); r.selectNode(el); window.getSelection().removeAllRanges(); window.getSelection().addRange(r); }
+  });
+}
 </script>
 </body>
 </html>
