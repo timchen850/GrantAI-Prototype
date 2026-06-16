@@ -2,6 +2,7 @@
   "name": "grange-ai",
   "version": "1.0.0",
   "description": "Grange AI — Grant Writing Intelligence for Nonprofits",
+  "author": "Grange AI",
   "main": "electron/main.js",
   "homepage": "./",
   "scripts": {
@@ -35,32 +36,42 @@
     "copyright": "Copyright © 2026 Grange AI",
     "mac": {
       "category": "public.app-category.productivity",
-      "icon": "assets/icon.icns",
+      "icon": "assets/icon.png",
       "target": [
-        { "target": "dmg", "arch": ["arm64", "x64"] },
-        { "target": "mas", "arch": ["arm64", "x64"] }
+        { "target": "dmg", "arch": ["universal"] }
       ],
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false,
-      "entitlements": "assets/entitlements.mac.plist",
-      "entitlementsInherit": "assets/entitlements.mac.plist",
+      "identity": null,
       "extendInfo": {
         "NSMicrophoneUsageDescription": "Grange AI needs microphone access for voice dictation.",
         "NSCameraUsageDescription": "Grange AI needs camera access for document scanning."
       }
     },
+    "dmg": {
+      "title": "Install Grange AI",
+      "artifactName": "Grange-AI-mac.${ext}",
+      "writeUpdateInfo": false
+    },
     "win": {
-      "icon": "assets/icon.ico",
+      "icon": "assets/icon.png",
       "target": [
-        { "target": "nsis", "arch": ["x64"] },
-        { "target": "appx", "arch": ["x64"] }
-      ],
-      "publisherName": "Grange AI"
+        { "target": "nsis", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Grange AI",
+      "artifactName": "Grange-AI-Setup.${ext}"
     },
     "linux": {
       "icon": "assets/icon.png",
-      "target": ["AppImage", "deb", "snap"],
-      "category": "Office"
+      "target": ["AppImage"],
+      "category": "Office",
+      "maintainer": "Grange AI",
+      "artifactName": "Grange-AI-linux.${ext}"
     },
     "files": [
       "dist/**/*",

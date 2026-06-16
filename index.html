@@ -627,6 +627,16 @@ label.field-label {
 .get-app-title { font-size: clamp(1.9rem, 3.4vw, 2.8rem); line-height: 1.08;
   letter-spacing: -.02em; margin-bottom: 16px; }
 .get-app-sub { font-size: 16.5px; color: var(--ink-body); line-height: 1.6; }
+.dl-hero { display: flex; align-items: center; gap: 20px; max-width: 920px;
+  margin: 0 auto 18px; padding: 22px 26px; background: var(--ink); border-radius: var(--r);
+  color: #fff; flex-wrap: wrap; }
+.dl-hero-ico { width: 60px; height: 60px; border-radius: 16px; flex-shrink: 0;
+  background: rgba(255,255,255,0.12); color: #fff; display: flex;
+  align-items: center; justify-content: center; }
+.dl-hero-body { flex: 1; min-width: 180px; }
+.dl-hero-body h3 { color: #fff; font-size: 19px; font-weight: 700; margin-bottom: 3px; }
+.dl-hero-body p { color: rgba(255,255,255,0.66); font-size: 14px; }
+.dl-hero .btn { flex-shrink: 0; }
 .get-app-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
   max-width: 920px; margin: 0 auto; }
 .app-card { background: var(--surface-2); border: 1px solid var(--line);
@@ -2875,50 +2885,60 @@ label.field-label {
     <div class="wrap">
       <div class="get-app reveal">
         <div class="get-app-head">
-          <div class="get-app-eyebrow">Now available everywhere</div>
-          <h2 class="get-app-title">Take Grange&nbsp;AI anywhere.</h2>
-          <p class="get-app-sub">Install Grange AI as an app on your phone, tablet, or computer. It opens full-screen with its own icon, works offline, and stays signed in — no app store required, completely free.</p>
+          <div class="get-app-eyebrow">Download the desktop app</div>
+          <h2 class="get-app-title">Grange&nbsp;AI, as a real app.</h2>
+          <p class="get-app-sub">A full desktop application that installs onto your computer — its own icon in the dock, its own window, no browser. Download it free and run it like any other app.</p>
         </div>
 
-        <div class="get-app-grid">
-          <!-- This device (smart install button) -->
-          <div class="app-card app-card-primary" id="app-card-install">
-            <div class="app-card-ico">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-            </div>
-            <h3>Install on this device</h3>
-            <p>One tap to add Grange AI to your home screen or desktop.</p>
-            <button class="btn btn-accent btn-block" id="pwa-install-btn">Install Grange AI</button>
-            <span class="app-card-note" id="pwa-installed-note" style="display:none">✓ Grange AI is installed on this device</span>
+        <!-- Primary: auto-detected platform download -->
+        <div class="dl-hero" id="dl-hero">
+          <div class="dl-hero-ico" id="dl-hero-ico">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
           </div>
+          <div class="dl-hero-body">
+            <h3 id="dl-hero-title">Download for your computer</h3>
+            <p id="dl-hero-note">Free • installs as a standalone app</p>
+          </div>
+          <a class="btn btn-accent btn-lg" id="dl-hero-btn" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest" target="_blank" rel="noopener">Download</a>
+        </div>
 
-          <!-- iPhone / iPad -->
+        <!-- All platforms -->
+        <div class="get-app-grid">
+          <!-- macOS -->
           <div class="app-card">
             <div class="app-card-ico">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="3"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c.1 1-.3 2-1 2.8-.7.8-1.7 1.4-2.7 1.3-.1-1 .4-2 1-2.7.7-.8 1.8-1.4 2.7-1.4zM19 17.3c-.5 1.1-.7 1.6-1.3 2.6-.9 1.4-2.1 3.1-3.6 3.1-1.4 0-1.7-.9-3.5-.9s-2.2.9-3.5.9c-1.5 0-2.7-1.6-3.5-2.9C1.5 17.3.9 13 2.4 10.3c.9-1.6 2.5-2.6 4-2.6 1.4 0 2.3.9 3.5.9 1.1 0 1.8-.9 3.5-.9 1.3 0 2.7.7 3.6 1.9-3.2 1.7-2.7 6.3.5 7.7z"/></svg>
             </div>
-            <h3>iPhone &amp; iPad</h3>
-            <p>In Safari, tap <strong>Share</strong> <span class="ios-share">⬆️</span> then <strong>“Add to Home Screen.”</strong></p>
-            <button class="btn btn-outline btn-block" onclick="document.getElementById('ios-steps').scrollIntoView({behavior:'smooth',block:'center'})">How to install</button>
+            <h3>macOS</h3>
+            <p>Universal — works on Apple Silicon &amp; Intel. Drag to Applications.</p>
+            <a class="btn btn-outline btn-block" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-mac.dmg" target="_blank" rel="noopener">Download .dmg</a>
           </div>
 
-          <!-- Desktop -->
+          <!-- Windows -->
+          <div class="app-card">
+            <div class="app-card-ico">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5L10.5 4.5V11.5H3V5.5zM10.5 12.5V19.5L3 18.5V12.5H10.5zM11.5 4.3L21 3V11.5H11.5V4.3zM21 12.5V21L11.5 19.7V12.5H21z"/></svg>
+            </div>
+            <h3>Windows</h3>
+            <p>Standard installer with Start-menu &amp; desktop shortcuts.</p>
+            <a class="btn btn-outline btn-block" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-Setup.exe" target="_blank" rel="noopener">Download .exe</a>
+          </div>
+
+          <!-- Linux -->
           <div class="app-card">
             <div class="app-card-ico">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             </div>
-            <h3>Mac &amp; Windows</h3>
-            <p>In Chrome or Edge, click the <strong>install icon</strong> in the address bar, or use the button on the left.</p>
-            <button class="btn btn-outline btn-block" id="pwa-install-btn-2">Install on desktop</button>
+            <h3>Linux</h3>
+            <p>Portable AppImage — make it executable and run.</p>
+            <a class="btn btn-outline btn-block" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-linux.AppImage" target="_blank" rel="noopener">Download .AppImage</a>
           </div>
         </div>
 
-        <!-- iOS step detail (revealed for context) -->
+        <!-- First-launch help + mobile note -->
         <div class="ios-steps" id="ios-steps">
-          <div class="ios-step"><span class="ios-step-n">1</span><span>Open <strong>grangeai.org</strong> in <strong>Safari</strong> on your iPhone or iPad.</span></div>
-          <div class="ios-step"><span class="ios-step-n">2</span><span>Tap the <strong>Share</strong> button (the square with an arrow pointing up).</span></div>
-          <div class="ios-step"><span class="ios-step-n">3</span><span>Scroll down and tap <strong>“Add to Home Screen.”</strong></span></div>
-          <div class="ios-step"><span class="ios-step-n">4</span><span>Tap <strong>Add</strong>. The Grange AI icon appears on your home screen like any other app.</span></div>
+          <div class="ios-step"><span class="ios-step-n">!</span><span><strong>First launch on Mac:</strong> right-click the app and choose <strong>Open</strong> (just once) to get past the "unidentified developer" notice. On Windows, click <strong>More info → Run anyway</strong> if SmartScreen appears. These are unsigned free builds — completely safe.</span></div>
+          <div class="ios-step"><span class="ios-step-n">📱</span><span><strong>On a phone?</strong> The iPhone and Android apps are on the way to the App Store and Google Play. For now you can also <a href="#" id="pwa-fallback-link" style="color:var(--accent);font-weight:600;">add Grange AI to your home screen</a> from your mobile browser.</span></div>
         </div>
       </div>
     </div>
@@ -9165,102 +9185,92 @@ function applyDiscFilters(query, type) {
   };
 </script>
 
-<!-- ═══════════════════ PWA: install + service worker ═══════════════════ -->
+<!-- ═══════════════════ Desktop download + PWA fallback ═══════════════════ -->
 <script>
 (function () {
   'use strict';
 
-  // 1. Register the service worker (enables install + offline).
+  var REPO = 'timchen850/GrantAI-Prototype';
+  var BASE = 'https://github.com/' + REPO + '/releases/latest/download/';
+  var DL = {
+    mac:     BASE + 'Grange-AI-mac.dmg',
+    windows: BASE + 'Grange-AI-Setup.exe',
+    linux:   BASE + 'Grange-AI-linux.AppImage'
+  };
+
+  // 1. Register the service worker (powers the mobile "add to home screen").
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function (e) {
-        console.warn('SW registration failed:', e);
-      });
+      navigator.serviceWorker.register('sw.js').catch(function () {});
     });
   }
 
-  var installBtns = ['pwa-install-btn', 'pwa-install-btn-2']
-    .map(function (id) { return document.getElementById(id); })
-    .filter(Boolean);
-  var installedNote = document.getElementById('pwa-installed-note');
+  var ua = navigator.userAgent;
+  var platform = navigator.platform || '';
+  function isIOS()     { return /iphone|ipad|ipod/i.test(ua) && !window.MSStream; }
+  function isAndroid() { return /android/i.test(ua); }
+  function isMac()     { return /mac/i.test(platform) || /mac os x/i.test(ua); }
+  function isWindows() { return /win/i.test(platform) || /windows/i.test(ua); }
+  var isMobile = isIOS() || isAndroid() || /mobile/i.test(ua);
+
+  // 2. Tailor the primary download button to the visitor's OS.
+  var heroBtn   = document.getElementById('dl-hero-btn');
+  var heroTitle = document.getElementById('dl-hero-title');
+  var heroNote  = document.getElementById('dl-hero-note');
+
+  function setHero(href, title, label) {
+    if (heroBtn)   { heroBtn.setAttribute('href', href); heroBtn.textContent = label; }
+    if (heroTitle) heroTitle.textContent = title;
+  }
+
+  if (isMobile) {
+    // No desktop installer for phones → point them at the home-screen install.
+    if (heroBtn) {
+      heroBtn.textContent = 'Add to Home Screen';
+      heroBtn.setAttribute('href', '#');
+      heroBtn.addEventListener('click', function (e) { e.preventDefault(); installPwa(); });
+    }
+    if (heroTitle) heroTitle.textContent = 'Get Grange AI on your phone';
+    if (heroNote)  heroNote.textContent = 'Free • adds an app icon to your home screen';
+  } else if (isMac()) {
+    setHero(DL.mac, 'Download for macOS', 'Download for Mac');
+  } else if (isWindows()) {
+    setHero(DL.windows, 'Download for Windows', 'Download for Windows');
+  } else {
+    setHero(DL.linux, 'Download for Linux', 'Download for Linux');
+  }
+
+  // 3. PWA install (used only as the mobile / "add to home screen" fallback).
   var deferredPrompt = null;
-
-  function isStandalone() {
-    return window.matchMedia('(display-mode: standalone)').matches ||
-           window.navigator.standalone === true;
-  }
-
-  function isIOS() {
-    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-  }
-
-  function showInstalled() {
-    installBtns.forEach(function (b) {
-      b.textContent = 'Installed ✓';
-      b.disabled = true;
-      b.style.opacity = '0.6';
-      b.style.cursor = 'default';
-    });
-    if (installedNote) installedNote.style.display = 'block';
-  }
-
-  // Already running as an installed app.
-  if (isStandalone()) {
-    showInstalled();
-  }
-
-  // 2. Capture the native install prompt (Chrome, Edge, Android, desktop).
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();
     deferredPrompt = e;
-    installBtns.forEach(function (b) {
-      b.textContent = (b.id === 'pwa-install-btn-2') ? 'Install on desktop' : 'Install Grange AI';
-      b.disabled = false;
-      b.style.opacity = '';
-      b.style.cursor = '';
-    });
   });
 
-  // 3. Wire the install buttons.
-  installBtns.forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      // iOS Safari has no install API → guide the user.
-      if (isIOS()) {
-        var steps = document.getElementById('ios-steps');
-        if (steps) steps.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(function (choice) {
-          if (choice.outcome === 'accepted') showInstalled();
-          deferredPrompt = null;
-        });
-      } else {
-        // Prompt not available yet (e.g. Firefox, or criteria not met) →
-        // fall back to manual instructions.
-        var steps = document.getElementById('ios-steps');
-        if (steps) steps.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        if (typeof toast === 'function') {
-          toast('Use your browser menu → "Install app" to add Grange AI.');
-        }
-      }
-    });
-  });
-
-  // 4. Confirm a successful install.
-  window.addEventListener('appinstalled', function () {
-    showInstalled();
-    deferredPrompt = null;
-  });
-
-  // 5. If launched from the installed app with a deep-link, route to it.
-  try {
-    var params = new URLSearchParams(window.location.search);
-    var target = params.get('go');
-    if (target && typeof go === 'function') {
-      setTimeout(function () { go(target); }, 400);
+  function installPwa() {
+    if (isIOS()) {
+      var steps = document.getElementById('ios-steps');
+      if (steps) steps.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (typeof toast === 'function') toast('In Safari: tap Share, then "Add to Home Screen."');
+      return;
     }
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
+    } else if (typeof toast === 'function') {
+      toast('Use your browser menu → "Install app" to add Grange AI.');
+    }
+  }
+
+  var fallbackLink = document.getElementById('pwa-fallback-link');
+  if (fallbackLink) {
+    fallbackLink.addEventListener('click', function (e) { e.preventDefault(); installPwa(); });
+  }
+
+  // 4. If launched from the installed app with a deep-link, route to it.
+  try {
+    var target = new URLSearchParams(window.location.search).get('go');
+    if (target && typeof go === 'function') setTimeout(function () { go(target); }, 400);
   } catch (e) {}
 })();
 </script>
