@@ -2,10 +2,40 @@ import React, { useState } from 'react'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../lib/toast'
 
+const FEATURES = [
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+    ),
+    title: 'Discover grants instantly',
+    desc: 'AI matches open opportunities to your mission in seconds.',
+  },
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+        <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+      </svg>
+    ),
+    title: 'Write proposals with one click',
+    desc: 'Full drafts in your voice — ready to submit, not just ready to edit.',
+  },
+  {
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    ),
+    title: 'Track every deadline',
+    desc: 'Pipeline view keeps you compliant and never lets a grant slip.',
+  },
+]
+
 export default function Auth() {
   const { signIn, signUp, signInWithMagicLink } = useAuth()
   const { toast } = useToast()
-  const [mode, setMode] = useState('signin') // signin | signup | magic
+  const [mode, setMode] = useState('signup') // signup | signin | magic
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [orgName, setOrgName] = useState('')
@@ -33,98 +63,105 @@ export default function Auth() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'var(--bg-base)',
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* Ambient glow */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(232,92,58,0.12) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
+    <div style={styles.root}>
+      {/* Left panel — brand */}
+      <div style={styles.left}>
+        {/* Background glow blobs */}
+        <div style={styles.blob1} />
+        <div style={styles.blob2} />
 
-      <div style={{
-        width: '100%',
-        maxWidth: 400,
-        padding: 32,
-        position: 'relative',
-        zIndex: 1,
-      }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{
-            width: 52, height: 52,
-            background: 'var(--accent)',
-            borderRadius: 16,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 24, fontWeight: 800, color: 'white',
-            margin: '0 auto 16px',
-            boxShadow: '0 4px 20px rgba(232,92,58,0.4)',
-          }}>G</div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: -0.03, marginBottom: 6 }}>
-            Grange AI
-          </h1>
-          <p style={{ color: 'var(--ink-secondary)', fontSize: 14 }}>
-            {mode === 'signup' ? 'Create your organization account' :
-             mode === 'magic' ? 'Sign in without a password' :
-             'Sign in to your account'}
-          </p>
+        <div style={styles.logoWrap}>
+          <div style={styles.logoMark}>G</div>
+          <span style={styles.logoText}>Grange AI</span>
         </div>
 
-        {/* Card */}
-        <div className="card card-elevated" style={{ padding: 28 }}>
+        <div style={styles.leftContent}>
+          <h1 style={styles.headline}>
+            The grant writer<br />your nonprofit<br />always needed.
+          </h1>
+          <p style={styles.subhead}>
+            Find, write, and track grants — all in one place.
+          </p>
+
+          <div style={styles.features}>
+            {FEATURES.map((f, i) => (
+              <div key={i} style={styles.featureRow}>
+                <div style={styles.featureIcon}>{f.icon}</div>
+                <div>
+                  <div style={styles.featureTitle}>{f.title}</div>
+                  <div style={styles.featureDesc}>{f.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={styles.leftFooter}>
+          Free to start · No credit card required
+        </div>
+      </div>
+
+      {/* Right panel — form */}
+      <div style={styles.right}>
+        <div style={styles.formPanel}>
           {magicSent ? (
-            <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <div style={{ fontSize: 40, marginBottom: 16 }}>✉️</div>
-              <h3 style={{ marginBottom: 8 }}>Check your email</h3>
-              <p style={{ color: 'var(--ink-secondary)', fontSize: 13.5 }}>
-                We sent a magic link to <strong>{email}</strong>.
-                Click it to sign in instantly.
-              </p>
-              <button className="btn btn-ghost btn-sm" style={{ marginTop: 20 }} onClick={() => { setMagicSent(false); setMode('signin') }}>
-                Back to sign in
-              </button>
-            </div>
+            <MagicSent email={email} onBack={() => { setMagicSent(false); setMode('signin') }} />
           ) : (
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {mode === 'signup' && (
-                <div className="form-group">
-                  <label className="form-label">Organization Name</label>
-                  <input
-                    className="input"
+            <>
+              {/* Mode toggle */}
+              {mode !== 'magic' && (
+                <div style={styles.toggle}>
+                  <button
+                    style={{ ...styles.toggleBtn, ...(mode === 'signup' ? styles.toggleActive : {}) }}
+                    onClick={() => setMode('signup')}
+                    type="button"
+                  >
+                    Create account
+                  </button>
+                  <button
+                    style={{ ...styles.toggleBtn, ...(mode === 'signin' ? styles.toggleActive : {}) }}
+                    onClick={() => setMode('signin')}
+                    type="button"
+                  >
+                    Sign in
+                  </button>
+                </div>
+              )}
+
+              {mode === 'magic' && (
+                <div style={{ marginBottom: 28 }}>
+                  <h2 style={styles.formTitle}>Magic link</h2>
+                  <p style={styles.formSub}>We'll email you a one-click sign-in link.</p>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} style={styles.form}>
+                {mode === 'signup' && (
+                  <Field
+                    label="Organization name"
                     type="text"
                     placeholder="Acme Nonprofit Foundation"
                     value={orgName}
                     onChange={e => setOrgName(e.target.value)}
                     required
+                    autoFocus
                   />
-                </div>
-              )}
+                )}
 
-              <div className="form-group">
-                <label className="form-label">Email</label>
-                <input
-                  className="input"
+                <Field
+                  label="Email"
                   type="email"
                   placeholder="you@organization.org"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
+                  autoFocus={mode !== 'signup'}
                 />
-              </div>
 
-              {mode !== 'magic' && (
-                <div className="form-group">
-                  <label className="form-label">Password</label>
-                  <input
-                    className="input"
+                {mode !== 'magic' && (
+                  <Field
+                    label="Password"
                     type="password"
                     placeholder={mode === 'signup' ? 'Min. 8 characters' : 'Your password'}
                     value={password}
@@ -132,57 +169,315 @@ export default function Auth() {
                     minLength={mode === 'signup' ? 8 : undefined}
                     required
                   />
-                </div>
-              )}
+                )}
 
-              <button
-                type="submit"
-                className="btn btn-accent btn-lg"
-                style={{ width: '100%', marginTop: 4 }}
-                disabled={loading}
-              >
-                {loading ? <span className="spinner" /> : null}
-                {loading ? 'Please wait…' :
-                 mode === 'signup' ? 'Create Account' :
-                 mode === 'magic' ? 'Send Magic Link' :
-                 'Sign In'}
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={styles.submitBtn}
+                >
+                  {loading
+                    ? <span className="spinner" />
+                    : mode === 'signup' ? 'Create Account'
+                    : mode === 'magic' ? 'Send Magic Link'
+                    : 'Sign In'}
+                </button>
+              </form>
+
+              {/* Secondary actions */}
+              <div style={styles.secondaryActions}>
+                {mode === 'signin' && (
+                  <button style={styles.ghostLink} type="button" onClick={() => setMode('magic')}>
+                    Sign in without password ›
+                  </button>
+                )}
+                {mode === 'magic' && (
+                  <button style={styles.ghostLink} type="button" onClick={() => setMode('signin')}>
+                    ‹ Use password instead
+                  </button>
+                )}
+                {mode === 'signup' && (
+                  <p style={styles.legalNote}>
+                    By creating an account you agree to our{' '}
+                    <span style={{ color: 'var(--ink-secondary)' }}>Terms of Service</span>
+                    {' '}and{' '}
+                    <span style={{ color: 'var(--ink-secondary)' }}>Privacy Policy</span>.
+                  </p>
+                )}
+              </div>
+            </>
           )}
         </div>
-
-        {/* Toggle links */}
-        {!magicSent && (
-          <div style={{ textAlign: 'center', marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {mode === 'signin' && (
-              <>
-                <button className="btn btn-ghost btn-sm" onClick={() => setMode('magic')} style={{ width: '100%' }}>
-                  Sign in with magic link instead
-                </button>
-                <p style={{ fontSize: 13, color: 'var(--ink-tertiary)' }}>
-                  Don't have an account?{' '}
-                  <button onClick={() => setMode('signup')} style={{ background: 'none', border: 'none', color: 'var(--accent-bright)', fontWeight: 600, cursor: 'pointer', font: 'inherit' }}>
-                    Sign up
-                  </button>
-                </p>
-              </>
-            )}
-            {mode === 'signup' && (
-              <p style={{ fontSize: 13, color: 'var(--ink-tertiary)' }}>
-                Already have an account?{' '}
-                <button onClick={() => setMode('signin')} style={{ background: 'none', border: 'none', color: 'var(--accent-bright)', fontWeight: 600, cursor: 'pointer', font: 'inherit' }}>
-                  Sign in
-                </button>
-              </p>
-            )}
-            {mode === 'magic' && (
-              <button className="btn btn-ghost btn-sm" onClick={() => setMode('signin')} style={{ width: '100%' }}>
-                Use password instead
-              </button>
-            )}
-          </div>
-        )}
       </div>
     </div>
   )
+}
+
+function Field({ label, ...props }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label style={styles.fieldLabel}>{label}</label>
+      <input className="input" {...props} style={styles.fieldInput} />
+    </div>
+  )
+}
+
+function MagicSent({ email, onBack }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '12px 0' }}>
+      <div style={styles.magicIcon}>✉️</div>
+      <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 10, letterSpacing: -0.03 }}>
+        Check your email
+      </h2>
+      <p style={{ color: 'var(--ink-secondary)', fontSize: 14, lineHeight: 1.6, marginBottom: 28 }}>
+        We sent a magic link to<br />
+        <strong style={{ color: 'var(--ink)' }}>{email}</strong>
+      </p>
+      <button style={styles.ghostLink} type="button" onClick={onBack}>
+        ‹ Back to sign in
+      </button>
+    </div>
+  )
+}
+
+const styles = {
+  root: {
+    display: 'flex',
+    height: '100vh',
+    background: 'var(--bg-base)',
+    overflow: 'hidden',
+  },
+
+  // ── Left panel ──
+  left: {
+    flex: '0 0 420px',
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '40px 44px',
+    borderRight: '1px solid var(--border)',
+    overflow: 'hidden',
+  },
+  blob1: {
+    position: 'absolute',
+    width: 500,
+    height: 500,
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(232,92,58,0.18) 0%, transparent 70%)',
+    top: -120,
+    left: -80,
+    pointerEvents: 'none',
+  },
+  blob2: {
+    position: 'absolute',
+    width: 300,
+    height: 300,
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(232,92,58,0.09) 0%, transparent 70%)',
+    bottom: 40,
+    right: -60,
+    pointerEvents: 'none',
+  },
+  logoWrap: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 64,
+    position: 'relative',
+    zIndex: 1,
+  },
+  logoMark: {
+    width: 36,
+    height: 36,
+    background: 'var(--accent)',
+    borderRadius: 10,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 18,
+    fontWeight: 800,
+    color: '#fff',
+    boxShadow: '0 4px 16px rgba(232,92,58,0.4)',
+    flexShrink: 0,
+  },
+  logoText: {
+    fontSize: 17,
+    fontWeight: 700,
+    letterSpacing: -0.02,
+  },
+  leftContent: {
+    flex: 1,
+    position: 'relative',
+    zIndex: 1,
+  },
+  headline: {
+    fontSize: 30,
+    fontWeight: 760,
+    letterSpacing: -0.04,
+    lineHeight: 1.2,
+    marginBottom: 14,
+  },
+  subhead: {
+    fontSize: 15,
+    color: 'var(--ink-secondary)',
+    lineHeight: 1.5,
+    marginBottom: 44,
+  },
+  features: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 24,
+  },
+  featureRow: {
+    display: 'flex',
+    gap: 14,
+    alignItems: 'flex-start',
+  },
+  featureIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    background: 'rgba(232,92,58,0.12)',
+    border: '1px solid rgba(232,92,58,0.2)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'var(--accent-bright)',
+    flexShrink: 0,
+    marginTop: 1,
+  },
+  featureTitle: {
+    fontSize: 14,
+    fontWeight: 600,
+    marginBottom: 3,
+    letterSpacing: -0.01,
+  },
+  featureDesc: {
+    fontSize: 12.5,
+    color: 'var(--ink-secondary)',
+    lineHeight: 1.5,
+  },
+  leftFooter: {
+    fontSize: 12,
+    color: 'var(--ink-tertiary)',
+    position: 'relative',
+    zIndex: 1,
+  },
+
+  // ── Right panel ──
+  right: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px 48px',
+  },
+  formPanel: {
+    width: '100%',
+    maxWidth: 380,
+  },
+
+  // Toggle tabs
+  toggle: {
+    display: 'flex',
+    background: 'var(--bg-elevated)',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--r-sm)',
+    padding: 3,
+    marginBottom: 28,
+  },
+  toggleBtn: {
+    flex: 1,
+    padding: '9px 0',
+    background: 'none',
+    border: 'none',
+    borderRadius: 8,
+    fontSize: 13.5,
+    fontWeight: 500,
+    color: 'var(--ink-secondary)',
+    cursor: 'pointer',
+    transition: 'all 150ms',
+    fontFamily: 'inherit',
+    letterSpacing: -0.01,
+  },
+  toggleActive: {
+    background: 'var(--bg-elevated3)',
+    color: 'var(--ink)',
+    fontWeight: 600,
+    boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
+  },
+
+  formTitle: {
+    fontSize: 22,
+    fontWeight: 700,
+    letterSpacing: -0.03,
+    marginBottom: 6,
+  },
+  formSub: {
+    fontSize: 14,
+    color: 'var(--ink-secondary)',
+  },
+
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+  },
+  fieldLabel: {
+    fontSize: 13,
+    fontWeight: 500,
+    color: 'var(--ink-secondary)',
+    letterSpacing: 0,
+  },
+  fieldInput: {
+    height: 42,
+    fontSize: 14,
+  },
+  submitBtn: {
+    marginTop: 4,
+    height: 44,
+    width: '100%',
+    background: 'var(--accent)',
+    border: 'none',
+    borderRadius: 'var(--r-sm)',
+    color: '#fff',
+    fontSize: 14.5,
+    fontWeight: 650,
+    cursor: 'pointer',
+    letterSpacing: -0.01,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    boxShadow: '0 4px 14px rgba(232,92,58,0.35)',
+    transition: 'opacity 150ms, transform 80ms',
+    fontFamily: 'inherit',
+  },
+
+  secondaryActions: {
+    marginTop: 18,
+    textAlign: 'center',
+  },
+  ghostLink: {
+    background: 'none',
+    border: 'none',
+    color: 'var(--ink-secondary)',
+    fontSize: 13,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    padding: 0,
+    textDecoration: 'underline',
+    textUnderlineOffset: 3,
+    transition: 'color 120ms',
+  },
+  legalNote: {
+    fontSize: 12,
+    color: 'var(--ink-tertiary)',
+    lineHeight: 1.6,
+  },
+
+  magicIcon: {
+    fontSize: 40,
+    marginBottom: 18,
+  },
 }
