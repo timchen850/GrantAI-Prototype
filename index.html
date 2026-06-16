@@ -2152,42 +2152,64 @@ label.field-label {
   .steps .stp { flex: 1 1 calc(50% - 4px); }
 }
 
-/* ── 8. Mobile animation performance fixes ───────────────────
-   background-position animation (auroraShift) is CPU-only and
-   causes constant repaints. background-attachment:fixed breaks
-   on iOS Safari for non-body elements. Heavy blur on animated
-   children kills frame-rate. Replace with static / simplified
-   versions on mobile so the GPU only composites transforms.    */
+/* ── 8. Mobile animation: keep the motion, make it GPU-smooth ──
+   Earlier builds FROZE the hero gradient on phones (which is why it
+   looked paused / only showed the end state). The real cost was
+   re-blurring a 55px-blurred container every frame as the blobs moved.
+   Fix: rasterise the blurred gradient ONCE, then drift the whole
+   container as a single cached GPU layer. The aurora keeps moving,
+   smoothly, with no per-frame re-blur.                                */
 @media (max-width: 768px) {
 
-  /* Freeze the aurora background layers — static gradient is fine */
-  .aurora-bg-layer,
-  .aurora-l1, .aurora-l2, .aurora-l3 {
-    animation: none !important;
-    will-change: auto !important;
-  }
-  /* Kill the ::after pseudo-elements that use background-attachment:fixed */
-  .aurora-l1::after, .aurora-l2::after, .aurora-l3::after {
-    display: none !important;
-  }
-  /* Reduce blur so static layers don't bleed harshly */
-  .aurora-bg-layer { filter: blur(6px) !important; }
+  /* Hold the individual blobs still (so the blurred texture is cached)… */
+  .grad-blob { animation: none !important; will-change: auto !important; }
 
-  /* Aurora blob drifts: reduce blur so filter compositing is cheap */
-  .aurora { filter: blur(1px) !important; }
-  .aurora::before, .aurora::after, .aurora i {
-    filter: blur(20px) !important;
+  /* …and gently drift the whole pre-blurred gradient on the GPU. */
+  .grad-anim-bg { transform: translateZ(0); }
+  .grad-container {
+    filter: blur(46px) !important;
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    animation: gradDriftMobile 22s ease-in-out infinite alternate !important;
   }
 
-  /* Grad blobs: stop the three most expensive rotating blobs,
-     keep just the two translate ones for gentle motion */
-  .grad-second, .grad-third, .grad-fifth {
-    animation: none !important;
-    will-change: auto !important;
-  }
-  /* Reduce parent blur so GPU compositing of remaining blobs is cheap */
-  .grad-container { filter: blur(30px) !important; }
+  /* CTA-band aurora keeps its soft transform drift; just trim the blur a
+     touch so it composites cheaply (its drift is already GPU-based). */
+  .aurora::before, .aurora::after, .aurora i { filter: blur(24px) !important; }
+}
 
+/* Whole-gradient drift used on mobile — pure transform, fully composited.
+   Scale stays > 1.15 so the blurred edges always cover the viewport. */
+@keyframes gradDriftMobile {
+  0%   { transform: translate3d(-5%, -3%, 0) rotate(-4deg) scale(1.22); }
+  50%  { transform: translate3d( 4%,  2%, 0) rotate( 5deg) scale(1.30); }
+  100% { transform: translate3d(-2%,  4%, 0) rotate( 2deg) scale(1.24); }
+}
+
+/* ── 9. Premium mobile polish ──────────────────────────────────
+   Sharper text rendering, tactile full-width CTAs, and a touch more
+   depth on cards so the phone experience matches the desktop feel. */
+@media (max-width: 768px) {
+  html { -webkit-text-size-adjust: 100%; }
+  body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+
+  /* Hero CTAs: full-width, stacked, easy to hit, premium rhythm */
+  .scroll-hero-title .hero-actions { flex-direction: column; gap: 10px; width: 100%; max-width: 340px; margin-left: auto; margin-right: auto; }
+  .scroll-hero-title .hero-actions .btn { width: 100%; justify-content: center; }
+  .scroll-hero-title .hero-sub { font-size: 16px; }
+
+  /* Active-press feedback on every button — feels like a native app */
+  .btn { transition: transform 0.12s var(--ease), box-shadow 0.18s var(--ease), background 0.18s var(--ease); }
+  .btn:active { transform: scale(0.97); }
+
+  /* A little more lift on content cards for depth on small screens */
+  .quote-card, .price-card, .feat-card, .fcar, .stat-band, .cta-band {
+    box-shadow: 0 12px 34px -22px rgba(26,25,22,0.5);
+  }
+
+  /* Tighter, more confident section headings */
+  .section h2 { letter-spacing: -0.03em; line-height: 1.12; }
 }
 
 </style>
@@ -6255,7 +6277,7 @@ async function signInWithGoogle() {
   const section = document.getElementById('scroll-hero-section');
   const card    = document.getElementById('scroll-hero-card');
   const title   = section && section.querySelector('.scroll-hero-title');
-  if (!section || !card || !title || reduce || mobile) return;
+  if (!section || !card || !title || reduce) return;
 
   function update() {
     const scrollY   = window.scrollY || window.pageYOffset;
@@ -6264,11 +6286,14 @@ async function signInWithGoogle() {
     const progress  = Math.max(0, Math.min(1, scrollY / (sh * 0.65)));
 
     const mobile    = window.innerWidth <= 768;
-    const scaleFrom = mobile ? 0.7 : 1.05;
-    const scaleTo   = mobile ? 0.9 : 1.0;
-    const rotate    = 20 * (1 - progress);
+    // Phones get a gentler, tasteful tilt-up reveal (not a big shrink).
+    const scaleFrom = mobile ? 0.94 : 1.05;
+    const scaleTo   = mobile ? 1.0  : 1.0;
+    const rotateMax = mobile ? 14   : 20;
+    const tyMax     = mobile ? -48  : -100;
+    const rotate    = rotateMax * (1 - progress);
     const scale     = scaleFrom + (scaleTo - scaleFrom) * progress;
-    const ty        = -100 * progress;
+    const ty        = tyMax * progress;
 
     card.style.transform  = `rotateX(${rotate}deg) scale(${scale})`;
     title.style.transform = `translate3d(0,${Math.round(ty)}px,0)`;
