@@ -4,8 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="logo.png?v=2">
-<link rel="apple-touch-icon" href="logo.png?v=2">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
 <title>Grange AI - The grants you need, written for you</title>
+
+<!-- PWA: installable app -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f5f4f1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Grange AI">
+<link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
@@ -603,6 +614,52 @@ label.field-label {
 .tier ul { list-style: none; flex: 1; margin-bottom: 26px; }
 .tier li { display: flex; gap: 9px; font-size: 14px; color: var(--ink-body); padding: 6px 0; }
 .tier li svg { flex-shrink: 0; margin-top: 3px; color: var(--ok); }
+
+/* ─── GET THE APP ───────────────────────────────────────── */
+.get-app { position: relative; border-radius: var(--r-lg); overflow: hidden;
+  background: var(--surface); border: 1px solid var(--line);
+  padding: 64px 56px; }
+.get-app-head { max-width: 640px; margin: 0 auto 44px; text-align: center; }
+.get-app-eyebrow { display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent-tint); color: var(--accent); font-size: 12px;
+  font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  padding: 5px 12px; border-radius: 99px; margin-bottom: 18px; }
+.get-app-title { font-size: clamp(1.9rem, 3.4vw, 2.8rem); line-height: 1.08;
+  letter-spacing: -.02em; margin-bottom: 16px; }
+.get-app-sub { font-size: 16.5px; color: var(--ink-body); line-height: 1.6; }
+.get-app-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+  max-width: 920px; margin: 0 auto; }
+.app-card { background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 28px 24px; display: flex; flex-direction: column;
+  align-items: flex-start; transition: border-color .2s var(--ease), transform .2s var(--ease); }
+.app-card:hover { border-color: rgba(26,25,22,0.18); transform: translateY(-2px); }
+.app-card-primary { background: var(--ink); border-color: var(--ink); }
+.app-card-primary h3, .app-card-primary p { color: #fff; }
+.app-card-primary p { color: rgba(255,255,255,0.72); }
+.app-card-primary .app-card-ico { background: rgba(255,255,255,0.12); color: #fff; }
+.app-card-ico { width: 52px; height: 52px; border-radius: 14px;
+  background: var(--accent-tint); color: var(--accent);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+.app-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.app-card p { font-size: 14px; color: var(--ink-body); line-height: 1.55;
+  margin-bottom: 20px; flex: 1; }
+.app-card .btn-block { width: 100%; margin-top: auto; }
+.app-card-note { display: block; margin-top: 12px; font-size: 13px;
+  color: #8fe3ad; font-weight: 600; }
+.ios-share { display: inline-block; }
+.ios-steps { max-width: 680px; margin: 36px auto 0; padding: 28px 32px;
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r);
+  display: flex; flex-direction: column; gap: 16px; }
+.ios-step { display: flex; align-items: flex-start; gap: 14px; font-size: 15px;
+  color: var(--ink-body); line-height: 1.5; }
+.ios-step-n { flex-shrink: 0; width: 26px; height: 26px; border-radius: 99px;
+  background: var(--accent); color: #fff; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; }
+@media (max-width: 860px) {
+  .get-app { padding: 48px 24px; }
+  .get-app-grid { grid-template-columns: 1fr; }
+  .ios-steps { padding: 22px 20px; }
+}
 
 /* ─── CTA BAND ──────────────────────────────────────────── */
 .cta-band { position: relative; border-radius: var(--r-lg); overflow: hidden;
@@ -2198,6 +2255,7 @@ label.field-label {
         </a>
       </div>
       <div class="nav-right">
+        <a class="btn btn-ghost" href="#download" onclick="goHome();setTimeout(function(){document.getElementById('download').scrollIntoView({behavior:'smooth'})},60);return false;">Get the app</a>
         <button class="btn btn-ghost" onclick="go('signin')">Sign in</button>
         <button class="btn btn-primary btn-sm" onclick="go('login')">Start free</button>
       </div>
@@ -2807,6 +2865,60 @@ label.field-label {
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Dedicated account manager</li>
           </ul>
           <button class="btn btn-outline btn-block" onclick="go('login')">Start free</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════ GET THE APP ════════════════════════ -->
+  <section class="section" id="download" style="padding-top:0">
+    <div class="wrap">
+      <div class="get-app reveal">
+        <div class="get-app-head">
+          <div class="get-app-eyebrow">Now available everywhere</div>
+          <h2 class="get-app-title">Take Grange&nbsp;AI anywhere.</h2>
+          <p class="get-app-sub">Install Grange AI as an app on your phone, tablet, or computer. It opens full-screen with its own icon, works offline, and stays signed in — no app store required, completely free.</p>
+        </div>
+
+        <div class="get-app-grid">
+          <!-- This device (smart install button) -->
+          <div class="app-card app-card-primary" id="app-card-install">
+            <div class="app-card-ico">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            </div>
+            <h3>Install on this device</h3>
+            <p>One tap to add Grange AI to your home screen or desktop.</p>
+            <button class="btn btn-accent btn-block" id="pwa-install-btn">Install Grange AI</button>
+            <span class="app-card-note" id="pwa-installed-note" style="display:none">✓ Grange AI is installed on this device</span>
+          </div>
+
+          <!-- iPhone / iPad -->
+          <div class="app-card">
+            <div class="app-card-ico">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="3"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+            </div>
+            <h3>iPhone &amp; iPad</h3>
+            <p>In Safari, tap <strong>Share</strong> <span class="ios-share">⬆️</span> then <strong>“Add to Home Screen.”</strong></p>
+            <button class="btn btn-outline btn-block" onclick="document.getElementById('ios-steps').scrollIntoView({behavior:'smooth',block:'center'})">How to install</button>
+          </div>
+
+          <!-- Desktop -->
+          <div class="app-card">
+            <div class="app-card-ico">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <h3>Mac &amp; Windows</h3>
+            <p>In Chrome or Edge, click the <strong>install icon</strong> in the address bar, or use the button on the left.</p>
+            <button class="btn btn-outline btn-block" id="pwa-install-btn-2">Install on desktop</button>
+          </div>
+        </div>
+
+        <!-- iOS step detail (revealed for context) -->
+        <div class="ios-steps" id="ios-steps">
+          <div class="ios-step"><span class="ios-step-n">1</span><span>Open <strong>grangeai.org</strong> in <strong>Safari</strong> on your iPhone or iPad.</span></div>
+          <div class="ios-step"><span class="ios-step-n">2</span><span>Tap the <strong>Share</strong> button (the square with an arrow pointing up).</span></div>
+          <div class="ios-step"><span class="ios-step-n">3</span><span>Scroll down and tap <strong>“Add to Home Screen.”</strong></span></div>
+          <div class="ios-step"><span class="ios-step-n">4</span><span>Tap <strong>Add</strong>. The Grange AI icon appears on your home screen like any other app.</span></div>
         </div>
       </div>
     </div>
@@ -9051,6 +9163,106 @@ function applyDiscFilters(query, type) {
     try { await sb.from('expenditures').insert({ user_id: uid, award_id: awardId, category_key: cat, description: desc, amount: amt }); loadPostAward(); }
     catch (e) { console.error('addExpense', e); toast('Could not add expense.'); }
   };
+</script>
+
+<!-- ═══════════════════ PWA: install + service worker ═══════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  // 1. Register the service worker (enables install + offline).
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function (e) {
+        console.warn('SW registration failed:', e);
+      });
+    });
+  }
+
+  var installBtns = ['pwa-install-btn', 'pwa-install-btn-2']
+    .map(function (id) { return document.getElementById(id); })
+    .filter(Boolean);
+  var installedNote = document.getElementById('pwa-installed-note');
+  var deferredPrompt = null;
+
+  function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true;
+  }
+
+  function isIOS() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  }
+
+  function showInstalled() {
+    installBtns.forEach(function (b) {
+      b.textContent = 'Installed ✓';
+      b.disabled = true;
+      b.style.opacity = '0.6';
+      b.style.cursor = 'default';
+    });
+    if (installedNote) installedNote.style.display = 'block';
+  }
+
+  // Already running as an installed app.
+  if (isStandalone()) {
+    showInstalled();
+  }
+
+  // 2. Capture the native install prompt (Chrome, Edge, Android, desktop).
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtns.forEach(function (b) {
+      b.textContent = (b.id === 'pwa-install-btn-2') ? 'Install on desktop' : 'Install Grange AI';
+      b.disabled = false;
+      b.style.opacity = '';
+      b.style.cursor = '';
+    });
+  });
+
+  // 3. Wire the install buttons.
+  installBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      // iOS Safari has no install API → guide the user.
+      if (isIOS()) {
+        var steps = document.getElementById('ios-steps');
+        if (steps) steps.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function (choice) {
+          if (choice.outcome === 'accepted') showInstalled();
+          deferredPrompt = null;
+        });
+      } else {
+        // Prompt not available yet (e.g. Firefox, or criteria not met) →
+        // fall back to manual instructions.
+        var steps = document.getElementById('ios-steps');
+        if (steps) steps.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof toast === 'function') {
+          toast('Use your browser menu → "Install app" to add Grange AI.');
+        }
+      }
+    });
+  });
+
+  // 4. Confirm a successful install.
+  window.addEventListener('appinstalled', function () {
+    showInstalled();
+    deferredPrompt = null;
+  });
+
+  // 5. If launched from the installed app with a deep-link, route to it.
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var target = params.get('go');
+    if (target && typeof go === 'function') {
+      setTimeout(function () { go(target); }, 400);
+    }
+  } catch (e) {}
+})();
 </script>
 </body>
 </html>

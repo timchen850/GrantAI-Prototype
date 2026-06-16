@@ -1,0 +1,45 @@
+{
+  "name": "Grange AI — Grant Writing for Nonprofits",
+  "short_name": "Grange AI",
+  "description": "Grange AI scans millions of grants daily, scores each against your mission, and drafts the full proposal. Built for nonprofits without a grant writer on staff.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f5f4f1",
+  "theme_color": "#f5f4f1",
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": ["productivity", "business", "finance"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Find Grants",
+      "short_name": "Discover",
+      "description": "Search and match new grant opportunities",
+      "url": "/?source=pwa&go=discovery",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Draft a Proposal",
+      "short_name": "Draft",
+      "description": "Generate a grant proposal with AI",
+      "url": "/?source=pwa&go=generator",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your grant pipeline",
+      "url": "/?source=pwa&go=dashboard",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
