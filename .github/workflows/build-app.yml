@@ -1,11 +1,14 @@
 name: Build Grange AI Desktop App
 
+# Desktop installer builds run only on demand (manual trigger) or when a
+# release is tagged (v*). They are NOT run on every push/PR because signing
+# certificates are required and are not configured yet — leaving them on
+# push would surface noisy red ✗ checks. Trigger manually from the Actions
+# tab once Apple/Microsoft signing secrets are in place.
 on:
+  workflow_dispatch:
   push:
-    branches: [main, claude/grange-ai-desktop-app-7z7wjc]
     tags: ['v*']
-  pull_request:
-    branches: [main]
 
 jobs:
   build-mac:
