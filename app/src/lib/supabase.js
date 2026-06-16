@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
+// The publishable (anon) key is safe to ship in client apps — Row Level
+// Security protects the data. Same key the website serves to every browser.
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://xewrvmqyzeiziimcmenj.supabase.co'
-const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_d-V-sZePB5xnz2MTuDIlQQ_6xSLJJW9'
 
 export const sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: {

@@ -2924,6 +2924,16 @@ label.field-label {
             <a class="btn btn-outline btn-block" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-Setup.exe" target="_blank" rel="noopener">Download .exe</a>
           </div>
 
+          <!-- Android -->
+          <div class="app-card">
+            <div class="app-card-ico">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.5l1.4-2.4c.1-.2 0-.4-.1-.5-.2-.1-.4 0-.5.1l-1.4 2.5c-1.1-.5-2.3-.8-3.5-.8s-2.4.3-3.5.8L8.1 6.7c-.1-.2-.3-.2-.5-.1-.2.1-.2.3-.1.5l1.4 2.4C6.5 10.8 5 13 5 15.5h14c0-2.5-1.5-4.7-3.4-6zM9 13.2c-.4 0-.7-.3-.7-.7s.3-.7.7-.7.7.3.7.7-.3.7-.7.7zm6 0c-.4 0-.7-.3-.7-.7s.3-.7.7-.7.7.3.7.7-.3.7-.7.7z"/></svg>
+            </div>
+            <h3>Android</h3>
+            <p>Install the .apk directly — enable "install unknown apps" once.</p>
+            <a class="btn btn-outline btn-block" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-android.apk" target="_blank" rel="noopener">Download .apk</a>
+          </div>
+
           <!-- Linux -->
           <div class="app-card">
             <div class="app-card-ico">
@@ -2933,12 +2943,22 @@ label.field-label {
             <p>Portable AppImage — make it executable and run.</p>
             <a class="btn btn-outline btn-block" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-linux.AppImage" target="_blank" rel="noopener">Download .AppImage</a>
           </div>
+
+          <!-- iPhone -->
+          <div class="app-card">
+            <div class="app-card-ico">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="3"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+            </div>
+            <h3>iPhone &amp; iPad</h3>
+            <p>App Store version coming soon. For now, add it to your home screen.</p>
+            <a class="btn btn-outline btn-block" href="#" id="ios-install-btn">Add to Home Screen</a>
+          </div>
         </div>
 
-        <!-- First-launch help + mobile note -->
+        <!-- First-launch help -->
         <div class="ios-steps" id="ios-steps">
-          <div class="ios-step"><span class="ios-step-n">!</span><span><strong>First launch on Mac:</strong> right-click the app and choose <strong>Open</strong> (just once) to get past the "unidentified developer" notice. On Windows, click <strong>More info → Run anyway</strong> if SmartScreen appears. These are unsigned free builds — completely safe.</span></div>
-          <div class="ios-step"><span class="ios-step-n">📱</span><span><strong>On a phone?</strong> The iPhone and Android apps are on the way to the App Store and Google Play. For now you can also <a href="#" id="pwa-fallback-link" style="color:var(--accent);font-weight:600;">add Grange AI to your home screen</a> from your mobile browser.</span></div>
+          <div class="ios-step"><span class="ios-step-n">!</span><span><strong>First launch on Mac:</strong> right-click the app and choose <strong>Open</strong> (just once) to get past the "unidentified developer" notice. On Windows, click <strong>More info → Run anyway</strong> if SmartScreen appears. These are free unsigned builds — completely safe.</span></div>
+          <div class="ios-step"><span class="ios-step-n">📱</span><span><strong>Android:</strong> after downloading, tap the .apk and allow installs from your browser when prompted. <strong>iPhone:</strong> open this page in Safari, tap <strong>Share</strong>, then <a href="#" id="pwa-fallback-link" style="color:var(--accent);font-weight:600;">Add to Home Screen</a> — a full App Store app is on the way.</span></div>
         </div>
       </div>
     </div>
@@ -9195,7 +9215,8 @@ function applyDiscFilters(query, type) {
   var DL = {
     mac:     BASE + 'Grange-AI-mac.dmg',
     windows: BASE + 'Grange-AI-Setup.exe',
-    linux:   BASE + 'Grange-AI-linux.AppImage'
+    linux:   BASE + 'Grange-AI-linux.AppImage',
+    android: BASE + 'Grange-AI-android.apk'
   };
 
   // 1. Register the service worker (powers the mobile "add to home screen").
@@ -9223,15 +9244,19 @@ function applyDiscFilters(query, type) {
     if (heroTitle) heroTitle.textContent = title;
   }
 
-  if (isMobile) {
-    // No desktop installer for phones → point them at the home-screen install.
+  if (isAndroid()) {
+    // Real installable Android app.
+    setHero(DL.android, 'Download for Android', 'Download .apk');
+    if (heroNote) heroNote.textContent = 'Free • installs as a real Android app';
+  } else if (isIOS()) {
+    // iPhone has no free installable app → home-screen install.
     if (heroBtn) {
       heroBtn.textContent = 'Add to Home Screen';
       heroBtn.setAttribute('href', '#');
       heroBtn.addEventListener('click', function (e) { e.preventDefault(); installPwa(); });
     }
-    if (heroTitle) heroTitle.textContent = 'Get Grange AI on your phone';
-    if (heroNote)  heroNote.textContent = 'Free • adds an app icon to your home screen';
+    if (heroTitle) heroTitle.textContent = 'Get Grange AI on your iPhone';
+    if (heroNote)  heroNote.textContent = 'App Store app coming soon • add to home screen now';
   } else if (isMac()) {
     setHero(DL.mac, 'Download for macOS', 'Download for Mac');
   } else if (isWindows()) {
@@ -9265,6 +9290,10 @@ function applyDiscFilters(query, type) {
   var fallbackLink = document.getElementById('pwa-fallback-link');
   if (fallbackLink) {
     fallbackLink.addEventListener('click', function (e) { e.preventDefault(); installPwa(); });
+  }
+  var iosBtn = document.getElementById('ios-install-btn');
+  if (iosBtn) {
+    iosBtn.addEventListener('click', function (e) { e.preventDefault(); installPwa(); });
   }
 
   // 4. If launched from the installed app with a deep-link, route to it.
