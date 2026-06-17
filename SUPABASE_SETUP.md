@@ -1,147 +1,109 @@
-# Connecting Grange AI to a Supabase account
+# Grange AI — backend & AI setup status
 
-Follow these steps once to wire the app to your friend's Supabase project.
-Everything is free-tier compatible.
-
----
-
-## Step 1 — Create a Supabase project
-
-1. Go to https://supabase.com and sign in (or create a free account).
-2. Click **New project**, pick a name (e.g. `grange-ai`), choose a region
-   close to your users, set a database password, and hit **Create project**.
-3. Wait ~1 minute for it to spin up.
+This project is already wired to the live Supabase project **GrangeAI**
+(`xewrvmqyzeiziimcmenj`). Most of your friend's checklist is **already done** —
+applied directly to the live project via the Supabase API. Here's the true
+current state and the one step that's left.
 
 ---
 
-## Step 2 — Copy your project credentials into config.js
+## ✅ Already done (live right now)
 
-1. In the Supabase dashboard, go to **Project Settings → API**.
-2. Copy the **Project URL** (looks like `https://abcdefgh.supabase.co`).
-3. Copy the **anon / public** key (the long `eyJ…` string under "Project API keys").
-4. Open `config.js` in this repo (copy from `config.example.js` if it doesn't exist):
+| Step | Status |
+|---|---|
+| Supabase project created & `config.js` pointed at it | ✅ done (`xewrvmqyzeiziimcmenj`) |
+| `schema.sql` + all migrations run | ✅ done — **45 tables**, RLS on every one |
+| `proposal_usage` quota table | ✅ created |
+| Edge Function `generate-proposal` (Gemini + Groq fallback) | ✅ **deployed & ACTIVE** |
+| Edge Function `ai-chat` (grounded chatbot) | ✅ **deployed & ACTIVE** |
+| Security/performance advisors | ✅ clean (one dashboard toggle, below) |
 
-```js
-window.SUPABASE_CONFIG = {
-  url: 'https://YOUR-PROJECT-REF.supabase.co',   // ← paste here
-  anonKey: 'YOUR-ANON-PUBLIC-KEY',                // ← paste here
-};
-```
-
-`config.js` is gitignored — it will never be committed.
-
----
-
-## Step 3 — Run the database schema
-
-1. In the Supabase dashboard, click **SQL Editor → New query**.
-2. Paste the contents of `schema.sql` and click **Run**.
-3. Then paste the contents of `supabase/migrations/20260613_proposal_usage.sql`
-   and click **Run**.
-
-This creates all the tables (profiles, onboarding_answers, grants, proposal_usage)
-and enables Row Level Security on each.
+You do **not** need the Supabase CLI, and you do **not** need to create a new
+project. Both Edge Functions are already deployed and responding (verified:
+they correctly return `401 Unauthorized` without a login, and CORS works).
 
 ---
 
-## Step 4 — Enable Google OAuth (optional but recommended)
+## 🔑 The ONE step left: add your AI API key(s) as server secrets
 
-1. In the dashboard, go to **Authentication → Providers → Google**.
-2. Toggle it **on**.
-3. Follow the on-screen instructions to create a Google OAuth client ID + secret
-   at https://console.cloud.google.com (takes ~5 minutes).
-4. Paste the client ID and secret back into Supabase and save.
+The functions are live but can't reach an AI model until you give them a key.
+The key lives **only on the server** — never in the browser. Two ways:
 
-Without this step, email/password and magic-link sign-in still work.
+### Option A — Supabase Dashboard (no CLI needed) ← recommended
 
----
+1. Get a free Gemini key at **https://aistudio.google.com/apikey**.
+2. In the Supabase dashboard for project `GrangeAI`, go to
+   **Project Settings → Edge Functions → Secrets** (a.k.a. "Manage secrets").
+3. Add a secret:
+   - Name: `GEMINI_API_KEY`  Value: *(your key)*
+4. (Optional but recommended) Add a free Groq key from
+   **https://console.groq.com/keys** as `GROQ_API_KEY` — this is the
+   privacy-safe fallback used automatically if Gemini errors or is rate-limited.
+5. Save. The functions pick it up within a few seconds — no redeploy needed.
 
-## Step 5 — Install the Supabase CLI
+### Option B — Supabase CLI
 
 ```bash
-# macOS / Linux
-brew install supabase/tap/supabase
-
-# Windows (PowerShell, run as admin)
-winget install Supabase.CLI
-```
-
-Verify: `supabase --version`
-
----
-
-## Step 6 — Log in and link the project
-
-```bash
+brew install supabase/tap/supabase     # if not installed
 supabase login
-# Opens a browser tab — approve access.
-
-supabase link --project-ref YOUR-PROJECT-REF
-# YOUR-PROJECT-REF is the subdomain from your Supabase URL
-# e.g. if the URL is https://abcdefgh.supabase.co, the ref is abcdefgh
+supabase link --project-ref xewrvmqyzeiziimcmenj
+supabase secrets set GEMINI_API_KEY=your-key-here
+supabase secrets set GROQ_API_KEY=your-groq-key-here   # optional fallback
 ```
+
+> ⚠️ **Read `AI_STRATEGY.md` before going live with real users.** The Gemini
+> **free** tier trains on your data and tells you not to submit confidential
+> info — which is wrong for real nonprofit grant data. The fix is one click
+> (enable billing → flips Google's policy to "no training"), and it stays
+> near-free (~$2/month at real usage). Full analysis in that doc.
 
 ---
 
-## Step 7 — Set the Gemini API key as a server secret
+## 🔒 One dashboard toggle to flip
 
-Get a free Gemini API key at https://aistudio.google.com/apikey, then:
-
-```bash
-supabase secrets set GEMINI_API_KEY=YOUR-GEMINI-KEY-HERE
-```
-
-The key never touches the browser. The Edge Function reads it via
-`Deno.env.get('GEMINI_API_KEY')`.
+**Authentication → Providers/Policies → enable "Leaked password protection."**
+This checks new passwords against HaveIBeenPwned. It's the only outstanding
+security-advisor item and can only be set in the dashboard.
 
 ---
 
-## Step 8 — Deploy the Edge Function
+## How it works (so you can explain it)
 
-```bash
-supabase functions deploy generate-proposal
+```
+Browser  ──Bearer JWT──▶  Edge Function (auth + per-user rate limit)
+                              │  key from server secret (never in browser)
+                              ▼
+                          Gemini 2.5 Flash  ──(if it fails)──▶  Groq Llama-3.3-70B
+                              │
+                              ▼  streamed back
+                          Browser renders the draft
 ```
 
-That's it. The function is now live at:
-`https://YOUR-PROJECT-REF.supabase.co/functions/v1/generate-proposal`
+- **`generate-proposal`** — the proposal generator. Streams the draft. Capped at
+  **10 proposals/user/day** (`DAILY_LIMIT` in the function; failed generations
+  are refunded).
+- **`ai-chat`** — the in-app assistant (bottom-right bubble). Pulls the signed-in
+  org's real profile, pipeline, and deadlines (RLS-scoped) so answers are
+  grounded, not generic.
 
-The frontend already points to this URL automatically using
-`window.SUPABASE_CONFIG.url`.
+Both functions are in `supabase/functions/`. To change a model or the rate
+limit, edit the file and redeploy (CLI `supabase functions deploy <name>`, or
+ask Claude to redeploy via the Supabase tools).
 
 ---
 
-## Step 9 — Test it
+## Test it
 
-Open `index.html` in a browser (or your local dev server), sign up /
-sign in, complete onboarding, and generate a proposal. The request goes:
-
-```
-Browser → Supabase Edge Function (auth check + rate limit) → Gemini → back
-```
-
-If anything fails, open the Supabase dashboard → **Edge Functions →
-generate-proposal → Logs** to see what went wrong.
-
----
-
-## Rate limit
-
-Each user can generate **10 proposals per day**. The count resets at
-midnight UTC. To change the limit, edit `DAILY_LIMIT` at the top of
-`supabase/functions/generate-proposal/index.ts` and redeploy:
-
-```bash
-supabase functions deploy generate-proposal
-```
-
----
-
-## Troubleshooting
+1. Set the `GEMINI_API_KEY` secret (above).
+2. Open the site, sign in, complete onboarding.
+3. Click the chat bubble (bottom-right) → ask "How do I start?" → you should get
+   a grounded answer.
+4. Go to Generator → pick a grant → Generate → the draft should stream in.
+5. If anything fails, check **Edge Functions → Logs** in the dashboard.
 
 | Symptom | Fix |
 |---|---|
-| "Unauthorized" on generation | User is not signed in, or JWT expired — sign out and back in |
-| "Daily limit reached" | Wait until midnight UTC, or raise `DAILY_LIMIT` and redeploy |
-| "Gemini API key not configured" | Re-run Step 7 (`supabase secrets set …`) |
-| Blank draft, no error | Check Edge Function logs in the Supabase dashboard |
-| Google sign-in fails | Verify OAuth redirect URL in Google Cloud Console matches your domain |
+| "AI provider unavailable" / 502 | `GEMINI_API_KEY` secret not set (or both providers failing) |
+| "Unauthorized" | Not signed in / JWT expired — sign out and back in |
+| "Daily limit reached" | 10/day cap hit; resets at midnight UTC, or raise `DAILY_LIMIT` |
+| Chatbot says "Please sign in" | Open it from inside the app while signed in |
