@@ -114,6 +114,35 @@ async function dispatch(sb: any, uid: string, jobType: string, input: any): Prom
     return { logic_model_id: lm?.id, item_count: (out.items || []).length };
   }
 
+  if (jobType === 'parse_rfp') {
+    // Ephemeral (no DB row): parse a funder's call/RFP/NOFO into a plain-language
+    // eligibility verdict + structured requirements a first-time applicant can act on.
+    const rfp = (input.rfp_text || '').toString().slice(0, 16000);
+    if (!rfp.trim()) throw new Error('No funder text provided');
+    const out = await callJSON(`You are a grant compliance analyst helping a SMALL nonprofit with NO grant-writing experience understand a funder's call for proposals (an RFP / NOFO / eligibility page). Read the funder text and extract a precise, plain-language breakdown. Use ONLY what the text says; when it is silent on something, say so rather than inventing it. Judge eligibility against the ORG PROFILE.
+
+Output JSON:
+{"verdict":"go|caution|stop","verdict_headline":"<=8 words, plain (e.g. 'Worth applying', 'Check one thing first', 'Likely not a fit')","verdict_reason":"1-2 beginner-friendly sentences explaining the verdict","deadline":"<submission deadline exactly as stated, or null>","eligibility":[{"label":"<requirement, e.g. 501(c)(3) status / serves California / budget under $1M>","status":"likely|unclear|unlikely","note":"<short; reference the org where possible>"}],"sections":[{"title":"<required narrative section>","word_limit":<integer word limit or null>,"description":"<one plain sentence on what to write>"}],"attachments":[{"name":"<required document, e.g. IRS determination letter>","required":true}],"formatting":["<each page limit, font, margin, spacing, file-naming or file-format rule, one per string>"]}
+
+Rules: verdict 'stop' ONLY if the org clearly fails a hard eligibility gate; 'caution' if a gate is unclear or risky; 'go' if it looks eligible. Keep every string concise. Never invent a deadline, dollar figure, section, or rule that is not in the funder text.
+
+=== ORG PROFILE ===
+${org(profile)}
+
+=== FUNDER TEXT ===
+${rfp}`);
+    return {
+      verdict: ['go', 'caution', 'stop'].includes(out.verdict) ? out.verdict : 'caution',
+      verdict_headline: out.verdict_headline || '',
+      verdict_reason: out.verdict_reason || '',
+      deadline: out.deadline || null,
+      eligibility: Array.isArray(out.eligibility) ? out.eligibility : [],
+      sections: Array.isArray(out.sections) ? out.sections : [],
+      attachments: Array.isArray(out.attachments) ? out.attachments : [],
+      formatting: Array.isArray(out.formatting) ? out.formatting : [],
+    };
+  }
+
   if (jobType === 'assess_grant') {
     // Inline assessment for a discovery grant (no catalog row, ephemeral).
     const g = input.grant || {};
@@ -146,6 +175,19 @@ Deno.serve(async (req: Request) => {
   let jobId: string | undefined = body.job_id;
   let jobType: string = body.job_type;
   let input: any = body.input || {};
+
+  // Ephemeral job types run inline and return their output WITHOUT writing an
+  // ai_jobs row — so they need no job_type CHECK-constraint migration.
+  const EPHEMERAL = new Set(['parse_rfp']);
+  if (!jobId && EPHEMERAL.has(jobType)) {
+    try {
+      const output = await dispatch(sb, user.id, jobType, input);
+      return json({ ok: true, job_type: jobType, output });
+    } catch (e) {
+      return json({ ok: false, error: e instanceof Error ? e.message : String(e) }, 502);
+    }
+  }
+
   if (jobId) {
     const j = (await sb.from('ai_jobs').select('*').eq('id', jobId).maybeSingle()).data;
     if (!j) return json({ error: 'job not found' }, 404);

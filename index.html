@@ -4801,6 +4801,67 @@ label.field-label {
             </div>
           </div>
 
+          <style>
+            /* ── Funder requirements analyzer (NOFO/RFP parser) ── */
+            #gen-req-panel .panel-head{ display:flex; align-items:center; justify-content:space-between; }
+            .req-intro{ font-size:13px; line-height:1.55; color:var(--ink-body,var(--muted)); margin:0 0 12px; }
+            .req-ta{ width:100%; min-height:96px; max-height:300px; resize:vertical; border:1.5px solid var(--line); border-radius:12px; background:var(--surface); padding:12px 14px; font:inherit; font-size:14px; line-height:1.55; color:var(--ink); outline:none; transition:border-color .18s, box-shadow .18s; }
+            .req-ta:focus{ border-color:var(--accent); box-shadow:0 4px 18px rgba(217,79,48,.10); }
+            .req-ta::placeholder{ color:var(--muted); }
+            .req-bar{ display:flex; align-items:center; gap:12px; margin-top:10px; flex-wrap:wrap; }
+            .req-hint{ flex:1; min-width:140px; font-size:12px; color:var(--muted); line-height:1.45; }
+            .req-analyze{ display:inline-flex; align-items:center; gap:7px; height:38px; padding:0 16px; border:none; border-radius:999px; background:var(--accent); color:#fff; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; flex-shrink:0; transition:background .15s, transform .1s; }
+            .req-analyze:hover{ background:var(--accent-press); } .req-analyze:active{ transform:scale(.97); }
+            .req-analyze:disabled{ opacity:.6; cursor:default; }
+            .req-sample{ background:none; border:none; color:var(--accent); font:inherit; font-size:12px; font-weight:600; cursor:pointer; padding:0; }
+            .req-sample:hover{ text-decoration:underline; }
+            .req-result{ margin-top:16px; }
+            .req-loading{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--muted); padding:8px 2px; }
+            .req-spin{ width:16px; height:16px; border:2px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:reqspin .7s linear infinite; flex-shrink:0; }
+            @keyframes reqspin{ to{ transform:rotate(360deg) } }
+            /* verdict banner — the "is this worth my time?" moment */
+            .rqv{ display:flex; gap:13px; align-items:flex-start; padding:15px 16px; border-radius:14px; margin-bottom:16px; border:1px solid transparent; }
+            .rqv-ic{ width:30px; height:30px; border-radius:50%; display:grid; place-items:center; flex-shrink:0; }
+            .rqv-ic svg{ width:18px; height:18px; }
+            .rqv-h{ font-family:var(--display); font-weight:700; font-size:16px; line-height:1.25; }
+            .rqv-r{ font-size:13.5px; line-height:1.5; margin-top:3px; color:var(--ink-body,#3a3833); }
+            .rqv.go{ background:rgba(34,153,84,.09); border-color:rgba(34,153,84,.28); }
+            .rqv.go .rqv-ic{ background:var(--ok); color:#fff; } .rqv.go .rqv-h{ color:#1c7a43; }
+            .rqv.caution{ background:#fef9c3; border-color:#fde047; }
+            .rqv.caution .rqv-ic{ background:#ca8a04; color:#fff; } .rqv.caution .rqv-h{ color:#854d0e; }
+            .rqv.stop{ background:rgba(217,79,48,.08); border-color:rgba(217,79,48,.32); }
+            .rqv.stop .rqv-ic{ background:var(--accent); color:#fff; } .rqv.stop .rqv-h{ color:var(--accent-ink); }
+            .rq-deadline{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--accent-ink); background:var(--accent-tint); padding:5px 11px; border-radius:999px; margin-bottom:14px; }
+            .rq-sample-badge{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); background:var(--surface-2,#efece6); padding:2px 8px; border-radius:6px; margin-left:8px; }
+            .rq-block{ margin-bottom:16px; }
+            .rq-bh{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:9px; }
+            .rq-elig{ display:flex; align-items:flex-start; gap:9px; font-size:13.5px; line-height:1.5; padding:4px 0; color:var(--ink); }
+            .rq-elig svg.ic{ width:17px; height:17px; flex-shrink:0; margin-top:2px; }
+            .rq-sec{ display:flex; align-items:baseline; gap:8px; padding:7px 0; border-top:1px solid var(--line-soft,#eceae5); }
+            .rq-sec:first-of-type{ border-top:none; }
+            .rq-sec-t{ font-size:13.5px; font-weight:650; color:var(--ink); }
+            .rq-sec-lim{ font-size:11.5px; font-weight:600; color:var(--accent-ink); background:var(--accent-tint); padding:1px 8px; border-radius:999px; flex-shrink:0; }
+            .rq-sec-d{ font-size:12.5px; color:var(--muted); line-height:1.45; flex-basis:100%; margin-top:2px; }
+            .rq-att{ display:flex; align-items:center; gap:9px; font-size:13.5px; padding:4px 0; color:var(--ink); }
+            .rq-att-dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+            .rq-fmt{ font-size:13px; line-height:1.5; color:var(--ink-body,#3a3833); padding-left:18px; position:relative; margin:4px 0; }
+            .rq-fmt::before{ content:''; position:absolute; left:4px; top:8px; width:5px; height:5px; border-radius:1px; background:var(--muted); }
+            .rq-applied{ margin-top:4px; font-size:12.5px; color:var(--ok); display:flex; align-items:center; gap:6px; }
+          </style>
+          <div class="panel" id="gen-req-panel" style="margin-bottom:18px">
+            <div class="panel-head"><h3>Funder requirements</h3></div>
+            <p class="req-intro">New to this? Paste the funder's call, RFP, or "who can apply" page below. Grange reads it like a grant expert and tells you, in plain English, whether it's worth your time, exactly what you'll need to write, and which documents to attach.</p>
+            <textarea id="gen-rfp-text" class="req-ta" placeholder="Paste the funder's call for proposals, RFP, NOFO, or eligibility page here…" oninput="reqOnInput()"></textarea>
+            <div class="req-bar">
+              <span class="req-hint" id="gen-rfp-hint">Optional, and it makes your draft match the funder's required sections exactly. <button type="button" class="req-sample" onclick="reqLoadSample()">See a sample →</button></span>
+              <button class="req-analyze" id="gen-rfp-btn" type="button" onclick="analyzeRfp()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.1L19 9l-5.1 1.9L12 16l-1.9-5.1L5 9l5.1-1.9L12 2z"/></svg>
+                <span id="gen-rfp-btn-label">Analyze this call</span>
+              </button>
+            </div>
+            <div id="gen-req-result" class="req-result" style="display:none"></div>
+          </div>
+
           <div class="panel" style="margin-bottom:18px">
             <div class="panel-head"><h3>Program focus</h3></div>
             <div class="fieldset"><label class="field-label">Program to fund</label>
@@ -4863,6 +4924,7 @@ label.field-label {
             <div id="ai-policy-banner" style="display:none;padding:10px 28px 0"></div>
             <div class="out-body"><div class="doc" id="doc-content"></div></div>
             <div id="compliance-checklist" style="display:none"></div>
+            <div id="ai-disclosure" style="display:none"></div>
           </div>
         </div>
       </div>
@@ -5487,6 +5549,177 @@ function populateGeneratorGrant() {
   genShowSelect();
 }
 
+/* ══════════════════════════════════════════════════════════
+   FUNDER REQUIREMENTS ANALYZER  (NOFO / RFP parser)
+   Paste a funder's call → plain-language "is this worth my time?"
+   verdict + structured requirements that (a) feed the draft and
+   (b) drive the real pre-export compliance gate.
+   Runs server-side via the ephemeral `parse_rfp` ai-worker job.
+══════════════════════════════════════════════════════════ */
+const REQ_SAMPLE_TEXT = `Cedar Valley Community Foundation — Youth Opportunity Fund 2026
+
+Who can apply: Applicants must be a 501(c)(3) public charity (or have a fiscal sponsor) operating in Cedar Valley County. Organizations with annual operating budgets under $2 million are prioritized. Religious congregations and political organizations are not eligible.
+
+What we fund: Out-of-school-time programs serving youth ages 6 to 18, with an emphasis on academic enrichment, mentoring, and college or career readiness. Grants range from $10,000 to $40,000 for a 12-month project period.
+
+Proposal format: Submit a narrative of no more than 5 pages, 12-point Times New Roman, 1-inch margins, single-spaced. Include these sections in order: (1) Organization Background (max 300 words), (2) Statement of Need (max 500 words), (3) Program Description (max 700 words), (4) Goals and Measurable Outcomes (max 400 words), (5) Budget Narrative (max 300 words).
+
+Required attachments: IRS 501(c)(3) determination letter, current board of directors list, most recent Form 990, organization operating budget, and a project budget on the foundation's template.
+
+Deadline: Applications must be received by 5:00 PM CT on September 15, 2026. Late or incomplete applications will not be reviewed.`;
+
+const REQ_SAMPLE = {
+  verdict: 'go',
+  verdict_headline: 'Worth applying',
+  verdict_reason: 'This fund backs out-of-school youth programs, which lines up with your work. Just confirm you operate in Cedar Valley County and your annual budget is under $2M.',
+  deadline: 'September 15, 2026, 5:00 PM CT',
+  eligibility: [
+    { label: '501(c)(3) public charity (or fiscal sponsor)', status: 'likely', note: 'You list a tax-exempt status on your profile.' },
+    { label: 'Operates in Cedar Valley County', status: 'unclear', note: 'The funder limits this geographically — confirm your service area.' },
+    { label: 'Annual operating budget under $2 million', status: 'likely', note: 'Smaller budgets are prioritized.' },
+    { label: 'Not a religious congregation or political org', status: 'likely', note: 'Standard exclusion; most youth nonprofits qualify.' },
+  ],
+  sections: [
+    { title: 'Organization Background', word_limit: 300, description: 'Who you are, your mission, and your track record serving youth.' },
+    { title: 'Statement of Need', word_limit: 500, description: 'The local gap your youth face, with one sharp data point or short story.' },
+    { title: 'Program Description', word_limit: 700, description: 'Exactly what the program does, for whom, and how often.' },
+    { title: 'Goals and Measurable Outcomes', word_limit: 400, description: 'The specific, countable changes you will produce.' },
+    { title: 'Budget Narrative', word_limit: 300, description: 'Justify each major cost and tie it to the program.' },
+  ],
+  attachments: [
+    { name: 'IRS 501(c)(3) determination letter', required: true },
+    { name: 'Current board of directors list', required: true },
+    { name: 'Most recent Form 990', required: true },
+    { name: 'Organization operating budget', required: true },
+    { name: "Project budget on the foundation's template", required: true },
+  ],
+  formatting: [
+    'Narrative: 5 pages maximum',
+    '12-point Times New Roman, single-spaced',
+    '1-inch margins',
+    "Project budget must use the foundation's template",
+  ],
+};
+
+function reqOnInput() { window._reqIsSample = false; }
+
+function reqLoadSample() {
+  const ta = document.getElementById('gen-rfp-text');
+  if (ta) ta.value = REQ_SAMPLE_TEXT;
+  window._reqIsSample = true;
+  analyzeRfp();
+}
+
+async function analyzeRfp() {
+  const ta = document.getElementById('gen-rfp-text');
+  const txt = (ta?.value || '').trim();
+  const rr = document.getElementById('gen-req-result');
+  if (txt.length < 40) { toast("Paste the funder's call (a paragraph or more) so Grange can read it."); ta?.focus(); return; }
+  const btn = document.getElementById('gen-rfp-btn');
+  const lbl = document.getElementById('gen-rfp-btn-label');
+  if (btn) btn.disabled = true; if (lbl) lbl.textContent = 'Reading…';
+  if (rr) { rr.style.display = 'block'; rr.innerHTML = '<div class="req-loading"><span class="req-spin"></span> Grange is reading the call and checking your fit…</div>'; }
+  try {
+    if (!window.sb) throw new Error('nosb');
+    const { data: { session } } = await window.sb.auth.getSession();
+    if (!session) throw new Error('nosession');
+    const r = await runAiJob('parse_rfp', { rfp_text: txt.slice(0, 16000) });
+    if (r && r.ok && r.output && ((r.output.sections || []).length || (r.output.eligibility || []).length || r.output.verdict)) {
+      window._parsedReq = r.output; window._reqIsSample = false;
+      renderReqResult(r.output, false);
+      saveGenDraft();
+    } else { throw new Error('nokey'); }
+  } catch (e) {
+    if (window._reqIsSample) {
+      window._parsedReq = Object.assign({ __sample: true }, REQ_SAMPLE);
+      renderReqResult(window._parsedReq, true);
+      saveGenDraft();
+    } else if (e && e.message === 'nosession') {
+      if (rr) rr.innerHTML = reqMsg('Sign in to analyze a funder’s call against your profile.', true);
+    } else {
+      if (rr) rr.innerHTML = reqMsg('Grange’s requirement reader is ready to switch on. Add a Gemini API key on the server (Supabase → Edge Functions → Secrets) and it will read any RFP instantly. Meanwhile, tap “See a sample” above to preview it.');
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+    if (lbl) lbl.textContent = window._parsedReq ? 'Re-analyze' : 'Analyze this call';
+  }
+}
+
+function reqMsg(msg, signin) {
+  return '<div style="font-size:13.5px;line-height:1.55;color:var(--muted);padding:8px 2px">' + escHtml(msg) +
+    (signin ? ' <a onclick="go(\'signin\')" style="color:var(--accent);cursor:pointer;font-weight:600">Sign in →</a>' : '') + '</div>';
+}
+
+function reqVerdictMeta(v) {
+  if (v === 'go') return { cls: 'go', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>' };
+  if (v === 'stop') return { cls: 'stop', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>' };
+  return { cls: 'caution', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>' };
+}
+
+function renderReqResult(o, isSample) {
+  const rr = document.getElementById('gen-req-result');
+  if (!rr || !o) return;
+  const m = reqVerdictMeta(o.verdict);
+  const headline = o.verdict_headline || (o.verdict === 'go' ? 'Worth applying' : o.verdict === 'stop' ? 'Likely not a fit' : 'Worth a closer look');
+  let h = '<div class="rqv ' + m.cls + '"><div class="rqv-ic">' + m.svg + '</div><div><div class="rqv-h">' + escHtml(headline) +
+    (isSample ? '<span class="rq-sample-badge">Sample</span>' : '') + '</div>' +
+    (o.verdict_reason ? '<div class="rqv-r">' + escHtml(o.verdict_reason) + '</div>' : '') + '</div></div>';
+  if (o.deadline) h += '<div class="rq-deadline"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Deadline: ' + escHtml(o.deadline) + '</div>';
+  if ((o.eligibility || []).length) {
+    h += '<div class="rq-block"><div class="rq-bh">Can you apply?</div>' + o.eligibility.map(e =>
+      '<div class="rq-elig">' + assessEligIcon(e.status) + '<span>' + escHtml(e.label) +
+      (e.note ? ' <span style="color:var(--muted)">— ' + escHtml(e.note) + '</span>' : '') + '</span></div>').join('') + '</div>';
+  }
+  if ((o.sections || []).length) {
+    h += '<div class="rq-block"><div class="rq-bh">What you’ll write</div>' + o.sections.map(s =>
+      '<div class="rq-sec"><span class="rq-sec-t">' + escHtml(s.title) + '</span>' +
+      (Number(s.word_limit) ? '<span class="rq-sec-lim">≤' + Number(s.word_limit) + ' words</span>' : '') +
+      (s.description ? '<span class="rq-sec-d">' + escHtml(s.description) + '</span>' : '') + '</div>').join('') + '</div>';
+  }
+  if ((o.attachments || []).length) {
+    h += '<div class="rq-block"><div class="rq-bh">Documents to attach</div>' + o.attachments.map(a =>
+      '<div class="rq-att"><span class="rq-att-dot"></span><span>' + escHtml(a.name || a) + '</span></div>').join('') +
+      '<div style="font-size:12.5px;color:var(--muted);margin-top:7px">Track what you have in <a onclick="go(\'readiness\')" style="color:var(--accent);cursor:pointer;font-weight:600">Readiness →</a></div></div>';
+  }
+  if ((o.formatting || []).length) {
+    h += '<div class="rq-block"><div class="rq-bh">Formatting rules</div>' + o.formatting.map(f =>
+      '<div class="rq-fmt">' + escHtml(f) + '</div>').join('') + '</div>';
+  }
+  if ((o.sections || []).length) {
+    h += '<div class="rq-applied"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg> Grange will write your draft against these exact sections and limits.</div>';
+  }
+  rr.innerHTML = h;
+  rr.style.display = 'block';
+}
+
+/* Render whatever is in window._parsedReq (used on draft restore / grant switch) */
+function reqShowStored() {
+  const rr = document.getElementById('gen-req-result');
+  const lbl = document.getElementById('gen-rfp-btn-label');
+  if (!rr) return;
+  if (window._parsedReq) {
+    renderReqResult(window._parsedReq, !!window._parsedReq.__sample);
+    if (lbl) lbl.textContent = 'Re-analyze';
+  } else {
+    rr.style.display = 'none'; rr.innerHTML = '';
+    if (lbl) lbl.textContent = 'Analyze this call';
+  }
+}
+
+/* Build the prompt block that injects the funder's extracted requirements
+   into the writer so the draft mirrors the call exactly. */
+function reqPromptBlock() {
+  const req = (typeof window !== 'undefined' && window._parsedReq) ? window._parsedReq : null;
+  if (!req) return '';
+  const elig = (req.eligibility || []).map(e => `- ${e.label}${e.note ? ': ' + e.note : ''} [${e.status}]`).join('\n');
+  const fmt = (req.formatting || []).map(f => `- ${f}`).join('\n');
+  let b = "\n\nTHE FUNDER'S OWN REQUIREMENTS (extracted from their call — honor these EXACTLY; they override the generic guidance above):";
+  if (req.deadline) b += `\n- Deadline: ${req.deadline}`;
+  if (elig) b += `\nEligibility to respect:\n${elig}`;
+  if (fmt) b += `\nFormatting rules:\n${fmt}`;
+  return b;
+}
+
 function buildPrompt(fields, org, grant) {
 
   /* ── Voice / emphasis lookup ─────────────────────────────── */
@@ -5581,7 +5814,24 @@ RULES (follow exactly):
 - Use ONLY the data provided. If a field says "Not specified", work around it. Do not invent statistics, staff names, program details, or dollar figures not given.
 - Do not pad. Every sentence must earn its place.
 - Never use em dashes. Write with commas, periods, or colons instead. Avoid stock AI phrasing and rhetorical "not X, but Y" constructions.
-`.trim();
+- Ground every factual claim in the data above. Do not fabricate citations, study names, or statistics; if you reference a fact, it must come from the organization data provided.
+`.trim() + reqPromptBlock();
+
+  /* ── Funder-defined sections (from an analyzed call) override the generic structure ── */
+  const _req = (typeof window !== 'undefined' && window._parsedReq) ? window._parsedReq : null;
+  if (proposalType === 'Full grant narrative' && _req && (_req.sections || []).length) {
+    const secList = _req.sections.map(s => {
+      const lim = Number(s.word_limit) ? ` (no more than ${Number(s.word_limit)} words)` : '';
+      return `<h4>${s.title}</h4>\n${s.description || 'Write this section, grounded in the organization data.'}${lim}`;
+    }).join('\n\n');
+    return `You are a senior nonprofit grant writer with 15 years of experience winning competitive awards. Write a complete proposal using EXACTLY the funder's required sections below, in this order, with the exact <h4> titles. Respect every stated word limit.
+
+${sharedContext}
+
+SECTIONS (use these exact <h4> titles, in this order — write a <p> body for each; respect the word limits):
+
+${secList}`;
+  }
 
   /* ── Full grant narrative ─────────────────────────────── */
   if (proposalType === 'Full grant narrative') {
@@ -5809,6 +6059,10 @@ function loadGrantIntoGenerator(g) {
   const grid = document.getElementById('gen-grid');
   grid.classList.remove('gen-selecting');
   document.getElementById('gen-select').style.display = 'none';
+  // clear any previous grant's analyzed requirements; restoreGenDraft repopulates if this grant has a saved draft
+  window._parsedReq = null;
+  const _rfpTa = document.getElementById('gen-rfp-text'); if (_rfpTa) _rfpTa.value = '';
+  reqShowStored();
   const restored = restoreGenDraft();
   if (!restored) genShowConfig();
   setGrantCard(window._selectedGrant, restored);
@@ -5835,7 +6089,7 @@ function setGrantCard(g, restored) {
 
 /* ── Draft autosave: your config + draft persist per user so leaving and
    returning never resets you to the demo org. ── */
-const GEN_FIELD_IDS = ['gen-proposal-type','gen-amount','gen-period','gen-program','gen-population','gen-description','gen-voice','gen-emphasis'];
+const GEN_FIELD_IDS = ['gen-proposal-type','gen-amount','gen-period','gen-program','gen-population','gen-description','gen-voice','gen-emphasis','gen-rfp-text'];
 function genDraftPrefix() { return 'grange_gendraft_' + (window._grange?.user?.id || 'anon') + '_'; }
 /* key drafts by TITLE — the pipeline dedupes by title, so a draft started from
    discovery still matches when the same grant is later picked from saved grants */
@@ -5858,6 +6112,7 @@ function saveGenDraft() {
     localStorage.setItem(genDraftKey(), JSON.stringify({
       grant: window._selectedGrant || null,
       fields,
+      req: window._parsedReq || null,
       doc: document.getElementById('doc-content')?.innerHTML || '',
       outType: document.getElementById('gen-out-type')?.textContent || '',
       outFunder: document.getElementById('gen-out-funder')?.textContent || '',
@@ -5871,6 +6126,8 @@ function restoreGenDraft() {
   if (!d) return false;
   if (d.grant) window._selectedGrant = d.grant;
   if (d.fields) Object.entries(d.fields).forEach(([id, v]) => { const el = document.getElementById(id); if (el && v != null) el.value = v; });
+  window._parsedReq = d.req || null;
+  reqShowStored();
   if (d.doc) {
     const content = document.getElementById('doc-content'); if (content) content.innerHTML = d.doc;
     const ot = document.getElementById('gen-out-type'); if (ot && d.outType) ot.textContent = d.outType;
@@ -5878,7 +6135,8 @@ function restoreGenDraft() {
     document.getElementById('out-empty').style.display = 'none';
     document.getElementById('out-doc').style.display = 'block';
     genWritingView(true); genSetStep(4);
-    runComplianceChecklist({ amount: d.fields?.['gen-amount'], period: d.fields?.['gen-period'], population: d.fields?.['gen-population'], description: d.fields?.['gen-description'] }, content);
+    runComplianceChecklist({ amount: d.fields?.['gen-amount'], period: d.fields?.['gen-period'], population: d.fields?.['gen-population'], description: d.fields?.['gen-description'], proposalType: d.fields?.['gen-proposal-type'] }, content);
+    renderDisclosure();
     setGenBtnLabel('Regenerate');
     toast('Picked up your saved draft.');
     return true;
@@ -5936,6 +6194,8 @@ async function generate() {
   if (banner) banner.style.display = 'none';
   const checklist = document.getElementById('compliance-checklist');
   if (checklist) { checklist.innerHTML = ''; checklist.style.display = 'none'; }
+  const disclosureEl = document.getElementById('ai-disclosure');
+  if (disclosureEl) { disclosureEl.innerHTML = ''; disclosureEl.style.display = 'none'; }
   const exportBtn = document.getElementById('export-btn');
   if (exportBtn) { exportBtn.disabled = false; exportBtn.style.opacity = ''; exportBtn.style.cursor = ''; exportBtn.title = ''; }
 
@@ -6070,6 +6330,7 @@ async function generate() {
     genSetStep(4);                            // → step 4: Review & export
     showAIPolicyBanner(selectedGrant);
     runComplianceChecklist(fields, content);
+    renderDisclosure();
     saveGenDraft();                           // persist the finished draft
 
     const elapsed = ((Date.now() - genStart) / 1000).toFixed(1);
@@ -6107,56 +6368,133 @@ function showAIPolicyBanner(grant) {
   }
 }
 
+/* Deterministic pre-export gate. When the user analyzed the funder's call, this
+   checks the draft against THOSE requirements (sections + length budget) and
+   reminds them which documents to attach. Otherwise it falls back to the right
+   checks FOR THE CHOSEN PROPOSAL TYPE (so an LOI is not failed for missing
+   "Executive Summary"-style headings it never has). Critical = form fields that
+   gate export; everything else is a visible, non-blocking quality check. */
+const TYPE_SECTIONS = {
+  'Full grant narrative': ['Executive Summary', 'Statement of Need', 'Program Design', 'Goals & Objectives', 'Evaluation Plan', 'Organizational Capacity'],
+  'Concept paper': ['Problem Statement', 'Proposed Approach', 'Expected Outcomes', 'Organizational Fit', 'Funding Request'],
+  'Progress report': ['Program Update', 'Outcomes', 'Challenges', 'Upcoming Activities', 'Financial'],
+  'Letter of inquiry': [], // a letter has no headings — don't check for sections
+};
+const TYPE_RANGE = {
+  'Full grant narrative': [200, 1200], 'Concept paper': [400, 900], 'Progress report': [350, 900], 'Letter of inquiry': [300, 700],
+};
 function runComplianceChecklist(fields, contentEl) {
   const text = contentEl ? (contentEl.innerText || '') : '';
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+  const req = (typeof window !== 'undefined' && window._parsedReq) ? window._parsedReq : null;
+  const ptype = fields.proposalType || (document.getElementById('gen-proposal-type')?.value) || 'Full grant narrative';
 
-  const requiredSections = [
-    'Executive Summary',
-    'Statement of Need',
-    'Program Design',
-    'Goals & Objectives',
-    'Evaluation Plan',
-    'Organizational Capacity',
-  ];
+  // Expected sections + length budget — from the funder's call if analyzed, else by type
+  let sectionTitles, minWords, maxWords;
+  if (req && (req.sections || []).length) {
+    sectionTitles = req.sections.map(s => s.title).filter(Boolean);
+    const limits = req.sections.map(s => Number(s.word_limit)).filter(n => n > 0);
+    if (limits.length) { maxWords = limits.reduce((a, b) => a + b, 0); minWords = Math.round(maxWords * 0.35); }
+    else { const r = TYPE_RANGE[ptype] || [200, 1200]; minWords = r[0]; maxWords = r[1]; }
+  } else {
+    sectionTitles = TYPE_SECTIONS[ptype] || [];
+    const r = TYPE_RANGE[ptype] || [200, 1200]; minWords = r[0]; maxWords = r[1];
+  }
 
-  const checks = [
-    ...requiredSections.map(sec => ({
-      label: 'Section present: ' + sec,
-      pass: text.toLowerCase().includes(sec.toLowerCase()),
-      critical: false,
-    })),
-    { label: 'Word count within range (200–1200 words)', pass: wordCount >= 200 && wordCount <= 1200, critical: false },
-    { label: 'Requested amount filled in',             pass: !!(fields.amount || '').trim(),      critical: true },
-    { label: 'Project period filled in',               pass: !!(fields.period || '').trim(),      critical: true },
-    { label: 'Population served filled in',            pass: !!(fields.population || '').trim(),  critical: true },
-    { label: '"What this funds" description filled in', pass: !!(fields.description || '').trim(), critical: true },
-  ];
+  const has = t => text.toLowerCase().includes(String(t).toLowerCase());
+  const checks = [];
+  sectionTitles.forEach(t => checks.push({ label: 'Includes the “' + t + '” section', pass: has(t), critical: false }));
+  checks.push({ label: 'Length within range (' + minWords + '–' + maxWords + ' words; now ' + wordCount + ')', pass: wordCount >= minWords && wordCount <= maxWords, critical: false });
+  checks.push({ label: 'Requested amount filled in', pass: !!(fields.amount || '').trim(), critical: true });
+  checks.push({ label: 'Project period filled in', pass: !!(fields.period || '').trim(), critical: true });
+  checks.push({ label: 'Population served filled in', pass: !!(fields.population || '').trim(), critical: true });
+  checks.push({ label: '“What this funds” description filled in', pass: !!(fields.description || '').trim(), critical: true });
 
   const criticalFail = checks.some(c => c.critical && !c.pass);
+  const softFail = checks.some(c => !c.critical && !c.pass);
 
   const exportBtn = document.getElementById('export-btn');
   if (exportBtn) {
-    exportBtn.disabled     = criticalFail;
-    exportBtn.title        = criticalFail ? 'Fix critical items in the checklist below before exporting' : '';
+    exportBtn.disabled = criticalFail;
+    exportBtn.title = criticalFail ? 'Fill the required fields below before exporting' : '';
     exportBtn.style.opacity = criticalFail ? '0.5' : '';
-    exportBtn.style.cursor  = criticalFail ? 'not-allowed' : '';
+    exportBtn.style.cursor = criticalFail ? 'not-allowed' : '';
   }
 
   let rows = '';
   for (const c of checks) {
     const icon = c.pass
-      ? '<span style="color:#22c55e;font-size:15px">✓</span>'
-      : '<span style="color:#ef4444;font-size:15px">✗</span>';
+      ? '<span style="color:#22c55e;font-size:15px;line-height:1.3">✓</span>'
+      : '<span style="color:' + (c.critical ? '#ef4444' : '#d97706') + ';font-size:15px;line-height:1.3">' + (c.critical ? '✗' : '!') + '</span>';
     const badge = c.critical && !c.pass ? ' <span style="font-size:11px;background:#fee2e2;color:#991b1b;border-radius:4px;padding:1px 5px;margin-left:4px">required</span>' : '';
-    rows += `<li style="display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0">${icon}<span>${c.label}${badge}</span></li>`;
+    rows += '<li style="display:flex;align-items:flex-start;gap:8px;font-size:13px;padding:3px 0;line-height:1.5">' + icon + '<span>' + c.label + badge + '</span></li>';
   }
+
+  // Required attachments — uploaded at the funder's portal, so a reminder, not a gate
+  let attHtml = '';
+  if (req && (req.attachments || []).length) {
+    attHtml = '<div style="margin-top:14px"><div style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Attach before you submit</div><ul style="list-style:none;margin:0;padding:0">' +
+      req.attachments.map(a => '<li style="display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0"></span><span>' + escHtml(a.name || a) + '</span></li>').join('') +
+      '</ul></div>';
+  }
+
+  const funderNm = (window._selectedGrant && (window._selectedGrant.funder || window._selectedGrant.title)) || '';
+  const subtitle = req ? ('Checked against ' + (escHtml(funderNm) || 'the funder') + '’s requirements') : ('Quality checks for a ' + escHtml(ptype.toLowerCase()));
+  const note = criticalFail
+    ? '<div style="font-size:12.5px;color:#991b1b;margin-top:10px">Fill the required fields to enable export.</div>'
+    : softFail
+      ? '<div style="font-size:12.5px;color:#854d0e;margin-top:10px">These won’t block export, but tighten them before you submit.</div>'
+      : '<div style="font-size:12.5px;color:#1c7a43;margin-top:10px">Looks complete. Review every line in your own voice before submitting.</div>';
 
   const el = document.getElementById('compliance-checklist');
   if (el) {
-    el.innerHTML = `<div style="border-top:1px solid var(--line);margin:0 28px;padding:16px 0 22px"><div style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Pre-export checklist</div><ul style="list-style:none;margin:0;padding:0">${rows}</ul></div>`;
+    el.innerHTML = '<div style="border-top:1px solid var(--line);margin:0 28px;padding:16px 0 22px">' +
+      '<div style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Pre-export checklist</div>' +
+      '<div style="font-size:12.5px;color:var(--muted);margin-bottom:11px">' + subtitle + '</div>' +
+      '<ul style="list-style:none;margin:0;padding:0">' + rows + '</ul>' + attHtml + note + '</div>';
     el.style.display = 'block';
   }
+}
+
+/* ── AI-use disclosure helper ──
+   Deterministic, instant, editable disclosure language. Keeps the human as
+   author (NIH NOT-OD-25-132 / NSF disclosure posture) without making an AI call. */
+function disclosureText() {
+  const org = (window._grange?.profile?.org_name) || (window._grange?._cachedAnswers?.org_name) || 'Our organization';
+  const type = (window._selectedGrant?.type || '').toLowerCase();
+  let t = org + ' prepared this application. We used Grange AI, an AI writing assistant, to help organize and draft narrative sections from information we provided. Every section was reviewed, edited, and approved by our staff, who are the authors of and remain responsible for this application. We did not use AI to fabricate data, citations, or outcomes.';
+  if (type === 'federal') t += ' We have reviewed this funder’s policy on the use of AI and confirm this application reflects our organization’s own original ideas.';
+  return t;
+}
+function renderDisclosure() {
+  const el = document.getElementById('ai-disclosure');
+  if (!el) return;
+  el.innerHTML =
+    '<div style="border-top:1px solid var(--line);margin:0 28px;padding:14px 0 22px">' +
+      '<button type="button" onclick="toggleDisclosure()" style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;cursor:pointer;padding:0;text-align:left;font:inherit;color:var(--ink)">' +
+        '<svg id="disc-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;flex-shrink:0"><path d="M9 18l6-6-6-6"/></svg>' +
+        '<span style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)">AI-use disclosure (optional)</span>' +
+      '</button>' +
+      '<div id="disc-body" style="display:none;margin-top:11px">' +
+        '<p style="font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 9px">Some funders ask how AI was used. Here is honest, ready-to-paste language. Edit it to match what you actually did, then copy it. You are the author.</p>' +
+        '<textarea id="disc-text" style="width:100%;min-height:104px;resize:vertical;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);padding:11px 13px;font:inherit;font-size:13px;line-height:1.55;color:var(--ink);outline:none">' + escHtml(disclosureText()) + '</textarea>' +
+        '<div style="margin-top:9px"><button class="btn btn-outline btn-sm" type="button" onclick="copyDisclosure()">Copy disclosure</button></div>' +
+      '</div>' +
+    '</div>';
+  el.style.display = 'block';
+}
+function toggleDisclosure() {
+  const b = document.getElementById('disc-body');
+  const c = document.getElementById('disc-chev');
+  if (!b) return;
+  const open = b.style.display === 'none';
+  b.style.display = open ? 'block' : 'none';
+  if (c) c.style.transform = open ? 'rotate(90deg)' : '';
+}
+function copyDisclosure() {
+  const t = document.getElementById('disc-text');
+  if (!t) return;
+  navigator.clipboard.writeText(t.value).then(() => toast('AI-use disclosure copied'), () => toast('Copy failed — select and copy manually'));
 }
 
 function copyProposal() {
