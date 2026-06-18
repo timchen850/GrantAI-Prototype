@@ -5016,8 +5016,8 @@ label.field-label {
           <textarea id="rag-paste" class="rag-ta" placeholder="Paste a past proposal, letter of inquiry, or your About-us text here…"></textarea>
           <div class="rag-add-bar">
             <input type="text" id="rag-label" class="rag-label" placeholder="Label (e.g. 2025 Youth Fund LOI)">
-            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('rag-file').click()">Upload .txt</button>
-            <input type="file" id="rag-file" accept=".txt,.md,text/plain,text/markdown" hidden onchange="ragFilePick(event)">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('rag-file').click()">Upload PDF, Word, or .txt</button>
+            <input type="file" id="rag-file" accept=".txt,.md,.pdf,.docx,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onchange="ragFilePick(event)">
             <button type="button" class="btn btn-accent btn-sm" id="rag-add-btn" onclick="ragAdd()">Add to Grange's memory</button>
           </div>
           <div id="rag-list" class="rag-list"></div>
@@ -5423,20 +5423,61 @@ async function ragAdd() {
   finally { if (btn) { btn.disabled = false; btn.textContent = "Add to Grange's memory"; } }
 }
 
-function ragFilePick(e) {
+/* Lazy-load a CDN library exactly once (so pdf.js / mammoth only load when a
+   user actually picks a PDF / Word doc, not for everyone). */
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector('script[data-lib="' + src + '"]')) return resolve();
+    const s = document.createElement('script');
+    s.src = src; s.dataset.lib = src;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Could not load ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function ragFilePick(e) {
   const f = e.target.files && e.target.files[0];
   e.target.value = '';
   if (!f) return;
-  if (f.size > 2 * 1024 * 1024) { toast('Please use a text file under 2 MB.'); return; }
-  const reader = new FileReader();
-  reader.onload = () => {
-    const ta = document.getElementById('rag-paste');
-    const lbl = document.getElementById('rag-label');
-    if (ta) ta.value = String(reader.result || '');
-    if (lbl && !lbl.value) lbl.value = f.name.replace(/\.(txt|md)$/i, '').slice(0, 80);
-    ragAdd();
-  };
-  reader.readAsText(f);
+  const name = (f.name || '').toLowerCase();
+  const isPdf = name.endsWith('.pdf') || f.type === 'application/pdf';
+  const isDocx = name.endsWith('.docx') || (f.type || '').includes('wordprocessingml');
+  const maxMB = (isPdf || isDocx) ? 15 : 2;
+  if (f.size > maxMB * 1024 * 1024) { toast('That file is large — please use one under ' + maxMB + ' MB.'); return; }
+  const ta = document.getElementById('rag-paste');
+  const lbl = document.getElementById('rag-label');
+  const setLabel = () => { if (lbl && !lbl.value) lbl.value = f.name.replace(/\.(txt|md|pdf|docx)$/i, '').slice(0, 80); };
+  try {
+    let text = '';
+    if (isPdf) {
+      toast('Reading your PDF…');
+      await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const pdf = await window.pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise;
+      const parts = [];
+      for (let p = 1; p <= pdf.numPages; p++) {
+        const content = await (await pdf.getPage(p)).getTextContent();
+        parts.push(content.items.map((i) => i.str).join(' '));
+      }
+      text = parts.join('\n\n').replace(/[ \t]+/g, ' ').trim();
+      if (text.length < 80) { toast('This looks like a scanned PDF with no selectable text. Paste the text instead.'); return; }
+    } else if (isDocx) {
+      toast('Reading your document…');
+      await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+      text = ((await window.mammoth.extractRawText({ arrayBuffer: await f.arrayBuffer() })).value || '').trim();
+      if (text.length < 80) { toast('Could not find text in that file. Paste it instead.'); return; }
+    } else {
+      text = (await f.text()).trim();
+    }
+    if (ta) ta.value = text;
+    setLabel();
+    toast('Pulled the text in. Review it, then tap “Add to Grange’s memory.”');
+    ta?.focus();
+  } catch (err) {
+    console.error('ragFilePick', err);
+    toast('Could not read that file. Try pasting the text instead.');
+  }
 }
 
 async function loadRagDocs() {
@@ -5862,6 +5903,28 @@ function reqShowStored() {
 
 /* Build the prompt block that injects the funder's extracted requirements
    into the writer so the draft mirrors the call exactly. */
+/* Compact context about the grant the user is actively working on — fed to the
+   in-app assistant so its answers are specific to THIS funder, not generic. */
+function chatGrantContext() {
+  const g = window._selectedGrant, r = window._parsedReq;
+  if (!g && !(r && (r.sections || r.eligibility || r.verdict))) return '';
+  const parts = [];
+  if (g) {
+    const t = g.title || g.funder || '';
+    parts.push('Grant: ' + t + (g.funder && g.title && g.funder !== g.title ? ' (' + g.funder + ')' : '') +
+      (g.type ? ' · ' + g.type : '') + (g.amount ? ' · ' + g.amount : '') + (g.deadlineLabel ? ' · due ' + g.deadlineLabel : ''));
+  }
+  if (r) {
+    if (r.verdict) parts.push('Fit verdict: ' + r.verdict + (r.verdict_headline ? ' (' + r.verdict_headline + ')' : ''));
+    if (r.deadline) parts.push('Deadline: ' + r.deadline);
+    if ((r.eligibility || []).length) parts.push('Eligibility: ' + r.eligibility.map(e => e.label + ' [' + e.status + ']').join('; '));
+    if ((r.sections || []).length) parts.push('Required sections: ' + r.sections.map(s => s.title + (s.word_limit ? ' (≤' + s.word_limit + 'w)' : '')).join('; '));
+    const atts = (r.attachments || []).map(reqAttName).filter(Boolean);
+    if (atts.length) parts.push('Required attachments: ' + atts.join('; '));
+  }
+  return parts.join('\n').slice(0, 1500);
+}
+
 function reqPromptBlock() {
   const req = (typeof window !== 'undefined' && window._parsedReq) ? window._parsedReq : null;
   if (!req) return '';
@@ -6396,49 +6459,49 @@ async function generate() {
   try {
     _genAbort = new AbortController();
 
-    // RAG — ground the draft in the org's OWN past proposals (voice + real facts).
-    // Best-effort: if the user has uploaded nothing, or retrieval fails, we draft
-    // exactly as before. Retrieval is RLS-scoped server-side: only their writing.
-    let voiceBlock = '';
+    // Two pre-passes run CONCURRENTLY (they are independent), so the user waits
+    // for the slower of the two, not the sum:
+    //   (a) RAG — retrieve the org's OWN past writing for voice + real facts
+    //   (b) strategy — think about the strongest angle for this specific grant
+    // Both are best-effort and RLS-scoped server-side; if either is empty or
+    // fails, we draft anyway. (AbortError from a cancel propagates to bail out.)
     window._lastVoiceCount = 0;
-    try {
+    genLoaderCap('Studying your past work and the funder…');
+    toast('Studying the funder…');
+
+    const ragPass = (async () => {
       const ragQuery = [fields.program, fields.description, selectedGrant?.title, selectedGrant?.funder, org.mission]
         .filter(Boolean).join('. ').slice(0, 1500);
-      if (ragQuery.trim()) {
-        const vr = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/rag-search', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
-          signal: _genAbort.signal,
-          body: JSON.stringify({ query: ragQuery, match_count: 5 }),
-        });
-        if (vr.ok) {
-          const chunks = ((await vr.json()).chunks || []).slice(0, 5);
-          if (chunks.length) {
-            window._lastVoiceCount = chunks.length;
-            voiceBlock = "\n\nYOUR ORGANIZATION'S OWN PAST WRITING (retrieved from proposals you uploaded). Match THIS voice, tone, and sentence rhythm. Reuse a specific fact, number, or program detail ONLY if it genuinely fits this proposal. Never copy whole sentences verbatim, and never invent facts that are not in the organization data above:\n" +
-              chunks.map((c, i) => `[${i + 1}] ${c.content}`).join('\n\n');
-          }
-        }
-      }
-    } catch (e) { if (e.name === 'AbortError') throw e; /* grounding is best-effort */ }
+      if (!ragQuery.trim()) return '';
+      const vr = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/rag-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+        signal: _genAbort.signal,
+        body: JSON.stringify({ query: ragQuery, match_count: 5 }),
+      });
+      if (!vr.ok) return '';
+      const chunks = ((await vr.json()).chunks || []).slice(0, 5);
+      if (!chunks.length) return '';
+      window._lastVoiceCount = chunks.length;
+      return "\n\nYOUR ORGANIZATION'S OWN PAST WRITING (retrieved from proposals you uploaded). Match THIS voice, tone, and sentence rhythm. Reuse a specific fact, number, or program detail ONLY if it genuinely fits this proposal. Never copy whole sentences verbatim, and never invent facts that are not in the organization data above:\n" +
+        chunks.map((c, i) => `[${i + 1}] ${c.content}`).join('\n\n');
+    })();
 
-    // PASS 1 — think about the strongest angle for this specific grant
-    let prompt = writePrompt + voiceBlock;
+    const stratPass = runStrategyPass(
+      buildStrategyPrompt(fields, org, selectedGrant), session.access_token, _genAbort.signal);
+
+    let voiceBlock = '', strategy = '';
     try {
-      genLoaderCap('Planning the strongest angle for this grant…');
-      toast('Studying the funder…');
-      const strategy = await runStrategyPass(
-        buildStrategyPrompt(fields, org, selectedGrant), session.access_token, _genAbort.signal);
-      if (strategy) {
-        showStrategyNote(strategy);
-        prompt = writePrompt +
-          '\n\nSTRATEGY BRIEF (internal, let this shape the angle, emphasis, and what you lead with; do not quote it verbatim):\n' + strategy;
-      }
-      genLoaderCap('Writing your draft…');
-    } catch (e) {
-      if (e.name === 'AbortError') throw e;   // user cancelled — bail out cleanly
-      genLoaderCap('Writing your draft…');    // strategy is best-effort; draft anyway
-    }
+      [voiceBlock, strategy] = await Promise.all([
+        ragPass.catch((e) => { if (e.name === 'AbortError') throw e; return ''; }),
+        stratPass.catch((e) => { if (e.name === 'AbortError') throw e; return ''; }),
+      ]);
+    } catch (e) { if (e.name === 'AbortError') throw e; }
+
+    if (strategy) showStrategyNote(strategy);
+    const prompt = writePrompt + voiceBlock +
+      (strategy ? '\n\nSTRATEGY BRIEF (internal, let this shape the angle, emphasis, and what you lead with; do not quote it verbatim):\n' + strategy : '');
+    genLoaderCap('Writing your draft…');
 
     toast('Drafting your proposal…');
 
@@ -6538,12 +6601,31 @@ async function generate() {
 function showAIPolicyBanner(grant) {
   const banner = document.getElementById('ai-policy-banner');
   if (!banner) return;
+  const box = (bg, bd, col, label, body) =>
+    '<div style="background:' + bg + ';border:1px solid ' + bd + ';border-radius:6px;padding:10px 14px;font-size:13px;color:' + col + '"><strong>' + label + '</strong> ' + body + '</div>';
+  // Prefer the funder's OWN stated AI policy (extracted from their call) over a guess.
+  const pol = window._parsedReq && window._parsedReq.ai_policy;
+  const stance = (pol && pol.stance || '').toLowerCase();
+  const note = (pol && pol.note) ? ' ' + escHtml(pol.note) : '';
+  if (stance === 'prohibited') {
+    banner.innerHTML = box('#fee2e2', '#fca5a5', '#991b1b', 'This funder prohibits AI-written applications.', 'Use this draft only to organize your thinking. The words you submit must be substantially your own.' + note);
+    banner.style.display = 'block'; return;
+  }
+  if (stance === 'restricted') {
+    banner.innerHTML = box('#fef9c3', '#fde047', '#854d0e', 'This funder limits or requires disclosure of AI use.', 'Review their rules and add the disclosure below before submitting.' + note);
+    banner.style.display = 'block'; return;
+  }
+  if (stance === 'allowed') {
+    banner.innerHTML = box('#e6f1ea', '#9ccdb0', '#1c7a43', 'This funder allows AI assistance.', 'Still review and revise every line in your own voice before submitting.' + note);
+    banner.style.display = 'block'; return;
+  }
+  // No parsed policy → fall back to the funder-type heuristic.
   const type = (grant?.type || '').toLowerCase();
   if (type === 'federal') {
-    banner.innerHTML = '<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;padding:10px 14px;font-size:13px;color:#991b1b"><strong>Warning:</strong> This funder may prohibit substantially AI-generated content (e.g. NIH NOT-OD-25-132). Use this draft as a structural guide only — the core argument must be yours.</div>';
+    banner.innerHTML = box('#fee2e2', '#fca5a5', '#991b1b', 'Warning:', 'This funder may prohibit substantially AI-generated content (e.g. NIH NOT-OD-25-132). Use this draft as a structural guide only, the core argument must be yours.');
     banner.style.display = 'block';
   } else if (type === 'foundation') {
-    banner.innerHTML = '<div style="background:#fef9c3;border:1px solid #fde047;border-radius:6px;padding:10px 14px;font-size:13px;color:#854d0e"><strong>Notice:</strong> Review this funder\'s guidelines for AI disclosure requirements before submitting.</div>';
+    banner.innerHTML = box('#fef9c3', '#fde047', '#854d0e', 'Notice:', "Review this funder's guidelines for AI disclosure requirements before submitting.");
     banner.style.display = 'block';
   } else {
     banner.style.display = 'none';
@@ -6652,8 +6734,15 @@ function runComplianceChecklist(fields, contentEl) {
 function disclosureText() {
   const org = (window._grange?.profile?.org_name) || (window._grange?._cachedAnswers?.org_name) || 'Our organization';
   const type = (window._selectedGrant?.type || '').toLowerCase();
+  const stance = (window._parsedReq?.ai_policy?.stance || '').toLowerCase();
   let t = org + ' prepared this application. We used Grange AI, an AI writing assistant, to help organize and draft narrative sections from information we provided. Every section was reviewed, edited, and approved by our staff, who are the authors of and remain responsible for this application. We did not use AI to fabricate data, citations, or outcomes.';
-  if (type === 'federal') t += ' We have reviewed this funder’s policy on the use of AI and confirm this application reflects our organization’s own original ideas.';
+  if (stance === 'prohibited') {
+    t += ' We have read this funder’s policy prohibiting AI-developed applications; the ideas, analysis, and substance of this application are our organization’s own original work.';
+  } else if (stance === 'restricted') {
+    t += ' We provide this statement in accordance with this funder’s policy on disclosing the use of AI.';
+  } else if (type === 'federal') {
+    t += ' We have reviewed this funder’s policy on the use of AI and confirm this application reflects our organization’s own original ideas.';
+  }
   return t;
 }
 function renderDisclosure() {
@@ -9497,7 +9586,7 @@ function applyDiscFilters(query, type) {
             const res = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/ai-chat', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
-              body: JSON.stringify({ message: msg, history: history.slice(0, -1) }),
+              body: JSON.stringify({ message: msg, history: history.slice(0, -1), grant_context: (typeof chatGrantContext === 'function' ? chatGrantContext() : '') }),
             });
             const d = await res.json().catch(() => ({}));
             typing.classList.remove('typing');
