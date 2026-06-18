@@ -4038,12 +4038,24 @@ label.field-label {
   .ob-nav .btn-ghost[disabled] { opacity: 0; pointer-events: none; }
   .ob-upload { border: 1.5px dashed rgba(0,0,0,0.18); border-radius: 12px; padding: 22px; text-align: center; font-size: 13.5px; color: var(--ink-body,#6b665e); cursor: pointer; }
   .ob-upload.has { border-style: solid; border-color: var(--ok, #2a9d6e); color: var(--ink); }
+  /* required-field affordances + inline validation */
+  .ob-req { color: var(--accent); font-weight: 700; }
+  .ob-need { font-size: 12.5px; color: var(--ink-soft, #8a857c); }
+  .ob-error { color: #c0392b; font-size: 13px; font-weight: 500; min-height: 0; margin-top: 14px; transition: opacity .2s; }
+  .ob-error:empty { margin-top: 0; }
+  /* a flagged field: tint inputs and chip group, gentle attention shake */
+  .fieldset.ob-invalid > input, .fieldset.ob-invalid > textarea, .fieldset.ob-invalid > select { border-color: #d96a5a !important; box-shadow: 0 0 0 3px rgba(217,79,48,.12); }
+  .fieldset.ob-invalid .ob-chips { border-radius: 12px; box-shadow: 0 0 0 3px rgba(217,79,48,.12); padding: 6px; margin: -6px; }
+  .fieldset.ob-invalid .field-label { color: #c0392b; }
+  .fieldset.ob-invalid { animation: obShake .32s var(--ease, cubic-bezier(.36,.07,.19,.97)); }
+  @keyframes obShake { 10%,90%{transform:translateX(-1px)} 30%,70%{transform:translateX(2px)} 50%{transform:translateX(-3px)} }
+  @media (prefers-reduced-motion: reduce){ .fieldset.ob-invalid{ animation:none } }
 </style>
 <div id="onboarding" class="screen">
   <div class="ob-wrap">
     <div class="ob-top">
       <a class="brand" href="#"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
-      <button class="ob-skip" onclick="obSkip()">Skip for now</button>
+      <span class="ob-need"><span class="ob-req">*</span> Required to match you with grants</span>
     </div>
     <div class="ob-progress"><div class="ob-progress-fill" id="ob-progress-fill"></div></div>
     <div class="ob-card">
@@ -4051,6 +4063,7 @@ label.field-label {
       <h2 class="ob-title" id="ob-title"></h2>
       <p class="ob-sub" id="ob-sub"></p>
       <div class="ob-fields" id="ob-fields"></div>
+      <div class="ob-error" id="ob-error" role="alert"></div>
       <div class="ob-nav">
         <button class="btn btn-ghost" id="ob-back" onclick="obBack()">Back</button>
         <button class="btn btn-accent" id="ob-next" onclick="obNext()">Continue</button>
@@ -4324,8 +4337,37 @@ label.field-label {
 .tut-badge--glass .pip{ background:#fff; }
 .glass-tile{ background:rgba(255,255,255,.18); -webkit-backdrop-filter:blur(16px) saturate(150%); backdrop-filter:blur(16px) saturate(150%); border:1px solid rgba(255,255,255,.6); box-shadow:inset 0 1px 0 rgba(255,255,255,.55); border-radius:16px; }
 .glass-bright{ background:rgba(255,255,255,.66); -webkit-backdrop-filter:blur(18px) saturate(140%); backdrop-filter:blur(18px) saturate(140%); border:1px solid rgba(255,255,255,.72); box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 26px 60px -32px rgba(40,12,8,.55); border-radius:20px; }
+.tut-exit{ flex:none; font-size:12.5px; font-weight:600; color:#fff; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.34); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-radius:var(--r-pill); padding:7px 14px; cursor:pointer; transition:background .18s, transform .12s; }
+.tut-exit:hover{ background:rgba(255,255,255,.26); }
+.tut-exit:active{ transform:scale(.96); }
+.tut-exit[hidden]{ display:none; }
 .tut-foot--glass{ background:rgba(255,255,255,.14); -webkit-backdrop-filter:blur(22px) saturate(160%); backdrop-filter:blur(22px) saturate(160%); border-top:1px solid rgba(255,255,255,.4); }
 .tut-foot--glass .hint{ color:rgba(255,255,255,.85); } .tut-foot--glass .hint.pulse{ color:#fff; font-weight:600; }
+/* ── the guide: the Grange assistant flies beside whatever you should click ── */
+.tut-guide{ position:fixed; left:0; top:0; z-index:5; width:46px; height:46px; pointer-events:none; opacity:0; transform:translate3d(var(--gx,50vw),var(--gy,42vh),0); transition:transform 720ms var(--ios-drawer), opacity .4s var(--ease-out); }
+.tut-guide.show{ opacity:1; }
+.tut-guide-orb{ position:absolute; inset:0; width:46px; height:46px; filter:drop-shadow(0 12px 24px rgba(40,12,8,.45)); animation:tutGuideBob 3.6s var(--ease-soft) infinite; }
+.tut-guide-orb .gorb{ display:block; }
+@keyframes tutGuideBob{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-5px);} }
+.tut-guide-bubble{ position:absolute; width:max-content; max-width:230px; font-size:13px; line-height:1.46; font-weight:500; color:var(--ink); background:rgba(255,255,255,.93); -webkit-backdrop-filter:blur(16px) saturate(150%); backdrop-filter:blur(16px) saturate(150%); border:1px solid rgba(255,255,255,.85); box-shadow:0 18px 42px -20px rgba(40,12,8,.55); border-radius:14px; padding:11px 14px; opacity:0; filter:blur(5px); transition:opacity .38s var(--ease-out), transform .42s var(--spring-soft), filter .38s; }
+.tut-guide-bubble.in{ opacity:1; filter:none; }
+.tut-guide-bubble::after{ content:''; position:absolute; width:0; height:0; }
+/* park to the RIGHT of the target → orb on the left, bubble + tail point back left */
+.tut-guide[data-side="right"] .tut-guide-bubble{ left:60px; top:50%; transform:translateY(-50%) translateX(-7px); }
+.tut-guide[data-side="right"] .tut-guide-bubble.in{ transform:translateY(-50%) translateX(0); }
+.tut-guide[data-side="right"] .tut-guide-bubble::after{ left:-7px; top:50%; margin-top:-7px; border:7px solid transparent; border-right-color:rgba(255,255,255,.93); border-left:0; }
+/* park to the LEFT of the target */
+.tut-guide[data-side="left"] .tut-guide-bubble{ right:60px; top:50%; transform:translateY(-50%) translateX(7px); }
+.tut-guide[data-side="left"] .tut-guide-bubble.in{ transform:translateY(-50%) translateX(0); }
+.tut-guide[data-side="left"] .tut-guide-bubble::after{ right:-7px; top:50%; margin-top:-7px; border:7px solid transparent; border-left-color:rgba(255,255,255,.93); border-right:0; }
+/* park ABOVE the target (narrow screens) */
+.tut-guide[data-side="top"] .tut-guide-bubble{ bottom:60px; left:50%; transform:translateX(-50%) translateY(7px); max-width:64vw; }
+.tut-guide[data-side="top"] .tut-guide-bubble.in{ transform:translateX(-50%) translateY(0); }
+.tut-guide[data-side="top"] .tut-guide-bubble::after{ bottom:-7px; left:50%; margin-left:-7px; border:7px solid transparent; border-top-color:rgba(255,255,255,.93); border-bottom:0; }
+/* the soft ring that says "click here" on the pointed element */
+.tut-target-glow{ animation:tutTargetGlow 1.8s var(--ease-soft) infinite; }
+@keyframes tutTargetGlow{ 0%,100%{ box-shadow:0 12px 30px -10px rgba(217,79,48,.55), 0 0 0 0 rgba(217,79,48,.5);} 60%{ box-shadow:0 12px 30px -10px rgba(217,79,48,.55), 0 0 0 9px rgba(217,79,48,0);} }
+@media (prefers-reduced-motion: reduce){ .tut-guide{ transition:opacity .3s; } .tut-guide-orb{ animation:none; } .tut-target-glow{ animation:none; box-shadow:0 0 0 3px rgba(217,79,48,.4); } }
 .tut-ghost-glass{ color:#fff; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.4); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){ .tut-slab{ background:rgba(40,16,8,.42); } .glass-tile,.tut-foot--glass,.tut-badge--glass,.tut-ghost-glass{ background:rgba(40,16,8,.4); } .glass-bright{ background:rgba(255,255,255,.9); } }
 
@@ -4372,6 +4414,12 @@ label.field-label {
 .tut-gate-btn svg{ width:16px; height:16px; }
 @media (hover:hover){ .tut-gate-btn:hover{ background:var(--accent-press); box-shadow:0 14px 30px -10px rgba(217,79,48,.7); } }
 .tut-gate-btn:active{ transform:scale(.97); } .tut-gate-btn:disabled{ opacity:.55; cursor:default; }
+/* the action button eases in a beat after its panel, so it never just appears */
+.tut-bay .tut-gate-btn{ animation:tutGateIn 560ms var(--ios-drawer) backwards; animation-delay:360ms; }
+@keyframes tutGateIn{ from{ opacity:0; transform:translateY(10px) scale(.96); } to{ opacity:1; transform:none; } }
+/* graceful fade-out helper (e.g. the draft button once writing starts) */
+.tut-gate-btn.tut-gone{ opacity:0 !important; transform:scale(.92); pointer-events:none; transition:opacity .4s var(--ease-out), transform .4s var(--ease-out); }
+@media (prefers-reduced-motion:reduce){ .tut-bay .tut-gate-btn{ animation:none; } }
 .tut-next:active,.tut-back:active{ transform:scale(.97); transition:transform 140ms var(--ease-out); }
 .tut-foot--glass{ padding:18px clamp(22px,5vw,64px); }
 .tut-foot--glass .inner{ max-width:none; }
@@ -4491,8 +4539,15 @@ label.field-label {
       <a class="brand brand--light" href="#" onclick="return false"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
       <div class="tut-rail" id="tut-rail"></div>
       <span class="tut-badge tut-badge--glass"><span class="pip"></span><span id="tut-badge-label">Guided tour</span></span>
+      <button class="tut-exit" id="tut-exit" onclick="tutExit()" hidden aria-label="Exit tour and return to portal">Exit tour ✕</button>
     </header>
     <div class="tut-stage" id="tut-stage" data-dir="fwd"></div>
+  </div>
+
+  <!-- PLANE 2.5: the guide — the Grange assistant flies to whatever you should click -->
+  <div class="tut-guide" id="tut-guide" data-side="right" aria-live="polite">
+    <div class="tut-guide-bubble" id="tut-guide-bubble"></div>
+    <div class="tut-guide-orb" id="tut-guide-orb"></div>
   </div>
 
   <!-- PLANE 3: frosted footer plank -->
@@ -7869,31 +7924,31 @@ const OB_STEPS = [
   { eyebrow: 'Step 1 of 6 · Your organization', title: 'Tell us about your nonprofit',
     sub: 'The basics that establish your eligibility for most grants.',
     fields: [
-      { key: 'org_name', label: 'Organization legal name', type: 'text', placeholder: 'Eastside Youth Foundation' },
-      { key: 'ein', label: 'EIN (Employer Identification Number)', type: 'text', placeholder: '47-1234567' },
-      { key: 'status_501c3', label: '501(c)(3) status confirmed?', type: 'radio', options: ['Yes','No','In progress'] },
+      { key: 'org_name', label: 'Organization legal name', type: 'text', placeholder: 'Eastside Youth Foundation', required: true },
+      { key: 'ein', label: 'EIN (Employer Identification Number)', type: 'text', placeholder: '47-1234567', required: true },
+      { key: 'status_501c3', label: '501(c)(3) status confirmed?', type: 'radio', options: ['Yes','No','In progress'], required: true },
       { key: 'year_founded', label: 'Year founded', type: 'number', placeholder: '2011' },
-      { key: 'state_incorp', label: 'State of incorporation', type: 'text', placeholder: 'California' },
+      { key: 'state_incorp', label: 'State of incorporation', type: 'text', placeholder: 'California', required: true },
     ] },
   { eyebrow: 'Step 2 of 6 · Your mission', title: 'What do you work on?',
     sub: 'This drives which grants we match you to — the more detail, the better your matches.',
     fields: [
-      { key: 'mission', label: 'Mission statement', type: 'textarea', placeholder: 'In 2–3 sentences, what is your mission?' },
-      { key: 'focus_areas', label: 'Primary focus areas (select all that apply)', type: 'multi', options: ['Education','Housing','Food Security','Health','Environment','Arts','Youth','Veterans','Workforce','Community Development','Other'] },
+      { key: 'mission', label: 'Mission statement', type: 'textarea', placeholder: 'In 2–3 sentences, what is your mission?', required: true },
+      { key: 'focus_areas', label: 'Primary focus areas (select all that apply)', type: 'multi', options: ['Education','Housing','Food Security','Health','Environment','Arts','Youth','Veterans','Workforce','Community Development','Other'], required: true },
       { key: 'primary_programs', label: 'Primary programs or services (select all that apply)', type: 'multi', options: ['After-school programs','Tutoring & mentorship','Job training','Food bank / pantry','Health clinic','Mental health services','Housing assistance','Arts programs','Legal aid','Community organizing','STEM education','Early childhood','Re-entry support','Other'] },
       { key: 'beneficiaries', label: 'Who do you serve?', type: 'textarea', placeholder: 'e.g. Low-income youth ages 8–18 in East Los Angeles.' },
     ] },
   { eyebrow: 'Step 3 of 6 · Your reach', title: 'Where do you work?',
     sub: 'Geography narrows the field to grants you can actually win.',
     fields: [
-      { key: 'geo_focus', label: 'Geographic focus', type: 'radio', options: ['Local','Regional','Statewide','National','International'] },
-      { key: 'primary_location', label: 'City / state you primarily operate in', type: 'text', placeholder: 'Los Angeles, CA' },
+      { key: 'geo_focus', label: 'Geographic focus', type: 'radio', options: ['Local','Regional','Statewide','National','International'], required: true },
+      { key: 'primary_location', label: 'City / state you primarily operate in', type: 'text', placeholder: 'Los Angeles, CA', required: true },
       { key: 'people_served', label: 'Approx. people served per year', type: 'number', placeholder: '340' },
     ] },
   { eyebrow: 'Step 4 of 6 · Finances & capacity', title: 'Your size and capacity',
     sub: 'Funders screen on budget and staffing; this keeps matches realistic.',
     fields: [
-      { key: 'annual_budget', label: 'Annual operating budget', type: 'select', options: ['<$100K','$100K–$500K','$500K–$1M','$1M–$5M','$5M+'] },
+      { key: 'annual_budget', label: 'Annual operating budget', type: 'select', options: ['<$100K','$100K–$500K','$500K–$1M','$1M–$5M','$5M+'], required: true },
       { key: 'staff_count', label: 'Full-time staff count', type: 'number', placeholder: '6' },
       { key: 'grant_writer', label: 'Do you have a dedicated grant writer?', type: 'radio', options: ['Yes','No','Sometimes'] },
     ] },
@@ -7943,6 +7998,7 @@ function obRender() {
           if (i >= 0) { arr.splice(i, 1); chip.classList.remove('on'); }
           else { arr.push(v); chip.classList.add('on'); }
           obState.answers[f.key] = arr;
+          obClearInvalid(f.key);
         };
       });
     } else if (f.type === 'radio') {
@@ -7951,6 +8007,7 @@ function obRender() {
           wrap.querySelectorAll('[data-radio="'+f.key+'"] .ob-chip').forEach(c => c.classList.remove('on'));
           chip.classList.add('on');
           obState.answers[f.key] = chip.dataset.val;
+          obClearInvalid(f.key);
         };
       });
     } else if (f.type === 'file') {
@@ -7966,32 +8023,73 @@ function obRender() {
       };
     } else {
       const inp = wrap.querySelector('#ob-'+f.key);
-      inp.oninput = () => { obState.answers[f.key] = inp.value; };
+      inp.oninput = () => { obState.answers[f.key] = inp.value; obClearInvalid(f.key); };
+      if (inp.tagName === 'SELECT') inp.onchange = () => { obState.answers[f.key] = inp.value; obClearInvalid(f.key); };
     }
   });
 
+  document.getElementById('ob-error').textContent = '';
   document.getElementById('ob-back').disabled = obState.idx === 0;
   document.getElementById('ob-next').textContent = obState.idx === OB_STEPS.length - 1 ? 'Finish' : 'Continue';
 }
 
 function obFieldHTML(f) {
   const v = obState.answers[f.key];
+  // wrapper carries an id so validation can flag it, and a required marker on the label
+  const open = `<div class="fieldset" id="ob-wrap-${f.key}" style="margin:0">`;
+  const lab = `<label class="field-label">${f.label}${f.required ? ' <span class="ob-req" title="Required">*</span>' : ''}</label>`;
   if (f.type === 'textarea')
-    return `<div class="fieldset" style="margin:0"><label class="field-label">${f.label}</label><textarea id="ob-${f.key}" placeholder="${f.placeholder||''}">${v||''}</textarea></div>`;
+    return `${open}${lab}<textarea id="ob-${f.key}" placeholder="${f.placeholder||''}">${v||''}</textarea></div>`;
   if (f.type === 'select')
-    return `<div class="fieldset" style="margin:0"><label class="field-label">${f.label}</label><select id="ob-${f.key}"><option value="">Select…</option>${f.options.map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')}</select></div>`;
+    return `${open}${lab}<select id="ob-${f.key}"><option value="">Select…</option>${f.options.map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')}</select></div>`;
   if (f.type === 'multi')
-    return `<div class="fieldset" style="margin:0"><label class="field-label">${f.label}</label><div class="ob-chips" data-multi="${f.key}">${f.options.map(o=>`<button type="button" class="ob-chip ${(v||[]).includes(o)?'on':''}" data-val="${o}">${o}</button>`).join('')}</div></div>`;
+    return `${open}${lab}<div class="ob-chips" data-multi="${f.key}">${f.options.map(o=>`<button type="button" class="ob-chip ${(v||[]).includes(o)?'on':''}" data-val="${o}">${o}</button>`).join('')}</div></div>`;
   if (f.type === 'radio')
-    return `<div class="fieldset" style="margin:0"><label class="field-label">${f.label}</label><div class="ob-chips" data-radio="${f.key}">${f.options.map(o=>`<button type="button" class="ob-chip ${v===o?'on':''}" data-val="${o}">${o}</button>`).join('')}</div></div>`;
+    return `${open}${lab}<div class="ob-chips" data-radio="${f.key}">${f.options.map(o=>`<button type="button" class="ob-chip ${v===o?'on':''}" data-val="${o}">${o}</button>`).join('')}</div></div>`;
   if (f.type === 'file')
-    return `<div class="fieldset" style="margin:0"><label class="field-label">${f.label}</label><div class="ob-upload" id="ob-filebox-${f.key}">Drop a file or click to upload</div><input type="file" id="ob-file-${f.key}" accept="application/pdf" style="display:none"></div>`;
-  return `<div class="fieldset" style="margin:0"><label class="field-label">${f.label}</label><input type="${f.type}" id="ob-${f.key}" placeholder="${f.placeholder||''}" value="${v||''}"></div>`;
+    return `${open}${lab}<div class="ob-upload" id="ob-filebox-${f.key}">Drop a file or click to upload</div><input type="file" id="ob-file-${f.key}" accept="application/pdf" style="display:none"></div>`;
+  return `${open}${lab}<input type="${f.type}" id="ob-${f.key}" placeholder="${f.placeholder||''}" value="${v||''}"></div>`;
 }
 
 function obBack() { if (obState.idx > 0) { obState.idx--; obRender(); } }
 
+/* clear a single field's invalid flag (called as the user fixes it) */
+function obClearInvalid(key) {
+  const w = document.getElementById('ob-wrap-' + key);
+  if (w) w.classList.remove('ob-invalid');
+  // if nothing is invalid anymore, drop the error line
+  if (!document.querySelector('.ob-invalid')) {
+    const e = document.getElementById('ob-error'); if (e) e.textContent = '';
+  }
+}
+
+/* a required answer is "filled" when: text/number/select non-empty, multi has >=1, radio is set */
+function obFieldFilled(f) {
+  const v = obState.answers[f.key];
+  if (Array.isArray(v)) return v.length > 0;
+  return v !== undefined && v !== null && String(v).trim() !== '';
+}
+
+/* validate the CURRENT step's required fields; flag any blanks and block advance */
+function obValidateStep() {
+  const step = OB_STEPS[obState.idx];
+  const missing = step.fields.filter(f => f.required && !obFieldFilled(f));
+  // reset prior flags on this step
+  step.fields.forEach(f => { const w = document.getElementById('ob-wrap-' + f.key); if (w) w.classList.remove('ob-invalid'); });
+  const errEl = document.getElementById('ob-error');
+  if (!missing.length) { if (errEl) errEl.textContent = ''; return true; }
+  missing.forEach(f => { const w = document.getElementById('ob-wrap-' + f.key); if (w) w.classList.add('ob-invalid'); });
+  if (errEl) errEl.textContent = missing.length === 1
+    ? 'Please complete the highlighted field to continue.'
+    : `Please complete the ${missing.length} highlighted fields to continue.`;
+  // focus the first offending input
+  const first = document.getElementById('ob-wrap-' + missing[0].key);
+  if (first) { first.scrollIntoView({ block: 'center', behavior: 'smooth' }); const inp = first.querySelector('input,textarea,select,.ob-chip'); inp && inp.focus(); }
+  return false;
+}
+
 async function obNext() {
+  if (!obValidateStep()) return;
   if (obState.idx < OB_STEPS.length - 1) { obState.idx++; obRender(); return; }
   await obFinish();
 }
@@ -8130,6 +8228,7 @@ const TUT_STEPS = [
       tutRevealStep(document.querySelector('.tut-intro'));
       const go = document.getElementById('tut-go');
       setTimeout(() => go && go.focus(), 820);
+      setTimeout(() => tutGuide.point('#tut-go', "Hi, I'm Grange. Tap here and I'll walk you through all five steps."), 760);
       go.onclick = () => {
         go.style.transform = 'scale(.96)';
         const col = document.querySelector('.tut-intro-col');
@@ -8175,8 +8274,10 @@ const TUT_STEPS = [
       const reveal = () => rows.forEach((r, i) => setTimeout(() => { r.style.opacity = '1'; r.style.transform = 'none'; r.style.filter = 'none'; }, i * 90 * S));
       const fill = () => { document.getElementById('tut-pr').style.setProperty('--p', 100); tutCount(document.getElementById('tut-prn'), 100, 1400); };
       const btn = document.getElementById('tut-read');
-      if (RM) { rows.forEach(r => { r.style.opacity = '1'; r.style.transform = 'none'; r.style.filter = 'none'; }); fill(); btn.disabled = true; tutUnlock(); return; }
-      btn.onclick = () => { btn.disabled = true; reveal(); fill(); setTimeout(tutUnlock, rows.length * 90 * S + 500); };
+      const toNext = () => tutGuide.point('#tut-next', "That's your living profile — every later step reads from it. Tap Continue. →");
+      if (RM) { rows.forEach(r => { r.style.opacity = '1'; r.style.transform = 'none'; r.style.filter = 'none'; }); fill(); btn.disabled = true; tutUnlock(); toNext(); return; }
+      setTimeout(() => tutGuide.point('#tut-read', "Click Read my 990 — I'll pull your mission, budget and eligibility out of it."), 700);
+      btn.onclick = () => { btn.disabled = true; reveal(); fill(); setTimeout(() => { tutUnlock(); toNext(); }, rows.length * 90 * S + 500); };
     } },
 
   /* 2 — Discovery: funder constellation lighting up */
@@ -8219,12 +8320,14 @@ const TUT_STEPS = [
       const RM = matchMedia('(prefers-reduced-motion: reduce)').matches, S = tutState.replay ? 0.5 : 1;
       const winners = () => document.querySelectorAll('#tut-short .pill').forEach((p, i) => setTimeout(() => p.classList.add('in'), i * 120 * S));
       const btn = document.getElementById('tut-scan');
-      if (RM) { nodes.forEach((n, i) => { n.classList.add('lit'); n.querySelector('.sc').textContent = labels[i] || 'matched'; }); document.getElementById('tut-scn').textContent = '2,847'; winners(); btn.disabled = true; tutUnlock(); return; }
+      const toNext = () => tutGuide.point('#tut-next', "Three strong matches surfaced from thousands. Tap Continue. →");
+      if (RM) { nodes.forEach((n, i) => { n.classList.add('lit'); n.querySelector('.sc').textContent = labels[i] || 'matched'; }); document.getElementById('tut-scn').textContent = '2,847'; winners(); btn.disabled = true; tutUnlock(); toNext(); return; }
+      setTimeout(() => tutGuide.point('#tut-scan', "Hit Run today's scan and watch me check every funder source for you."), 700);
       btn.onclick = () => {
         btn.disabled = true; tutCount(document.getElementById('tut-scn'), 2847, 1600);
         nodes.forEach((n, i) => setTimeout(() => { n.classList.add('lit'); n.querySelector('.sc').textContent = labels[i] || 'matched'; }, 200 + i * 120 * S));
         setTimeout(winners, 200 + nodes.length * 120 * S);
-        setTimeout(tutUnlock, 200 + nodes.length * 120 * S + 500);
+        setTimeout(() => { tutUnlock(); toNext(); }, 200 + nodes.length * 120 * S + 500);
       };
     } },
 
@@ -8262,9 +8365,10 @@ const TUT_STEPS = [
       const chips = [...document.querySelectorAll('#tut-verd .tut-vchip')];
       const doScore = () => { document.getElementById('tut-g').style.setProperty('--p', 87); tutCount(document.getElementById('tut-gn'), 87, 1400); chips.forEach((c, i) => setTimeout(() => c.classList.add('in'), 400 + i * 140)); };
       const dueRow = document.querySelector('#tut-rdy .row.due'), btn = document.getElementById('tut-score');
-      const arm = () => { dueRow.onclick = () => { if (dueRow.classList.contains('on')) return; dueRow.classList.add('on'); dueRow.classList.remove('due'); tutUnlock(); }; };
-      if (RM) { doScore(); chips.forEach(c => c.classList.add('in')); arm(); return; }
-      btn.onclick = () => { btn.disabled = true; doScore(); arm(); const h = document.getElementById('tut-hint'); h.textContent = 'Tap the open item to mark it in progress'; h.classList.add('pulse'); };
+      const arm = () => { dueRow.onclick = () => { if (dueRow.classList.contains('on')) return; dueRow.classList.add('on'); dueRow.classList.remove('due'); tutUnlock(); tutGuide.point('#tut-next', "You're ready, and you know what's missing. Tap Continue. →"); }; };
+      if (RM) { doScore(); chips.forEach(c => c.classList.add('in')); arm(); tutGuide.point(dueRow, 'Mark this open document as in progress to continue.'); return; }
+      setTimeout(() => tutGuide.point('#tut-score', "Tap Score this match to see your fit and what's still missing."), 700);
+      btn.onclick = () => { btn.disabled = true; doScore(); arm(); const h = document.getElementById('tut-hint'); h.textContent = 'Tap the open item to mark it in progress'; h.classList.add('pulse'); setTimeout(() => tutGuide.point(dueRow, "87 — strong fit. Now tap the open document to mark it in progress."), 900); };
     } },
 
   /* 4 — Write: living manuscript types itself */
@@ -8291,8 +8395,10 @@ const TUT_STEPS = [
       tutRevealStep(document.querySelector('.tut-step'));
       const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
       const body = document.getElementById('tut-msb'), foot = document.getElementById('tut-msf'), btn = document.getElementById('tut-draft');
-      if (RM) { body.textContent = TUT_T1; foot.classList.add('in'); btn.disabled = true; tutUnlock(); return; }
-      btn.onclick = () => { btn.disabled = true; btn.style.display = 'none'; setTimeout(() => foot.classList.add('in'), 1600); tutType(body, TUT_T1, tutState.replay ? 9 : 18, tutUnlock); };
+      const toNext = () => tutGuide.point('#tut-next', "You stay the author — edit anything before it goes out. Tap Continue. →");
+      if (RM) { body.textContent = TUT_T1; foot.classList.add('in'); btn.disabled = true; tutUnlock(); toNext(); return; }
+      setTimeout(() => tutGuide.point('#tut-draft', "Click Draft the need statement — I'll write it from your real numbers."), 700);
+      btn.onclick = () => { btn.disabled = true; btn.classList.add('tut-gone'); setTimeout(() => { btn.style.display = 'none'; }, 420); setTimeout(() => foot.classList.add('in'), 1600); tutType(body, TUT_T1, tutState.replay ? 9 : 18, () => { tutUnlock(); toNext(); }); };
     } },
 
   /* 5 — Manage: stewardship console (finish) */
@@ -8323,11 +8429,62 @@ const TUT_STEPS = [
       const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
       const dueRow = document.querySelector('#tut-mil .row.due'), btn = document.getElementById('tut-steward');
       const fill = () => { document.getElementById('tut-spb').style.width = '62%'; document.getElementById('tut-spv').textContent = '$212,000 / $342,000'; };
-      const arm = () => { dueRow.onclick = () => { if (dueRow.classList.contains('on')) return; dueRow.classList.add('on'); dueRow.classList.remove('due'); tutUnlock(); }; };
-      if (RM) { fill(); arm(); return; }
-      btn.onclick = () => { btn.disabled = true; fill(); arm(); const h = document.getElementById('tut-hint'); h.textContent = 'Schedule the due report to continue'; h.classList.add('pulse'); };
+      const finishMsg = tutState.replay ? "That's the full journey. Tap Back to portal. →" : "That's the full journey — let's set up your account. →";
+      const arm = () => { dueRow.onclick = () => { if (dueRow.classList.contains('on')) return; dueRow.classList.add('on'); dueRow.classList.remove('due'); tutUnlock(); tutGuide.point('#tut-next', finishMsg); }; };
+      if (RM) { fill(); arm(); tutGuide.point(dueRow, 'Schedule the due report to finish.'); return; }
+      setTimeout(() => tutGuide.point('#tut-steward', "Open the console to track spend and report deadlines after you win."), 700);
+      btn.onclick = () => { btn.disabled = true; fill(); arm(); const h = document.getElementById('tut-hint'); h.textContent = 'Schedule the due report to continue'; h.classList.add('pulse'); setTimeout(() => tutGuide.point(dueRow, "Spend's tracked against budget. Now schedule the due report."), 800); };
     } },
 ];
+
+/* ── The guide mascot: the Grange assistant orb flies next to the thing to click
+   and explains it in a speech bubble. Lives outside #tut-stage so it survives the
+   per-step innerHTML swaps; re-pointed by each step's onShow (and after each gate). ── */
+const tutGuide = {
+  _last: null,
+  _paintOrb() {
+    const o = document.getElementById('tut-guide-orb');
+    if (o && !o.dataset.painted && window.grangeOrb) { o.innerHTML = window.grangeOrb(46); o.dataset.painted = '1'; }
+  },
+  point(sel, msg, opts) {
+    opts = opts || {};
+    const g = document.getElementById('tut-guide');
+    if (!g) return;
+    this._paintOrb();
+    const run = () => {
+      const t = typeof sel === 'string' ? document.querySelector(sel) : sel;
+      if (!t) { this.hide(); return; }
+      document.querySelectorAll('.tut-target-glow').forEach(e => e.classList.remove('tut-target-glow'));
+      const r = t.getBoundingClientRect();
+      const vw = window.innerWidth, vh = window.innerHeight, gap = 18, ORB = 46;
+      let side = opts.side;
+      if (!side) side = vw < 760 ? 'top' : ((r.left + r.right) / 2 > vw * 0.5 ? 'left' : 'right');
+      let gx, gy;
+      if (side === 'right') { gx = r.right + gap; gy = (r.top + r.bottom) / 2 - ORB / 2; }
+      else if (side === 'left') { gx = r.left - gap - ORB; gy = (r.top + r.bottom) / 2 - ORB / 2; }
+      else { side = 'top'; gx = (r.left + r.right) / 2 - ORB / 2; gy = r.top - gap - ORB; }
+      gx = Math.max(12, Math.min(gx, vw - ORB - 12));
+      gy = Math.max(70, Math.min(gy, vh - ORB - 96));
+      g.dataset.side = side;
+      g.style.setProperty('--gx', gx + 'px');
+      g.style.setProperty('--gy', gy + 'px');
+      g.classList.add('show');
+      const b = document.getElementById('tut-guide-bubble');
+      if (b) { b.textContent = msg || ''; b.classList.remove('in'); void b.offsetWidth; b.classList.add('in'); }
+      if (opts.glow !== false) t.classList.add('tut-target-glow');
+      this._last = { sel, msg, opts };
+    };
+    requestAnimationFrame(() => requestAnimationFrame(run));
+  },
+  hide() {
+    const g = document.getElementById('tut-guide');
+    if (g) g.classList.remove('show');
+    document.querySelectorAll('.tut-target-glow').forEach(e => e.classList.remove('tut-target-glow'));
+    this._last = null;
+  },
+};
+// keep the guide pinned to its target as the viewport changes
+window.addEventListener('resize', () => { if (tutGuide._last) { const l = tutGuide._last; tutGuide.point(l.sel, l.msg, l.opts); } });
 
 /* Split a headline into per-word spans for the Apple-style staggered blur reveal.
    aria-label on the <h2> carries the full string for screen readers. */
@@ -8352,6 +8509,9 @@ function tutApplyState() {
   const step = TUT_STEPS[tutState.idx];
   const badge = document.getElementById('tut-badge-label');
   if (badge) badge.textContent = tutState.replay ? 'Replaying tour' : 'Guided tour';
+  // Exit hatch is replay-only — first-run signup keeps the tour unskippable.
+  const exit = document.getElementById('tut-exit');
+  if (exit) exit.hidden = !tutState.replay;
   tutState.unlocked = !step.gate;
   // footer: hidden entirely on the intro (advancement routes through the in-canvas pill)
   const foot = document.getElementById('tut-foot');
@@ -8422,7 +8582,15 @@ function tutBack() {
 
 function tutInit(ctx, opts) {
   tutState = { idx: 0, ctx: ctx || tutState.ctx, unlocked: false, started: true, replay: !!(opts && opts.replay) };
+  tutGuide.hide();
+  tutGuide._paintOrb();
   tutRender('fwd');
+}
+
+/* Exit hatch — replay only (the button is hidden on first run). Return to the portal. */
+function tutExit() {
+  tutGuide.hide();
+  go('dashboard');
 }
 
 /* Replay from inside the portal — relaunch the tour, return to dashboard when done */
@@ -8437,6 +8605,7 @@ window._tutEnsure = function () {
 };
 
 async function tutFinish() {
+  tutGuide.hide();
   const ctx = tutState.ctx || window._grange;
   const uid = ctx?.user?.id;
   const wasReplay = tutState.replay;
