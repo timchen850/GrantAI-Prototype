@@ -5125,10 +5125,25 @@ label.field-label {
   .rdy-elig .lbl small{ display:block; font-size:12px; color:var(--muted); font-weight:400; margin-top:1px; }
   .rdy-elig .act{ font-size:12px; color:var(--accent); cursor:pointer; white-space:nowrap; }
   .rdy-fed-pill{ display:inline-block; font-size:10px; font-weight:600; color:var(--accent-ink); background:var(--accent-tint); border-radius:999px; padding:2px 8px; margin-left:8px; vertical-align:middle; }
+  /* readiness: paste-a-funder's-call analyzer (reuses the requirements engine) */
+  .rdy-reqcard{ border:1px solid rgba(217,79,48,.16); background:linear-gradient(180deg,var(--accent-tint),var(--surface) 70%); border-radius:14px; padding:18px 18px 16px; margin:22px 0 6px; }
+  .rdy-reqcard-head{ display:flex; gap:12px; align-items:flex-start; margin-bottom:13px; }
+  .rdy-reqcard .rqc-ic{ flex:none; width:34px; height:34px; border-radius:10px; background:var(--surface); border:1px solid rgba(217,79,48,.2); display:grid; place-items:center; }
+  .rdy-reqcard .rqc-ic svg{ width:18px; height:18px; color:var(--accent); }
+  .rdy-reqcard .rqc-title{ font-family:var(--display); font-weight:700; font-size:15.5px; color:var(--ink); }
+  .rdy-reqcard .rqc-sub{ font-size:12.8px; line-height:1.5; color:var(--ink-body,var(--muted)); margin-top:2px; }
   /* inline AI assessment on discovery cards */
   .gc-assess-btn.on{ border-color:var(--accent); color:var(--accent); }
   .gc-assess{ grid-column:1 / -1; max-height:0; overflow:hidden; transition:max-height .35s var(--ease); }
   .gc-assess.open{ max-height:640px; }
+  /* full-call analyzer panel (taller — holds a paste box + the full verdict) */
+  .gc-full-btn.on{ border-color:var(--accent); color:var(--accent); }
+  .gc-full.open{ max-height:2400px; }
+  .gcf-intro{ font-size:13px; line-height:1.55; color:var(--ink-body,var(--muted)); margin-bottom:11px; }
+  .gcf-ta{ width:100%; min-height:96px; resize:vertical; border:1px solid var(--line); border-radius:10px; padding:11px 13px; font-family:inherit; font-size:13px; line-height:1.5; color:var(--ink); background:var(--surface); margin-bottom:11px; }
+  .gcf-ta:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-tint); }
+  .gcf-actions{ display:flex; flex-wrap:wrap; gap:9px; }
+  .gcf-result{ margin-top:15px; }
   .gc-assess-inner{ border-top:1px solid var(--line); padding-top:15px; margin-top:4px; }
   .gca-loading{ display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13.5px; padding:6px 0; }
   .gca-spin{ width:16px; height:16px; border-radius:50%; border:2px solid var(--accent-tint); border-top-color:var(--accent); animation:ap-spin .9s linear infinite; flex-shrink:0; }
@@ -5901,8 +5916,8 @@ function reqVerdictMeta(v) {
    but guard against a bare string or a missing name (avoids "[object Object]"). */
 function reqAttName(a) { return (a && typeof a === 'object') ? (a.name || '') : (a || ''); }
 
-function renderReqResult(o, isSample) {
-  const rr = document.getElementById('gen-req-result');
+function renderReqResult(o, isSample, target) {
+  const rr = target || document.getElementById('gen-req-result');
   if (!rr || !o) return;
   const m = reqVerdictMeta(o.verdict);
   const headline = o.verdict_headline || (o.verdict === 'go' ? 'Worth applying' : o.verdict === 'stop' ? 'Likely not a fit' : 'Worth a closer look');
@@ -5936,6 +5951,36 @@ function renderReqResult(o, isSample) {
   }
   rr.innerHTML = h;
   rr.style.display = 'block';
+}
+
+/* Shared funder-call analyzer: paste text → parse_rfp → render the full verdict into
+   `target`. Reused by the generator, the discovery cards, and the readiness screen.
+   Returns the parsed output (or null). Caches under `cacheKey` when provided. */
+async function runReqAnalysis(text, target, cacheKey, btn) {
+  const txt = (text || '').trim();
+  if (!target) return null;
+  if (txt.length < 40) { toast("Paste the funder's call (a paragraph or more) so Grange can read it."); return null; }
+  if (btn) btn.disabled = true;
+  target.style.display = 'block';
+  target.innerHTML = '<div class="req-loading"><span class="req-spin"></span> Grange is reading the call and checking your fit…</div>';
+  try {
+    if (!window.sb) throw new Error('nosb');
+    const { data: { session } } = await window.sb.auth.getSession();
+    if (!session) throw new Error('nosession');
+    const r = await runAiJob('parse_rfp', { rfp_text: txt.slice(0, 16000) });
+    if (r && r.ok && r.output && ((r.output.sections || []).length || (r.output.eligibility || []).length || r.output.verdict)) {
+      if (cacheKey) { try { localStorage.setItem(cacheKey, JSON.stringify(r.output)); } catch (_) {} }
+      renderReqResult(r.output, false, target);
+      return r.output;
+    }
+    throw new Error('nokey');
+  } catch (e) {
+    if (e && e.message === 'nosession') target.innerHTML = reqMsg('Sign in to analyze a funder’s call against your profile.', true);
+    else target.innerHTML = reqMsg('Grange’s requirement reader is ready to switch on. Add a Gemini API key on the server (Supabase → Edge Functions → Secrets) and it will read any RFP instantly.');
+    return null;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 /* Render whatever is in window._parsedReq (used on draft restore / grant switch) */
@@ -6338,6 +6383,13 @@ function loadGrantIntoGenerator(g) {
   const restored = restoreGenDraft();
   if (!restored) genShowConfig();
   setGrantCard(window._selectedGrant, restored);
+  // carried over from a discovery "Draft with these requirements →" → prefill + analyze the call
+  if (window._pendingReqText) {
+    const ta = document.getElementById('gen-rfp-text');
+    if (ta) ta.value = window._pendingReqText;
+    window._pendingReqText = null;
+    setTimeout(() => { try { analyzeRfp(); } catch (_) {} }, 80);
+  }
 }
 function pickDraft(i) { const d = (window._genDrafts || [])[i]; if (d) loadGrantIntoGenerator(d.grant || null); }
 function pickSaved(id) {
@@ -8039,7 +8091,7 @@ function obFieldHTML(f) {
   const open = `<div class="fieldset" id="ob-wrap-${f.key}" style="margin:0">`;
   const lab = `<label class="field-label">${f.label}${f.required ? ' <span class="ob-req" title="Required">*</span>' : ''}</label>`;
   if (f.type === 'textarea')
-    return `${open}${lab}<textarea id="ob-${f.key}" placeholder="${f.placeholder||''}">${v||''}</textarea></div>`;
+    return `${open}${lab}<textarea id="ob-${f.key}" placeholder="${escHtml(f.placeholder||'')}">${escHtml(v||'')}</textarea></div>`;
   if (f.type === 'select')
     return `${open}${lab}<select id="ob-${f.key}"><option value="">Select…</option>${f.options.map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')}</select></div>`;
   if (f.type === 'multi')
@@ -8048,7 +8100,7 @@ function obFieldHTML(f) {
     return `${open}${lab}<div class="ob-chips" data-radio="${f.key}">${f.options.map(o=>`<button type="button" class="ob-chip ${v===o?'on':''}" data-val="${o}">${o}</button>`).join('')}</div></div>`;
   if (f.type === 'file')
     return `${open}${lab}<div class="ob-upload" id="ob-filebox-${f.key}">Drop a file or click to upload</div><input type="file" id="ob-file-${f.key}" accept="application/pdf" style="display:none"></div>`;
-  return `${open}${lab}<input type="${f.type}" id="ob-${f.key}" placeholder="${f.placeholder||''}" value="${v||''}"></div>`;
+  return `${open}${lab}<input type="${f.type}" id="ob-${f.key}" placeholder="${escHtml(f.placeholder||'')}" value="${escHtml(v||'')}"></div>`;
 }
 
 function obBack() { if (obState.idx > 0) { obState.idx--; obRender(); } }
@@ -9162,11 +9214,14 @@ async function loadDiscoveryGrants(directAnswers) {
     console.log('Grants.gov API unavailable, using curated list only', e.message);
   }
 
-  // Merge, de-dup by title, sort by match score, cap at 25
+  // Merge, de-dup by STABLE identity (not a title prefix, which collapses distinct
+  // grants that share a long agency/program-name prefix), sort by match score, cap at 25
   const all = [...federalGrants, ...curatedScored];
   const seen = new Set();
   const merged = all.filter(g => {
-    const key = g.title.toLowerCase().slice(0,40);
+    const key = g.govId ? 'gov-' + g.govId
+              : g.id ? String(g.id)
+              : (g.funder || '') + '|' + String(g.title || '').toLowerCase().trim();
     if (seen.has(key)) return false;
     seen.add(key); return true;
   }).sort((a,b) => b.matchScore - a.matchScore).slice(0, 25);
@@ -9231,10 +9286,12 @@ function renderGrantCard(g) {
       <div class="acts">
         <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();draftGrant('${escHtml(g.id)}')">Draft proposal</button>
         <button class="btn btn-outline btn-sm gc-assess-btn" onclick="event.stopPropagation();assessGrant('${escHtml(g.id)}')"><span style="color:var(--accent)">✦</span>&nbsp;AI assessment</button>
+        <button class="btn btn-outline btn-sm gc-full-btn" onclick="event.stopPropagation();analyzeFullCall('${escHtml(g.id)}')"><span style="color:var(--accent)">📄</span>&nbsp;Analyze full call</button>
         ${govLink}
       </div>
     </div>
     <div class="gc-assess" id="gca-${escHtml(g.id)}"></div>
+    <div class="gc-assess gc-full" id="gcf-${escHtml(g.id)}"></div>
   </div>`;
 }
 
@@ -9245,9 +9302,12 @@ async function assessGrant(id) {
   const card = panel.closest('.gcard');
   const btn = card && card.querySelector('.gc-assess-btn');
   if (panel.classList.contains('open')) { panel.classList.remove('open'); if (btn) btn.classList.remove('on'); return; }
+  // only one of the two card panels open at a time (mirror analyzeFullCall)
+  const fullPanel = document.getElementById('gcf-' + id);
+  if (fullPanel && fullPanel.classList.contains('open')) { fullPanel.classList.remove('open'); const fb = card && card.querySelector('.gc-full-btn'); if (fb) fb.classList.remove('on'); }
   panel.classList.add('open'); if (btn) btn.classList.add('on');
 
-  const ck = 'grange_assess_' + id;
+  const ck = 'grange_assess_' + (window._grange?.user?.id || 'anon') + '_' + id;
   let cached = null;
   try { cached = JSON.parse(localStorage.getItem(ck) || 'null'); } catch (_) {}
   if (cached) { panel.innerHTML = assessHTML(cached); return; }
@@ -9263,6 +9323,50 @@ async function assessGrant(id) {
     if (r && r.ok && r.output) { try { localStorage.setItem(ck, JSON.stringify(r.output)); } catch (_) {} panel.innerHTML = assessHTML(r.output); }
     else { panel.innerHTML = wrapAssess(assessKeyHTML()); }
   } catch (e) { panel.innerHTML = wrapAssess(assessMsgHTML('Could not run the assessment. Please try again.')); }
+}
+/* ─── full funder-call analysis (per discovery card, reuses parse_rfp) ───
+   Goes deeper than the assess_grant blurb: the user pastes the funder's full call
+   and Grange returns the verdict + eligibility + the exact sections to write +
+   attachments + deadline + formatting (via the shared runReqAnalysis pipeline). */
+function analyzeFullCall(id) {
+  const panel = document.getElementById('gcf-' + id);
+  if (!panel) return;
+  const card = panel.closest('.gcard');
+  const btn = card && card.querySelector('.gc-full-btn');
+  if (panel.classList.contains('open')) { panel.classList.remove('open'); if (btn) btn.classList.remove('on'); return; }
+  // only one of the two card panels open at a time
+  const other = document.getElementById('gca-' + id);
+  if (other && other.classList.contains('open')) { other.classList.remove('open'); const ab = card && card.querySelector('.gc-assess-btn'); if (ab) ab.classList.remove('on'); }
+  panel.classList.add('open'); if (btn) btn.classList.add('on');
+
+  const g = (window._grantsById && window._grantsById[id]) || {};
+  const ck = fullCallCacheKey(id);
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem(ck) || 'null'); } catch (_) {}
+  panel.innerHTML = '<div class="gc-assess-inner">' +
+    '<div class="gcf-intro">Paste the funder’s full call, NOFO or RFP and Grange will give you the complete picture: eligibility, the exact sections you’ll write, attachments and the deadline.</div>' +
+    '<textarea id="gcf-ta-' + escHtml(id) + '" class="gcf-ta" placeholder="Paste the full funding call for “' + escHtml(g.title || 'this grant') + '” here…">' + escHtml(g.desc || '') + '</textarea>' +
+    '<div class="gcf-actions"><button class="btn btn-primary btn-sm gcf-run" onclick="runFullCall(\'' + escHtml(id) + '\')"><span style="color:#fff">✦</span>&nbsp;Analyze full call</button>' +
+    '<button class="btn btn-outline btn-sm" onclick="draftFromFullCall(\'' + escHtml(id) + '\')">Draft with these requirements →</button></div>' +
+    '<div class="gcf-result" id="gcf-res-' + escHtml(id) + '" style="display:none"></div>' +
+    '</div>';
+  if (cached) { const res = document.getElementById('gcf-res-' + id); renderReqResult(cached, false, res); }
+}
+/* user-scoped cache key (a grant id like "gov-123" is shared across users) */
+function fullCallCacheKey(id) { return 'grange_fullcall_' + (window._grange?.user?.id || 'anon') + '_' + id; }
+async function runFullCall(id) {
+  const ta = document.getElementById('gcf-ta-' + id);
+  const res = document.getElementById('gcf-res-' + id);
+  const btn = res && res.closest('.gc-assess-inner') && res.closest('.gc-assess-inner').querySelector('.gcf-run');
+  await runReqAnalysis(ta ? ta.value : '', res, fullCallCacheKey(id), btn);
+}
+/* Carry the pasted call straight into the generator so the draft is written against it */
+function draftFromFullCall(id) {
+  const ta = document.getElementById('gcf-ta-' + id);
+  const txt = (ta && ta.value || '').trim();
+  if (txt.length < 40) { toast('Paste the funder’s call first, then Grange can draft against it.'); ta && ta.focus(); return; }
+  window._pendingReqText = txt;   // picked up by the generator after the grant loads
+  draftGrant(id);
 }
 function wrapAssess(inner) { return '<div class="gc-assess-inner">' + inner + '</div>'; }
 function assessMsgHTML(msg, signin) { return '<div class="gca-msg">' + escHtml(msg) + (signin ? ' <a onclick="go(\'signin\')">Sign in →</a>' : '') + '</div>'; }
@@ -9299,7 +9403,7 @@ function dueUrgency(deadline) {
 }
 
 function escHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 /* ─── Save a discovery grant into the user's real pipeline ───
@@ -9747,7 +9851,7 @@ function applyDiscFilters(query, type) {
       const typing = acpAdd('bot', ''); typing.classList.add('typing');
       typing.innerHTML = '<span class="acp-dots"><i></i><i></i><i></i></span>';
       try {
-        if (!window.sb) { typing.textContent = 'Assistant is unavailable right now.'; }
+        if (!window.sb) { typing.classList.remove('typing'); typing.textContent = 'Assistant is unavailable right now.'; }
         else {
           const { data: { session } } = await window.sb.auth.getSession();
           if (!session) { typing.classList.remove('typing'); typing.textContent = 'Please sign in to use the assistant.'; }
@@ -10016,6 +10120,13 @@ function applyDiscFilters(query, type) {
     el.innerHTML =
       '<div class="complete"><div class="ring ' + (pct >= 70 ? 'hi' : 'mid') + ' cring" style="--p:' + pct + '"><span>' + pct + '%</span></div>' +
         '<div class="msg"><strong>You\'re ' + pct + '% grant-ready.</strong> ' + (pct >= 80 ? 'You\'re in great shape — the basics most funders ask for are covered.' : 'Work through the items below. Each is something a funder will ask for; having them ready means you never lose a grant over paperwork.') + '</div></div>' +
+      '<div class="rdy-reqcard">' +
+        '<div class="rdy-reqcard-head"><div class="rqc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg></div>' +
+        '<div><div class="rqc-title">Check a specific funder’s call</div><div class="rqc-sub">Paste an RFP or NOFO and Grange reads it against your profile: can you apply, what you’ll write, what to attach, and the deadline.</div></div></div>' +
+        '<textarea id="rdy-req-ta" class="gcf-ta" placeholder="Paste the funder’s call / NOFO / RFP text here…"></textarea>' +
+        '<div class="gcf-actions"><button class="btn btn-primary btn-sm" id="rdy-req-btn" onclick="analyzeReadinessReq()"><span style="color:#fff">✦</span>&nbsp;Analyze this call</button></div>' +
+        '<div class="gcf-result" id="rdy-req-result" style="display:none"></div>' +
+      '</div>' +
       '<div class="rdy-section-title">Eligibility basics</div>' +
       '<div class="rdy-section-sub">The universal gates almost every funder checks — auto-filled from your profile.</div>' +
       elig.map(e => '<div class="rdy-elig"><span class="ic">' + (e.ok ? rdyIcon('have') : rdyIcon('missing')) + '</span>' +
@@ -10028,6 +10139,13 @@ function applyDiscFilters(query, type) {
       '<div class="rdy-section-sub">Extra registrations to apply on Grants.gov. Start these 60+ days early — they\'re slow and trip up first-timers.</div>' +
       fed.map(item).join('');
   }
+
+  window.analyzeReadinessReq = async function () {
+    const ta = document.getElementById('rdy-req-ta');
+    const res = document.getElementById('rdy-req-result');
+    const btn = document.getElementById('rdy-req-btn');
+    await runReqAnalysis(ta ? ta.value : '', res, null, btn);
+  };
 
   window.rdySet = async function (key, status) {
     _rdyStatus[key] = status;
@@ -10147,7 +10265,8 @@ function applyDiscFilters(query, type) {
     const awarded = Number(a.amount_awarded || 0);
     const spent = (exps || []).reduce((s, e) => s + Number(e.amount || 0), 0);
     const remaining = awarded - spent;
-    const over = awarded > 0 && spent > awarded;
+    const hasBudget = awarded > 0;
+    const over = hasBudget && spent > awarded;
     const catLabel = k => { const c = (_paCats || []).find(x => x.key === k); return c ? c.label : k; };
     return '<div class="pa-card"><div class="pa-head">' +
       '<div><div class="pa-t">' + escHtml((a.grants && a.grants.title) || 'Awarded grant') + '</div><div class="pa-f">' + escHtml((a.grants && a.grants.funder) || '') + (a.period_start ? ' · ' + a.period_start + ' → ' + (a.period_end || 'ongoing') : '') + '</div></div>' +
@@ -10156,9 +10275,13 @@ function applyDiscFilters(query, type) {
         (reqs || []).map(r => '<div class="pa-cmp ' + (r.status === 'satisfied' ? 'done' : '') + '" id="pacmp-' + r.id + '"><span class="ic" onclick="toggleCompliance(\'' + r.id + '\')">' + _paIcon(r.status === 'satisfied') + '</span><div class="bd"><b>' + escHtml(r.label) + '</b><p>' + escHtml(r.detail || '') + '</p></div></div>').join('') +
         '<div class="pa-spend"><div class="pa-sub">Spending vs budget — the clawback guardrail</div>' +
           '<div class="pa-bars"><div class="pa-stat"><div class="l">Spent</div><div class="v">' + _paFmt(spent) + '</div></div>' +
-            '<div class="pa-stat ' + (over ? 'over' : '') + '"><div class="l">' + (over ? 'Over by' : 'Remaining') + '</div><div class="v">' + _paFmt(Math.abs(remaining)) + '</div></div></div>' +
-          '<div class="pa-track"><i class="' + (over ? 'over' : '') + '" style="width:' + Math.min(100, awarded ? spent / awarded * 100 : 0) + '%"></i></div>' +
+            (hasBudget
+              ? '<div class="pa-stat ' + (over ? 'over' : '') + '"><div class="l">' + (over ? 'Over by' : 'Remaining') + '</div><div class="v">' + _paFmt(Math.abs(remaining)) + '</div></div>'
+              : '<div class="pa-stat"><div class="l">Remaining</div><div class="v" style="font-size:14px;color:var(--muted)">Budget not set</div></div>'
+            ) + '</div>' +
+          '<div class="pa-track"><i class="' + (over ? 'over' : '') + '" style="width:' + (hasBudget ? Math.min(100, spent / awarded * 100) : 0) + '%"></i></div>' +
           (over ? '<p style="font-size:12.5px;color:var(--accent-ink);margin:-4px 0 12px">⚠ You\'ve spent more than the award — exactly what triggers a clawback. Move costs to another funder or cut spend.</p>' : '') +
+          (!hasBudget ? '<p style="font-size:12.5px;color:var(--muted);margin:-4px 0 12px">No award amount on file, so spend can\'t be tracked against a budget yet.</p>' : '') +
           (exps || []).map(e => '<div class="pa-exp-row"><span class="cat">' + escHtml(catLabel(e.category_key)) + '</span>' + escHtml(e.description || '') + '<span class="amt">' + _paFmt(Number(e.amount || 0)) + '</span></div>').join('') +
           '<div class="pa-addform"><select id="paexp-cat-' + a.id + '">' + (_paCats || []).map(c => '<option value="' + c.key + '">' + escHtml(c.label) + '</option>').join('') + '</select>' +
             '<input class="desc" id="paexp-desc-' + a.id + '" type="text" placeholder="What was it for?"><input class="num" id="paexp-amt-' + a.id + '" type="text" placeholder="$ amount"><button class="btn btn-outline btn-sm" onclick="addExpense(\'' + a.id + '\')">Add</button></div>' +
@@ -10170,6 +10293,7 @@ function applyDiscFilters(query, type) {
     const gid = (document.getElementById('pa-award-grant') || {}).value;
     const amt = parseFloat((((document.getElementById('pa-award-amt') || {}).value) || '').replace(/[^0-9.]/g, '')) || null;
     if (!gid) { toast('Pick a grant first.'); return; }
+    if (!amt || amt <= 0) { toast('Enter the award amount so Grange can track spend against it.'); return; }
     try {
       await sb.from('grants').update({ status: 'awarded', decided_at: new Date().toISOString() }).eq('id', gid);
       await sb.from('awards').insert({ user_id: uid, grant_id: gid, amount_awarded: amt });
