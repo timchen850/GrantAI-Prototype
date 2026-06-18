@@ -7015,8 +7015,14 @@ async function currentProfile() {
   if (!user) return null;
   let { data: profile } = await sb.from('profiles').select('*').eq('user_id', user.id).maybeSingle();
   if (!profile) {
+    const meta = user.user_metadata || {};
     const ins = await sb.from('profiles')
-      .insert({ user_id: user.id, org_name: user.user_metadata?.org_name || null })
+      .upsert({
+        user_id: user.id,
+        org_name: meta.org_name || null,
+        contact_name: meta.full_name || meta.name || null,
+        contact_email: user.email || null,
+      }, { onConflict: 'user_id' })
       .select().maybeSingle();
     profile = ins.data;
   }

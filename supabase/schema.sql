@@ -110,9 +110,20 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (user_id, org_name)
-  values (new.id, new.raw_user_meta_data ->> 'org_name')
-  on conflict (user_id) do nothing;
+  insert into public.profiles (user_id, org_name, contact_name, contact_email)
+  values (
+    new.id,
+    new.raw_user_meta_data ->> 'org_name',
+    coalesce(
+      new.raw_user_meta_data ->> 'full_name',
+      new.raw_user_meta_data ->> 'name'
+    ),
+    new.email
+  )
+  on conflict (user_id) do update
+    set
+      contact_name  = coalesce(excluded.contact_name,  profiles.contact_name),
+      contact_email = coalesce(excluded.contact_email, profiles.contact_email);
   return new;
 end;
 $$;

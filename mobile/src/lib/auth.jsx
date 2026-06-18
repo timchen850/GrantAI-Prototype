@@ -15,13 +15,47 @@ export function AuthProvider({ children }) {
       else setLoading(false)
     })
 
-    const { data: { subscription } } = sb.auth.onAuthStateChange((_, session) => {
+    const { data: { subscription } } = sb.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
-      if (session) fetchProfile(session.user.id)
-      else { setProfile(null); setLoading(false) }
+      if (session) {
+        // Ensure profile row exists with Google metadata on every OAuth sign-in
+        if (event === 'SIGNED_IN') {
+          const meta = session.user.user_metadata || {}
+          await sb.from('profiles').upsert({
+            user_id: session.user.id,
+            contact_name: meta.full_name || meta.name || null,
+            contact_email: session.user.email || null,
+          }, { onConflict: 'user_id', ignoreDuplicates: false })
+        }
+        fetchProfile(session.user.id)
+      } else {
+        setProfile(null)
+        setLoading(false)
+      }
     })
 
-    return () => subscription.unsubscribe()
+    // Handle OAuth deep link callback (com.grangeai.app://auth-callback?code=xxx)
+    let AppPlugin = null
+    import('@capacitor/app').then(({ App }) => {
+      AppPlugin = App
+      App.addListener('appUrlOpen', async ({ url }) => {
+        if (url && url.startsWith('com.grangeai.app://auth-callback')) {
+          const code = new URL(url).searchParams.get('code')
+          if (code) {
+            try {
+              await sb.auth.exchangeCodeForSession(code)
+            } catch (e) {
+              console.error('OAuth code exchange failed', e)
+            }
+          }
+        }
+      })
+    }).catch(() => {})
+
+    return () => {
+      subscription.unsubscribe()
+      AppPlugin?.removeAllListeners?.()
+    }
   }, [])
 
   async function fetchProfile(userId) {
@@ -44,14 +78,30 @@ export function AuthProvider({ children }) {
       await sb.from('profiles').upsert({
         user_id: data.user.id,
         org_name: orgName,
-        email,
-      })
+        contact_email: email,
+      }, { onConflict: 'user_id' })
     }
   }
 
   async function signInWithMagicLink(email) {
     const { error } = await sb.auth.signInWithOtp({ email })
     if (error) throw error
+  }
+
+  // Google OAuth via in-app browser.
+  // After OAuth, Supabase redirects to com.grangeai.app://auth-callback?code=xxx.
+  // The appUrlOpen listener above exchanges the code for a session.
+  async function signInWithGoogle() {
+    const { Browser } = await import('@capacitor/browser')
+    const { data, error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        skipBrowserRedirect: true,
+        redirectTo: 'com.grangeai.app://auth-callback',
+      },
+    })
+    if (error) throw error
+    await Browser.open({ url: data.url, windowName: '_self' })
   }
 
   async function signOut() {
@@ -76,6 +126,7 @@ export function AuthProvider({ children }) {
       signIn,
       signUp,
       signInWithMagicLink,
+      signInWithGoogle,
       signOut,
       updateProfile,
       refetchProfile: () => session && fetchProfile(session.user.id),

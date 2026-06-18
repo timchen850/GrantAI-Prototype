@@ -121,3 +121,56 @@ app.on('window-all-closed', () => {
 ipcMain.handle('get-platform', () => process.platform)
 ipcMain.handle('get-version', () => app.getVersion())
 ipcMain.handle('open-external', (_, url) => shell.openExternal(url))
+
+// Opens a child window for Google OAuth and returns the final callback URL.
+// Supabase redirects to http://localhost:3000/auth/callback?code=xxx after OAuth.
+// We intercept that navigation before the browser tries to connect to localhost.
+ipcMain.handle('open-oauth-window', (_, oauthUrl) => {
+  return new Promise((resolve) => {
+    const parent = BrowserWindow.getAllWindows()[0]
+    const authWin = new BrowserWindow({
+      width: 520,
+      height: 680,
+      parent,
+      modal: true,
+      show: false,
+      title: 'Sign in with Google',
+      autoHideMenuBar: true,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        sandbox: true,
+      },
+    })
+
+    authWin.once('ready-to-show', () => authWin.show())
+
+    let resolved = false
+    function finish(url) {
+      if (resolved) return
+      resolved = true
+      resolve(url)
+      setImmediate(() => { if (!authWin.isDestroyed()) authWin.destroy() })
+    }
+
+    function checkUrl(url) {
+      if (url && url.startsWith('http://localhost:3000')) {
+        finish(url)
+        return true
+      }
+      return false
+    }
+
+    // Catch HTTP-level redirects (the Supabase→localhost redirect is a 302)
+    authWin.webContents.on('did-redirect-navigation', (_, url) => checkUrl(url))
+    // Catch JS-initiated navigations
+    authWin.webContents.on('will-navigate', (e, url) => {
+      if (checkUrl(url)) e.preventDefault()
+    })
+    // Catch completed navigations as fallback
+    authWin.webContents.on('did-navigate', (_, url) => checkUrl(url))
+
+    authWin.on('closed', () => finish(null))
+    authWin.loadURL(oauthUrl)
+  })
+})

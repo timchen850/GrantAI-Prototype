@@ -54,6 +54,25 @@ jobs:
         working-directory: mobile
         run: npx cap add android
 
+      - name: Add Google OAuth deep link URL scheme
+        working-directory: mobile
+        run: |
+          node -e "
+          const fs = require('fs');
+          const p = 'android/app/src/main/AndroidManifest.xml';
+          let xml = fs.readFileSync(p, 'utf8');
+          const filter = \`
+                  <intent-filter>
+                      <action android:name=\"android.intent.action.VIEW\" />
+                      <category android:name=\"android.intent.category.DEFAULT\" />
+                      <category android:name=\"android.intent.category.BROWSABLE\" />
+                      <data android:scheme=\"com.grangeai.app\" android:host=\"auth-callback\" />
+                  </intent-filter>\`;
+          xml = xml.replace('</activity>', filter + '\n            </activity>');
+          fs.writeFileSync(p, xml);
+          console.log('Deep link URL scheme added to AndroidManifest.xml');
+          "
+
       - name: Build debug APK
         working-directory: mobile/android
         run: ./gradlew assembleDebug
