@@ -902,6 +902,11 @@ label.field-label {
   font-size: 12.5px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase;
   letter-spacing: 0.06em; margin-top: 10px; }
 .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.email-pref-row { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; padding: 10px 12px; border-radius: 8px; transition: background .15s; }
+.email-pref-row:hover { background: var(--surface); }
+.email-pref-row input[type=checkbox] { flex-shrink: 0; width: 16px; height: 16px; margin-top: 2px; accent-color: var(--accent); cursor: pointer; }
+.epref-title { font-size: 14px; font-weight: 600; color: var(--ink); }
+.epref-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; line-height: 1.45; }
 .upl { border: 1.5px dashed var(--line); border-radius: var(--r); padding: 22px; text-align: center;
   color: var(--muted); font-size: 13.5px; transition: border-color 160ms var(--ease), background 160ms var(--ease); cursor: pointer; }
 .upl:hover { border-color: var(--accent); background: var(--surface-2); }
@@ -4943,6 +4948,50 @@ label.field-label {
         <div class="fieldset"><label class="field-label">Activities</label><textarea id="pf-activities" placeholder="What your program actually does, week to week."></textarea></div>
         <div class="fieldset"><label class="field-label">Outputs</label><textarea id="pf-outputs" placeholder="Countable results: people served, hours delivered…"></textarea></div>
         <div class="fieldset"><label class="field-label">Outcomes</label><textarea id="pf-outcomes" placeholder="The measurable change: enrollment, retention, test gains…"></textarea></div>
+
+        <!-- ── Email Notification Preferences ── -->
+        <div class="divider">Email notifications</div>
+        <div class="fieldset full" style="background:var(--surface-2);border-radius:12px;padding:20px 22px;border:1px solid var(--line)">
+          <p style="font-size:13.5px;color:var(--muted);margin:0 0 16px;line-height:1.5">Choose which emails you'd like to receive. You can change these at any time.</p>
+          <div style="display:flex;flex-direction:column;gap:12px" id="email-prefs-list">
+            <label class="email-pref-row">
+              <input type="checkbox" id="epref-ai_step_complete" onchange="saveEmailPrefs()">
+              <div>
+                <div class="epref-title">AI step completions</div>
+                <div class="epref-sub">When AI finishes a match score, draft section, budget narrative, or logic model</div>
+              </div>
+            </label>
+            <label class="email-pref-row">
+              <input type="checkbox" id="epref-proposal_ready" onchange="saveEmailPrefs()">
+              <div>
+                <div class="epref-title">Proposal drafts ready</div>
+                <div class="epref-sub">When your AI-generated proposal draft is complete and ready to review</div>
+              </div>
+            </label>
+            <label class="email-pref-row">
+              <input type="checkbox" id="epref-eligibility_result" onchange="saveEmailPrefs()">
+              <div>
+                <div class="epref-title">Eligibility check results</div>
+                <div class="epref-sub">When an eligibility check for a grant is completed</div>
+              </div>
+            </label>
+            <label class="email-pref-row">
+              <input type="checkbox" id="epref-grant_status_change" onchange="saveEmailPrefs()">
+              <div>
+                <div class="epref-title">Grant status changes</div>
+                <div class="epref-sub">When a grant you're tracking moves to submitted, awarded, rejected, or under review</div>
+              </div>
+            </label>
+            <label class="email-pref-row">
+              <input type="checkbox" id="epref-weekly_reminder" onchange="saveEmailPrefs()">
+              <div>
+                <div class="epref-title">Weekly check-in reminders</div>
+                <div class="epref-sub">A weekly nudge to revisit your active grants and keep momentum going</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
       </div>
     </main>
   </div>
@@ -5331,6 +5380,69 @@ function populateProfile() {
     ? `<strong>Your profile is ${pct}% complete.</strong> Looking great. This powers every match and draft.`
     : `<strong>Your profile is ${pct}% complete.</strong> Fill in the rest to unlock better grant matches and stronger drafts.`;
   setOrgAvatars();
+  loadEmailPrefs();
+}
+
+const EMAIL_PREF_KEYS = ['ai_step_complete', 'proposal_ready', 'eligibility_result', 'grant_status_change', 'weekly_reminder'];
+
+function loadEmailPrefs() {
+  const prefs = window._grange?.profile?.email_prefs || {};
+  for (const key of EMAIL_PREF_KEYS) {
+    const el = document.getElementById('epref-' + key);
+    if (el) el.checked = prefs[key] !== false; // default true
+  }
+}
+
+async function saveEmailPrefs() {
+  const uid = window._grange?.user?.id;
+  if (!window.sb || !uid) return;
+  const prefs = {};
+  for (const key of EMAIL_PREF_KEYS) {
+    const el = document.getElementById('epref-' + key);
+    prefs[key] = el ? el.checked : true;
+  }
+  try {
+    await sb.from('profiles').update({ email_prefs: prefs }).eq('user_id', uid);
+    if (window._grange?.profile) window._grange.profile.email_prefs = prefs;
+    toast('Email preferences saved.');
+  } catch (e) { console.error('saveEmailPrefs', e); toast('Could not save preferences.'); }
+}
+
+/* ─── Proposal: save to Supabase after generation ─────────────────── */
+async function saveProposalToDb(fields, selectedGrant, plainText) {
+  const uid = window._grange?.user?.id;
+  if (!uid || !window.sb) return;
+
+  try {
+    // Ensure the grant exists in the pipeline (upsert via existing helper)
+    let grantDbId = window._selectedGrantDbId || null;
+    if (!grantDbId && selectedGrant) {
+      const gid = await saveGrantToPipeline(selectedGrant, 'drafting');
+      if (gid) { grantDbId = gid; window._selectedGrantDbId = gid; }
+    }
+
+    const title = [
+      selectedGrant?.funder || selectedGrant?.title,
+      fields?.proposalType,
+    ].filter(Boolean).join(' — ') || 'Proposal draft';
+
+    const existingId = window._currentProposalId || null;
+
+    if (existingId) {
+      await sb.from('proposals').update({
+        content: plainText, title, status: 'draft',
+      }).eq('id', existingId).eq('user_id', uid);
+    } else {
+      const { data, error } = await sb.from('proposals').insert({
+        user_id: uid, grant_id: grantDbId || null,
+        title, content: plainText, status: 'draft',
+      }).select('id').single();
+      if (error) throw error;
+      window._currentProposalId = data?.id || null;
+    }
+  } catch (e) {
+    console.error('[Grange AI] saveProposalToDb:', e);
+  }
 }
 
 /* ── Profile: persist edits to Supabase (profiles + onboarding_answers) ── */
@@ -5471,7 +5583,10 @@ function selectGrantForDraft(idOrGrant) {
   } else if (idOrGrant && window._grantsById) {
     grant = window._grantsById[idOrGrant] || null;
   }
-  window._selectedGrant = grant || null;
+  window._selectedGrant      = grant || null;
+  // reset so the next generation creates a fresh proposal row
+  window._currentProposalId  = null;
+  window._selectedGrantDbId  = null;
 }
 
 /* ── update the generator UI with the selected grant ── */
@@ -6070,7 +6185,8 @@ async function generate() {
     genSetStep(4);                            // → step 4: Review & export
     showAIPolicyBanner(selectedGrant);
     runComplianceChecklist(fields, content);
-    saveGenDraft();                           // persist the finished draft
+    saveGenDraft();                           // persist the finished draft to localStorage
+    saveProposalToDb(fields, selectedGrant, content.innerText); // persist to Supabase
 
     const elapsed = ((Date.now() - genStart) / 1000).toFixed(1);
     setGenBtnLabel('Regenerate');
@@ -8520,6 +8636,22 @@ function escHtml(s) {
    Creates a grants row (auto-seeds its document checklist) and, when the grant
    has a real deadline, a deadlines row (auto-seeds 30/14/7-day reminders).
    Dedupes by title so re-saving just updates the status. */
+function fireGrantStatusEmail(uid, newStatus, grantTitle, funder) {
+  if (!uid) return;
+  const SUPA_URL = window.SUPABASE_CONFIG?.url;
+  const ANON_KEY = window.SUPABASE_CONFIG?.anonKey;
+  if (!SUPA_URL || !ANON_KEY) return;
+  fetch(`${SUPA_URL}/functions/v1/send-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ANON_KEY}` },
+    body: JSON.stringify({
+      user_id: uid,
+      email_type: 'grant_status_change',
+      data: { new_status: newStatus, grant_title: grantTitle || '', funder: funder || '' },
+    }),
+  }).catch(e => console.error('fireGrantStatusEmail', e));
+}
+
 async function saveGrantToPipeline(grant, status) {
   if (!grant) return null;
   status = status || 'saved';
@@ -9385,8 +9517,10 @@ function applyDiscFilters(query, type) {
     const amt = parseFloat((((document.getElementById('pa-award-amt') || {}).value) || '').replace(/[^0-9.]/g, '')) || null;
     if (!gid) { toast('Pick a grant first.'); return; }
     try {
+      const { data: grantRow } = await sb.from('grants').select('title, funder').eq('id', gid).maybeSingle();
       await sb.from('grants').update({ status: 'awarded', decided_at: new Date().toISOString() }).eq('id', gid);
       await sb.from('awards').insert({ user_id: uid, grant_id: gid, amount_awarded: amt });
+      fireGrantStatusEmail(uid, 'awarded', grantRow?.title, grantRow?.funder);
       toast('Recorded — compliance checklist created.');
       loadPostAward();
     } catch (e) { console.error('markAwarded', e); toast('Could not record — try again.'); }
