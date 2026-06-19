@@ -5626,6 +5626,9 @@ function populateProfile() {
     ringEl.style.setProperty('--p', pct);
     ringEl.classList.toggle('hi', pct >= 70);
     ringEl.classList.toggle('mid', pct < 70);
+    // sweep the arc + number up from 0 on first paint (it's set imperatively,
+    // so it isn't caught by the render-time MutationObserver)
+    window.sweepRing && window.sweepRing(ringEl);
   }
   const msgEl = document.getElementById('pf-complete-msg');
   if (msgEl) msgEl.innerHTML = pct >= 80
@@ -10248,6 +10251,70 @@ function applyDiscFilters(query, type) {
     const uid = ctx.user && ctx.user.id;
     if (window.sb && uid) { try { await sb.from('readiness_items').upsert({ user_id: uid, req_key: key, status }, { onConflict: 'user_id,req_key' }); } catch (e) { console.error('readiness save', e); } }
   };
+</script>
+<script>
+  /* ════════════════ SCORE-RING SWEEP ════════════════
+     Every conic `.ring` (discovery / readiness / profile / manage score rings)
+     relied on `transition:--p`, a no-op since `@property --p` was removed — so
+     the arc snapped on render. This sweeps the arc AND its number together,
+     frame by frame, the first time each ring scrolls into view. Tutorial rings
+     (.tut-ring / .tut-gauge, inside #tutorial) are driven separately by
+     tutAnimRing and are excluded here. */
+  (function () {
+    const swept = new WeakSet();
+    const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    window.sweepRing = function (ring, dur) {
+      if (!ring || swept.has(ring)) return;
+      const target = parseFloat(ring.style.getPropertyValue('--p'));
+      if (!(target > 0)) return;                       // nothing to fill
+      swept.add(ring);
+      const span = ring.querySelector('span');
+      const suffix = span && /%/.test(span.textContent) ? '%' : '';
+      if (reduce()) { ring.style.setProperty('--p', target); if (span) span.textContent = Math.round(target) + suffix; return; }
+      ring.style.setProperty('--p', 0);
+      if (span) span.textContent = '0' + suffix;
+      const d = dur || 1100, t0 = performance.now();
+      (function tick(now) {
+        const p = Math.min((now - t0) / d, 1), e = 1 - Math.pow(1 - p, 3), v = target * e;
+        ring.style.setProperty('--p', v.toFixed(2));
+        if (span) span.textContent = Math.round(v) + suffix;
+        if (p < 1) requestAnimationFrame(tick);
+        else { ring.style.setProperty('--p', target); if (span) span.textContent = Math.round(target) + suffix; }
+      })(t0);
+    };
+
+    const io = ('IntersectionObserver' in window)
+      ? new IntersectionObserver((ents) => ents.forEach(en => { if (en.isIntersecting) { io.unobserve(en.target); window.sweepRing(en.target); } }), { threshold: 0.45 })
+      : null;
+
+    function inViewport(el) {
+      const r = el.getBoundingClientRect();
+      if (!r.width && !r.height) return false;                 // not laid out / hidden screen
+      return r.top < innerHeight && r.bottom > 0 && r.left < innerWidth && r.right > 0;
+    }
+    function watch(ring) {
+      if (!ring || swept.has(ring) || ring.closest('#tutorial')) return;
+      // Already on screen (the score ring of the page you just opened)? Sweep now —
+      // don't depend on IntersectionObserver. Off-screen rings wait for scroll via IO.
+      if (inViewport(ring)) { window.sweepRing(ring); return; }
+      if (io) io.observe(ring); else window.sweepRing(ring);
+    }
+    function scan(root) {
+      if (!root || root.nodeType !== 1) return;
+      if (root.classList && root.classList.contains('ring')) watch(root);
+      root.querySelectorAll && root.querySelectorAll('.ring').forEach(watch);
+    }
+
+    const start = () => {
+      scan(document.body);
+      // catch rings rendered later (discovery list, readiness, manage, etc.)
+      new MutationObserver(muts => muts.forEach(m => m.addedNodes && m.addedNodes.forEach(scan)))
+        .observe(document.body, { childList: true, subtree: true });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+    else start();
+  })();
 </script>
 <script>
   /* ════════════════ PROMPT BOX + VOICE DICTATION ════════════════
