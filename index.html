@@ -781,6 +781,41 @@ label.field-label {
 .grow .gi .gn { font-size: 14.5px; font-weight: 600; color: var(--ink); }
 .grow .gi .gm { font-size: 12.5px; color: var(--muted); margin-top: 3px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 
+/* ── inline status picker ─────────────────────────────── */
+.sp-wrap { position: relative; flex-shrink: 0; }
+.sp-btn {
+  font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: var(--r-pill);
+  border: none; cursor: pointer; font-family: var(--display);
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: opacity 140ms;
+}
+.sp-btn:hover { opacity: 0.82; }
+.sp-btn::after { content: '▾'; font-size: 10px; opacity: 0.7; }
+.sp-btn.st-drafting   { background: var(--warn-tint);  color: var(--warn-ink); }
+.sp-btn.st-submitted  { background: #dbeafe; color: #1e40af; }
+.sp-btn.st-awarded    { background: var(--ok-tint);   color: var(--ok); }
+.sp-btn.st-declined   { background: rgba(26,25,22,.06); color: var(--muted); }
+.sp-btn.st-saved      { background: rgba(26,25,22,.06); color: var(--ink-soft); }
+.sp-menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 200;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r); box-shadow: 0 8px 24px -8px rgba(0,0,0,.18);
+  padding: 6px; min-width: 160px; display: none;
+}
+.sp-menu.open { display: block; animation: screenIn .18s var(--ease) both; }
+.sp-opt {
+  display: flex; align-items: center; gap: 9px; padding: 8px 10px;
+  border-radius: 8px; font-size: 13.5px; font-weight: 500; cursor: pointer;
+  transition: background 120ms;
+}
+.sp-opt:hover { background: var(--surface-2); }
+.sp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.sp-dot.st-drafting  { background: var(--warn-ink); }
+.sp-dot.st-submitted { background: #3b82f6; }
+.sp-dot.st-awarded   { background: var(--ok); }
+.sp-dot.st-declined  { background: var(--muted); }
+.sp-dot.st-saved     { background: var(--muted); }
+
 /* match ring */
 .ring { width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center;
   font-size: 13px; font-weight: 700; flex-shrink: 0; position: relative; }
@@ -5408,6 +5443,61 @@ async function saveEmailPrefs() {
   } catch (e) { console.error('saveEmailPrefs', e); toast('Could not save preferences.'); }
 }
 
+/* ─── Grant pipeline: inline status picker ──────────────────────────── */
+const STATUS_LABEL_MAP = { drafting:'Drafting', submitted:'Submitted', awarded:'Awarded', declined:'Declined', saved:'Saved', discovered:'Discovered' };
+
+function toggleStatusPicker(grantId, e) {
+  e.stopPropagation();
+  const menu = document.getElementById('sp-' + grantId);
+  if (!menu) return;
+  const isOpen = menu.classList.contains('open');
+  // close all open pickers first
+  document.querySelectorAll('.sp-menu.open').forEach(m => m.classList.remove('open'));
+  if (!isOpen) menu.classList.add('open');
+}
+
+// Close any open picker when clicking outside
+document.addEventListener('click', () => {
+  document.querySelectorAll('.sp-menu.open').forEach(m => m.classList.remove('open'));
+});
+
+async function updateGrantStatus(grantId, newStatus, optEl) {
+  // Close the menu immediately for snappy feel
+  const menu = optEl?.closest('.sp-menu');
+  if (menu) menu.classList.remove('open');
+
+  const btn = document.querySelector(`#grow-${CSS.escape(grantId)} .sp-btn`);
+  if (btn) {
+    btn.className = `sp-btn st-${newStatus}`;
+    btn.childNodes[0].textContent = STATUS_LABEL_MAP[newStatus] || newStatus;
+  }
+
+  // Rebuild the option list so the new current status is excluded
+  if (menu) {
+    const opts = ['drafting','submitted','awarded','declined']
+      .filter(s => s !== newStatus)
+      .map(s => `<div class="sp-opt" onclick="updateGrantStatus('${grantId}','${s}',this)">
+        <span class="sp-dot st-${s}"></span>${STATUS_LABEL_MAP[s]}
+      </div>`).join('');
+    menu.innerHTML = opts;
+  }
+
+  try {
+    if (window.sb && window._grange?.user?.id) {
+      await sb.from('grants')
+        .update({ status: newStatus })
+        .eq('id', grantId)
+        .eq('user_id', window._grange.user.id);
+      toast(`Marked as ${STATUS_LABEL_MAP[newStatus] || newStatus}.`);
+      // Refresh KPIs without re-rendering the whole dashboard
+      updateDashboard();
+    }
+  } catch (e) {
+    console.error('updateGrantStatus:', e);
+    toast('Could not update status.');
+  }
+}
+
 /* ─── Proposal: save to Supabase after generation ─────────────────── */
 async function saveProposalToDb(fields, selectedGrant, plainText) {
   const uid = window._grange?.user?.id;
@@ -8072,7 +8162,41 @@ async function updateDashboard() {
       .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
       .slice(0, 5);
 
-    if (top5.length === 0) {
+    // Prefer saved pipeline grants (have user-tracked statuses); fall back to top discovery matches
+    const STATUS_LABEL = { drafting:'Drafting', submitted:'Submitted', awarded:'Awarded', declined:'Declined', saved:'Saved', discovered:'Discovered' };
+    const STATUS_ORDER = ['drafting','submitted','awarded','declined','saved','discovered'];
+
+    const pipelineItems = dbGrants.length > 0
+      ? [...dbGrants].filter(g => !g.archived).sort((a,b) => {
+          const ai = STATUS_ORDER.indexOf(a.status), bi = STATUS_ORDER.indexOf(b.status);
+          return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+        }).slice(0,5)
+      : null;
+
+    if (pipelineItems && pipelineItems.length > 0) {
+      pipelineEl.innerHTML = pipelineItems.map(g => {
+        const st = g.status || 'saved';
+        const label = STATUS_LABEL[st] || st;
+        const days = g.deadline ? Math.ceil((new Date(g.deadline) - Date.now()) / 86400000) : null;
+        const dueHtml = days !== null && days >= 0
+          ? `<span class="pill ${days <= 30 ? 'pill-acc' : days <= 75 ? 'pill-warn' : 'pill-ok'}">Due ${days}d</span>`
+          : '';
+        const opts = ['drafting','submitted','awarded','declined'].filter(s => s !== st).map(s =>
+          `<div class="sp-opt" onclick="updateGrantStatus('${escHtml(g.id)}','${s}',this)">
+            <span class="sp-dot st-${s}"></span>${STATUS_LABEL[s]}
+          </div>`).join('');
+        return `<div class="grow" id="grow-${escHtml(g.id)}">
+          <div class="gi">
+            <div class="gn">${escHtml(g.title || g.funder || 'Grant')}</div>
+            <div class="gm">${escHtml(g.funder || '')} ${dueHtml}</div>
+          </div>
+          <div class="sp-wrap">
+            <button class="sp-btn st-${st}" onclick="toggleStatusPicker('${escHtml(g.id)}',event)">${escHtml(label)}</button>
+            <div class="sp-menu" id="sp-${escHtml(g.id)}">${opts}</div>
+          </div>
+        </div>`;
+      }).join('');
+    } else if (top5.length === 0) {
       pipelineEl.innerHTML = `
         <div style="text-align:center;padding:32px 16px;color:var(--muted)">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="margin-bottom:12px;opacity:.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -8096,8 +8220,8 @@ async function updateDashboard() {
         return `<div class="grow">
           <div class="ring ${ringCls}" style="--p:${score}"><span>${score}</span></div>
           <div class="gi">
-            <div class="gn">${g.title || g.funder}</div>
-            <div class="gm">${meta} ${pillHtml}</div>
+            <div class="gn">${escHtml(g.title || g.funder)}</div>
+            <div class="gm">${escHtml(meta)} ${pillHtml}</div>
           </div>
           <button class="btn btn-primary btn-sm" onclick="go('generator')">Draft</button>
         </div>`;
