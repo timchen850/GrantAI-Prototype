@@ -590,12 +590,43 @@ label.field-label {
 .tc-q { font-size:14px; line-height:1.6; color:var(--ink-body); margin-bottom:18px;
   position:relative; z-index:1; }
 .tc-footer { display:flex; align-items:center; gap:11px; }
-.tc-avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; flex-shrink:0;
+.tc-avatar { width:40px; height:40px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--accent-tint); color:var(--accent-ink);
+  font-size:13px; font-weight:700; letter-spacing:0.02em; line-height:1;
   border:2px solid var(--accent-tint);
-  transition:border-color 240ms var(--ease); }
+  transition:border-color 240ms var(--ease), background 240ms var(--ease); }
 .tc-card:hover .tc-avatar { border-color:var(--accent); }
 .tc-name { font-size:13.5px; font-weight:700; color:var(--ink); letter-spacing:-0.01em; line-height:1.2; }
 .tc-role { font-size:11.5px; color:var(--muted); letter-spacing:0; margin-top:2px; }
+.tc-note { text-align:center; font-size:12.5px; color:var(--muted); margin-top:14px; font-style:italic; }
+
+/* ─── VOICE COMPARISON — generic AI vs your real voice ─────── */
+.vcmp-eyebrow { font-size:11.5px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:14px; }
+.vcmp-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:48px; align-items:stretch; }
+.vcmp-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg);
+  padding:30px; display:flex; flex-direction:column;
+  transition:border-color 240ms var(--ease), box-shadow 240ms var(--ease); }
+.vcmp-generic { background:var(--surface-2); }
+.vcmp-voice { border-color:var(--accent-tint); box-shadow:0 30px 60px -42px rgba(217,79,48,0.45); }
+.vcmp-voice:hover { box-shadow:0 34px 64px -38px rgba(217,79,48,0.5); }
+.vcmp-head { display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+.vcmp-tag { font-size:12px; font-weight:700; padding:5px 12px; border-radius:999px; letter-spacing:-0.01em; }
+.vcmp-tag-bad { background:rgba(26,25,22,0.07); color:var(--muted); }
+.vcmp-tag-good { background:var(--accent-tint); color:var(--accent-ink); }
+.vcmp-sub { font-size:12.5px; color:var(--muted); }
+.vcmp-text { font-family:var(--serif); font-size:17px; line-height:1.6; color:var(--ink-body);
+  margin-bottom:22px; flex:1; }
+.vcmp-voice .vcmp-text { color:var(--ink); }
+.vcmp-flags { list-style:none; display:flex; flex-direction:column; gap:10px;
+  border-top:1px solid var(--line-soft); padding-top:18px; }
+.vcmp-flags li { display:flex; gap:9px; align-items:flex-start; font-size:13px; color:var(--muted); }
+.vcmp-flags li.good { color:var(--ink-soft); }
+.vcmp-flags li svg { flex-shrink:0; margin-top:1px; }
+.vcmp-flags li.bad svg { color:var(--muted); }
+.vcmp-flags li.good svg { color:var(--ok); }
+.vcmp-foot { text-align:center; font-size:13.5px; color:var(--muted); margin-top:28px; }
 
 /* ─── PRICING ───────────────────────────────────────────── */
 .pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
@@ -2210,6 +2241,11 @@ label.field-label {
 
   /* Tighter, more confident section headings */
   .section h2 { letter-spacing: -0.03em; line-height: 1.12; }
+
+  /* Voice-comparison cards stack on small screens */
+  .vcmp-grid { grid-template-columns: 1fr; gap: 14px; margin-top: 36px; }
+  .vcmp-card { padding: 24px; }
+  .vcmp-text { font-size: 16px; }
 }
 
 </style>
@@ -2320,7 +2356,7 @@ label.field-label {
             </div>
           </div>
         </div>
-        <p class="hero-sub rise d3">Grange AI scans 3 million grants daily, scores each one against your mission, and drafts the full proposal. Setup takes 20 minutes.</p>
+        <p class="hero-sub rise d3">Grange AI scans every open federal grant and vetted foundations, scores each against your mission, and drafts the full proposal. Setup takes 20 minutes.</p>
         <div class="hero-actions rise d4">
           <button class="btn btn-accent" onclick="go('login')">Start free</button>
           <button class="btn btn-outline" onclick="go('demo')">See a 1-minute demo</button>
@@ -2800,6 +2836,44 @@ label.field-label {
         </div>
   </section>
 
+  <!-- VOICE COMPARISON: the differentiator vs generic AI tools -->
+  <section class="section" id="your-voice" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="vcmp-eyebrow">Written in your voice</div>
+        <h2>Not another proposal<br>that sounds like a robot.</h2>
+        <p>Most AI tools hand back the same generic paragraph every nonprofit gets. Grange learns from the proposals you've already written, so your drafts come out sounding like <em>you</em>.</p>
+      </div>
+      <div class="vcmp-grid reveal">
+        <div class="vcmp-card vcmp-generic">
+          <div class="vcmp-head">
+            <span class="vcmp-tag vcmp-tag-bad">Generic AI</span>
+            <span class="vcmp-sub">What other tools write</span>
+          </div>
+          <p class="vcmp-text">"Our organization is dedicated to making a meaningful impact in the community through innovative programming. We leverage best practices to empower underserved youth and drive transformative outcomes. With your generous support, we will continue delivering high-impact solutions."</p>
+          <ul class="vcmp-flags">
+            <li class="bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg>Vague. Could be any nonprofit, anywhere.</li>
+            <li class="bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg>Jargon a reviewer skims right past.</li>
+            <li class="bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg>Not one real detail about your work.</li>
+          </ul>
+        </div>
+        <div class="vcmp-card vcmp-voice">
+          <div class="vcmp-head">
+            <span class="vcmp-tag vcmp-tag-good">Your voice</span>
+            <span class="vcmp-sub">What Grange writes</span>
+          </div>
+          <p class="vcmp-text">"Last year, 84 kids came through the Eastside gym after school. Forty-one had nowhere else to go. We kept the doors open with one part-time coach and a borrowed van. Another $25,000 adds the second night a week that families keep asking us for."</p>
+          <ul class="vcmp-flags">
+            <li class="good"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Real numbers from your own programs.</li>
+            <li class="good"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Your story, told in your words.</li>
+            <li class="good"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>The specifics funders actually fund.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="vcmp-foot reveal">Grange studies the proposals you've written before. Private to you, and never used to train AI.</p>
+    </div>
+  </section>
+
   <!-- VOICES v2 -->
   <section class="section" style="padding-top:0">
     <div class="wrap">
@@ -2814,41 +2888,42 @@ label.field-label {
         <div class="tc-col">
           <div class="tc-track" style="--dur:15s">
             <!-- real items -->
-            <div class="tc-card"><p class="tc-q">"Grange AI found a foundation we'd never heard of and drafted the whole application in an afternoon. We won it."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&q=80" alt="Maria Reyes"><div><div class="tc-name">Maria Reyes</div></div></div></div>
-            <div class="tc-card"><p class="tc-q">"Three grants in our first sixty days. It costs less per month than one hour of a professional grant writer."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&q=80" alt="James Thornton"><div><div class="tc-name">James Thornton</div></div></div></div>
-            <div class="tc-card"><p class="tc-q">"I stopped giving up my Sundays to the 990 binder. Grange AI handles the compliance prep I used to dread."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&q=80" alt="Amara Nwosu"><div><div class="tc-name">Amara Nwosu</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"Grange AI found a foundation we'd never heard of and drafted the whole application in an afternoon. We won it."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">MR</div><div><div class="tc-name">Maria Reyes</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"Three grants in our first sixty days. It costs less per month than one hour of a professional grant writer."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">JT</div><div><div class="tc-name">James Thornton</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"I stopped giving up my Sundays to the 990 binder. Grange AI handles the compliance prep I used to dread."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">AN</div><div><div class="tc-name">Amara Nwosu</div></div></div></div>
             <!-- duplicates for seamless loop -->
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Grange AI found a foundation we'd never heard of and drafted the whole application in an afternoon. We won it."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&q=80" alt="Maria Reyes"><div><div class="tc-name">Maria Reyes</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Three grants in our first sixty days. It costs less per month than one hour of a professional grant writer."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&q=80" alt="James Thornton"><div><div class="tc-name">James Thornton</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"I stopped giving up my Sundays to the 990 binder. Grange AI handles the compliance prep I used to dread."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&q=80" alt="Amara Nwosu"><div><div class="tc-name">Amara Nwosu</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Grange AI found a foundation we'd never heard of and drafted the whole application in an afternoon. We won it."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">MR</div><div><div class="tc-name">Maria Reyes</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Three grants in our first sixty days. It costs less per month than one hour of a professional grant writer."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">JT</div><div><div class="tc-name">James Thornton</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"I stopped giving up my Sundays to the 990 binder. Grange AI handles the compliance prep I used to dread."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">AN</div><div><div class="tc-name">Amara Nwosu</div></div></div></div>
           </div>
         </div>
 
         <!-- Column 2 — speed 19s, offset start -->
         <div class="tc-col">
           <div class="tc-track" style="--dur:19s; transform:translateY(-16%)">
-            <div class="tc-card"><p class="tc-q">"We applied to 11 grants last quarter. Before Grange AI we could barely manage two. Our funding doubled."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&h=80&fit=crop&q=80" alt="Priya Sharma"><div><div class="tc-name">Priya Sharma</div></div></div></div>
-            <div class="tc-card"><p class="tc-q">"The SAM.gov validation alone saved us from a rejection that would have cost six weeks. That feature pays for itself."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&q=80" alt="Derek Walsh"><div><div class="tc-name">Derek Walsh</div></div></div></div>
-            <div class="tc-card"><p class="tc-q">"Our board asked why we suddenly had so much capacity. The answer was Grange AI doing the proposal writing."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&q=80" alt="Keisha Monroe"><div><div class="tc-name">Keisha Monroe</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"We applied to 11 grants last quarter. Before Grange AI we could barely manage two. Our funding doubled."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&h=80&fit=crop&q=80" alt="Priya Sharma"><div><div class="tc-name">Priya Sharma</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"The SAM.gov validation alone saved us from a rejection that would have cost six weeks. That feature pays for itself."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&q=80" alt="Derek Walsh"><div><div class="tc-name">Derek Walsh</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Our board asked why we suddenly had so much capacity. The answer was Grange AI doing the proposal writing."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&q=80" alt="Keisha Monroe"><div><div class="tc-name">Keisha Monroe</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"We applied to 11 grants last quarter. Before Grange AI we could barely manage two. Our funding doubled."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">PS</div><div><div class="tc-name">Priya Sharma</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"The SAM.gov validation alone saved us from a rejection that would have cost six weeks. That feature pays for itself."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">DW</div><div><div class="tc-name">Derek Walsh</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"Our board asked why we suddenly had so much capacity. The answer was Grange AI doing the proposal writing."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">KM</div><div><div class="tc-name">Keisha Monroe</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"We applied to 11 grants last quarter. Before Grange AI we could barely manage two. Our funding doubled."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">PS</div><div><div class="tc-name">Priya Sharma</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"The SAM.gov validation alone saved us from a rejection that would have cost six weeks. That feature pays for itself."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">DW</div><div><div class="tc-name">Derek Walsh</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Our board asked why we suddenly had so much capacity. The answer was Grange AI doing the proposal writing."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">KM</div><div><div class="tc-name">Keisha Monroe</div></div></div></div>
           </div>
         </div>
 
         <!-- Column 3 — speed 17s, offset start -->
         <div class="tc-col">
           <div class="tc-track" style="--dur:17s; transform:translateY(-30%)">
-            <div class="tc-card"><p class="tc-q">"The logic model diagram it generates is better than anything I was producing manually. Funders notice."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&q=80" alt="Carlos Ibáñez"><div><div class="tc-name">Carlos Ibáñez</div></div></div></div>
-            <div class="tc-card"><p class="tc-q">"First federal grant we'd ever submitted. Grange AI walked us through SAM registration and wrote the full narrative. We got funded."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&q=80" alt="Ngozi Adeyemi"><div><div class="tc-name">Ngozi Adeyemi</div></div></div></div>
-            <div class="tc-card"><p class="tc-q">"Deadline reminders synced to my calendar and a draft ready two weeks before due. I've never submitted anything late since."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop&q=80" alt="Thomas Reid"><div><div class="tc-name">Thomas Reid</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"The logic model diagram it generates is better than anything I was producing manually. Funders notice."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&q=80" alt="Carlos Ibáñez"><div><div class="tc-name">Carlos Ibáñez</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"First federal grant we'd ever submitted. Grange AI walked us through SAM registration and wrote the full narrative. We got funded."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&q=80" alt="Ngozi Adeyemi"><div><div class="tc-name">Ngozi Adeyemi</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Deadline reminders synced to my calendar and a draft ready two weeks before due. I've never submitted anything late since."</p><div class="tc-footer"><img class="tc-avatar" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop&q=80" alt="Thomas Reid"><div><div class="tc-name">Thomas Reid</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"The logic model diagram it generates is better than anything I was producing manually. Funders notice."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">CI</div><div><div class="tc-name">Carlos Ibáñez</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"First federal grant we'd ever submitted. Grange AI walked us through SAM registration and wrote the full narrative. We got funded."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">NA</div><div><div class="tc-name">Ngozi Adeyemi</div></div></div></div>
+            <div class="tc-card"><p class="tc-q">"Deadline reminders synced to my calendar and a draft ready two weeks before due. I've never submitted anything late since."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">TR</div><div><div class="tc-name">Thomas Reid</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"The logic model diagram it generates is better than anything I was producing manually. Funders notice."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">CI</div><div><div class="tc-name">Carlos Ibáñez</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"First federal grant we'd ever submitted. Grange AI walked us through SAM registration and wrote the full narrative. We got funded."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">NA</div><div><div class="tc-name">Ngozi Adeyemi</div></div></div></div>
+            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Deadline reminders synced to my calendar and a draft ready two weeks before due. I've never submitted anything late since."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">TR</div><div><div class="tc-name">Thomas Reid</div></div></div></div>
           </div>
         </div>
 
       </div>
+      <p class="tc-note reveal">Illustrative of the outcomes Grange AI is built to deliver. Early access is just getting started.</p>
     </div>
   </section>
   <!-- PRICING -->
@@ -3780,8 +3855,8 @@ label.field-label {
     <div class="dp-phase-inner">
       <div>
         <div class="dp-step-tag">Step 02 &middot; Discovery</div>
-        <h2 class="dp-headline">Scanning 3 million+<br>grants right now</h2>
-        <p class="dp-desc">Grange AI indexes Grants.gov, Candid, state portals, and hundreds of private foundations every day, scoring each opportunity against your mission, geography, and budget.</p>
+        <h2 class="dp-headline">Every open grant,<br>scanned for you</h2>
+        <p class="dp-desc">Grange AI indexes every open opportunity on Grants.gov plus a vetted list of foundations, refreshed daily, scoring each against your mission, geography, and budget.</p>
       </div>
       <div>
         <div class="dp-card">
