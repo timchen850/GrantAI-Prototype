@@ -8338,23 +8338,41 @@ async function ob990Autofill(input) {
       obRender(); return;
     }
     const filled = [];
-    const ein = text.match(/\b(\d{2}-\d{7})\b/);
-    if (ein && !obState.answers.ein) { obState.answers.ein = ein[1]; filled.push('EIN'); }
-    const nm = text.match(/Name of organization\s+([A-Z][^\n]{2,60}?)(?:\s+(?:Doing business|D\/B\/A|Number and street|Employer identification))/i);
-    if (nm && !obState.answers.org_name) { obState.answers.org_name = nm[1].trim().replace(/\s{2,}/g, ' '); filled.push('organization name'); }
-    const rev = text.match(/Total revenue[^0-9]{0,40}([0-9][0-9,]{3,})/i);
-    if (rev && !obState.answers.annual_budget) {
-      const n = parseInt(rev[1].replace(/,/g, ''), 10);
-      if (n > 0) {
-        obState.answers.annual_budget = n < 100000 ? '<$100K' : n < 500000 ? '$100K–$500K' : n < 1000000 ? '$500K–$1M' : n < 5000000 ? '$1M–$5M' : '$5M+';
-        filled.push('annual budget');
+    const set = (key, val, label) => { if (val && !obState.answers[key]) { obState.answers[key] = val; filled.push(label); } };
+
+    // Primary path: the LLM extractor (ai-worker extract_org_facts) reads the
+    // whole 990 text and returns the full structured profile.
+    let facts = null;
+    try {
+      toast('Reading your 990 with AI…');
+      const r = await runAiJob('extract_org_facts', { text: text.slice(0, 16000) });
+      if (r && r.ok && r.output) facts = r.output;
+    } catch (_) { /* fall through to the local regex extractor */ }
+    if (facts) {
+      set('org_name', facts.org_name, 'organization name');
+      set('ein', facts.ein, 'EIN');
+      set('year_founded', facts.year_founded, 'year founded');
+      set('state_incorp', facts.state_incorp, 'state');
+      set('mission', facts.mission, 'mission');
+      set('beneficiaries', facts.beneficiaries, 'who you serve');
+      set('primary_location', facts.primary_location, 'location');
+      set('annual_budget', facts.annual_budget, 'annual budget');
+      if (Array.isArray(facts.focus_areas) && facts.focus_areas.length && !(obState.answers.focus_areas || []).length) {
+        obState.answers.focus_areas = facts.focus_areas; filled.push('focus areas');
       }
     }
-    obState._990msg = filled.length
-      ? { type: 'ok', html: '<b>Pulled from your 990:</b> ' + escHtml(filled.join(', ')) + '. Please confirm each one is right before continuing.' }
+
+    // Fallback (LLM unavailable / no key / missed a core field): local regex.
+    if (!obState.answers.ein) { const m = text.match(/\b(\d{2}-\d{7})\b/); if (m) { obState.answers.ein = m[1]; filled.push('EIN'); } }
+    if (!obState.answers.org_name) { const m = text.match(/Name of organization\s+([A-Z][^\n]{2,60}?)(?:\s+(?:Doing business|D\/B\/A|Number and street|Employer identification))/i); if (m) { obState.answers.org_name = m[1].trim().replace(/\s{2,}/g, ' '); filled.push('organization name'); } }
+    if (!obState.answers.annual_budget) { const m = text.match(/Total revenue[^0-9]{0,40}([0-9][0-9,]{3,})/i); if (m) { const n = parseInt(m[1].replace(/,/g, ''), 10); if (n > 0) { obState.answers.annual_budget = n < 100000 ? '<$100K' : n < 500000 ? '$100K–$500K' : n < 1000000 ? '$500K–$1M' : n < 5000000 ? '$1M–$5M' : '$5M+'; filled.push('annual budget'); } } }
+
+    const uniq = [...new Set(filled)];
+    obState._990msg = uniq.length
+      ? { type: 'ok', html: '<b>Pulled from your 990:</b> ' + escHtml(uniq.join(', ')) + '. Please confirm each one is right before continuing.' }
       : { type: 'warn', html: 'We read your 990 but could not confidently find these fields. Please fill them in below.' };
     obRender();
-    toast(filled.length ? ('Filled ' + filled.length + ' field' + (filled.length > 1 ? 's' : '') + ' from your 990.') : 'Could not auto-fill from that 990.');
+    toast(uniq.length ? ('Filled ' + uniq.length + ' field' + (uniq.length > 1 ? 's' : '') + ' from your 990.') : 'Could not auto-fill from that 990.');
   } catch (err) {
     console.error('[Grange AI] ob990Autofill:', err);
     obState._990msg = { type: 'warn', html: 'We could not read that file automatically. Please fill the fields in below.' };
