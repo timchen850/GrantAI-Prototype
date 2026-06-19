@@ -628,6 +628,38 @@ label.field-label {
 .vcmp-flags li.good svg { color:var(--ok); }
 .vcmp-foot { text-align:center; font-size:13.5px; color:var(--muted); margin-top:28px; }
 
+/* ─── FOUNDER / OUR STORY ─────────────────────────────────── */
+.story-grid { display:grid; grid-template-columns:1.1fr 0.9fr; gap:48px; align-items:center; margin-top:8px; }
+.story-eyebrow { font-size:11.5px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:14px; }
+.story-copy h2 { margin-bottom:18px; }
+.story-copy p { font-size:16px; line-height:1.7; color:var(--ink-body); max-width:50ch; }
+.story-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:32px; }
+.story-card-label { font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:18px; }
+.story-org { display:flex; gap:14px; align-items:flex-start; padding:16px 0; border-top:1px solid var(--line-soft); }
+.story-org:first-of-type { border-top:none; padding-top:0; }
+.story-org-mark { width:40px; height:40px; border-radius:11px; flex-shrink:0; display:flex;
+  align-items:center; justify-content:center; background:var(--accent-tint); color:var(--accent-ink);
+  font-weight:800; font-size:15px; letter-spacing:0.02em; }
+.story-org-name { font-size:15px; font-weight:700; color:var(--ink); letter-spacing:-0.01em; }
+.story-org-desc { font-size:13px; color:var(--muted); line-height:1.5; margin-top:3px; }
+
+/* ─── TRUST / OBJECTION HANDLING ──────────────────────────── */
+.trust-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:48px; }
+.trust-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:26px;
+  transition:border-color 240ms var(--ease), box-shadow 240ms var(--ease); }
+.trust-card:hover { border-color:rgba(26,25,22,0.16); box-shadow:0 22px 46px -30px rgba(26,25,22,0.34); }
+.trust-ico { width:40px; height:40px; border-radius:11px; display:flex; align-items:center; justify-content:center;
+  background:var(--accent-tint); color:var(--accent); margin-bottom:16px; }
+.trust-card h3 { font-size:16px; letter-spacing:-0.01em; margin-bottom:8px; color:var(--ink); }
+.trust-card p { font-size:14px; line-height:1.62; color:var(--ink-body); }
+.trust-card a { color:var(--accent); font-weight:600; text-decoration:none; border-bottom:1px solid var(--accent-tint); }
+.trust-card a:hover { border-bottom-color:var(--accent); }
+.trust-foot { margin-top:28px; text-align:center; font-size:13.5px; color:var(--muted);
+  display:flex; gap:9px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.trust-foot svg { color:var(--ok); flex-shrink:0; }
+
 /* ─── PRICING ───────────────────────────────────────────── */
 .pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
 .tier { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
@@ -2246,6 +2278,10 @@ label.field-label {
   .vcmp-grid { grid-template-columns: 1fr; gap: 14px; margin-top: 36px; }
   .vcmp-card { padding: 24px; }
   .vcmp-text { font-size: 16px; }
+
+  /* Founder story + trust cards stack on small screens */
+  .story-grid { grid-template-columns: 1fr; gap: 28px; }
+  .trust-grid { grid-template-columns: 1fr; gap: 14px; margin-top: 36px; }
 }
 
 </style>
@@ -2346,7 +2382,7 @@ label.field-label {
     </div>
     <div class="scroll-hero-inner">
       <div class="scroll-hero-title">
-        <div class="hero-headline rise d2" aria-label="The grants you qualify for, written for you.">
+        <div class="hero-headline rise d2" aria-label="The grants you qualify for, found for you.">
           <span class="hero-hl-static">The grants you qualify for,</span>
           <div class="gooey-line-wrap">
             <svg class="gooey-svg" aria-hidden="true"><defs><filter id="goo-threshold"><feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 255 -140"/></filter></defs></svg>
@@ -2356,9 +2392,9 @@ label.field-label {
             </div>
           </div>
         </div>
-        <p class="hero-sub rise d3">Grange AI scans every open federal grant and vetted foundations, scores each against your mission, and drafts the full proposal. Setup takes 20 minutes.</p>
+        <p class="hero-sub rise d3">Built for nonprofits without a grant writer on staff. Grange AI finds the grants you qualify for and writes them in your voice. No experience needed.</p>
         <div class="hero-actions rise d4">
-          <button class="btn btn-accent" onclick="go('login')">Start free</button>
+          <button class="btn btn-accent" onclick="go('login')">Start my free trial</button>
           <button class="btn btn-outline" onclick="go('demo')">See a 1-minute demo</button>
         </div>
         <p class="hero-trust rise d5">No card required. 14-day trial.</p>
@@ -2926,6 +2962,37 @@ label.field-label {
       <p class="tc-note reveal">Illustrative of the outcomes Grange AI is built to deliver. Early access is just getting started.</p>
     </div>
   </section>
+
+  <!-- FOUNDER / OUR STORY: the non-replicable advantage -->
+  <section class="section" id="our-story" style="padding-top:0">
+    <div class="wrap">
+      <div class="story-grid">
+        <div class="story-copy reveal">
+          <div class="story-eyebrow">Who's behind Grange</div>
+          <h2>Built by students who run<br>their own nonprofits.</h2>
+          <p>We're not a VC-backed software company. We run youth nonprofits in the Philadelphia area, and we wrote our own grant applications the hard way: nights, weekends, and no budget for a $5,000 grant writer. Grange is the tool we wished we had. We're building it for organizations like ours, not for enterprise grant teams.</p>
+        </div>
+        <div class="story-card reveal">
+          <div class="story-card-label">The nonprofits we run</div>
+          <div class="story-org">
+            <div class="story-org-mark" aria-hidden="true">YL</div>
+            <div>
+              <div class="story-org-name">Youth Lens</div>
+              <div class="story-org-desc">Youth photography and storytelling, capturing real community moments across Philadelphia and Delaware County.</div>
+            </div>
+          </div>
+          <div class="story-org">
+            <div class="story-org-mark" aria-hidden="true">CC</div>
+            <div>
+              <div class="story-org-name">Courts for Change</div>
+              <div class="story-org-desc">Rebuilding neighborhood basketball courts and the youth programs that keep them full.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- PRICING -->
   <section class="section" id="pricing" style="padding-top:0">
     <div class="wrap">
@@ -2974,6 +3041,49 @@ label.field-label {
           <button class="btn btn-outline btn-block" onclick="go('login')">Start free</button>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- TRUST / OBJECTION HANDLING: answer the risk-averse buyer's fears -->
+  <section class="section" id="trust" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2>Built for people who<br>don't love software.</h2>
+        <p>You're running a nonprofit, not an IT department. Here are the questions we hear most, answered plainly.</p>
+      </div>
+      <div class="trust-grid reveal-group">
+        <div class="trust-card">
+          <div class="trust-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9.5" x2="9.01" y2="9.5"/><line x1="15" y1="9.5" x2="15.01" y2="9.5"/></svg></div>
+          <h3>Not tech-savvy? Good.</h3>
+          <p>If you can fill out a form, you can use Grange. We walk you through one step at a time and explain every grant term as it comes up.</p>
+        </div>
+        <div class="trust-card">
+          <div class="trust-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+          <h3>Your data stays yours.</h3>
+          <p>We never use your data to train public AI models, and any documents you connect are read-only. Read our <a href="#" onclick="go('privacy');return false;">privacy policy</a>.</p>
+        </div>
+        <div class="trust-card">
+          <div class="trust-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></div>
+          <h3>You approve every word.</h3>
+          <p>Grange writes the draft. You decide what stays. Nothing is ever submitted for you, and every sentence is yours to edit first.</p>
+        </div>
+        <div class="trust-card">
+          <div class="trust-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4-3 7-7 8-4-1-7-4-7-8V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <h3>Still your original work.</h3>
+          <p>Grange writes in your voice, grounded in your real programs, so your application stays your own, the way funders and policies like NIH's expect.</p>
+        </div>
+        <div class="trust-card">
+          <div class="trust-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 13.4L13 21l-9-9V4h8z"/><line x1="7.5" y1="7.5" x2="7.51" y2="7.5"/></svg></div>
+          <h3>Nothing to lose.</h3>
+          <p>Start free, no credit card. Cancel anytime. Your first proposals are on us, so you can see the drafts before you ever pay.</p>
+        </div>
+        <div class="trust-card">
+          <div class="trust-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <h3>We're new, and honest about it.</h3>
+          <p>We're not the cheapest enterprise suite, and we won't pretend to be. We're built by people who actually run nonprofits, and we'd rather earn your trust than overpromise.</p>
+        </div>
+      </div>
+      <p class="trust-foot reveal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Built to WCAG AA: keyboard-friendly, screen-reader-friendly, and respects reduced motion.</p>
     </div>
   </section>
 
@@ -3082,7 +3192,7 @@ label.field-label {
       <a class="brand" href="#" onclick="go('landing')"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
       <div class="small">Built for nonprofits that don't have a grant writer on staff.</div>
       <div class="footer-links">
-        <a href="#" onclick="go('privacy');return false;">Privacy</a><a href="#" onclick="go('terms');return false;">Terms</a><a href="#" onclick="go('security');return false;">Security</a><a href="#" onclick="go('contact');return false;">Contact</a>
+        <a href="#our-story" onclick="var s=document.getElementById('our-story');if(s)s.scrollIntoView({behavior:'smooth'});return false;">Our story</a><a href="#" onclick="go('privacy');return false;">Privacy</a><a href="#" onclick="go('terms');return false;">Terms</a><a href="#" onclick="go('security');return false;">Security</a><a href="#" onclick="go('contact');return false;">Contact</a>
       </div>
     </div>
   </footer>
