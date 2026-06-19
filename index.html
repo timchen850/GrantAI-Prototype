@@ -4227,6 +4227,9 @@ label.field-label {
 .tut-foot { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; background: linear-gradient(to top, var(--paper) 62%, transparent); padding: 20px 24px; }
 .tut-foot .inner { max-width: 920px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .tut-foot .hint { font-size: 13px; color: var(--muted); transition: color .2s, opacity .2s; }
+/* The guide mascot's speech bubble carries the per-step instruction now, so the
+   footer hint would just repeat it — hide it to avoid the duplication. */
+#tut-hint { display: none; }
 .tut-foot .hint.pulse { color: var(--accent); font-weight: 600; }
 .tut-next[disabled] { opacity: .45; cursor: not-allowed; filter: grayscale(.3); }
 @media (prefers-reduced-motion: reduce) {
@@ -4307,7 +4310,7 @@ label.field-label {
 @media (max-width: 800px) { .t2-profile { grid-template-columns: 1fr; justify-items: center; text-align: center; } .t2-srcs { grid-template-columns: repeat(2,1fr); } }
 
 /* ════════════════════ IMMERSIVE TUTORIAL — "AURORA STAGE" ════════════════════ */
-:root{ --ios-drawer: cubic-bezier(0.32,0.72,0,1); --ease-strong: cubic-bezier(0.77,0,0.175,1); --spring-soft: cubic-bezier(0.34,1.42,0.5,1); }
+:root{ --ios-drawer: cubic-bezier(0.32,0.72,0,1); --ease-strong: cubic-bezier(0.77,0,0.175,1); --spring-soft: cubic-bezier(0.34,1.42,0.5,1); --ease-out: cubic-bezier(0.22,0.61,0.36,1); }
 #tutorial{ background:#1a1006; }
 
 /* PLANE 0 — aurora (homescreen gradient), fades up from dark */
@@ -5109,10 +5112,14 @@ label.field-label {
   .rdy-body{ flex:1; min-width:0; }
   .rdy-label{ font-size:14.5px; font-weight:600; color:var(--ink); }
   .rdy-why{ font-size:13px; color:var(--ink-body); margin-top:3px; line-height:1.5; }
-  .rdy-how{ font-size:12.5px; color:var(--muted); margin-top:9px; padding-top:9px; border-top:1px dashed var(--line); display:none; line-height:1.55; }
+  .rdy-how{ font-size:12.5px; color:var(--ink-body); margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); display:none; line-height:1.62; }
   .rdy-item.open .rdy-how{ display:block; }
-  .rdy-how-t{ font-size:12px; color:var(--accent); cursor:pointer; margin-top:8px; display:inline-flex; align-items:center; gap:4px; }
-  .rdy-seg{ display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; margin-top:11px; }
+  .rdy-how-foot{ margin-top:11px; }
+  .rdy-how-link{ display:inline-flex; align-items:center; gap:5px; font-size:12.5px; font-weight:600; color:var(--accent); background:var(--accent-tint); border:1px solid var(--accent-line, rgba(217,79,48,.22)); border-radius:8px; padding:7px 12px; cursor:pointer; text-decoration:none; font-family:inherit; transition:background .15s; }
+  .rdy-how-link:hover{ background:rgba(217,79,48,.16); }
+  .rdy-how-t{ font-size:12.5px; font-weight:600; color:var(--accent); cursor:pointer; margin-top:14px; display:inline-flex; width:max-content; align-items:center; gap:4px; user-select:none; }
+  .rdy-item.open .rdy-how-t{ color:var(--muted); }
+  .rdy-seg{ display:flex; width:max-content; max-width:100%; border:1px solid var(--line); border-radius:999px; overflow:hidden; margin-top:12px; }
   .rdy-seg button{ font-size:12px; padding:6px 13px; background:none; border:none; cursor:pointer; color:var(--muted); border-right:1px solid var(--line); transition:background .15s; }
   .rdy-seg button:last-child{ border-right:none; }
   .rdy-seg button:hover{ background:var(--surface-2); }
@@ -5264,7 +5271,7 @@ label.field-label {
 <!-- ═══════════ MOBILE NAV (phones only; hidden ≥769px via CSS) ═══════════ -->
 <!-- app-screen top bar: brand + hamburger -->
 <header class="m-appbar">
-  <a class="brand" href="#" onclick="go('landing');return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+  <a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
   <button class="m-burger" aria-label="Open menu" aria-expanded="false" onclick="mNavToggle()"><span></span><span></span><span></span></button>
 </header>
 <!-- slide-in drawer (shared by marketing + app contexts) -->
@@ -5284,7 +5291,7 @@ label.field-label {
 function SIDE(active) {
   const showSurveyBtn = window._grange && window._grange.surveySkipped;
   return `
-  <div class="side-brand"><a class="brand" href="#" onclick="go('landing')"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a></div>
+  <div class="side-brand"><a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a></div>
   <nav class="side-nav">
     <a href="#" onclick="go('dashboard')" class="${active==='dashboard'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
@@ -5669,6 +5676,8 @@ function submitContact() {
   }, 900);
 }
 function goHome() {
+  // Signed-in users belong in the app, never the visitor (landing) site.
+  if (window._grange && window._grange.user) { go('dashboard'); return; }
   go('landing');
   const title = document.querySelector('.scroll-hero-title');
   const card  = document.getElementById('scroll-hero-card');
@@ -7898,7 +7907,14 @@ window._manualAuthFlow = false;
 
 async function currentProfile() {
   if (!window.sb) return null;
-  const { data: { user } } = await sb.auth.getUser();
+  let user = null;
+  try { ({ data: { user } } = await sb.auth.getUser()); } catch (_) {}
+  if (!user) {
+    // On a freshly opened tab the access token can be momentarily stale (getUser
+    // hits the network and may 401 before the refresh lands). Fall back to the
+    // persisted session so a signed-in user isn't bounced to the visitor site.
+    try { const { data: { session } } = await sb.auth.getSession(); user = session?.user || null; } catch (_) {}
+  }
   if (!user) return null;
   let { data: profile } = await sb.from('profiles').select('*').eq('user_id', user.id).maybeSingle();
   if (!profile) {
@@ -7965,7 +7981,10 @@ function applyOrgIdentity(ctx) {
 if (window.sb) {
   sb.auth.onAuthStateChange((event, session) => {
     if (window._manualAuthFlow) return;
-    if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session) {
+    // TOKEN_REFRESHED is included so a tab that opened with a stale token (and
+    // therefore stayed on the visitor screen) routes into the app once the
+    // refresh completes.
+    if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
       if (PUBLIC_SCREENS.includes(window._currentScreen || 'landing')) routeAfterAuth();
     }
   });
@@ -8516,7 +8535,9 @@ const tutGuide = {
       else if (side === 'left') { gx = r.left - gap - ORB; gy = (r.top + r.bottom) / 2 - ORB / 2; }
       else { side = 'top'; gx = (r.left + r.right) / 2 - ORB / 2; gy = r.top - gap - ORB; }
       gx = Math.max(12, Math.min(gx, vw - ORB - 12));
-      gy = Math.max(70, Math.min(gy, vh - ORB - 96));
+      // keep clear of the top bar, but allow the orb down to the footer so it can
+      // actually sit beside the Continue button when a step is done.
+      gy = Math.max(70, Math.min(gy, vh - ORB - 16));
       g.dataset.side = side;
       g.style.setProperty('--gx', gx + 'px');
       g.style.setProperty('--gy', gy + 'px');
@@ -10047,16 +10068,46 @@ function applyDiscFilters(query, type) {
      profile + the prerequisite-document checklist (v2 readiness_requirements).
      Works with no API key; statuses persist to readiness_items per user. */
   const RDY_REQS = [
-    { key:'determination_letter', applies_to:'both', label:'IRS 501(c)(3) determination letter', why:'The gate — almost every funder asks for it first. No letter, no grant.', how:'The IRS issued it when you got tax-exempt status. Lost it? Request a free 147C letter from the IRS.' },
-    { key:'ein', applies_to:'both', label:'Employer Identification Number (EIN)', why:'Your federal tax ID; required on virtually every application.', how:'From the IRS — you already have it if your organization is incorporated.' },
-    { key:'bylaws', applies_to:'both', label:'Bylaws & articles of incorporation', why:'Funders confirm you are a real, governed nonprofit.', how:'Your incorporation documents from your state filing.' },
-    { key:'board_list', applies_to:'both', label:'Board of directors roster', why:'Shows independent governance and credibility; funders check for conflicts.', how:'Keep a current list with names, affiliations, and roles.' },
-    { key:'org_budget', applies_to:'both', label:'Board-approved organizational budget', why:'Demonstrates financial health and that you can manage the money.', how:'Your annual operating budget, approved by the board.' },
-    { key:'form_990', applies_to:'both', label:'Most recent IRS Form 990', why:'Funders read your 990 closely to confirm you are current and sound.', how:'You file it annually with the IRS (or a 990-N for small orgs).' },
-    { key:'financials', applies_to:'both', label:'Recent financial statements / audit', why:'Larger grants want audited financials to show you can steward funds.', how:'From your accountant; an audit if your budget crosses state/funder thresholds.' },
-    { key:'mission_track_record', applies_to:'both', label:'Mission statement & track record', why:'The narrative backbone of every proposal; new orgs are less competitive without evidence.', how:'Write it once and reuse it — Grange stores it on your profile.' },
-    { key:'uei', applies_to:'federal', label:'Unique Entity ID (UEI)', why:'Required to apply for ANY federal grant; issued via SAM.gov.', how:'Register free at SAM.gov. Start 60+ days before a deadline.' },
-    { key:'sam_active', applies_to:'federal', label:'Active SAM.gov registration', why:'You cannot submit a federal application without it, and it expires every 365 days.', how:'At SAM.gov — your legal name must match IRS records exactly. Renew annually.' },
+    { key:'determination_letter', applies_to:'both', label:'IRS 501(c)(3) determination letter',
+      why:'The gate — almost every funder asks for it first. No letter, no grant.',
+      how:'This is the one- to two-page letter the IRS mailed you (it opens with “Dear Applicant” and the words “determination letter”) the day your tax-exempt status was approved. Look first in your incorporation binder, your accountant’s files, or a “nonprofit setup” folder in your email — it’s usually saved as a PDF named something like “IRS Determination Letter.” Can’t find the original? You don’t need it: call the IRS Tax-Exempt line at 877-829-5500 and ask for a free 147C letter, an official replacement they fax or mail in about 7–10 business days. You can also confirm your status in seconds by searching your org name on the IRS Tax-Exempt Organization Search below.',
+      link:{ href:'https://apps.irs.gov/app/eos/', label:'Find it on IRS Tax-Exempt Search' } },
+    { key:'ein', applies_to:'both', label:'Employer Identification Number (EIN)',
+      why:'Your federal tax ID; required on virtually every application.',
+      how:'It’s a 9-digit number formatted 12-3456789. You almost certainly already have it — it’s printed at the top of your IRS determination letter, on every Form 990 you’ve filed, on your bank account paperwork, and on past tax filings. If you genuinely never received one (a brand-new org), apply free online with the IRS and you’ll get it instantly. Never pay a third-party site for an EIN — the IRS issues it at no cost.',
+      link:{ href:'https://www.irs.gov/businesses/small-businesses-self-employed/get-an-employer-identification-number', label:'Get or look up your EIN (IRS)' } },
+    { key:'bylaws', applies_to:'both', label:'Bylaws & articles of incorporation',
+      why:'Funders confirm you are a real, governed nonprofit.',
+      how:'Two documents: your Articles of Incorporation (the one-page certificate your state issued when you formed) and your Bylaws (the internal rulebook your board adopted). Check your incorporation binder, shared drive, or the email from whoever filed your formation. Lost the Articles? Order a certified copy from your state’s Secretary of State — search “[your state] Secretary of State business search,” find your entity, and request copies online (usually $5–$25). Bylaws live only in your own records, so if they’re missing, your board can re-adopt an updated set at the next meeting.',
+      link:{ href:'https://www.councilofnonprofits.org/running-nonprofit/governance-leadership', label:'Bylaws & governance guide' } },
+    { key:'board_list', applies_to:'both', label:'Board of directors roster',
+      why:'Shows independent governance and credibility; funders check for conflicts.',
+      how:'A simple list — usually a one-page Word doc or spreadsheet — with each director’s full name, their outside job or affiliation, their board role (Chair, Treasurer, Secretary, Member), and the year they joined. Most funders want it current and dated. If you don’t keep one, pull the names from your most recent board-meeting minutes or your Form 990 (Part VII lists officers and directors) and type them up. Keep this file updated once a year so it’s ready every time.',
+      link:{ href:'https://www.councilofnonprofits.org/running-nonprofit/governance-leadership/board-roles-and-responsibilities', label:'What to include (board roles)' } },
+    { key:'org_budget', applies_to:'both', label:'Board-approved organizational budget',
+      why:'Demonstrates financial health and that you can manage the money.',
+      how:'This is your whole-organization annual budget for the current fiscal year — total expected income by source and total expenses by category — on a single page, approved by your board. Your treasurer or bookkeeper usually has it in QuickBooks or a spreadsheet; check your board-meeting packet where it was voted on (the minutes prove “board-approved”). Don’t have a formal one? Export an income/expense summary from your accounting software, group it into clear categories, and have the board ratify it at the next meeting.',
+      link:{ href:'https://www.councilofnonprofits.org/running-nonprofit/administration-and-financial-management/budgeting-nonprofits', label:'Nonprofit budgeting guide' } },
+    { key:'form_990', applies_to:'both', label:'Most recent IRS Form 990',
+      why:'Funders read your 990 closely to confirm you are current and sound.',
+      how:'The annual return you file with the IRS — the version you file depends on size (990-N postcard under $50k, 990-EZ, or full 990). Your accountant or tax preparer keeps a signed copy; it’s also in your year-end tax folder. The easiest way to grab a clean public copy is ProPublica’s Nonprofit Explorer — search your organization’s name and download the exact 990s the IRS has on file for you. If you’ve never filed, do it now: missing three years of 990s automatically revokes your tax-exempt status.',
+      link:{ href:'https://projects.propublica.org/nonprofits/', label:'Download your 990 on ProPublica' } },
+    { key:'financials', applies_to:'both', label:'Recent financial statements / audit',
+      why:'Larger grants want audited financials to show you can steward funds.',
+      how:'For most funders this means your latest Statement of Activities (income statement) and Statement of Financial Position (balance sheet) — your bookkeeper can export both from QuickBooks in minutes. Bigger or government grants may require an independent audit or a “financial review” performed by a CPA; those take weeks and cost money, so line one up early if a deadline asks for it. Many states also require an audit once your annual revenue crosses a threshold (often $500k–$1M) — check your state’s rules so you’re never caught short.',
+      link:{ href:'https://www.councilofnonprofits.org/running-nonprofit/administration-and-financial-management/nonprofit-audit-guide', label:'Audit & financials guide' } },
+    { key:'mission_track_record', applies_to:'both', label:'Mission statement & track record',
+      why:'The narrative backbone of every proposal; new orgs are less competitive without evidence.',
+      how:'Two things funders look for: a crisp 1–2 sentence mission statement, and proof you deliver — programs run, people served, outcomes achieved, partners, and any past results or testimonials. Pull numbers from your program records and last year’s annual report. Write it carefully once, and Grange stores it on your profile so every future proposal reuses your strongest language instead of starting from a blank page.',
+      link:{ internal:'profile', label:'Add this on your profile' } },
+    { key:'uei', applies_to:'federal', label:'Unique Entity ID (UEI)',
+      why:'Required to apply for ANY federal grant; issued via SAM.gov.',
+      how:'A 12-character ID that replaced the old DUNS number; you cannot touch a federal grant without it. It’s issued free when you register your organization at SAM.gov — never pay a third-party site that offers to “get” it for you. The validation step matches your legal name and address against IRS and state records exactly, so have your determination letter and Articles handy. Start at least 60 days before any federal deadline, because verification can stall for weeks.',
+      link:{ href:'https://sam.gov/content/entity-registration', label:'Get your UEI at SAM.gov' } },
+    { key:'sam_active', applies_to:'federal', label:'Active SAM.gov registration',
+      why:'You cannot submit a federal application without it, and it expires every 365 days.',
+      how:'Beyond getting a UEI, your full SAM.gov entity registration must show “Active” to submit on Grants.gov. It expires every 365 days and lapses silently, so check the status now and set a renewal reminder. Your legal name, address, and banking info must match your IRS records exactly or it will be rejected. Renewals can take a week or two to re-validate, so never wait until the week of a deadline.',
+      link:{ href:'https://sam.gov/content/status-tracker', label:'Check / renew at SAM.gov' } },
   ];
   let _rdyStatus = {};
 
@@ -10114,7 +10165,11 @@ function applyDiscFilters(query, type) {
           '<button class="' + (s === 'missing' ? 'on-need' : '') + '" onclick="rdySet(\'' + r.key + '\',\'missing\')">Need it</button>' +
         '</div>' +
         '<div class="rdy-how-t" onclick="document.getElementById(\'rdy-' + r.key + '\').classList.toggle(\'open\')">How to get it ›</div>' +
-        '<div class="rdy-how">' + r.how + '</div></div></div></div>';
+        '<div class="rdy-how">' + r.how +
+          (r.link ? '<div class="rdy-how-foot">' + (r.link.internal
+            ? '<button class="rdy-how-link" onclick="go(\'' + r.link.internal + '\')">' + r.link.label + ' →</button>'
+            : '<a class="rdy-how-link" href="' + r.link.href + '" target="_blank" rel="noopener noreferrer">' + r.link.label + ' ↗</a>') + '</div>' : '') +
+        '</div></div></div></div>';
     };
 
     el.innerHTML =
