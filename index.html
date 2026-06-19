@@ -8264,6 +8264,30 @@ function tutCount(el, target, dur) {
   })(performance.now());
 }
 
+/* Sweep a conic ring/gauge arc AND its number together, frame by frame.
+   `@property --p` was removed (it broke arc rendering), so `transition:--p`
+   is a no-op and the arc would otherwise snap to full instantly — a teleport.
+   Driving --p per frame repaints the conic gradient smoothly, in lockstep with
+   the count. Strong ease-out (cubic-bezier 0.16,1,0.3,1 shape) for a premium feel. */
+function tutAnimRing(ringEl, numEl, target, dur) {
+  if (!ringEl && !numEl) return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) {
+    if (ringEl) ringEl.style.setProperty('--p', target);
+    if (numEl) numEl.textContent = Math.round(target).toLocaleString();
+    return;
+  }
+  const t0 = performance.now();
+  (function tick(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    const e = 1 - Math.pow(1 - p, 3);            // ease-out cubic
+    const val = target * e;
+    if (ringEl) ringEl.style.setProperty('--p', val.toFixed(2));
+    if (numEl) numEl.textContent = Math.round(val).toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+  })(performance.now());
+}
+
 /* Typewriter with a blinking cursor (same component as the demo) */
 function tutType(el, text, spd, cb) {
   if (!el) { cb && cb(); return; }
@@ -8343,7 +8367,7 @@ const TUT_STEPS = [
       rows.forEach(r => { r.style.opacity = '0'; r.style.transform = 'translateX(-10px)'; r.style.filter = 'blur(6px)'; r.style.transition = 'opacity .5s var(--ease-out), transform .5s var(--spring-soft), filter .5s'; });
       const RM = matchMedia('(prefers-reduced-motion: reduce)').matches, S = tutState.replay ? 0.5 : 1;
       const reveal = () => rows.forEach((r, i) => setTimeout(() => { r.style.opacity = '1'; r.style.transform = 'none'; r.style.filter = 'none'; }, i * 90 * S));
-      const fill = () => { document.getElementById('tut-pr').style.setProperty('--p', 100); tutCount(document.getElementById('tut-prn'), 100, 1400); };
+      const fill = () => tutAnimRing(document.getElementById('tut-pr'), document.getElementById('tut-prn'), 100, 1500);
       const btn = document.getElementById('tut-read');
       const toNext = () => tutGuide.point('#tut-next', "That's your living profile — every later step reads from it. Tap Continue. →");
       if (RM) { rows.forEach(r => { r.style.opacity = '1'; r.style.transform = 'none'; r.style.filter = 'none'; }); fill(); btn.disabled = true; tutUnlock(); toNext(); return; }
@@ -8434,7 +8458,7 @@ const TUT_STEPS = [
       tutRevealStep(document.querySelector('.tut-step'));
       const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
       const chips = [...document.querySelectorAll('#tut-verd .tut-vchip')];
-      const doScore = () => { document.getElementById('tut-g').style.setProperty('--p', 87); tutCount(document.getElementById('tut-gn'), 87, 1400); chips.forEach((c, i) => setTimeout(() => c.classList.add('in'), 400 + i * 140)); };
+      const doScore = () => { tutAnimRing(document.getElementById('tut-g'), document.getElementById('tut-gn'), 87, 1500); chips.forEach((c, i) => setTimeout(() => c.classList.add('in'), 600 + i * 160)); };
       const dueRow = document.querySelector('#tut-rdy .row.due'), btn = document.getElementById('tut-score');
       const arm = () => { dueRow.onclick = () => { if (dueRow.classList.contains('on')) return; dueRow.classList.add('on'); dueRow.classList.remove('due'); tutUnlock(); tutGuide.point('#tut-next', "You're ready, and you know what's missing. Tap Continue. →"); }; };
       if (RM) { doScore(); chips.forEach(c => c.classList.add('in')); arm(); tutGuide.point(dueRow, 'Mark this open document as in progress to continue.'); return; }
