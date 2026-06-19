@@ -645,6 +645,13 @@ label.field-label {
   display:flex; gap:9px; align-items:center; justify-content:center; flex-wrap:wrap; }
 .trust-foot svg { color:var(--ok); flex-shrink:0; }
 
+/* ─── DRAFT CONFIDENCE FLAGS (generator review) ───────────── */
+.verify-flag { background:#fef9c3; color:#854d0e; padding:0 3px; border-radius:3px;
+  border-bottom:1.5px dashed #d4a017; cursor:help; font-style:normal; }
+.gen-verify-banner { display:flex; gap:10px; align-items:flex-start; margin:0 28px 4px; padding:11px 14px;
+  background:#fef9c3; border:1px solid #fde047; border-radius:8px; font-size:13px; line-height:1.5; color:#854d0e; }
+.gen-verify-banner svg { flex-shrink:0; color:#d4a017; margin-top:1px; }
+
 /* ─── PRICING ───────────────────────────────────────────── */
 .pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
 .tier { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
@@ -5002,7 +5009,7 @@ label.field-label {
               <div id="gen-grant-title" style="font-size:14.5px;font-weight:700;color:var(--ink)">DHHS Healthy Communities Initiative</div>
               <div id="gen-grant-meta" style="font-size:13px;color:var(--accent-ink);margin-top:3px">Federal &middot; up to $250,000 &middot; Due Jun 15, 2026 &middot; 94% match</div>
             </div>
-            <div class="fieldset"><label class="field-label">Proposal type</label>
+            <div class="fieldset"><label class="field-label">Proposal type <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="toggleTip(this)">?</button></label><div class="ob-help-text" hidden>Pick the document the funder asked for. A <b>Letter of inquiry (LOI)</b> is a short 1 to 2 page pitch you send first. A <b>Concept paper</b> is a brief outline of your idea. A <b>Full grant narrative</b> is the complete application. A <b>Progress report</b> updates a funder on a grant you already won.</div>
               <select id="gen-proposal-type"><option>Full grant narrative</option><option>Letter of inquiry</option><option>Concept paper</option><option>Progress report</option></select></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
               <div class="fieldset" style="margin:0"><label class="field-label">Requested amount</label><input id="gen-amount" type="text" value="$175,000"></div>
@@ -5084,9 +5091,9 @@ label.field-label {
           <div class="panel" style="margin-bottom:18px">
             <div class="panel-head"><h3>Tone</h3></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div class="fieldset" style="margin:0"><label class="field-label">Voice</label>
+              <div class="fieldset" style="margin:0"><label class="field-label">Voice <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="toggleTip(this)">?</button></label><div class="ob-help-text" hidden>The writing style Grange uses. <b>Community-centered</b> leads with story and people. <b>Data-driven</b> leads with numbers and evidence. <b>Formal federal</b> is the precise, policy-aligned tone government reviewers expect.</div>
                 <select id="gen-voice"><option>Data-driven</option><option selected>Community-centered</option><option>Formal federal</option></select></div>
-              <div class="fieldset" style="margin:0"><label class="field-label">Emphasis</label>
+              <div class="fieldset" style="margin:0"><label class="field-label">Emphasis <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="toggleTip(this)">?</button></label><div class="ob-help-text" hidden>What each section leans on. <b>Need &amp; equity</b> stresses the problem and who is underserved. <b>Outcomes</b> stresses measurable results. <b>Capacity</b> stresses your track record and ability to deliver.</div>
                 <select id="gen-emphasis"><option selected>Need &amp; equity</option><option>Outcomes</option><option>Capacity</option></select></div>
             </div>
           </div>
@@ -5183,7 +5190,7 @@ label.field-label {
         <div class="fieldset"><label class="field-label">EIN</label><input id="pf-ein" type="text" placeholder="00-0000000"></div>
         <div class="fieldset full"><label class="field-label">Mission statement</label>
           <textarea id="pf-mission" style="min-height:100px" placeholder="What is your organization's mission?"></textarea></div>
-        <div class="fieldset"><label class="field-label">Primary NTEE code</label>
+        <div class="fieldset"><label class="field-label">Primary NTEE code <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="toggleTip(this)">?</button></label><div class="ob-help-text" hidden>The National Taxonomy of Exempt Entities (NTEE) code is a standard category for your nonprofit, like Education or Human Services. It is on your IRS records. If you are unsure, pick the closest fit.</div>
           <select id="pf-ntee">
             <option value="">Select…</option>
             <option value="B20">B20, Elementary &amp; Secondary Education</option>
@@ -6295,6 +6302,7 @@ RULES (follow exactly):
 - Do not pad. Every sentence must earn its place.
 - Never use em dashes. Write with commas, periods, or colons instead. Avoid stock AI phrasing and rhetorical "not X, but Y" constructions.
 - Ground every factual claim in the data above. Do not fabricate citations, study names, or statistics; if you reference a fact, it must come from the organization data provided.
+- If a sentence genuinely needs a specific figure, date, name, or statistic that was NOT provided above, do not invent it. Write the sentence and insert a marker exactly like [VERIFY: what to add] at the spot where the real detail belongs. Use these sparingly, only where a concrete, checkable detail is needed.
 `.trim() + reqPromptBlock();
 
   /* ── Funder-defined sections (from an analyzed call) override the generic structure ── */
@@ -6682,6 +6690,8 @@ async function generate() {
   if (banner) banner.style.display = 'none';
   const checklist = document.getElementById('compliance-checklist');
   if (checklist) { checklist.innerHTML = ''; checklist.style.display = 'none'; }
+  const verifyNote = document.getElementById('gen-verify-note');
+  if (verifyNote) { verifyNote.innerHTML = ''; verifyNote.style.display = 'none'; }
   const disclosureEl = document.getElementById('ai-disclosure');
   if (disclosureEl) { disclosureEl.innerHTML = ''; disclosureEl.style.display = 'none'; }
   const exportBtn = document.getElementById('export-btn');
@@ -6842,6 +6852,7 @@ async function generate() {
 
     if (window._apCtl && window._apCtl.finish) window._apCtl.finish();
     genSetStep(4);                            // → step 4: Review & export
+    flagVerifyMarkers(content);               // highlight any spots the AI flagged for a real detail
     showAIPolicyBanner(selectedGrant);
     runComplianceChecklist(fields, content);
     showVoiceNote(window._lastVoiceCount || 0);
@@ -6900,6 +6911,38 @@ function showAIPolicyBanner(grant) {
   } else {
     banner.style.display = 'none';
   }
+}
+
+/* Confidence signal: turn the writer's [VERIFY: ...] markers into highlighted
+   spots the user must fill before submitting (the report's "clear feedback when
+   the AI is unsure" + "never let users submit text they cannot defend"). */
+function flagVerifyMarkers(contentEl) {
+  if (!contentEl) return 0;
+  let count = 0;
+  contentEl.innerHTML = contentEl.innerHTML.replace(/\[VERIFY:\s*([^\]]+)\]/gi, function (_, what) {
+    count++;
+    const w = escHtml(what.trim());
+    return '<mark class="verify-flag" title="Double-check before you submit: ' + w + '">' + w + '</mark>';
+  });
+  let note = document.getElementById('gen-verify-note');
+  const checklist = document.getElementById('compliance-checklist');
+  if (!note && checklist && checklist.parentNode) {
+    note = document.createElement('div');
+    note.id = 'gen-verify-note';
+    checklist.parentNode.insertBefore(note, checklist);
+  }
+  if (note) {
+    if (count > 0) {
+      note.innerHTML = '<div class="gen-verify-banner">' +
+        '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>' +
+        '<div><b>' + count + ' thing' + (count > 1 ? 's' : '') + ' to double-check.</b> Grange highlighted where a specific detail belongs but was not in your profile. Replace each highlight with your real number or fact before you submit.</div></div>';
+      note.style.display = 'block';
+    } else {
+      note.style.display = 'none';
+      note.innerHTML = '';
+    }
+  }
+  return count;
 }
 
 /* Deterministic pre-export gate. When the user analyzed the funder's call, this
@@ -8262,7 +8305,7 @@ function obFieldHTML(f) {
   const v = obState.answers[f.key];
   // wrapper carries an id so validation can flag it, and a required marker on the label
   const open = `<div class="fieldset" id="ob-wrap-${f.key}" style="margin:0">`;
-  const helpBtn = f.help ? ` <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="obToggleHelp('${f.key}', this)">?</button>` : '';
+  const helpBtn = f.help ? ` <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="toggleTip(this)">?</button>` : '';
   const helpText = f.help ? `<div class="ob-help-text" id="ob-help-${f.key}" hidden>${escHtml(f.help)}</div>` : '';
   const lab = `<label class="field-label">${f.label}${f.required ? ' <span class="ob-req" title="Required">*</span>' : ''}${helpBtn}</label>${helpText}`;
   if (f.type === 'textarea')
@@ -8280,14 +8323,17 @@ function obFieldHTML(f) {
 
 function obBack() { if (obState.idx > 0) { obState.idx--; obRender(); } }
 
-/* coaching layer: toggle a field's plain-language explainer */
-function obToggleHelp(key, btn) {
-  const t = document.getElementById('ob-help-' + key);
-  if (!t) return;
+/* coaching layer: toggle a field's plain-language explainer. Works anywhere —
+   the .ob-help-text must be the immediate sibling right after the button's <label>. */
+function toggleTip(btn) {
+  const lab = btn.closest('label');
+  const t = lab ? lab.nextElementSibling : null;
+  if (!t || !t.classList.contains('ob-help-text')) return;
   const show = t.hidden;
   t.hidden = !show;
-  if (btn) btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+  btn.setAttribute('aria-expanded', show ? 'true' : 'false');
 }
+window.toggleTip = toggleTip;
 
 /* clear a single field's invalid flag (called as the user fixes it) */
 function obClearInvalid(key) {
