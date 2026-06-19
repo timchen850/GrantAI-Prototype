@@ -628,22 +628,7 @@ label.field-label {
 .vcmp-flags li.good svg { color:var(--ok); }
 .vcmp-foot { text-align:center; font-size:13.5px; color:var(--muted); margin-top:28px; }
 
-/* ─── FOUNDER / OUR STORY ─────────────────────────────────── */
-.story-grid { display:grid; grid-template-columns:1.1fr 0.9fr; gap:48px; align-items:center; margin-top:8px; }
-.story-eyebrow { font-size:11.5px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
-  color:var(--accent); margin-bottom:14px; }
-.story-copy h2 { margin-bottom:18px; }
-.story-copy p { font-size:16px; line-height:1.7; color:var(--ink-body); max-width:50ch; }
-.story-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:32px; }
-.story-card-label { font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
-  color:var(--muted); margin-bottom:18px; }
-.story-org { display:flex; gap:14px; align-items:flex-start; padding:16px 0; border-top:1px solid var(--line-soft); }
-.story-org:first-of-type { border-top:none; padding-top:0; }
-.story-org-mark { width:40px; height:40px; border-radius:11px; flex-shrink:0; display:flex;
-  align-items:center; justify-content:center; background:var(--accent-tint); color:var(--accent-ink);
-  font-weight:800; font-size:15px; letter-spacing:0.02em; }
-.story-org-name { font-size:15px; font-weight:700; color:var(--ink); letter-spacing:-0.01em; }
-.story-org-desc { font-size:13px; color:var(--muted); line-height:1.5; margin-top:3px; }
+/* FOUNDER / OUR STORY styles archived to _archive/founder-section.html (2026-06-20) */
 
 /* ─── TRUST / OBJECTION HANDLING ──────────────────────────── */
 .trust-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:48px; }
@@ -2279,8 +2264,7 @@ label.field-label {
   .vcmp-card { padding: 24px; }
   .vcmp-text { font-size: 16px; }
 
-  /* Founder story + trust cards stack on small screens */
-  .story-grid { grid-template-columns: 1fr; gap: 28px; }
+  /* Trust cards stack on small screens */
   .trust-grid { grid-template-columns: 1fr; gap: 14px; margin-top: 36px; }
 }
 
@@ -2963,35 +2947,7 @@ label.field-label {
     </div>
   </section>
 
-  <!-- FOUNDER / OUR STORY: the non-replicable advantage -->
-  <section class="section" id="our-story" style="padding-top:0">
-    <div class="wrap">
-      <div class="story-grid">
-        <div class="story-copy reveal">
-          <div class="story-eyebrow">Who's behind Grange</div>
-          <h2>Built by students who run<br>their own nonprofits.</h2>
-          <p>We're not a VC-backed software company. We run youth nonprofits in the Philadelphia area, and we wrote our own grant applications the hard way: nights, weekends, and no budget for a $5,000 grant writer. Grange is the tool we wished we had. We're building it for organizations like ours, not for enterprise grant teams.</p>
-        </div>
-        <div class="story-card reveal">
-          <div class="story-card-label">The nonprofits we run</div>
-          <div class="story-org">
-            <div class="story-org-mark" aria-hidden="true">YL</div>
-            <div>
-              <div class="story-org-name">Youth Lens</div>
-              <div class="story-org-desc">Youth photography and storytelling, capturing real community moments across Philadelphia and Delaware County.</div>
-            </div>
-          </div>
-          <div class="story-org">
-            <div class="story-org-mark" aria-hidden="true">CC</div>
-            <div>
-              <div class="story-org-name">Courts for Change</div>
-              <div class="story-org-desc">Rebuilding neighborhood basketball courts and the youth programs that keep them full.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- FOUNDER / OUR STORY section archived to _archive/founder-section.html (2026-06-20) — hold for the 4-cofounder intro -->
 
   <!-- PRICING -->
   <section class="section" id="pricing" style="padding-top:0">
@@ -3192,7 +3148,7 @@ label.field-label {
       <a class="brand" href="#" onclick="go('landing')"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
       <div class="small">Built for nonprofits that don't have a grant writer on staff.</div>
       <div class="footer-links">
-        <a href="#our-story" onclick="var s=document.getElementById('our-story');if(s)s.scrollIntoView({behavior:'smooth'});return false;">Our story</a><a href="#" onclick="go('privacy');return false;">Privacy</a><a href="#" onclick="go('terms');return false;">Terms</a><a href="#" onclick="go('security');return false;">Security</a><a href="#" onclick="go('contact');return false;">Contact</a>
+        <a href="#" onclick="go('privacy');return false;">Privacy</a><a href="#" onclick="go('terms');return false;">Terms</a><a href="#" onclick="go('security');return false;">Security</a><a href="#" onclick="go('contact');return false;">Contact</a>
       </div>
     </div>
   </footer>
@@ -4225,6 +4181,16 @@ label.field-label {
   .ob-upload.has { border-style: solid; border-color: var(--ok, #2a9d6e); color: var(--ink); }
   /* required-field affordances + inline validation */
   .ob-req { color: var(--accent); font-weight: 700; }
+  /* coaching help — plain-language explainers for grant jargon */
+  .ob-help-btn { display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px;
+    margin-left: 6px; padding: 0; border: none; border-radius: 50%; background: var(--accent-tint, #fbe9e2);
+    color: var(--accent-ink, #8a2c16); font-size: 11px; font-weight: 800; line-height: 1; cursor: pointer;
+    vertical-align: middle; font-family: inherit; transition: background .15s, color .15s; }
+  .ob-help-btn:hover { background: var(--accent, #d94f30); color: #fff; }
+  .ob-help-btn:focus-visible { outline: 2px solid var(--accent, #d94f30); outline-offset: 2px; }
+  .ob-help-text { margin: 8px 0 0; padding: 11px 13px; background: var(--accent-tint, #fbe9e2); border-radius: 10px;
+    font-size: 13px; line-height: 1.55; color: var(--accent-ink, #8a2c16); }
+  .ob-help-text[hidden] { display: none; }
   .ob-need { font-size: 12.5px; color: var(--ink-soft, #8a857c); }
   .ob-error { color: #c0392b; font-size: 13px; font-weight: 500; min-height: 0; margin-top: 14px; transition: opacity .2s; }
   .ob-error:empty { margin-top: 0; }
@@ -8184,45 +8150,45 @@ const OB_STEPS = [
     sub: 'The basics that establish your eligibility for most grants.',
     fields: [
       { key: 'org_name', label: 'Organization legal name', type: 'text', placeholder: 'Eastside Youth Foundation', required: true },
-      { key: 'ein', label: 'EIN (Employer Identification Number)', type: 'text', placeholder: '47-1234567', required: true },
-      { key: 'status_501c3', label: '501(c)(3) status confirmed?', type: 'radio', options: ['Yes','No','In progress'], required: true },
+      { key: 'ein', label: 'EIN (Employer Identification Number)', type: 'text', placeholder: '47-1234567', required: true, help: 'Your EIN is the 9-digit tax ID the IRS gave your nonprofit, written like 47-1234567. It is on your IRS determination letter or any tax filing. Funders use it to confirm you are a real registered organization.' },
+      { key: 'status_501c3', label: '501(c)(3) status confirmed?', type: 'radio', options: ['Yes','No','In progress'], required: true, help: '501(c)(3) is the IRS status for tax-exempt charities, and most grants require it. Not approved yet? You can still apply through a fiscal sponsor: an approved nonprofit that accepts the grant on your behalf.' },
       { key: 'year_founded', label: 'Year founded', type: 'number', placeholder: '2011' },
-      { key: 'state_incorp', label: 'State of incorporation', type: 'text', placeholder: 'California', required: true },
+      { key: 'state_incorp', label: 'State of incorporation', type: 'text', placeholder: 'California', required: true, help: 'The state where you legally registered your nonprofit and filed your articles of incorporation. This can be different from the state where you do your work today.' },
     ] },
   { eyebrow: 'Step 2 of 6 · Your mission', title: 'What do you work on?',
     sub: 'This drives which grants we match you to — the more detail, the better your matches.',
     fields: [
-      { key: 'mission', label: 'Mission statement', type: 'textarea', placeholder: 'In 2–3 sentences, what is your mission?', required: true },
-      { key: 'focus_areas', label: 'Primary focus areas (select all that apply)', type: 'multi', options: ['Education','Housing','Food Security','Health','Environment','Arts','Youth','Veterans','Workforce','Community Development','Other'], required: true },
+      { key: 'mission', label: 'Mission statement', type: 'textarea', placeholder: 'In 2–3 sentences, what is your mission?', required: true, help: 'One or two plain sentences on who you help and what you do. Skip the jargon and write it the way you would explain it to a neighbor.' },
+      { key: 'focus_areas', label: 'Primary focus areas (select all that apply)', type: 'multi', options: ['Education','Housing','Food Security','Health','Environment','Arts','Youth','Veterans','Workforce','Community Development','Other'], required: true, help: 'The broad cause areas you work in. Funders search by these, so pick every one that genuinely fits your work.' },
       { key: 'primary_programs', label: 'Primary programs or services (select all that apply)', type: 'multi', options: ['After-school programs','Tutoring & mentorship','Job training','Food bank / pantry','Health clinic','Mental health services','Housing assistance','Arts programs','Legal aid','Community organizing','STEM education','Early childhood','Re-entry support','Other'] },
       { key: 'beneficiaries', label: 'Who do you serve?', type: 'textarea', placeholder: 'e.g. Low-income youth ages 8–18 in East Los Angeles.' },
     ] },
   { eyebrow: 'Step 3 of 6 · Your reach', title: 'Where do you work?',
     sub: 'Geography narrows the field to grants you can actually win.',
     fields: [
-      { key: 'geo_focus', label: 'Geographic focus', type: 'radio', options: ['Local','Regional','Statewide','National','International'], required: true },
+      { key: 'geo_focus', label: 'Geographic focus', type: 'radio', options: ['Local','Regional','Statewide','National','International'], required: true, help: 'How far your work reaches. Local means one city or county; Regional a few counties; up to National. This hides grants you cannot win because of where you operate.' },
       { key: 'primary_location', label: 'City / state you primarily operate in', type: 'text', placeholder: 'Los Angeles, CA', required: true },
       { key: 'people_served', label: 'Approx. people served per year', type: 'number', placeholder: '340' },
     ] },
   { eyebrow: 'Step 4 of 6 · Finances & capacity', title: 'Your size and capacity',
     sub: 'Funders screen on budget and staffing; this keeps matches realistic.',
     fields: [
-      { key: 'annual_budget', label: 'Annual operating budget', type: 'select', options: ['<$100K','$100K–$500K','$500K–$1M','$1M–$5M','$5M+'], required: true },
+      { key: 'annual_budget', label: 'Annual operating budget', type: 'select', options: ['<$100K','$100K–$500K','$500K–$1M','$1M–$5M','$5M+'], required: true, help: 'Your total yearly spending, from your latest budget or Form 990. A rough range is fine. Funders use it to send you grants sized to an organization like yours.' },
       { key: 'staff_count', label: 'Full-time staff count', type: 'number', placeholder: '6' },
-      { key: 'grant_writer', label: 'Do you have a dedicated grant writer?', type: 'radio', options: ['Yes','No','Sometimes'] },
+      { key: 'grant_writer', label: 'Do you have a dedicated grant writer?', type: 'radio', options: ['Yes','No','Sometimes'], help: 'A grant writer is someone whose job is finding and writing grant applications. No grant writer? That is exactly who Grange is built for.' },
     ] },
   { eyebrow: 'Step 5 of 6 · Grant history', title: 'Your grant experience',
     sub: 'Helps us calibrate the proposals we draft for you.',
     fields: [
       { key: 'applied_before', label: 'Have you applied for grants before?', type: 'radio', options: ['Yes','No'] },
       { key: 'largest_grant', label: 'Largest grant ever received (optional)', type: 'text', placeholder: '$150,000' },
-      { key: 'funding_types', label: 'Types of funding you’re seeking', type: 'multi', options: ['Federal','State','Private Foundation','Corporate','Community','All'] },
+      { key: 'funding_types', label: 'Types of funding you’re seeking', type: 'multi', options: ['Federal','State','Private Foundation','Corporate','Community','All'], help: 'Where the money comes from: Federal (government, via Grants.gov), State, private Foundations, Corporate giving, or local Community funders. Pick any you are open to.' },
       { key: 'biggest_challenge', label: 'Biggest challenge with grants today', type: 'textarea', placeholder: 'What slows you down most?' },
     ] },
   { eyebrow: 'Step 6 of 6 · Documents', title: 'Add your 990 (optional)',
     sub: 'Upload your most recent IRS Form 990 and we’ll pull mission and financials from it. You can skip and do this later.',
     fields: [
-      { key: 'doc_990', label: 'Most recent IRS Form 990 (PDF)', type: 'file' },
+      { key: 'doc_990', label: 'Most recent IRS Form 990 (PDF)', type: 'file', help: 'Form 990 is the yearly financial report most nonprofits file with the IRS. Upload it and Grange reads your mission and finances so you type less. Optional: you can add it later.' },
       { key: 'doc_programs', label: 'Program summaries or case statements (optional)', type: 'file' },
     ] },
 ];
@@ -8296,7 +8262,9 @@ function obFieldHTML(f) {
   const v = obState.answers[f.key];
   // wrapper carries an id so validation can flag it, and a required marker on the label
   const open = `<div class="fieldset" id="ob-wrap-${f.key}" style="margin:0">`;
-  const lab = `<label class="field-label">${f.label}${f.required ? ' <span class="ob-req" title="Required">*</span>' : ''}</label>`;
+  const helpBtn = f.help ? ` <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="obToggleHelp('${f.key}', this)">?</button>` : '';
+  const helpText = f.help ? `<div class="ob-help-text" id="ob-help-${f.key}" hidden>${escHtml(f.help)}</div>` : '';
+  const lab = `<label class="field-label">${f.label}${f.required ? ' <span class="ob-req" title="Required">*</span>' : ''}${helpBtn}</label>${helpText}`;
   if (f.type === 'textarea')
     return `${open}${lab}<textarea id="ob-${f.key}" placeholder="${escHtml(f.placeholder||'')}">${escHtml(v||'')}</textarea></div>`;
   if (f.type === 'select')
@@ -8311,6 +8279,15 @@ function obFieldHTML(f) {
 }
 
 function obBack() { if (obState.idx > 0) { obState.idx--; obRender(); } }
+
+/* coaching layer: toggle a field's plain-language explainer */
+function obToggleHelp(key, btn) {
+  const t = document.getElementById('ob-help-' + key);
+  if (!t) return;
+  const show = t.hidden;
+  t.hidden = !show;
+  if (btn) btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+}
 
 /* clear a single field's invalid flag (called as the user fixes it) */
 function obClearInvalid(key) {

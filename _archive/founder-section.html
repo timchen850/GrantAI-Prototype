@@ -1,0 +1,82 @@
+<!--
+═══════════════════════════════════════════════════════════════════════════
+  ARCHIVED: "Who's behind Grange" founder / our-story section
+═══════════════════════════════════════════════════════════════════════════
+  Removed from the live landing page on 2026-06-20 (was added pt22, commit 41df6e4).
+  Reason: holding it until we're ready to introduce all 4 cofounders properly.
+  This file is NOT loaded anywhere — it is invisible on the visitor portal.
+
+  TO RESTORE / REBUILD WITH THE 4 COFOUNDERS:
+   1. HTML  — paste the <section id="our-story"> block (below) back into index.html
+              between the testimonials section's closing </section> and the
+              "<!-- PRICING -->" comment (it lived right there before).
+   2. CSS   — paste the ".story-*" block (below) back into the main <style>,
+              just before the "/* ─── TRUST / OBJECTION HANDLING ─── */" comment.
+   3. MOBILE — re-add this line inside the gated MOBILE PASS @media block,
+              next to the ".trust-grid" stack rule:
+                 .story-grid { grid-template-columns: 1fr; gap: 28px; }
+   4. FOOTER — re-add the "Our story" link as the first .footer-links anchor:
+                 <a href="#our-story" onclick="var s=document.getElementById('our-story');if(s)s.scrollIntoView({behavior:'smooth'});return false;">Our story</a>
+
+  WHEN INTRODUCING THE 4 COFOUNDERS:
+   - Swap the right-hand ".story-card" ("The nonprofits we run") for a cofounder
+     grid: 4 cards, each = name + role + the nonprofit they run + a real photo
+     (the research report's #1 advantage is REAL community photography — use it here).
+   - Keep the left copy's honest, anti-VC, student-run tone; update "students who
+     run their own nonprofits" if the framing changes.
+   - Replace the YL / CC monogram marks with real headshots once available.
+═══════════════════════════════════════════════════════════════════════════
+-->
+
+<!-- ───────────────────────── HTML (goes in index.html) ───────────────────────── -->
+
+  <!-- FOUNDER / OUR STORY: the non-replicable advantage -->
+  <section class="section" id="our-story" style="padding-top:0">
+    <div class="wrap">
+      <div class="story-grid">
+        <div class="story-copy reveal">
+          <div class="story-eyebrow">Who's behind Grange</div>
+          <h2>Built by students who run<br>their own nonprofits.</h2>
+          <p>We're not a VC-backed software company. We run youth nonprofits in the Philadelphia area, and we wrote our own grant applications the hard way: nights, weekends, and no budget for a $5,000 grant writer. Grange is the tool we wished we had. We're building it for organizations like ours, not for enterprise grant teams.</p>
+        </div>
+        <div class="story-card reveal">
+          <div class="story-card-label">The nonprofits we run</div>
+          <div class="story-org">
+            <div class="story-org-mark" aria-hidden="true">YL</div>
+            <div>
+              <div class="story-org-name">Youth Lens</div>
+              <div class="story-org-desc">Youth photography and storytelling, capturing real community moments across Philadelphia and Delaware County.</div>
+            </div>
+          </div>
+          <div class="story-org">
+            <div class="story-org-mark" aria-hidden="true">CC</div>
+            <div>
+              <div class="story-org-name">Courts for Change</div>
+              <div class="story-org-desc">Rebuilding neighborhood basketball courts and the youth programs that keep them full.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+<!-- ───────────────────────── CSS (goes in the main <style>) ───────────────────────── -->
+<style>
+/* ─── FOUNDER / OUR STORY ─────────────────────────────────── */
+.story-grid { display:grid; grid-template-columns:1.1fr 0.9fr; gap:48px; align-items:center; margin-top:8px; }
+.story-eyebrow { font-size:11.5px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:14px; }
+.story-copy h2 { margin-bottom:18px; }
+.story-copy p { font-size:16px; line-height:1.7; color:var(--ink-body); max-width:50ch; }
+.story-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:32px; }
+.story-card-label { font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:18px; }
+.story-org { display:flex; gap:14px; align-items:flex-start; padding:16px 0; border-top:1px solid var(--line-soft); }
+.story-org:first-of-type { border-top:none; padding-top:0; }
+.story-org-mark { width:40px; height:40px; border-radius:11px; flex-shrink:0; display:flex;
+  align-items:center; justify-content:center; background:var(--accent-tint); color:var(--accent-ink);
+  font-weight:800; font-size:15px; letter-spacing:0.02em; }
+.story-org-name { font-size:15px; font-weight:700; color:var(--ink); letter-spacing:-0.01em; }
+.story-org-desc { font-size:13px; color:var(--muted); line-height:1.5; margin-top:3px; }
+</style>
