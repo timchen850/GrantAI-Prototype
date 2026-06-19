@@ -9,6 +9,8 @@ export const sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+    flowType: 'implicit', // Implicit flow for Electron: tokens come in the URL hash,
+                          // no PKCE code-exchange step that can silently fail.
   },
 })
 

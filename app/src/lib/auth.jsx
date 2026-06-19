@@ -70,9 +70,10 @@ export function AuthProvider({ children }) {
   }
 
   // Google OAuth via Electron child BrowserWindow.
-  // Supabase redirects to http://localhost:3000/auth/callback?code=xxx.
-  // The main process intercepts that URL, closes the popup, and returns the URL here.
-  // We then call exchangeCodeForSession — the PKCE verifier is in this window's localStorage.
+  // Uses implicit flow (flowType:'implicit' in supabase.js) so Supabase puts
+  // access_token + refresh_token directly in the URL hash — no PKCE exchange needed.
+  // Redirect: http://localhost:3000/auth/callback#access_token=xxx&refresh_token=xxx
+  // Main process intercepts the navigation before the browser tries to connect to localhost.
   async function signInWithGoogle() {
     const { data, error } = await sb.auth.signInWithOAuth({
       provider: 'google',
@@ -83,14 +84,36 @@ export function AuthProvider({ children }) {
     })
     if (error) throw error
 
-    const callbackUrl = await window.electronAPI.openOAuthWindow(data.url)
+    // Race the OAuth popup against a 90-second timeout so loading never stays stuck.
+    const callbackUrl = await Promise.race([
+      window.electronAPI.openOAuthWindow(data.url),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Sign-in timed out — please try again.')), 90000)
+      ),
+    ])
     if (!callbackUrl) return // user closed the window
 
-    const code = new URL(callbackUrl).searchParams.get('code')
+    const url = new URL(callbackUrl)
+
+    // Implicit flow: tokens are in the URL hash (#access_token=...&refresh_token=...)
+    const hash = new URLSearchParams(url.hash.replace(/^#/, ''))
+    const access_token  = hash.get('access_token')
+    const refresh_token = hash.get('refresh_token')
+    if (access_token) {
+      const { error: ex } = await sb.auth.setSession({ access_token, refresh_token: refresh_token || '' })
+      if (ex) throw ex
+      return
+    }
+
+    // PKCE fallback: code in query string (?code=...)
+    const code = url.searchParams.get('code')
     if (code) {
       const { error: ex } = await sb.auth.exchangeCodeForSession(code)
       if (ex) throw ex
+      return
     }
+
+    throw new Error('Google sign-in did not return a session. Please try again.')
   }
 
   async function signOut() {
