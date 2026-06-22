@@ -664,6 +664,40 @@ label.field-label {
 .secmap-lim { font-size:11px; color:var(--accent-ink); background:var(--accent-tint); border-radius:99px; padding:2px 8px; }
 .secmap-desc { font-size:12.5px; color:var(--ink-body); line-height:1.5; margin-top:3px; }
 
+/* ─── REVIEWER SCORECARD (LLM-as-judge, generator review) ── */
+.scard { border-top:1px solid var(--line); margin:0 28px; padding:18px 0 8px; }
+.scard-hd { display:flex; align-items:center; gap:14px; margin-bottom:4px; }
+.scard-ring { width:58px; height:58px; border-radius:50%; flex-shrink:0; display:grid; place-items:center;
+  background:conic-gradient(var(--sc-col,#d94f30) calc(var(--sc,0)*1%), var(--line) 0); position:relative; }
+.scard-ring::before { content:''; position:absolute; inset:5px; border-radius:50%; background:var(--surface); }
+.scard-ring span { position:relative; font-family:var(--display); font-weight:800; font-size:17px; color:var(--ink); line-height:1; }
+.scard-ring small { position:relative; display:block; font-size:8.5px; font-weight:600; color:var(--muted); text-align:center; }
+.scard-htext { min-width:0; }
+.scard-ttl { font-family:var(--display); font-weight:700; font-size:15.5px; color:var(--ink); letter-spacing:-0.01em; }
+.scard-src { font-size:12px; color:var(--muted); margin-top:2px; line-height:1.4; }
+.scard-sum { font-size:13px; color:var(--ink-body); line-height:1.55; margin:10px 0 13px;
+  padding:10px 13px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; }
+.scard-lift { display:flex; gap:9px; align-items:flex-start; font-size:12.8px; line-height:1.5; color:#1c7a43;
+  background:rgba(34,153,84,.09); border:1px solid rgba(34,153,84,.28); border-radius:9px; padding:9px 13px; margin:0 0 13px; }
+.scard-lift svg { flex-shrink:0; margin-top:1px; }
+.scard-list { list-style:none; margin:0; padding:0; }
+.scard-row { padding:11px 0; border-top:1px solid var(--line-soft); }
+.scard-row:first-child { border-top:none; padding-top:2px; }
+.scard-top { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.scard-name { font-size:13.5px; font-weight:700; color:var(--ink); letter-spacing:-0.01em; }
+.scard-wt { font-size:10.5px; color:var(--muted); background:var(--surface-2); border:1px solid var(--line); border-radius:99px; padding:1.5px 7px; }
+.scard-dots { display:inline-flex; gap:3px; margin-left:auto; }
+.scard-dot { width:9px; height:9px; border-radius:50%; background:var(--line); }
+.scard-dot.on { background:var(--sc-col,#d94f30); }
+.scard-why { font-size:12.5px; color:var(--ink-body); line-height:1.5; margin-top:5px; }
+.scard-fix { display:flex; gap:7px; align-items:flex-start; font-size:12.5px; line-height:1.5; color:var(--accent-ink);
+  background:var(--accent-tint); border-radius:8px; padding:7px 11px; margin-top:7px; }
+.scard-fix b { font-weight:700; }
+.scard-foot { font-size:11.5px; color:var(--muted); line-height:1.5; margin-top:12px; padding-top:11px; border-top:1px solid var(--line-soft); }
+.scard-loading { display:flex; gap:10px; align-items:center; font-size:13px; color:var(--muted); padding:6px 0; }
+.scard-spin { width:15px; height:15px; border:2px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:scspin .7s linear infinite; }
+@keyframes scspin { to { transform:rotate(360deg); } }
+
 /* ─── PRICING ───────────────────────────────────────────── */
 .pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
 .tier { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
@@ -6139,6 +6173,14 @@ function renderReqResult(o, isSample, target) {
     h += '<div class="rq-block"><div class="rq-bh">Formatting rules</div>' + o.formatting.map(f =>
       '<div class="rq-fmt">' + escHtml(f) + '</div>').join('') + '</div>';
   }
+  const _rubric = (o.rubric && Array.isArray(o.rubric.criteria)) ? o.rubric.criteria : [];
+  if (_rubric.length) {
+    h += '<div class="rq-block"><div class="rq-bh">How reviewers will score this</div>' + _rubric.map(c =>
+      '<div class="rq-sec"><span class="rq-sec-t">' + escHtml(c.name || '') + '</span>' +
+      (Number(c.weight) ? '<span class="rq-sec-lim">' + Number(c.weight) + ' pts</span>' : '') +
+      (c.description ? '<span class="rq-sec-d">' + escHtml(c.description) + '</span>' : '') + '</div>').join('') +
+      '<div style="font-size:12px;color:var(--muted);margin-top:7px">Grange writes to this rubric, then scores your draft against it before you submit.</div></div>';
+  }
   if ((o.sections || []).length) {
     h += '<div class="rq-applied"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg> Grange will write your draft against these exact sections and limits.</div>';
   }
@@ -6228,6 +6270,87 @@ function reqPromptBlock() {
   if (elig) b += `\nEligibility to respect:\n${elig}`;
   if (fmt) b += `\nFormatting rules:\n${fmt}`;
   return b;
+}
+
+/* ───────────────────────────────────────────────────────────
+   RUBRIC ENGINE — the report's #1 move. Reviewers score against a
+   weighted rubric where one point separates funded from rejected. We
+   generate TO the rubric, then an LLM judge scores the draft against it.
+   When the funder publishes a scoring matrix (parsed into _parsedReq.rubric)
+   we use theirs; otherwise we apply a sensible default for the proposal
+   type, weighted the way real review panels weigh these criteria (NIH's
+   own data shows "Approach"/methodology dominates funding outcomes).
+   ─────────────────────────────────────────────────────────── */
+function defaultRubric(proposalType, funderType) {
+  const ft = (funderType || '').toLowerCase();
+  const pt = (proposalType || 'Full grant narrative');
+  if (pt === 'Letter of inquiry') {
+    return { source: 'inferred', criteria: [
+      { name: 'Fit with Funder Priorities', weight: 30, description: 'How clearly the request aligns with what this funder funds.' },
+      { name: 'Problem & Need', weight: 25, description: 'A specific, evidenced problem and who it affects.' },
+      { name: 'Proposed Approach', weight: 25, description: 'A credible, concrete plan to address the need.' },
+      { name: 'Organizational Credibility', weight: 20, description: 'Why this organization can deliver.' },
+    ]};
+  }
+  if (pt === 'Concept paper') {
+    return { source: 'inferred', criteria: [
+      { name: 'Problem Statement', weight: 25, description: 'A sharp, evidenced statement of the problem.' },
+      { name: 'Proposed Approach', weight: 30, description: 'A specific, feasible methodology, not a vague vision.' },
+      { name: 'Expected Outcomes', weight: 25, description: 'Measurable, time-bound results.' },
+      { name: 'Organizational Fit', weight: 20, description: 'Capacity and track record to execute.' },
+    ]};
+  }
+  if (pt === 'Progress report') {
+    return { source: 'inferred', criteria: [
+      { name: 'Outcomes Against Targets', weight: 35, description: 'Concrete results versus what was promised.' },
+      { name: 'Program Implementation', weight: 25, description: 'What was done, clearly and specifically.' },
+      { name: 'Challenges & Adjustments', weight: 20, description: 'Honest handling of obstacles and course-corrections.' },
+      { name: 'Financial Stewardship', weight: 20, description: 'Spending tied to results and on plan.' },
+    ]};
+  }
+  if (ft === 'federal') {
+    return { source: 'inferred', criteria: [
+      { name: 'Significance & Need', weight: 20, description: 'Importance of the problem and the gap it fills.' },
+      { name: 'Approach & Methodology', weight: 25, description: 'Rigor and feasibility of the plan — the criterion reviewers weigh most.' },
+      { name: 'Goals & Measurable Objectives', weight: 20, description: 'SMART objectives tied to outcomes.' },
+      { name: 'Evaluation Plan', weight: 15, description: 'How success will be measured and by whom.' },
+      { name: 'Organizational Capacity', weight: 12, description: 'Staffing, infrastructure, and track record.' },
+      { name: 'Budget Justification', weight: 8, description: 'Costs that are necessary, reasonable, and tied to the project.' },
+    ]};
+  }
+  // Default: foundation / general full narrative
+  return { source: 'inferred', criteria: [
+    { name: 'Statement of Need', weight: 18, description: 'A specific, evidenced need with a human and a data point.' },
+    { name: 'Approach & Program Design', weight: 22, description: 'A concrete logic model — the criterion that most predicts funding.' },
+    { name: 'Goals & Objectives', weight: 20, description: 'Measurable, time-bound objectives, not activities.' },
+    { name: 'Evaluation Plan', weight: 15, description: 'How outcomes will be measured.' },
+    { name: 'Organizational Capacity', weight: 15, description: 'Credibility and community rootedness.' },
+    { name: 'Budget & Sustainability', weight: 10, description: 'A reasonable budget and a path beyond this grant.' },
+  ]};
+}
+
+/* The rubric in force for the active draft: the funder's own if we parsed one,
+   otherwise the default for this proposal type + funder type. */
+function getActiveRubric(proposalType, funderType) {
+  const req = (typeof window !== 'undefined' && window._parsedReq) ? window._parsedReq : null;
+  const crit = req && req.rubric && Array.isArray(req.rubric.criteria) ? req.rubric.criteria : [];
+  if (crit.length) return { source: req.rubric.source || 'stated', criteria: crit };
+  const pt = proposalType || getVal('gen-proposal-type', 'Full grant narrative');
+  const ft = funderType || (window._selectedGrant && window._selectedGrant.type) || '';
+  return defaultRubric(pt, ft);
+}
+
+/* Inject the rubric into the WRITER so it generates to the score (spend words
+   in proportion to weight, make the heaviest criteria the strongest sections). */
+function rubricPromptBlock(proposalType, funderType) {
+  const rub = getActiveRubric(proposalType, funderType);
+  if (!rub || !rub.criteria.length) return '';
+  const lines = rub.criteria.map(c =>
+    `- ${c.name}${c.weight ? ` (${c.weight}%)` : ''}: ${c.description || ''}`).join('\n');
+  const lead = rub.source === 'stated'
+    ? "HOW THIS FUNDER WILL SCORE YOUR PROPOSAL (their own published scoring criteria). Write to win these points:"
+    : "HOW REVIEWERS WILL SCORE THIS (this funder did not publish a scoring matrix, so these are the criteria a review panel in this field weighs most). Write to win these points:";
+  return `\n\n${lead} make the highest-weighted criteria your strongest, most specific, most evidence-rich sections, and spend words in proportion to each weight. Do not pad low-weight criteria.\n${lines}`;
 }
 
 function buildPrompt(fields, org, grant) {
@@ -6326,7 +6449,7 @@ RULES (follow exactly):
 - Never use em dashes. Write with commas, periods, or colons instead. Avoid stock AI phrasing and rhetorical "not X, but Y" constructions.
 - Ground every factual claim in the data above. Do not fabricate citations, study names, or statistics; if you reference a fact, it must come from the organization data provided.
 - If a sentence genuinely needs a specific figure, date, name, or statistic that was NOT provided above, do not invent it. Write the sentence and insert a marker exactly like [VERIFY: what to add] at the spot where the real detail belongs. Use these sparingly, only where a concrete, checkable detail is needed.
-`.trim() + reqPromptBlock();
+`.trim() + reqPromptBlock() + rubricPromptBlock(proposalType, funderType);
 
   /* ── Funder-defined sections (from an analyzed call) override the generic structure ── */
   const _req = (typeof window !== 'undefined' && window._parsedReq) ? window._parsedReq : null;
@@ -6717,6 +6840,8 @@ async function generate() {
   if (verifyNote) { verifyNote.innerHTML = ''; verifyNote.style.display = 'none'; }
   const secMap = document.getElementById('gen-section-map');
   if (secMap) { secMap.innerHTML = ''; secMap.style.display = 'none'; }
+  const scoreCard = document.getElementById('gen-scorecard');
+  if (scoreCard) { scoreCard.innerHTML = ''; scoreCard.style.display = 'none'; }
   const disclosureEl = document.getElementById('ai-disclosure');
   if (disclosureEl) { disclosureEl.innerHTML = ''; disclosureEl.style.display = 'none'; }
   const exportBtn = document.getElementById('export-btn');
@@ -6878,12 +7003,13 @@ async function generate() {
     if (window._apCtl && window._apCtl.finish) window._apCtl.finish();
     genSetStep(4);                            // → step 4: Review & export
     renderSectionMap(fields);                 // why each funder section is here (rationale)
-    flagVerifyMarkers(content);               // highlight any spots the AI flagged for a real detail
+    await judgeAndImprove(content, fields, selectedGrant);  // score vs rubric, auto-revise weakest, show scorecard (may replace the draft)
+    flagVerifyMarkers(content);               // highlight any spots the AI flagged for a real detail (runs on the final, possibly revised, draft)
     showAIPolicyBanner(selectedGrant);
     runComplianceChecklist(fields, content);
     showVoiceNote(window._lastVoiceCount || 0);
     renderDisclosure();
-    saveGenDraft();                           // persist the finished draft
+    saveGenDraft();                           // persist the finished draft (post-revision)
 
     const elapsed = ((Date.now() - genStart) / 1000).toFixed(1);
     setGenBtnLabel('Regenerate');
@@ -6998,6 +7124,145 @@ function renderSectionMap(fields) {
     `<div class="secmap-sub">Your draft follows ${escHtml(funderNm)}’s required structure. Here is what each section needs to do.</div>` +
     `<ul class="secmap-list">${rows}</ul></div>`;
   el.style.display = 'block';
+}
+
+/* ───────────────────────────────────────────────────────────
+   REVIEWER SCORECARD + SELF-CRITIQUE LOOP (the report's #1 move).
+   After the draft streams in: score it against the active rubric with an
+   LLM judge (1-5 per criterion, reasoning first), and if any criterion is
+   weak, auto-revise the weakest parts once and re-score — accepting the
+   revision only if it actually lifts the score. The scorecard is the
+   "show your work" trust trail. It is a SIBLING of #doc-content (never
+   inside it) so Copy/Export stay clean.
+   ─────────────────────────────────────────────────────────── */
+function ensureScorecardEl() {
+  let el = document.getElementById('gen-scorecard');
+  if (el) return el;
+  const checklist = document.getElementById('compliance-checklist');
+  const anchor = document.getElementById('gen-section-map') || checklist;
+  if (!anchor || !anchor.parentNode) return null;
+  el = document.createElement('div');
+  el.id = 'gen-scorecard';
+  el.style.display = 'none';
+  anchor.parentNode.insertBefore(el, anchor);   // sits above the section map + checklist
+  return el;
+}
+
+function scLoadingHTML(msg) {
+  return '<div class="scard"><div class="scard-loading"><span class="scard-spin"></span>' + escHtml(msg) + '</div></div>';
+}
+
+function scoreColor(total) {
+  return total >= 80 ? '#1c7a43' : total >= 60 ? '#b8860b' : '#c0392b';
+}
+
+/* Draft → judge → (revise weakest once → re-judge) → render scorecard.
+   Best-effort: if signed out / no API key / failure, hides the card and
+   leaves the draft untouched. May replace contentEl.innerHTML with an
+   improved draft, so this runs BEFORE flagVerifyMarkers + the checklist. */
+async function judgeAndImprove(contentEl, fields, grant) {
+  const card = ensureScorecardEl();
+  if (!card || !contentEl) return;
+  const draftText = (contentEl.innerText || contentEl.textContent || '').trim();
+  if (draftText.length < 140) { card.style.display = 'none'; card.innerHTML = ''; return; }
+  const rubric = getActiveRubric(fields.proposalType, grant && grant.type);
+  if (!rubric.criteria.length) { card.style.display = 'none'; card.innerHTML = ''; return; }
+
+  const ptype = fields.proposalType || 'Full grant narrative';
+  const ftype = (grant && grant.type) || '';
+  card.style.display = 'block';
+  card.innerHTML = scLoadingHTML('Scoring your draft against the funder’s rubric, the way a reviewer would…');
+
+  let judge;
+  try {
+    const r = await runAiJob('judge_proposal', {
+      draft_text: draftText.slice(0, 14000), rubric, proposal_type: ptype, funder_type: ftype });
+    if (!(r && r.ok && r.output && (r.output.scores || []).length)) throw new Error('nojudge');
+    judge = r.output;
+  } catch (e) {
+    card.style.display = 'none'; card.innerHTML = '';   // graceful: don't block the draft
+    return;
+  }
+
+  const before = judge.weighted_total;
+  // Revise when any criterion is weak (≤3) or the overall is short of strong (<80).
+  const weak = judge.scores.filter(s => s.score <= 3);
+  let improved = null;
+  if (weak.length || before < 80) {
+    const fixSource = (weak.length ? weak : judge.scores.slice().sort((a, b) => a.score - b.score).slice(0, 2));
+    const fixes = fixSource.slice(0, 3).map(s => ({ criterion: s.criterion, fix: s.fix })).filter(f => f.fix);
+    if (fixes.length) {
+      card.innerHTML = scLoadingHTML('Revising the weakest section, then re-scoring to confirm it improved…');
+      try {
+        const rv = await runAiJob('revise_proposal', {
+          draft_html: (contentEl.innerHTML || '').slice(0, 16000), fixes, proposal_type: ptype });
+        if (rv && rv.ok && rv.output && rv.output.revised_html) {
+          const tmp = document.createElement('div');
+          tmp.innerHTML = rv.output.revised_html;
+          const newText = (tmp.innerText || tmp.textContent || '').trim();
+          if (newText.length >= 140) {
+            const rj = await runAiJob('judge_proposal', {
+              draft_text: newText.slice(0, 14000), rubric, proposal_type: ptype, funder_type: ftype });
+            // Accept the revision ONLY if it genuinely lifted the score.
+            if (rj && rj.ok && rj.output && (rj.output.scores || []).length && rj.output.weighted_total >= before) {
+              contentEl.innerHTML = rv.output.revised_html;
+              improved = { from: before, to: rj.output.weighted_total, changes: rv.output.changes || [] };
+              judge = rj.output;
+            }
+          }
+        }
+      } catch (e) { /* keep the original draft + first judgement */ }
+    }
+  }
+
+  renderScorecard(card, judge, { rubricSource: rubric.source, grant, improved });
+}
+
+function renderScorecard(card, judge, opts) {
+  opts = opts || {};
+  const total = Math.max(0, Math.min(100, Math.round(judge.weighted_total || 0)));
+  const col = scoreColor(total);
+  const weakSet = new Set((judge.weakest || []).map(w => String(w).toLowerCase()));
+  const funderNm = (opts.grant && (opts.grant.funder || opts.grant.title)) || 'this funder';
+  const srcLine = opts.rubricSource === 'stated'
+    ? 'Scored against ' + escHtml(funderNm) + '’s own published rubric.'
+    : 'Scored against a standard rubric for this kind of grant (this funder did not publish one).';
+
+  let h = '<div class="scard">';
+  h += '<div class="scard-hd">' +
+    '<div class="scard-ring" style="--sc:' + total + ';--sc-col:' + col + '"><span>' + total +
+    '<small>/100</small></span></div>' +
+    '<div class="scard-htext"><div class="scard-ttl">Reviewer scorecard</div>' +
+    '<div class="scard-src">' + srcLine + '</div></div></div>';
+
+  if (judge.summary) h += '<div class="scard-sum">' + escHtml(judge.summary) + '</div>';
+
+  if (opts.improved && opts.improved.to > opts.improved.from) {
+    h += '<div class="scard-lift"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>' +
+      '<span>Grange revised the weakest section and lifted the score from <b>' + opts.improved.from +
+      '</b> to <b>' + opts.improved.to + '</b> out of 100. Review the changes before you submit.</span></div>';
+  }
+
+  h += '<ul class="scard-list">';
+  for (const s of (judge.scores || [])) {
+    const sc = Math.max(1, Math.min(5, Number(s.score) || 1));
+    const dots = [1, 2, 3, 4, 5].map(n =>
+      '<span class="scard-dot' + (n <= sc ? ' on' : '') + '"></span>').join('');
+    const wt = Number(s.weight) ? '<span class="scard-wt">' + Number(s.weight) + '%</span>' : '';
+    const isWeak = sc <= 3 || weakSet.has(String(s.criterion).toLowerCase());
+    h += '<li class="scard-row" style="--sc-col:' + (sc >= 4 ? '#1c7a43' : sc === 3 ? '#b8860b' : '#c0392b') + '">' +
+      '<div class="scard-top"><span class="scard-name">' + escHtml(s.criterion || '') + '</span>' + wt +
+      '<span class="scard-dots">' + dots + '</span></div>' +
+      (s.reasoning ? '<div class="scard-why">' + escHtml(s.reasoning) + '</div>' : '') +
+      (isWeak && s.fix ? '<div class="scard-fix"><b>To improve:</b> ' + escHtml(s.fix) + '</div>' : '') +
+      '</li>';
+  }
+  h += '</ul>';
+  h += '<div class="scard-foot">This is an AI reviewer’s estimate to focus your edits, not a guarantee of funding. ' +
+    'Grange drafts and scores; you decide what to change before you submit.</div>';
+  h += '</div>';
+  card.innerHTML = h;
+  card.style.display = 'block';
 }
 
 /* Deterministic pre-export gate. When the user analyzed the funder's call, this
