@@ -28,6 +28,7 @@ Hard rules:
 - NEVER invent specific grant names, dollar amounts, or deadlines. For live opportunities tell the user to open the Discovery tab (which pulls real grants from Grants.gov) or check the funder's official site.
 - You assist; the user is always the author. For anything they'll submit, remind them to review and substantially revise — some funders (e.g. NIH) reject AI-written applications.
 - For "how do I not lose the money / clawback" questions: spend only within approved budget categories, keep every receipt, never miss a report deadline (2 CFR 200.403).
+- When a GRANT THE USER IS WORKING ON or RELEVANT PASSAGES from their past proposals appear below, use them to give specific, personalized answers in the user's own voice and words, not generic advice. Never invent facts that are not in the context.
 - Keep replies under ~180 words unless asked for more.`;
 
 Deno.serve(async (req: Request) => {
@@ -47,6 +48,7 @@ Deno.serve(async (req: Request) => {
   try { body = await req.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
   const message: string = (body?.message ?? '').toString().slice(0, 4000);
   const history: Array<{ role: string; content: string }> = Array.isArray(body?.history) ? body.history.slice(-8) : [];
+  const grantCtx: string = (body?.grant_context ?? '').toString().slice(0, 1500);
   if (!message.trim()) return json({ error: 'Empty message' }, 400);
 
   // ── Ground the model in the user's real data (RLS keeps it their own) ──
@@ -72,7 +74,21 @@ Deno.serve(async (req: Request) => {
     }
   } catch (_) { /* fall back to generic context */ }
 
-  const fullPrompt = `${SYSTEM}\n\n=== ORGANIZATION CONTEXT ===\n${ctx}\n\n=== CONVERSATION ===\n` +
+  // Best-effort retrieval from the user's OWN past proposals (key-free gte-small,
+  // RLS-scoped via match_document_chunks) so the assistant answers in their voice.
+  let ragText = '';
+  try {
+    const session = new (globalThis as any).Supabase.ai.Session('gte-small');
+    const emb = Array.from(await session.run(message, { mean_pool: true, normalize: true }));
+    const { data: chunks } = await sb.rpc('match_document_chunks', { query_embedding: JSON.stringify(emb), match_count: 3, filter_kind: 'past_proposal' });
+    const good = (chunks || []).filter((c: any) => (c.similarity ?? 0) >= 0.72).slice(0, 3);
+    if (good.length) ragText = "\n\n=== RELEVANT PASSAGES FROM THE USER'S OWN PAST PROPOSALS (use to answer in their voice; never invent) ===\n" + good.map((c: any, i: number) => `[${i + 1}] ${c.content}`).join('\n\n');
+  } catch (_) { /* best-effort; no past writing or model unavailable */ }
+
+  const fullPrompt = `${SYSTEM}\n\n=== ORGANIZATION CONTEXT ===\n${ctx}` +
+    (grantCtx ? `\n\n=== GRANT THE USER IS WORKING ON ===\n${grantCtx}` : '') +
+    ragText +
+    `\n\n=== CONVERSATION ===\n` +
     history.map((h) => `${h.role === 'assistant' ? 'Grange' : 'User'}: ${h.content}`).join('\n') +
     `\nUser: ${message}\nGrange:`;
 
@@ -100,7 +116,7 @@ Deno.serve(async (req: Request) => {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
         body: JSON.stringify({ model: GROQ_MODEL, temperature: 0.6, max_tokens: 700,
-          messages: [{ role: 'system', content: SYSTEM + '\n\nORGANIZATION CONTEXT:\n' + ctx },
+          messages: [{ role: 'system', content: SYSTEM + '\n\nORGANIZATION CONTEXT:\n' + ctx + (grantCtx ? '\n\nGRANT THE USER IS WORKING ON:\n' + grantCtx : '') + ragText },
             ...history.map((h) => ({ role: h.role === 'assistant' ? 'assistant' : 'user', content: h.content })),
             { role: 'user', content: message }] }) });
       if (res.ok) {
