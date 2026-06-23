@@ -5347,6 +5347,23 @@ label.field-label {
   .rdy-elig .lbl small{ display:block; font-size:12px; color:var(--muted); font-weight:400; margin-top:1px; }
   .rdy-elig .act{ font-size:12px; color:var(--accent); cursor:pointer; white-space:nowrap; }
   .rdy-fed-pill{ display:inline-block; font-size:10px; font-weight:600; color:var(--accent-ink); background:var(--accent-tint); border-radius:999px; padding:2px 8px; margin-left:8px; vertical-align:middle; }
+  /* readiness: authoritative IRS 501(c)(3) verification (report rec #4) */
+  .rdy-irs{ border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:14px; background:var(--surface); }
+  .rdy-irs-head{ display:flex; align-items:flex-start; gap:11px; }
+  .rdy-irs-ic{ width:34px; height:34px; border-radius:9px; display:grid; place-items:center; flex-shrink:0; background:var(--accent-tint); color:var(--accent-ink); }
+  .rdy-irs-ic svg{ width:19px; height:19px; }
+  .rdy-irs-t{ font-size:14px; font-weight:700; color:var(--ink); }
+  .rdy-irs-sub{ font-size:12.5px; color:var(--muted); margin-top:2px; line-height:1.45; }
+  .rdy-irs-btn{ margin-top:12px; }
+  .rdy-irs-result{ margin-top:12px; border-radius:10px; padding:12px 14px; font-size:13px; line-height:1.55; }
+  .rdy-irs-result.ok{ background:var(--ok-tint); border:1px solid rgba(34,153,84,.30); color:#1c5a36; }
+  .rdy-irs-result.warn{ background:var(--warn-tint); border:1px solid rgba(212,160,23,.42); color:#7a5410; }
+  .rdy-irs-result .r-h{ font-weight:700; display:flex; align-items:center; gap:7px; }
+  .rdy-irs-result .r-h svg{ width:16px; height:16px; flex-shrink:0; }
+  .rdy-irs-result .r-meta{ margin-top:5px; opacity:.95; }
+  .rdy-irs-src{ display:inline-flex; align-items:center; gap:5px; margin-top:10px; font-size:12px; font-weight:600; color:var(--accent); cursor:pointer; text-decoration:none; }
+  .rdy-irs-recheck{ font-size:12px; color:var(--muted); cursor:pointer; margin-left:14px; }
+  .rdy-irs-spin{ width:14px; height:14px; border:2px solid var(--line); border-top-color:var(--accent); border-radius:50%; display:inline-block; animation:scspin .7s linear infinite; vertical-align:-2px; margin-right:7px; }
   /* readiness: paste-a-funder's-call analyzer (reuses the requirements engine) */
   .rdy-reqcard{ border:1px solid rgba(217,79,48,.16); background:linear-gradient(180deg,var(--accent-tint),var(--surface) 70%); border-radius:14px; padding:18px 18px 16px; margin:22px 0 6px; }
   .rdy-reqcard-head{ display:flex; gap:12px; align-items:flex-start; margin-bottom:13px; }
@@ -10754,16 +10771,85 @@ function applyDiscFilters(query, type) {
     return '<svg class="ap-pending" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/></svg>';
   }
 
+  function einDigits(p, a) { return ((a && a.ein) || (p && p.ein) || '').toString().replace(/\D/g, ''); }
+  function irsVerified501c3(p, a) { const v = window._irsVerified, d = einDigits(p, a); return !!(v && v.found && v.is_501c3 && d.length === 9 && v.ein === d); }
+
   function rdyEligBasics(p, a) {
     const arr = x => Array.isArray(x) ? x : (x ? [x] : []);
+    const irsOk = irsVerified501c3(p, a);
     return [
-      { label:'501(c)(3) tax-exempt status', ok: !!(p.tax_exempt_status && p.tax_exempt_status !== 'unknown'), detail:'Required by almost every funder — it is the gate.', fix:'Set your tax status' },
+      { label: irsOk ? '501(c)(3) status, verified by the IRS' : '501(c)(3) tax-exempt status', ok: irsOk || !!(p.tax_exempt_status && p.tax_exempt_status !== 'unknown'), detail: irsOk ? 'Confirmed against the IRS Exempt Organizations file.' : 'Required by almost every funder — it is the gate.', fix:'Set your tax status' },
       { label:'EIN on file', ok: !!(a.ein || p.ein), detail:'Your federal tax ID, asked for on every application.', fix:'Add your EIN' },
       { label:'Service area defined', ok: !!(a.geo_focus || a.primary_location || (p.service_geographies && p.service_geographies.length)), detail:'Funders fund specific places — this drives eligibility.', fix:'Add your location' },
       { label:'Annual budget on file', ok: !!(a.annual_budget || p.annual_budget), detail:'Many funders screen applicants by organization size.', fix:'Add your budget' },
       { label:'Mission & focus areas set', ok: !!((a.mission || p.mission) && arr(a.focus_areas).length), detail:'Drives grant matching and funder-priority fit.', fix:'Add your mission' },
     ];
   }
+
+  /* ── Authoritative IRS 501(c)(3) verification (report rec #4) ── */
+  function fmtEin(d) { d = (d || '').toString(); return d.length === 9 ? d.slice(0, 2) + '-' + d.slice(2) : d; }
+  function irsOkIcon() { return '<svg viewBox="0 0 24 24" fill="none" stroke="#1c7a43" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>'; }
+  function irsWarnIcon() { return '<svg viewBox="0 0 24 24" fill="none" stroke="#b8860b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>'; }
+
+  function irsResultHTML(o) {
+    const src = '<a class="rdy-irs-src" href="' + escHtml(o.source_url || '#') + '" target="_blank" rel="noopener noreferrer">View the IRS record ↗</a>';
+    const recheck = '<span class="rdy-irs-recheck" onclick="verifyNonprofitIRS()">Re-check</span>';
+    if (!o.found) {
+      return '<div class="rdy-irs-result warn"><div class="r-h">' + irsWarnIcon() + 'Not found in the IRS file</div>' +
+        '<div class="r-meta">We could not find EIN ' + escHtml(fmtEin(o.ein)) + ' in the IRS Exempt Organizations file. Double-check the number. Newly recognized organizations can take a few months to appear, and if a fiscal sponsor holds your tax status, enter their EIN instead.</div>' +
+        '<span class="rdy-irs-recheck" onclick="verifyNonprofitIRS()" style="margin-left:0">Check again</span></div>';
+    }
+    if (o.is_501c3) {
+      const bits = [];
+      if (o.ruling_year) bits.push('recognized by the IRS in ' + escHtml(o.ruling_year));
+      if (o.ntee_code) bits.push('NTEE ' + escHtml(o.ntee_code));
+      if (o.city && o.state) bits.push(escHtml(o.city) + ', ' + escHtml(o.state));
+      return '<div class="rdy-irs-result ok"><div class="r-h">' + irsOkIcon() + 'Verified 501(c)(3)' + (o.tax_deductible ? ', donations are tax-deductible' : '') + '</div>' +
+        '<div class="r-meta"><b>' + escHtml(o.name || 'Your organization') + '</b>' + (bits.length ? '. ' + bits.join(' · ') + '.' : '.') + '</div>' + src + recheck + '</div>';
+    }
+    return '<div class="rdy-irs-result warn"><div class="r-h">' + irsWarnIcon() + 'Registered as ' + escHtml(o.subsection_label || 'a tax-exempt org') + '</div>' +
+      '<div class="r-meta">The IRS lists <b>' + escHtml(o.name || 'this EIN') + '</b> as ' + escHtml(o.subsection_label || 'tax-exempt') + ', not a 501(c)(3). Most grants require 501(c)(3), so check each funder’s rules. If a fiscal sponsor with 501(c)(3) status holds your project, enter their EIN.</div>' + src + recheck + '</div>';
+  }
+
+  function irsCardHTML(p, a) {
+    const d = einDigits(p, a);
+    const cached = (window._irsVerified && window._irsVerified.ein === d && d.length === 9) ? window._irsVerified : null;
+    const inner = cached ? irsResultHTML(cached)
+      : (d.length === 9
+        ? '<div class="rdy-irs-btn"><button class="btn btn-primary btn-sm" id="rdy-irs-btn" onclick="verifyNonprofitIRS()"><span style="color:#fff">✓</span>&nbsp;Verify with the IRS</button></div>'
+        : '<div class="rdy-irs-sub" style="margin-top:11px">Add your EIN in your <a onclick="go(\'profile\')" style="color:var(--accent);cursor:pointer;font-weight:600">profile</a> and Grange will confirm your 501(c)(3) status straight from the IRS.</div>');
+    return '<div class="rdy-irs" id="rdy-irs">' +
+      '<div class="rdy-irs-head"><div class="rdy-irs-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 4.4-3.1 7.8-8 9-4.9-1.2-8-4.6-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div>' +
+      '<div><div class="rdy-irs-t">Confirm your status with the IRS</div><div class="rdy-irs-sub">' +
+      (d.length === 9 ? 'Check EIN ' + escHtml(fmtEin(d)) + ' against the IRS Exempt Organizations file, the authoritative source funders trust.' : 'The authoritative 501(c)(3) check funders trust, straight from the IRS file.') +
+      '</div></div></div><div id="rdy-irs-result">' + inner + '</div></div>';
+  }
+
+  window.verifyNonprofitIRS = async function () {
+    const ctx = window._grange || {};
+    const p = ctx.profile || {}, a = ctx._cachedAnswers || {};
+    const d = einDigits(p, a);
+    const box = document.getElementById('rdy-irs-result');
+    const set = h => { if (box) box.innerHTML = h; };
+    if (d.length !== 9) { set('<div class="rdy-irs-result warn"><div class="r-meta">Add a valid 9-digit EIN in your profile first.</div></div>'); return; }
+    if (!window.sb) { toast('Service unavailable, please refresh.'); return; }
+    set('<div class="rdy-irs-result"><span class="rdy-irs-spin"></span>Checking the IRS Exempt Organizations file…</div>');
+    try {
+      const { data: { session } } = await window.sb.auth.getSession();
+      if (!session) { set('<div class="rdy-irs-result warn"><div class="r-meta">Sign in to verify your IRS status.</div></div>'); return; }
+      const r = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/irs-verify', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+        body: JSON.stringify({ ein: d }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j || !j.output) { set('<div class="rdy-irs-result warn"><div class="r-meta">' + escHtml((j && j.error) || 'The IRS lookup is unavailable right now. Try again shortly.') + '</div></div>'); return; }
+      const o = j.output; o.ein = d;
+      window._irsVerified = o;
+      try { const uid = ctx.user && ctx.user.id; if (uid) localStorage.setItem('grange_irs_' + uid, JSON.stringify(o)); } catch (_) {}
+      renderReadiness(p, a);   // full refresh: result card + eligibility-basics row + readiness ring all reflect the verified status
+    } catch (e) {
+      set('<div class="rdy-irs-result warn"><div class="r-meta">The IRS lookup failed. Check your connection and try again.</div></div>');
+    }
+  };
 
   function rdyScore(p, a) {
     const elig = rdyEligBasics(p, a);
@@ -10777,6 +10863,8 @@ function applyDiscFilters(query, type) {
     const p = ctx.profile || {}, a = ctx._cachedAnswers || {};
     const uid = ctx.user && ctx.user.id;
     _rdyStatus = {};
+    // Restore a prior IRS verification (per-user, keyed so a changed EIN invalidates it).
+    try { const raw = uid && localStorage.getItem('grange_irs_' + uid); window._irsVerified = raw ? JSON.parse(raw) : null; } catch (_) { window._irsVerified = null; }
     if (window.sb && uid) {
       try { const { data } = await sb.from('readiness_items').select('req_key,status').eq('user_id', uid); (data || []).forEach(r => { _rdyStatus[r.req_key] = r.status; }); } catch (_) {}
     }
@@ -10820,6 +10908,7 @@ function applyDiscFilters(query, type) {
       '</div>' +
       '<div class="rdy-section-title">Eligibility basics</div>' +
       '<div class="rdy-section-sub">The universal gates almost every funder checks — auto-filled from your profile.</div>' +
+      irsCardHTML(p, a) +
       elig.map(e => '<div class="rdy-elig"><span class="ic">' + (e.ok ? rdyIcon('have') : rdyIcon('missing')) + '</span>' +
         '<span class="lbl">' + e.label + '<small>' + e.detail + '</small></span>' +
         (e.ok ? '<span style="font-size:12px;color:var(--ok);font-weight:600">Confirmed</span>' : '<span class="act" onclick="go(\'profile\')">' + e.fix + ' →</span>') + '</div>').join('') +
