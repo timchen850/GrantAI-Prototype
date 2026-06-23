@@ -6,6 +6,13 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "3456"],
       "port": 3456
+    },
+    {
+      "name": "GrantAI-App",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--port", "3457"],
+      "cwd": "app",
+      "port": 3457
     }
   ]
 }

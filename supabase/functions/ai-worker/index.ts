@@ -121,6 +121,48 @@ async function dispatch(sb: any, uid: string, jobType: string, input: any): Prom
     return { score: Math.max(0, Math.min(100, Math.round(out.score || 0))), verdict: out.verdict || null, rationale: out.rationale || '', eligibility: out.eligibility || [], recommendation: out.recommendation || '' };
   }
 
+  if (jobType === 'answer_question') {
+    // Write a persuasive argumentative essay answer for one grant application question.
+    const question = (await sb.from('grant_questions').select('*, opportunities(title, description, rfp_text)').eq('id', input.question_id).maybeSingle()).data;
+    if (!question) throw new Error('question not found');
+
+    const grant = input.grant_id
+      ? (await sb.from('grants').select('*, opportunities(title, description, funder_id, focus_areas, geographies)').eq('id', input.grant_id).maybeSingle()).data
+      : null;
+
+    const opp = question.opportunities || grant?.opportunities;
+    const wordGuide = question.word_limit ? `Stay between ${Math.round(question.word_limit * 0.85)}–${question.word_limit} words.` : 'Aim for 400–600 words unless the question calls for more.';
+    const hint = question.hint ? `Hint from the funder: "${question.hint}"` : '';
+
+    const prompt = `You are an expert grant writer answering ONE application question on behalf of a nonprofit. Write in the organization's voice ("we"/"our"). Ground every claim in the org data — never invent statistics, dollar amounts, or outcomes that aren't stated. Make a clear, specific argument for why this organization deserves the funding. ${wordGuide}
+
+ORGANIZATION:
+${org(profile)}
+
+GRANT:
+Funder: ${opp?.title || 'Unknown funder'}
+Description: ${(opp?.description || opp?.rfp_text || '').slice(0, 1000)}
+
+APPLICATION QUESTION:
+${question.question_text}
+${hint}
+
+Write the answer now (prose only — no headings, no bullet points, no meta-commentary about the answer).`;
+
+    const text = await callText(prompt, question.word_limit ? question.word_limit * 8 : 4000);
+
+    // Upsert the answer
+    await sb.from('grant_answers').upsert({
+      user_id: uid,
+      grant_id: input.grant_id,
+      question_id: input.question_id,
+      answer_text: text,
+      status: 'ai_draft',
+    }, { onConflict: 'user_id,grant_id,question_id' });
+
+    return { chars: text.length, question_id: input.question_id };
+  }
+
   throw new Error(`unsupported job_type: ${jobType}`);
 }
 
@@ -130,7 +172,28 @@ const NOTIF: Record<string, { kind: string; title: string }> = {
   draft_section: { kind: 'draft_ready', title: 'AI draft ready' },
   write_budget_narrative: { kind: 'draft_ready', title: 'Budget narrative drafted' },
   build_logic_model: { kind: 'draft_ready', title: 'Logic model built' },
+  answer_question: { kind: 'draft_ready', title: 'Essay answer drafted' },
 };
+
+const EMAIL: Record<string, { email_type: string; step_name: string }> = {
+  score_match:           { email_type: 'ai_step_complete', step_name: 'Match Score' },
+  check_eligibility:     { email_type: 'eligibility_result', step_name: 'Eligibility Check' },
+  draft_section:         { email_type: 'ai_step_complete', step_name: 'Section Draft' },
+  write_budget_narrative:{ email_type: 'ai_step_complete', step_name: 'Budget Narrative' },
+  build_logic_model:     { email_type: 'ai_step_complete', step_name: 'Logic Model' },
+  answer_question:       { email_type: 'ai_step_complete', step_name: 'Essay Answer' },
+};
+
+async function sendEmail(userId: string, emailType: string, data: Record<string, string>) {
+  const url = `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
+      body: JSON.stringify({ user_id: userId, email_type: emailType, data }),
+    });
+  } catch (e) { console.error('sendEmail failed', e); }
+}
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
@@ -161,6 +224,21 @@ Deno.serve(async (req: Request) => {
     await sb.from('ai_jobs').update({ status: 'succeeded', output, finished_at: new Date().toISOString() }).eq('id', jobId);
     const n = NOTIF[jobType];
     if (n) await sb.from('notifications').insert({ user_id: user.id, kind: n.kind, title: n.title, body: `Job ${jobType} finished.`, link: '/dashboard' });
+
+    // Fire email notification (non-blocking)
+    const em = EMAIL[jobType];
+    if (em) {
+      const emailData: Record<string, string> = { step_name: em.step_name };
+      if (jobType === 'check_eligibility' && output) {
+        emailData.overall_status = output.overall_status || '';
+        const opp = input.opportunity_id
+          ? (await sb.from('opportunities').select('title').eq('id', input.opportunity_id).maybeSingle()).data
+          : null;
+        if (opp?.title) emailData.grant_title = opp.title;
+      }
+      sendEmail(user.id, em.email_type, emailData);
+    }
+
     return json({ ok: true, job_id: jobId, job_type: jobType, output });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

@@ -10,6 +10,7 @@ import Grants from './screens/Grants'
 import Readiness from './screens/Readiness'
 import Chat from './screens/Chat'
 import Profile from './screens/Profile'
+import ApplicationWriter from './screens/ApplicationWriter'
 
 const SCREENS = {
   dashboard: Dashboard,
@@ -19,24 +20,32 @@ const SCREENS = {
   readiness: Readiness,
   chat: Chat,
   profile: Profile,
+  'application-writer': ApplicationWriter,
 }
 
 export default function App() {
   const { session, loading } = useAuth()
-  const [page, setPage] = useState('dashboard')
+  // page can be a string or { name, ...params }
+  const [pageState, setPageState] = useState('dashboard')
+
+  const pageName   = typeof pageState === 'string' ? pageState : pageState.name
+  const pageParams = typeof pageState === 'string' ? {} : pageState
+
+  // setPage accepts either a string or an object { name, ...params }
+  const setPage = (target) => setPageState(target)
 
   if (loading) return <SplashScreen />
   if (!session) return <Auth />
 
-  const Screen = SCREENS[page] || Dashboard
+  const Screen = SCREENS[pageName] || Dashboard
 
   return (
     <div className="app-shell">
-      <TitleBar page={page} />
+      <TitleBar page={pageName} />
       <div className="layout">
-        <Sidebar page={page} setPage={setPage} />
+        <Sidebar page={pageName} setPage={setPage} />
         <main className="main-content">
-          <Screen setPage={setPage} />
+          <Screen setPage={setPage} pageParams={pageParams} />
         </main>
       </div>
     </div>

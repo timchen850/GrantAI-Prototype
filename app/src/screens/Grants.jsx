@@ -143,6 +143,16 @@ export default function Grants({ setPage }) {
                       <td>
                         <div style={{ display: 'flex', gap: 6 }}>
                           <button
+                            className="btn btn-accent btn-sm"
+                            onClick={() => setPage({
+                              name: 'application-writer',
+                              grantId: g.id,
+                              opportunityId: g.opportunity_id,
+                            })}
+                          >
+                            Answer App
+                          </button>
+                          <button
                             className="btn btn-glass btn-sm"
                             onClick={() => setPage('generator')}
                           >

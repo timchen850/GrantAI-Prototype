@@ -2,15 +2,21 @@ import React, { useEffect, useState } from 'react'
 import { sb, runAiJob } from '../lib/supabase'
 import { useToast } from '../lib/toast'
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://xewrvmqyzeiziimcmenj.supabase.co'
+
 const SCORE_COLOR = s => s >= 80 ? 'var(--ok)' : s >= 60 ? 'var(--warn)' : 'var(--ink-tertiary)'
 
 export default function Discovery({ setPage }) {
   const { toast } = useToast()
   const [opps, setOpps] = useState([])
   const [loading, setLoading] = useState(true)
+  const [discovering, setDiscovering] = useState(false)
+  const [searching, setSearching] = useState(false)
   const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState('all') // all | high | saved
+  const [filter, setFilter] = useState('all')
   const [selected, setSelected] = useState(null)
+  const [mode, setMode] = useState('catalog')
+  const [semanticResults, setSemanticResults] = useState([])
 
   useEffect(() => { loadOpps() }, [])
 
@@ -18,11 +24,67 @@ export default function Discovery({ setPage }) {
     setLoading(true)
     const { data } = await sb
       .from('opportunities')
-      .select(`*, match_scores(score, mission_score, ntee_score, geo_score, budget_score)`)
+      .select('*, match_scores(overall, components), funders(name)')
       .order('created_at', { ascending: false })
       .limit(60)
     setOpps(data || [])
     setLoading(false)
+  }
+
+  async function discoverGrants() {
+    setDiscovering(true)
+    toast('Fetching grants from Grants.gov and embedding them...', 'default')
+    try {
+      const { data: { session } } = await sb.auth.getSession()
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/ingest-grants`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ rows: 25 }),
+      })
+      const d = await res.json()
+      if (d.ok) {
+        toast(`Ingested ${d.ingested} new grants, embedded ${d.embedded}`, 'ok')
+        await loadOpps()
+      } else {
+        toast(d.error || d.message || 'Ingestion failed', 'danger')
+      }
+    } catch {
+      toast('Could not reach ingestion service', 'danger')
+    } finally {
+      setDiscovering(false)
+    }
+  }
+
+  async function semanticSearch() {
+    setSearching(true)
+    try {
+      const { data: { session } } = await sb.auth.getSession()
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/semantic-search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: search.trim() ? JSON.stringify({ query: search }) : '{}',
+      })
+      const d = await res.json()
+      if (d.ok) {
+        setSemanticResults(d.results || [])
+        setMode('semantic')
+        if ((d.results || []).length === 0) {
+          toast('No semantic matches found - try running Discover Grants first', 'default')
+        }
+      } else {
+        toast(d.error || 'Semantic search failed', 'danger')
+      }
+    } catch {
+      toast('Could not reach semantic search service', 'danger')
+    } finally {
+      setSearching(false)
+    }
   }
 
   async function saveGrant(opp) {
@@ -37,125 +99,174 @@ export default function Discovery({ setPage }) {
   async function scoreMatch(opp) {
     try {
       await runAiJob('score_match', { opportunity_id: opp.id })
-      toast('Scoring started — check back in a moment', 'default')
+      toast('Scoring started - check back in a moment', 'default')
     } catch {
       toast('Could not start scoring', 'danger')
     }
   }
 
-  const filtered = opps.filter(o => {
+  const catalogFiltered = opps.filter(o => {
     const q = search.toLowerCase()
-    const match = !q || o.title?.toLowerCase().includes(q) || o.funder_name?.toLowerCase().includes(q)
-    const score = o.match_scores?.[0]?.score ?? 0
+    const match = !q || o.title?.toLowerCase().includes(q) || o.funders?.name?.toLowerCase().includes(q)
+    const score = o.match_scores?.[0]?.overall ?? 0
     if (filter === 'high') return match && score >= 70
     if (filter === 'saved') return match && o.saved
     return match
   })
+
+  const displayList = mode === 'semantic' ? semanticResults : catalogFiltered
 
   return (
     <div className="fade-in">
       <div className="page-header">
         <div>
           <h1 className="page-title">Grant Discovery</h1>
-          <p className="page-subtitle">AI-matched opportunities for your organization</p>
+          <p className="page-subtitle">
+            {mode === 'semantic'
+              ? `${semanticResults.length} grants matched to your mission`
+              : 'AI-matched opportunities for your organization'}
+          </p>
         </div>
-        <button className="btn btn-accent" onClick={loadOpps}>
-          <RefreshIcon /> Refresh
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-glass btn-sm" onClick={loadOpps} disabled={loading}>
+            <RefreshIcon /> Refresh
+          </button>
+          <button className="btn btn-accent" onClick={discoverGrants} disabled={discovering}>
+            {discovering
+              ? <><span className="spinner" style={{ width: 13, height: 13, borderWidth: 2 }} /> Discovering...</>
+              : <><SearchPlusIcon /> Discover Grants</>
+            }
+          </button>
+        </div>
       </div>
 
-      {/* Search & filter bar */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 20, alignItems: 'center' }}>
         <div style={{ flex: 1, position: 'relative' }}>
           <SearchIcon style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.4 }} />
           <input
             className="input"
-            style={{ paddingLeft: 36 }}
-            placeholder="Search grants, funders…"
+            style={{ paddingLeft: 36, paddingRight: 110 }}
+            placeholder={mode === 'semantic' ? "Describe what you're looking for..." : 'Search grants, funders...'}
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); if (mode === 'semantic') setMode('catalog') }}
+            onKeyDown={e => { if (e.key === 'Enter') semanticSearch() }}
           />
+          <button
+            className="btn btn-accent btn-sm"
+            style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)' }}
+            onClick={semanticSearch}
+            disabled={searching}
+          >
+            {searching ? <span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} /> : 'AI Match'}
+          </button>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           {['all', 'high', 'saved'].map(f => (
             <button
               key={f}
-              className={`btn btn-sm ${filter === f ? 'btn-glass' : 'btn-ghost'}`}
-              onClick={() => setFilter(f)}
+              className={`btn btn-sm ${filter === f && mode === 'catalog' ? 'btn-glass' : 'btn-ghost'}`}
+              onClick={() => { setFilter(f); setMode('catalog') }}
             >
               {f === 'all' ? 'All' : f === 'high' ? '70+ Match' : 'Saved'}
             </button>
           ))}
+          {mode === 'semantic' && (
+            <button className="btn btn-sm btn-glass" onClick={() => setMode('catalog')}>
+              Clear AI Match
+            </button>
+          )}
         </div>
       </div>
 
-      {loading ? (
+      {mode === 'semantic' && (
+        <div className="card" style={{
+          marginBottom: 16, padding: '12px 16px',
+          background: 'rgba(232,92,58,0.08)',
+          border: '1px solid rgba(232,92,58,0.25)',
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <SparkleIcon />
+          <span style={{ fontSize: 13, color: 'var(--ink-secondary)' }}>
+            Showing grants ranked by semantic similarity to your organization mission and focus areas.
+          </span>
+        </div>
+      )}
+
+      {loading || discovering ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[...Array(5)].map((_, i) => <div key={i} style={{ height: 90 }} className="card skeleton" />)}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : displayList.length === 0 ? (
         <div className="card">
           <div className="empty-state">
-            <div className="empty-icon">🔍</div>
+            <div className="empty-icon">&#x1F50D;</div>
             <div className="empty-title">No grants found</div>
-            <div className="empty-subtitle">Try adjusting your search or filters. New grants are added regularly.</div>
+            <div className="empty-subtitle">
+              Click "Discover Grants" to fetch new opportunities from Grants.gov, or use AI Match to find
+              grants semantically matched to your mission.
+            </div>
           </div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {filtered.map(opp => (
+          {displayList.map(opp => (
             <OppCard
               key={opp.id}
               opp={opp}
+              semanticMode={mode === 'semantic'}
               selected={selected?.id === opp.id}
               onClick={() => setSelected(selected?.id === opp.id ? null : opp)}
               onSave={() => saveGrant(opp)}
               onScore={() => scoreMatch(opp)}
-              onDraft={() => { setPage('generator') }}
+              onDraft={() => setPage('generator')}
             />
           ))}
         </div>
       )}
 
       <p style={{ marginTop: 16, color: 'var(--ink-tertiary)', fontSize: 12, textAlign: 'center' }}>
-        {filtered.length} opportunities shown
+        {displayList.length} opportunities shown
+        {mode === 'semantic' && ' - ranked by mission similarity'}
       </p>
     </div>
   )
 }
 
-function OppCard({ opp, selected, onClick, onSave, onScore, onDraft }) {
-  const ms = opp.match_scores?.[0]
-  const score = ms?.score ?? null
-  const deadline = opp.deadline ? new Date(opp.deadline).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' }) : null
+function OppCard({ opp, semanticMode, selected, onClick, onSave, onScore, onDraft }) {
+  const ms           = opp.match_scores?.[0]
+  const score        = ms?.overall ?? null
+  const simPct       = opp.similarity != null ? Math.round(opp.similarity * 100) : null
+  const displayScore = semanticMode ? simPct : score
+  const funderName   = opp.funders?.name || opp.funder_name || null
+  const deadline     = opp.deadline
+    ? new Date(opp.deadline).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })
+    : null
 
   return (
     <div
       className="card"
       style={{
-        padding: '16px 20px',
-        cursor: 'pointer',
+        padding: '16px 20px', cursor: 'pointer',
         border: selected ? '1px solid var(--accent)' : undefined,
         transition: 'all var(--dur-fast) var(--ease)',
       }}
       onClick={onClick}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-        {/* Score ring */}
-        {score !== null && (
+        {displayScore !== null && (
           <div className="score-ring" style={{ flexShrink: 0, marginTop: 2 }}>
             <svg viewBox="0 0 36 36">
               <circle className="score-ring-bg" cx="18" cy="18" r="15.9" strokeWidth="2.5" />
               <circle
-                className="score-ring-fg"
-                cx="18" cy="18" r="15.9"
-                strokeWidth="2.5"
-                stroke={SCORE_COLOR(score)}
-                strokeDasharray={`${score} ${100 - score}`}
+                className="score-ring-fg" cx="18" cy="18" r="15.9" strokeWidth="2.5"
+                stroke={SCORE_COLOR(displayScore)}
+                strokeDasharray={`${displayScore} ${100 - displayScore}`}
                 strokeDashoffset="25"
               />
             </svg>
-            <div className="score-ring-text" style={{ fontSize: 10, color: SCORE_COLOR(score) }}>{score}</div>
+            <div className="score-ring-text" style={{ fontSize: 10, color: SCORE_COLOR(displayScore) }}>
+              {displayScore}
+            </div>
           </div>
         )}
 
@@ -165,41 +276,42 @@ function OppCard({ opp, selected, onClick, onSave, onScore, onDraft }) {
               <div style={{ fontWeight: 600, fontSize: 14.5, color: 'var(--ink)', marginBottom: 2 }} className="truncate">
                 {opp.title || 'Untitled Grant'}
               </div>
-              <div style={{ fontSize: 12.5, color: 'var(--ink-secondary)' }}>{opp.funder_name}</div>
+              <div style={{ fontSize: 12.5, color: 'var(--ink-secondary)' }}>
+                {funderName}
+                {semanticMode && opp.similarity != null && (
+                  <span style={{ marginLeft: 8, color: 'var(--accent)', fontWeight: 500 }}>
+                    {Math.round(opp.similarity * 100)}% match
+                  </span>
+                )}
+              </div>
             </div>
-            <div style={{ display: 'flex', align: 'center', gap: 8, flexShrink: 0 }}>
-              {opp.amount_max && (
-                <span className="pill pill-ok" style={{ fontWeight: 700 }}>
-                  ${(opp.amount_max / 1000).toFixed(0)}k
-                </span>
-              )}
-            </div>
+            {(opp.award_ceiling || opp.amount_max) && (
+              <span className="pill pill-ok" style={{ fontWeight: 700, flexShrink: 0 }}>
+                ${(((opp.award_ceiling || opp.amount_max) / 1000)).toFixed(0)}k
+              </span>
+            )}
           </div>
 
           {selected && (
             <div style={{ marginTop: 14, animation: 'slideUp 200ms var(--ease)' }}>
               {opp.description && (
                 <p style={{ fontSize: 13, color: 'var(--ink-secondary)', lineHeight: 1.6, marginBottom: 12 }}>
-                  {opp.description?.slice(0, 280)}…
+                  {opp.description?.slice(0, 280)}...
                 </p>
               )}
 
-              {/* Match breakdown */}
-              {ms && (
+              {ms?.components && Array.isArray(ms.components) && ms.components.length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-                  {[
-                    { label: 'Mission Fit', val: ms.mission_score },
-                    { label: 'NTEE Alignment', val: ms.ntee_score },
-                    { label: 'Geography', val: ms.geo_score },
-                    { label: 'Budget Range', val: ms.budget_score },
-                  ].map(dim => dim.val != null && (
-                    <div key={dim.label} style={{ padding: '10px 12px', background: 'var(--glass-light)', borderRadius: 10, border: '1px solid var(--border)' }}>
-                      <div style={{ fontSize: 11, color: 'var(--ink-tertiary)', marginBottom: 4 }}>{dim.label}</div>
+                  {ms.components.map(dim => dim.score != null && (
+                    <div key={dim.key} style={{ padding: '10px 12px', background: 'var(--glass-light)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: 11, color: 'var(--ink-tertiary)', marginBottom: 4 }}>
+                        {dim.key === 'mission' ? 'Mission Fit' : dim.key === 'ntee' ? 'NTEE Alignment' : dim.key === 'geography' ? 'Geography' : 'Budget Range'}
+                      </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div className="progress-bar" style={{ flex: 1 }}>
-                          <div className="progress-fill" style={{ width: `${dim.val}%`, background: SCORE_COLOR(dim.val) }} />
+                          <div className="progress-fill" style={{ width: `${dim.score}%`, background: SCORE_COLOR(dim.score) }} />
                         </div>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: SCORE_COLOR(dim.val), width: 28, textAlign: 'right' }}>{dim.val}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: SCORE_COLOR(dim.score), width: 28, textAlign: 'right' }}>{dim.score}</span>
                       </div>
                     </div>
                   ))}
@@ -208,8 +320,15 @@ function OppCard({ opp, selected, onClick, onSave, onScore, onDraft }) {
 
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {deadline && <span className="pill pill-warn">Due {deadline}</span>}
-                {opp.eligibility_type && <span className="pill pill-default">{opp.eligibility_type}</span>}
-                {opp.focus_area && <span className="pill pill-info">{opp.focus_area}</span>}
+                {opp.focus_areas?.map(f => <span key={f} className="pill pill-info">{f}</span>)}
+                {opp.source === 'grants_gov' && <span className="pill pill-default">Grants.gov</span>}
+                {opp.source_url && (
+                  <a href={opp.source_url} target="_blank" rel="noreferrer"
+                    className="pill pill-default" style={{ textDecoration: 'none' }}
+                    onClick={e => e.stopPropagation()}>
+                    View RFP &#x2197;
+                  </a>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
@@ -219,7 +338,7 @@ function OppCard({ opp, selected, onClick, onSave, onScore, onDraft }) {
                 <button className="btn btn-glass btn-sm" onClick={e => { e.stopPropagation(); onSave() }}>
                   Save to Pipeline
                 </button>
-                {!ms && (
+                {!ms && !semanticMode && (
                   <button className="btn btn-ghost btn-sm" onClick={e => { e.stopPropagation(); onScore() }}>
                     Score Match
                   </button>
@@ -247,6 +366,25 @@ function SearchIcon({ style }) {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={style}>
       <circle cx="11" cy="11" r="8"/>
       <path d="m21 21-4.35-4.35"/>
+    </svg>
+  )
+}
+
+function SearchPlusIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 5 }}>
+      <circle cx="11" cy="11" r="8"/>
+      <path d="m21 21-4.35-4.35"/>
+      <line x1="11" y1="8" x2="11" y2="14"/>
+      <line x1="8" y1="11" x2="14" y2="11"/>
+    </svg>
+  )
+}
+
+function SparkleIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2">
+      <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
     </svg>
   )
 }
