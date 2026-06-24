@@ -5364,6 +5364,100 @@ label.field-label {
   .rdy-irs-src{ display:inline-flex; align-items:center; gap:5px; margin-top:10px; font-size:12px; font-weight:600; color:var(--accent); cursor:pointer; text-decoration:none; }
   .rdy-irs-recheck{ font-size:12px; color:var(--muted); cursor:pointer; margin-left:14px; }
   .rdy-irs-spin{ width:14px; height:14px; border:2px solid var(--line); border-top-color:var(--accent); border-radius:50%; display:inline-block; animation:scspin .7s linear infinite; vertical-align:-2px; margin-right:7px; }
+
+  /* ── SAM.gov guided setup (the registration concierge) ── */
+  .sam-card{ border:1px solid rgba(217,79,48,.18); border-radius:14px; background:linear-gradient(180deg,var(--accent-tint),var(--surface) 64%); padding:18px 18px 16px; margin:4px 0 18px; }
+  .sam-head{ display:flex; gap:12px; align-items:flex-start; margin-bottom:6px; }
+  .sam-ic{ flex:none; width:36px; height:36px; border-radius:10px; background:var(--surface); border:1px solid rgba(217,79,48,.22); display:grid; place-items:center; }
+  .sam-ic svg{ width:19px; height:19px; color:var(--accent); }
+  .sam-t{ font-family:var(--display); font-weight:700; font-size:16px; color:var(--ink); }
+  .sam-sub{ font-size:12.8px; line-height:1.5; color:var(--ink-body,var(--muted)); margin-top:2px; }
+  .sam-body{ margin-top:13px; }
+  .sam-q{ font-size:14px; font-weight:650; color:var(--ink); margin:2px 0 10px; }
+  .sam-choices{ display:flex; gap:10px; flex-wrap:wrap; }
+  .sam-choice{ flex:1 1 220px; text-align:left; border:1px solid var(--line); background:var(--surface); border-radius:11px; padding:13px 14px; cursor:pointer; transition:border-color .15s, box-shadow .15s, transform .05s; }
+  .sam-choice:hover{ border-color:var(--accent); box-shadow:0 2px 12px rgba(217,79,48,.10); }
+  .sam-choice:active{ transform:translateY(1px); }
+  .sam-choice.on{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+  .sam-choice .ch-t{ font-weight:700; font-size:13.5px; color:var(--ink); display:flex; align-items:center; gap:7px; }
+  .sam-choice .ch-d{ font-size:12px; color:var(--muted); margin-top:4px; line-height:1.45; }
+  .sam-choice .ch-rec{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--accent-ink); background:var(--accent-tint); border-radius:999px; padding:2px 7px; margin-left:6px; }
+  .sam-skip{ background:var(--ok-tint); border:1px solid rgba(34,153,84,.30); border-radius:11px; padding:13px 15px; font-size:13px; line-height:1.55; color:#1c5a36; }
+  .sam-skip b{ color:#14502e; }
+  .sam-steps{ display:flex; gap:6px; margin:2px 0 14px; }
+  .sam-steps .dot{ height:4px; flex:1; border-radius:3px; background:var(--line); }
+  .sam-steps .dot.on{ background:var(--accent); }
+  .sam-back{ font-size:12px; color:var(--muted); cursor:pointer; display:inline-flex; align-items:center; gap:4px; margin-bottom:11px; }
+  .sam-back:hover{ color:var(--accent); }
+  .sam-field{ margin-bottom:11px; }
+  .sam-field label{ display:block; font-size:12px; font-weight:650; color:var(--ink); margin-bottom:5px; }
+  .sam-field input{ width:100%; border:1px solid var(--line); border-radius:9px; padding:10px 12px; font-family:inherit; font-size:13.5px; color:var(--ink); background:var(--surface); }
+  .sam-field input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-tint); }
+  .sam-row2{ display:flex; gap:10px; } .sam-row2 > *{ flex:1; }
+  .sam-pf{ margin-top:13px; border-radius:11px; padding:13px 15px; font-size:13px; line-height:1.55; border:1px solid var(--line); background:var(--surface); }
+  .sam-pf.ok{ background:var(--ok-tint); border-color:rgba(34,153,84,.30); }
+  .sam-pf.warn{ background:var(--warn-tint); border-color:rgba(212,160,23,.42); }
+  .sam-pf-h{ font-weight:700; display:flex; align-items:center; gap:7px; color:var(--ink); }
+  .sam-pf-h svg{ width:17px; height:17px; flex-shrink:0; }
+  .sam-pf-line{ display:flex; gap:8px; align-items:flex-start; margin-top:9px; }
+  .sam-pf-line svg{ width:15px; height:15px; flex-shrink:0; margin-top:2px; }
+  .sam-pf-line .copy{ font-size:12.5px; color:var(--ink-body,#444); }
+  .sam-pf-line .copy b{ color:var(--ink); }
+  .sam-checklist{ list-style:none; padding:0; margin:10px 0 0; }
+  .sam-checklist li{ position:relative; padding:6px 0 6px 24px; font-size:13px; color:var(--ink-body,#444); line-height:1.5; }
+  .sam-checklist li::before{ content:""; position:absolute; left:2px; top:11px; width:12px; height:12px; border:2px solid var(--accent); border-radius:4px; }
+  .sam-links{ display:flex; gap:9px; flex-wrap:wrap; margin-top:13px; }
+  .sam-link{ display:inline-flex; align-items:center; gap:5px; font-size:12.5px; font-weight:600; color:var(--accent); text-decoration:none; border:1px solid rgba(217,79,48,.28); border-radius:9px; padding:8px 12px; background:var(--surface); }
+  .sam-link:hover{ background:var(--accent-tint); }
+  .sam-renew{ display:flex; align-items:center; gap:14px; margin-top:13px; border-radius:11px; padding:14px 16px; background:var(--surface); border:1px solid var(--line); }
+  .sam-renew.green{ border-color:rgba(34,153,84,.34); background:var(--ok-tint); }
+  .sam-renew.amber{ border-color:rgba(212,160,23,.42); background:var(--warn-tint); }
+  .sam-renew.red{ border-color:rgba(217,79,48,.42); background:var(--accent-tint); }
+  .sam-renew-num{ font-family:var(--display); font-weight:800; font-size:26px; line-height:1; color:var(--ink); }
+  .sam-renew-lbl{ font-size:12.5px; color:var(--ink-body,var(--muted)); line-height:1.45; }
+  .sam-note{ font-size:11.5px; color:var(--muted); margin-top:9px; line-height:1.45; }
+
+  /* ── USASpending coverage panel (who funds work like yours) ── */
+  .usa-card{ border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:0; margin:0 0 16px; overflow:hidden; }
+  .usa-top{ display:flex; gap:12px; align-items:center; padding:15px 17px; cursor:pointer; }
+  .usa-ic{ flex:none; width:36px; height:36px; border-radius:10px; background:var(--accent-tint); display:grid; place-items:center; }
+  .usa-ic svg{ width:19px; height:19px; color:var(--accent-ink); }
+  .usa-tt{ font-family:var(--display); font-weight:700; font-size:15px; color:var(--ink); }
+  .usa-ts{ font-size:12.3px; color:var(--muted); margin-top:1px; }
+  .usa-chev{ margin-left:auto; color:var(--muted); transition:transform .25s; flex:none; }
+  .usa-card.open .usa-chev{ transform:rotate(180deg); }
+  .usa-body{ display:none; padding:0 17px 16px; }
+  .usa-card.open .usa-body{ display:block; }
+  .usa-stat{ display:flex; gap:18px; flex-wrap:wrap; padding:13px 15px; background:var(--accent-tint); border-radius:11px; margin-bottom:13px; }
+  .usa-stat .s{ font-size:12px; color:var(--ink-body,#444); } .usa-stat .s b{ display:block; font-family:var(--display); font-size:17px; color:var(--ink); font-weight:750; }
+  .usa-sec{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:14px 0 8px; }
+  .usa-ag{ display:flex; align-items:center; gap:11px; padding:9px 0; border-top:1px solid var(--line); }
+  .usa-ag:first-of-type{ border-top:none; }
+  .usa-ag-nm{ font-size:13px; color:var(--ink); font-weight:600; flex:1; }
+  .usa-ag-meta{ font-size:11.5px; color:var(--muted); text-align:right; white-space:nowrap; }
+  .usa-rec{ font-size:12.5px; color:var(--ink-body,#444); padding:5px 0; line-height:1.5; }
+  .usa-rec b{ color:var(--ink); }
+  .usa-loading{ display:flex; align-items:center; gap:10px; padding:18px 4px; color:var(--muted); font-size:13px; }
+  .usa-foot{ font-size:11.5px; color:var(--muted); margin-top:13px; line-height:1.5; border-top:1px solid var(--line); padding-top:11px; }
+
+  /* ── Match-assessment bands + explainable components ── */
+  .gca-band{ display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; border-radius:999px; padding:3px 10px; letter-spacing:.01em; }
+  .gca-band.strong{ background:var(--ok-tint); color:#1c5a36; }
+  .gca-band.possible{ background:var(--warn-tint); color:#7a5410; }
+  .gca-band.longshot{ background:var(--accent-tint); color:var(--accent-ink); }
+  .gca-headline{ font-weight:700; font-size:13.5px; color:var(--ink); margin-top:8px; }
+  .gca-why{ font-size:13px; color:var(--ink-body,#444); line-height:1.55; margin-top:4px; }
+  .gca-comps{ margin-top:12px; display:grid; gap:9px; }
+  .gca-comp{ display:grid; grid-template-columns:120px 1fr; gap:10px; align-items:center; }
+  .gca-comp-l{ font-size:12px; color:var(--ink); font-weight:600; }
+  .gca-comp-r{ }
+  .gca-bar{ height:7px; border-radius:4px; background:var(--line); overflow:hidden; }
+  .gca-bar > i{ display:block; height:100%; border-radius:4px; background:var(--accent); transition:width .8s var(--ease,ease); }
+  .gca-bar.hi > i{ background:var(--ok); } .gca-bar.lo > i{ background:var(--accent); }
+  .gca-comp-note{ font-size:11.3px; color:var(--muted); margin-top:3px; line-height:1.4; }
+  .gca-watch{ margin-top:12px; background:var(--warn-tint); border:1px solid rgba(212,160,23,.36); border-radius:10px; padding:10px 12px; }
+  .gca-watch-t{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#7a5410; margin-bottom:5px; }
+  .gca-watch li{ font-size:12.3px; color:#6a4a0e; line-height:1.5; margin-left:16px; }
   /* readiness: paste-a-funder's-call analyzer (reuses the requirements engine) */
   .rdy-reqcard{ border:1px solid rgba(217,79,48,.16); background:linear-gradient(180deg,var(--accent-tint),var(--surface) 70%); border-radius:14px; padding:18px 18px 16px; margin:22px 0 6px; }
   .rdy-reqcard-head{ display:flex; gap:12px; align-items:flex-start; margin-bottom:13px; }
@@ -9910,14 +10004,18 @@ function renderDiscovery(grants, answers) {
   const list = document.getElementById('disc-grants-list');
   if (!list) return;
 
+  window._discAnswers = answers;
   window._discAllGrants = grants;
   window._discFilter = 'all';
   // Build a fast id→grant lookup so Draft buttons can retrieve the full object
   window._grantsById = {};
   (grants || []).forEach(g => { window._grantsById[g.id] = g; });
 
+  // Coverage panel — who funds work like yours (shown regardless of open-grant count)
+  ensureUsaCard(answers);
+
   if (!grants || grants.length === 0) {
-    list.innerHTML = `<div class="disc-loading"><p style="color:var(--muted)">No matches found yet. Try completing more of your profile to improve results.</p></div>`;
+    list.innerHTML = `<div class="disc-loading"><p style="color:var(--muted)">No open opportunities matched yet — but the funders panel above shows who backs work like yours. Try completing more of your profile to improve results.</p></div>`;
     return;
   }
 
@@ -9928,6 +10026,84 @@ function renderDiscovery(grants, answers) {
   list.innerHTML = grants.map(g => renderGrantCard(g)).join('');
 }
 
+/* ─── USASpending coverage: funders who've backed work like yours (free federal award history) ─── */
+const US_STATES = { 'alabama':'AL','alaska':'AK','arizona':'AZ','arkansas':'AR','california':'CA','colorado':'CO','connecticut':'CT','delaware':'DE','florida':'FL','georgia':'GA','hawaii':'HI','idaho':'ID','illinois':'IL','indiana':'IN','iowa':'IA','kansas':'KS','kentucky':'KY','louisiana':'LA','maine':'ME','maryland':'MD','massachusetts':'MA','michigan':'MI','minnesota':'MN','mississippi':'MS','missouri':'MO','montana':'MT','nebraska':'NE','nevada':'NV','new hampshire':'NH','new jersey':'NJ','new mexico':'NM','new york':'NY','north carolina':'NC','north dakota':'ND','ohio':'OH','oklahoma':'OK','oregon':'OR','pennsylvania':'PA','rhode island':'RI','south carolina':'SC','south dakota':'SD','tennessee':'TN','texas':'TX','utah':'UT','vermont':'VT','virginia':'VA','washington':'WA','west virginia':'WV','wisconsin':'WI','wyoming':'WY','district of columbia':'DC' };
+function usaStateAbbr(answers) {
+  const hay = [answers && answers.geo_focus, answers && answers.primary_location].concat((answers && answers.service_geographies) || []).filter(Boolean).join(' ');
+  if (!hay) return '';
+  const m = hay.match(/\b([A-Z]{2})\b/);
+  if (m && Object.values(US_STATES).includes(m[1])) return m[1];
+  const low = hay.toLowerCase();
+  for (const name in US_STATES) if (low.includes(name)) return US_STATES[name];
+  return '';
+}
+function usaKeywords(answers) {
+  const fa = (answers && answers.focus_areas) || [];
+  return (Array.isArray(fa) ? fa : []).map(s => (s || '').toString().trim()).filter(Boolean).slice(0, 4);
+}
+function usaCacheKey() { return 'grange_usa_' + (window._grange?.user?.id || 'anon'); }
+function fmtUsd(n) { n = Number(n) || 0; if (n >= 1e6) return '$' + (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + 'M'; if (n >= 1e3) return '$' + Math.round(n / 1e3) + 'K'; return '$' + n; }
+function ensureUsaCard(answers) {
+  const list = document.getElementById('disc-grants-list');
+  if (!list || !list.parentNode) return;
+  let card = document.getElementById('disc-usa');
+  const kw = usaKeywords(answers);
+  if (!kw.length) { if (card) card.remove(); return; }       // need focus areas to query
+  if (!card) {
+    card = document.createElement('div');
+    card.id = 'disc-usa';
+    card.className = 'usa-card';
+    list.parentNode.insertBefore(card, list);
+  }
+  card.innerHTML =
+    '<div class="usa-top" onclick="this.parentNode.classList.toggle(\'open\')">' +
+      '<div class="usa-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10M9 21V10M15 21V10M19 21V10M4 10l8-6 8 6"/></svg></div>' +
+      '<div><div class="usa-tt">Funders who’ve backed work like yours</div><div class="usa-ts">Real federal grants awarded to similar nonprofits, even when there’s no open call.</div></div>' +
+      '<svg class="usa-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>' +
+    '</div>' +
+    '<div class="usa-body" id="disc-usa-body"><div class="usa-loading"><span class="gca-spin"></span> Finding funders active in ' + escHtml(kw.join(', ')) + '…</div></div>';
+  card.classList.add('open');
+  loadUsaSpending(answers);
+}
+async function loadUsaSpending(answers) {
+  const body = document.getElementById('disc-usa-body');
+  if (!body) return;
+  const kw = usaKeywords(answers), state = usaStateAbbr(answers);
+  const ck = usaCacheKey(), sig = kw.join('|') + '#' + state;
+  try { const c = JSON.parse(localStorage.getItem(ck) || 'null'); if (c && c.sig === sig && Date.now() - c.ts < 24 * 60 * 60 * 1000) { body.innerHTML = usaResultHTML(c.out); return; } } catch (_) {}
+  if (!window.sb) { hideUsaCard(); return; }
+  try {
+    const { data: { session } } = await window.sb.auth.getSession();
+    if (!session) { hideUsaCard(); return; }
+    const r = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/usaspending-search', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ keywords: kw, state }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j || !j.output || !(j.output.agencies || []).length) { hideUsaCard(); return; }
+    try { localStorage.setItem(ck, JSON.stringify({ ts: Date.now(), sig, out: j.output })); } catch (_) {}
+    body.innerHTML = usaResultHTML(j.output);
+  } catch (e) { hideUsaCard(); }
+}
+function hideUsaCard() { const c = document.getElementById('disc-usa'); if (c) c.remove(); }
+function usaResultHTML(o) {
+  const where = o.state ? ' in ' + escHtml(o.state) : ' nationwide';
+  const agencies = (o.agencies || []).map(a =>
+    '<div class="usa-ag"><div class="usa-ag-nm">' + escHtml(a.name) + '</div>' +
+    '<div class="usa-ag-meta">' + (Number(a.count) || 0) + ' grant' + ((Number(a.count) || 0) === 1 ? '' : 's') + (a.typical ? ' · typically ' + fmtUsd(a.typical) : '') + '</div></div>').join('');
+  const recs = (o.recipients || []).slice(0, 5).map(r =>
+    '<div class="usa-rec">• <b>' + escHtml(r.name) + '</b> — ' + fmtUsd(r.amount) + (r.agency ? ', ' + escHtml(r.agency) : '') + (r.year ? ' (' + escHtml(r.year) + ')' : '') + '</div>').join('');
+  const totalTxt = (Number(o.total_found) || o.sampled || 0).toLocaleString();
+  return (
+    '<div class="usa-stat">' +
+      '<div class="s"><b>' + totalTxt + '</b>federal grants' + where + '</div>' +
+      (o.award_median ? '<div class="s"><b>' + fmtUsd(o.award_median) + '</b>typical award</div>' : '') +
+      (o.award_high ? '<div class="s"><b>' + fmtUsd(o.award_low) + '–' + fmtUsd(o.award_high) + '</b>award range</div>' : '') +
+    '</div>' +
+    (agencies ? '<div class="usa-sec">Agencies funding your space</div>' + agencies : '') +
+    (recs ? '<div class="usa-sec">Recent recipients like you</div>' + recs : '') +
+    '<div class="usa-foot">Organizations the federal government has funded for work in ' + escHtml((o.keywords || []).join(', ')) + '. Use them as prospects: study their winning awards, then watch the agency for its next open call. Source: USASpending.gov.</div>'
+  );
+}
 function ringClass(score) { return score >= 80 ? 'hi' : score >= 65 ? 'mid' : ''; }
 
 function renderGrantCard(g) {
@@ -10053,17 +10229,39 @@ function assessEligIcon(s) {
   if (s === 'unlikely') return '<svg class="ic" style="color:var(--accent)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
   return '<svg class="ic" style="color:var(--warn-ink)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>';
 }
+/* Band metadata — back-compat with the old verdict values (strong/good/weak/poor). */
+function assessBandMeta(b) {
+  return b === 'strong' ? { cls: 'strong', label: 'Strong fit' }
+    : b === 'possible' || b === 'good' ? { cls: 'possible', label: 'Possible fit' }
+    : b === 'longshot' || b === 'weak' || b === 'poor' ? { cls: 'longshot', label: 'Long shot' }
+    : { cls: 'possible', label: 'Possible fit' };
+}
 function assessHTML(o) {
-  const score = o.score || 0;
-  const cls = score >= 80 ? 'hi' : score >= 60 ? 'mid' : '';
+  const score = Math.max(0, Math.min(100, Math.round(o.score || 0)));
+  const cls = score >= 75 ? 'hi' : score >= 45 ? 'mid' : '';
+  const band = o.band || o.verdict || (score >= 75 ? 'strong' : score >= 45 ? 'possible' : 'longshot');
+  const bm = assessBandMeta(band);
+  const why = o.why || o.rationale || '';
+  const comps = (o.components || []).map(c => {
+    const cs = Math.max(0, Math.min(100, Math.round(c.score || 0)));
+    const bcls = cs >= 70 ? 'hi' : cs < 40 ? 'lo' : '';
+    return '<div class="gca-comp"><div class="gca-comp-l">' + escHtml(c.label || '') + '</div>' +
+      '<div class="gca-comp-r"><div class="gca-bar ' + bcls + '"><i style="width:' + cs + '%"></i></div>' +
+      (c.note ? '<div class="gca-comp-note">' + escHtml(c.note) + '</div>' : '') + '</div></div>';
+  }).join('');
   const elig = (o.eligibility || []).map(e => '<div class="gca-elig">' + assessEligIcon(e.status) + '<span>' + escHtml(e.label) + (e.note ? ' — <span style="color:var(--muted)">' + escHtml(e.note) + '</span>' : '') + '</span></div>').join('');
+  const watch = (o.watch_outs || []).filter(Boolean);
+  const watchHTML = watch.length ? '<div class="gca-watch"><div class="gca-watch-t">Watch-outs</div><ul style="margin:0;padding:0">' + watch.map(w => '<li>' + escHtml(w) + '</li>').join('') + '</ul></div>' : '';
   return wrapAssess(
     '<div class="gca-result"><div class="gca-score">' +
       '<div class="ring ' + cls + ' cring" style="--p:' + score + ';width:56px;height:56px;font-size:15px"><span>' + score + '</span></div>' +
-      '<div class="gca-verdict" style="background:' + assessVColor(o.verdict) + '22;color:' + assessVColor(o.verdict) + '">' + escHtml(o.verdict || '') + '</div></div>' +
+      '<div class="gca-band ' + bm.cls + '">' + bm.label + '</div></div>' +
     '<div class="gca-main">' +
-      '<div class="gca-rationale">' + escHtml(o.rationale || '') + '</div>' +
+      (o.headline ? '<div class="gca-headline">' + escHtml(o.headline) + '</div>' : '') +
+      (why ? '<div class="gca-why">' + escHtml(why) + '</div>' : '') +
+      (comps ? '<div class="gca-comps">' + comps + '</div>' : '') +
       (elig ? '<div class="gca-elig-title">Eligibility read</div>' + elig : '') +
+      watchHTML +
       (o.recommendation ? '<div class="gca-rec"><b>Next step:</b> ' + escHtml(o.recommendation) + '</div>' : '') +
     '</div></div>');
 }
@@ -10868,6 +11066,7 @@ function applyDiscFilters(query, type) {
     if (window.sb && uid) {
       try { const { data } = await sb.from('readiness_items').select('req_key,status').eq('user_id', uid); (data || []).forEach(r => { _rdyStatus[r.req_key] = r.status; }); } catch (_) {}
     }
+    await samInit(p, a, uid);   // SAM.gov guided-setup state (localStorage + registrations table)
     renderReadiness(p, a);
   };
 
@@ -10917,6 +11116,7 @@ function applyDiscFilters(query, type) {
       both.map(item).join('') +
       '<div class="rdy-section-title">For federal grants <span class="rdy-fed-pill">Federal</span></div>' +
       '<div class="rdy-section-sub">Extra registrations to apply on Grants.gov. Start these 60+ days early — they\'re slow and trip up first-timers.</div>' +
+      samSetupHTML(p, a) +
       fed.map(item).join('');
   }
 
@@ -10949,6 +11149,263 @@ function applyDiscFilters(query, type) {
     const uid = ctx.user && ctx.user.id;
     if (window.sb && uid) { try { await sb.from('readiness_items').upsert({ user_id: uid, req_key: key, status }, { onConflict: 'user_id,req_key' }); } catch (e) { console.error('readiness save', e); } }
   };
+
+  /* ════════════════ SAM.gov GUIDED SETUP (the registration concierge) ════════════════
+     The report's Priority-3 build: a "do you even need this?" gate → grants-only
+     vs full path → a pre-flight validator (reuses irs-verify for the IRS legal-name
+     match, the #1 cause of weeks-long rejections) → a gather-and-register checklist →
+     a 365-day renewal tracker. State lives in localStorage + the registrations table. */
+  function samPA() { const c = window._grange || {}; return { p: c.profile || {}, a: c._cachedAnswers || {} }; }
+  function samExpiry(d) { if (!d) return null; const dt = new Date(d + 'T00:00:00'); if (isNaN(dt.getTime())) return null; dt.setDate(dt.getDate() + 365); return dt.toISOString().slice(0, 10); }
+  function samDaysLeft(d) { const ex = samExpiry(d); if (!ex) return null; const exd = new Date(ex + 'T00:00:00'); return Math.ceil((exd.getTime() - Date.now()) / (24 * 3600 * 1000)); }
+
+  async function samInit(p, a, uid) {
+    let st = { need: null, path: null, uei: '', activated_at: '', reg_id: null, pf: null };
+    try { const raw = uid && localStorage.getItem('grange_sam_' + uid); if (raw) st = Object.assign(st, JSON.parse(raw)); } catch (_) {}
+    if (window.sb && uid) {
+      try {
+        const { data } = await sb.from('registrations').select('id,status,uei,activated_at,validations,notes').eq('user_id', uid).eq('registration_type', 'sam_gov').limit(1).maybeSingle();
+        if (data) {
+          st.reg_id = data.id;
+          if (data.uei) st.uei = data.uei;
+          if (data.activated_at) st.activated_at = data.activated_at;
+          if (data.validations && Object.keys(data.validations).length) st.pf = data.validations;
+          if (data.notes && /path=full/.test(data.notes)) st.path = st.path || 'full';
+          else if (data.notes && /path=grants_only/.test(data.notes)) st.path = st.path || 'grants_only';
+          if (data.uei || data.activated_at || data.status === 'in_progress' || data.status === 'active') st.need = st.need || 'yes';
+        }
+      } catch (_) {}
+    }
+    window._samState = st;
+  }
+
+  async function samPersist() {
+    const ctx = window._grange || {}; const uid = ctx.user && ctx.user.id; const st = window._samState;
+    try { if (uid) localStorage.setItem('grange_sam_' + uid, JSON.stringify(st)); } catch (_) {}
+    if (!window.sb || !uid) return;
+    const row = {
+      user_id: uid, registration_type: 'sam_gov',
+      status: (st.uei && st.activated_at) ? 'active' : (st.need === 'yes' ? 'in_progress' : 'not_started'),
+      uei: st.uei || null,
+      legal_name: (st.pf && st.pf.name) || null,
+      ein: (st.pf && st.pf.ein) || null,
+      physical_address: (st.pf && st.pf.address) || null,
+      validations: st.pf || {},
+      activated_at: st.activated_at || null,
+      expires_at: st.activated_at ? samExpiry(st.activated_at) : null,
+      notes: 'path=' + (st.path || ''),
+      updated_at: new Date().toISOString(),
+    };
+    try {
+      if (st.reg_id) { await sb.from('registrations').update(row).eq('id', st.reg_id); }
+      else { const r = await sb.from('registrations').insert(row).select('id').single(); if (r.data && r.data.id) { st.reg_id = r.data.id; try { localStorage.setItem('grange_sam_' + uid, JSON.stringify(st)); } catch (_) {} } }
+    } catch (e) { console.error('sam persist', e); }
+  }
+
+  function samSetupHTML(p, a) {
+    if (!window._samState) window._samState = { need: null, path: null, uei: '', activated_at: '', reg_id: null, pf: null };
+    return '<div class="sam-card" id="sam-setup">' +
+      '<div class="sam-head"><div class="sam-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 4.4-3.1 7.8-8 9-4.9-1.2-8-4.6-8-9V7z"/><path d="M9.5 12.5l1.8 1.8 3.5-3.8"/></svg></div>' +
+      '<div><div class="sam-t">SAM.gov setup, made painless</div>' +
+      '<div class="sam-sub">A SAM.gov registration and a UEI are required for any federal grant — and the process stalls first-timers for weeks. Grange pre-checks the details that cause rejections, then tracks your annual renewal.</div></div></div>' +
+      '<div class="sam-body" id="sam-body">' + samBodyHTML(p, a) + '</div></div>';
+  }
+  function samRender() { const b = document.getElementById('sam-body'); if (b) { const { p, a } = samPA(); b.innerHTML = samBodyHTML(p, a); } }
+
+  function samBodyHTML(p, a) {
+    const st = window._samState;
+    if (st.need == null) {
+      return '<div class="sam-q">Are you planning to apply for federal grants (anything on Grants.gov)?</div>' +
+        '<div class="sam-choices">' +
+          '<button class="sam-choice" onclick="samSetNeed(\'yes\')"><div class="ch-t">Yes, I want federal grants</div><div class="ch-d">You\'ll need a UEI and an active SAM.gov registration. Grange will walk you through it.</div></button>' +
+          '<button class="sam-choice" onclick="samSetNeed(\'no\')"><div class="ch-t">No, foundations &amp; local only</div><div class="ch-d">Most small nonprofits win foundation, community and local grants — none of which need SAM.gov.</div></button>' +
+        '</div>' +
+        '<div class="sam-note">Not sure? Most first-time, grassroots and youth-led nonprofits start with foundation and local grants, which don\'t require SAM.gov at all.</div>';
+    }
+    if (st.need === 'no') {
+      return '<div class="sam-skip"><b>You can skip SAM.gov entirely.</b> Foundation, community-foundation, corporate and local grants don\'t require it, and that\'s where most small nonprofits win. We\'ll keep the federal-registration steps out of your way until you need them.' +
+        '<div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap">' +
+        '<button class="btn btn-primary btn-sm" onclick="go(\'discovery\')">Find foundation &amp; local grants →</button>' +
+        '<button class="btn btn-outline btn-sm" onclick="samSetNeed(\'yes\')">Actually, I do need federal</button></div></div>';
+    }
+    let h = '<div class="sam-back" onclick="samSetNeed(null)">‹ Not pursuing federal grants?</div>';
+    if (st.path == null) {
+      return h + '<div class="sam-q">Which registration do you need?</div>' +
+        '<div class="sam-choices">' +
+          '<button class="sam-choice" onclick="samSetPath(\'grants_only\')"><div class="ch-t">Grants only<span class="ch-rec">Recommended</span></div><div class="ch-d">For applying to federal grants. Skips the banking details and CAGE code, so it\'s faster with far less to gather.</div></button>' +
+          '<button class="sam-choice" onclick="samSetPath(\'full\')"><div class="ch-t">Full registration</div><div class="ch-d">Only if you also bid on federal contracts. Adds banking (EFT) info and a CAGE code, which take longer.</div></button>' +
+        '</div>' +
+        '<div class="sam-note">Almost every nonprofit chooses Grants only. You can upgrade later if you ever bid on a contract.</div>';
+    }
+    const hasReg = !!(st.uei && st.activated_at);
+    const stepN = hasReg ? 3 : (st.pf ? 2 : 1);
+    h += '<div class="sam-steps"><div class="dot ' + (stepN >= 1 ? 'on' : '') + '"></div><div class="dot ' + (stepN >= 2 ? 'on' : '') + '"></div><div class="dot ' + (stepN >= 3 ? 'on' : '') + '"></div></div>';
+    h += '<div class="sam-back" onclick="samSetPath(null)">‹ ' + (st.path === 'full' ? 'Full registration' : 'Grants-only registration') + ' · change</div>';
+    if (hasReg) {
+      h += samRenewHTML();
+      h += '<div class="sam-note">Need to re-check your details or re-register? <span class="rdy-irs-recheck" style="margin-left:0" onclick="samClearReg()">Update my SAM.gov info</span></div>';
+      return h;
+    }
+    h += samPreflightHTML(p, a);
+    h += samChecklistHTML(st.path);
+    h += samLinksHTML();
+    h += samRegisterHTML();
+    return h;
+  }
+
+  function samPreflightHTML(p, a) {
+    const st = window._samState;
+    const name = (a.org_name || p.org_name || '');
+    const einV = ((a.ein || p.ein || '') + '').replace(/\D/g, '');
+    const addr = (st.pf && st.pf.address) || {};
+    return '<div class="sam-q" style="margin-top:6px">1 · Pre-flight check <span style="font-weight:500;color:var(--muted);font-size:12px">(prevents weeks-long rejections)</span></div>' +
+      '<div class="sam-sub" style="margin:-4px 0 11px">A legal name or address that doesn\'t match your IRS record is the #1 reason registrations fail. Grange checks yours against the IRS before you start.</div>' +
+      '<div class="sam-field"><label>Legal name, exactly as on your IRS letter</label><input id="sam-name" value="' + escHtml(name) + '" placeholder="e.g. Courts For Change Inc"></div>' +
+      '<div class="sam-field"><label>EIN</label><input id="sam-ein" value="' + escHtml(einV) + '" placeholder="9 digits, e.g. 47-1234567"></div>' +
+      '<div class="sam-field"><label>Physical street address (no PO box)</label><input id="sam-street" placeholder="123 Main St" value="' + escHtml(addr.street || '') + '"></div>' +
+      '<div class="sam-row2"><div class="sam-field"><label>City</label><input id="sam-city" placeholder="City" value="' + escHtml(addr.city || '') + '"></div>' +
+      '<div class="sam-field"><label>State</label><input id="sam-state" maxlength="2" placeholder="PA" value="' + escHtml(addr.state || '') + '"></div>' +
+      '<div class="sam-field"><label>ZIP</label><input id="sam-zip" placeholder="19103" value="' + escHtml(addr.zip || '') + '"></div></div>' +
+      '<div class="gcf-actions"><button class="btn btn-primary btn-sm" id="sam-pf-btn" onclick="samRunPreflight()"><span style="color:#fff">✓</span>&nbsp;Run pre-flight check</button></div>' +
+      '<div id="sam-pf-out">' + (st.pf ? samPfResultHTML(st.pf) : '') + '</div>';
+  }
+
+  function samNameDiff(entered, irs) {
+    const norm = s => (s || '').toString().trim().replace(/\s+/g, ' ');
+    const e = norm(entered), i = norm(irs);
+    if (!i) return { state: 'unknown', issues: [] };
+    if (e === i) return { state: 'exact', issues: [] };
+    if (e.toUpperCase() === i.toUpperCase()) return { state: 'near', issues: ['Match the capitalization exactly. The IRS shows it as “' + i + '”.'] };
+    const strip = x => x.toUpperCase().replace(/[.,]/g, '').replace(/&/g, ' AND ').replace(/\s+/g, ' ').trim();
+    if (strip(e) === strip(i)) {
+      const issues = [];
+      if (/[.,]/.test(e) && !/[.,]/.test(i)) issues.push('Remove the punctuation (commas/periods); the IRS record has none: “' + i + '”.');
+      else if (!/[.,]/.test(e) && /[.,]/.test(i)) issues.push('Add the punctuation exactly as the IRS has it: “' + i + '”.');
+      if (/&/.test(e) && /\bAND\b/i.test(i)) issues.push('Write “and”, not “&”, to match the IRS.');
+      else if (/\band\b/i.test(e) && /&/.test(i)) issues.push('Use “&”, not “and”, to match the IRS.');
+      if (!issues.length) issues.push('Match the spacing and spelling exactly: “' + i + '”.');
+      return { state: 'near', issues };
+    }
+    return { state: 'mismatch', issues: ['Enter your name EXACTLY as the IRS has it: “' + i + '”. Even one different word, abbreviation (Inc vs Incorporated, LLC vs L.L.C.) or space causes SAM.gov to reject the registration.'] };
+  }
+
+  function samBuildPreflight(name, ein, address, irs) {
+    const checks = [];
+    if (irs && irs.found && irs.name) {
+      const diff = samNameDiff(name, irs.name);
+      checks.push(diff.state === 'exact'
+        ? { ok: true, title: 'Legal name matches the IRS exactly', detail: 'The IRS lists you as <b>' + escHtml(irs.name) + '</b>. Enter it exactly this way in SAM.gov.' }
+        : { warn: true, title: 'Legal name must match the IRS exactly', detail: (diff.issues || []).map(escHtml).join(' ') });
+    } else if (irs && irs.found === false) {
+      checks.push({ warn: true, title: 'EIN not found in the IRS file', detail: 'We couldn\'t find this EIN in the IRS Exempt Organizations file. Double-check it; a brand-new org can take months to appear, and a fiscal sponsor\'s EIN may differ.' });
+    } else {
+      checks.push({ warn: true, title: 'Couldn\'t reach the IRS just now', detail: 'Before you register, make sure your legal name matches your IRS determination letter character-for-character.' });
+    }
+    checks.push({ ok: true, title: 'EIN format looks valid', detail: 'We\'ll use <b>' + escHtml(fmtEin(ein)) + '</b>.' });
+    const po = /\bp\.?\s*o\.?\s*box\b|post\s*office\s*box/i.test(address.street || '');
+    if (po) checks.push({ warn: true, title: 'Remove the PO box', detail: 'SAM.gov requires a physical street address; PO boxes are rejected. Use the address on file with the IRS or your state.' });
+    else if ((address.street || '').trim()) checks.push({ ok: true, title: 'Physical address provided', detail: 'Make sure it matches USPS formatting (no PO box) when you register.' });
+    else checks.push({ warn: true, title: 'Add your physical address', detail: 'You\'ll need a physical street address (no PO box) to register.' });
+    if (irs && irs.found && irs.state && address.state && irs.state.toUpperCase() !== address.state.toUpperCase()) {
+      checks.push({ warn: true, title: 'Address state differs from the IRS record', detail: 'The IRS lists your state as <b>' + escHtml(irs.state) + '</b>. If you\'ve moved that\'s fine, but SAM may ask you to validate the change.' });
+    }
+    return { name: name, ein: ein, address: address, irs_name: (irs && irs.name) || null, checks: checks, verdict: checks.some(c => c.warn) ? 'warn' : 'ok', ts: Date.now() };
+  }
+
+  function samTick() { return '<svg viewBox="0 0 24 24" fill="none" stroke="#1c7a43" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>'; }
+  function samWarnDot() { return '<svg viewBox="0 0 24 24" fill="none" stroke="#b8860b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>'; }
+  function samPfMsg(kind, msg) { return '<div class="sam-pf ' + (kind === 'warn' ? 'warn' : '') + '"><div class="copy">' + escHtml(msg) + '</div></div>'; }
+  function samPfResultHTML(pf) {
+    const head = pf.verdict === 'ok'
+      ? '<div class="sam-pf-h">' + irsOkIcon() + 'You\'re ready to register</div>'
+      : '<div class="sam-pf-h">' + irsWarnIcon() + 'Fix these before you register</div>';
+    const lines = (pf.checks || []).map(c =>
+      '<div class="sam-pf-line">' + (c.ok ? samTick() : samWarnDot()) + '<div class="copy"><b>' + escHtml(c.title) + '</b>' + (c.detail ? '<br>' + c.detail : '') + '</div></div>').join('');
+    return '<div class="sam-pf ' + (pf.verdict === 'ok' ? 'ok' : 'warn') + '">' + head + lines + '</div>';
+  }
+
+  window.samRunPreflight = async function () {
+    const v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+    const name = v('sam-name'), einRaw = (v('sam-ein') || '').replace(/\D/g, '');
+    const address = { street: v('sam-street'), city: v('sam-city'), state: (v('sam-state') || '').toUpperCase(), zip: v('sam-zip') };
+    const out = document.getElementById('sam-pf-out');
+    const set = h => { if (out) out.innerHTML = h; };
+    if (!name.trim()) { set(samPfMsg('warn', 'Enter your legal name to check it against the IRS.')); return; }
+    if (einRaw.length !== 9) { set(samPfMsg('warn', 'Enter a valid 9-digit EIN, like 47-1234567.')); return; }
+    if (!window.sb) { set(samPfMsg('warn', 'Service unavailable, please refresh.')); return; }
+    set('<div class="sam-pf"><div class="copy"><span class="rdy-irs-spin"></span>Checking your details against the IRS record…</div></div>');
+    let irs = null;
+    try {
+      const { data: { session } } = await window.sb.auth.getSession();
+      if (!session) { set(samPfMsg('warn', 'Sign in to run the pre-flight check.')); return; }
+      const r = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/irs-verify', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token }, body: JSON.stringify({ ein: einRaw }) });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j && j.output) irs = j.output;
+    } catch (_) {}
+    const pf = samBuildPreflight(name, einRaw, address, irs);
+    window._samState.pf = pf;
+    samPersist();
+    set(samPfResultHTML(pf));
+  };
+
+  function samChecklistHTML(path) {
+    const base = [
+      'Your legal name, exactly as on your IRS determination letter',
+      'Your EIN (and the determination letter itself)',
+      'A physical street address (no PO box), in USPS format',
+      'An Entity Administrator: someone at your org with a Login.gov account and an email your org will always control',
+      'Your organization\'s start date / year of incorporation',
+    ];
+    const full = ['Bank routing & account number (for EFT payments)', 'NAICS code(s) for your activities (a CAGE code is then assigned for you)'];
+    const items = path === 'full' ? base.concat(full) : base;
+    return '<div class="sam-q" style="margin-top:18px">2 · Gather these, then register</div>' +
+      '<ul class="sam-checklist">' + items.map(i => '<li>' + escHtml(i) + '</li>').join('') + '</ul>' +
+      (path === 'grants_only' ? '<div class="sam-note">Grants-only registration skips banking details and the CAGE code, which is why it\'s faster.</div>' : '');
+  }
+  function samLinksHTML() {
+    return '<div class="sam-links">' +
+      '<a class="sam-link" href="https://sam.gov/content/entity-registration" target="_blank" rel="noopener noreferrer">Register your entity at SAM.gov ↗</a>' +
+      '<a class="sam-link" href="https://login.gov/" target="_blank" rel="noopener noreferrer">Create a Login.gov account ↗</a>' +
+      '<a class="sam-link" href="https://sam.gov/content/status-tracker" target="_blank" rel="noopener noreferrer">Check your status ↗</a></div>' +
+      '<div class="sam-note">SAM.gov registration is always free. Never pay a third-party service to “get” your UEI or register on your behalf.</div>';
+  }
+  function samRegisterHTML() {
+    const st = window._samState;
+    return '<div class="sam-q" style="margin-top:18px">3 · Once you\'re active, track your renewal</div>' +
+      '<div class="sam-sub" style="margin:-4px 0 11px">SAM.gov expires every 365 days and lapses silently — a lapse blocks payments even on grants you\'ve already won. Record your dates and Grange will remind you.</div>' +
+      '<div class="sam-row2"><div class="sam-field"><label>Your UEI (12 characters)</label><input id="sam-uei" maxlength="12" placeholder="ABC123DEF456" value="' + escHtml(st.uei || '') + '"></div>' +
+      '<div class="sam-field"><label>Registration date</label><input id="sam-active" type="date" value="' + escHtml(st.activated_at || '') + '"></div></div>' +
+      '<div class="gcf-actions"><button class="btn btn-primary btn-sm" onclick="samSaveReg()">Save &amp; track renewal</button></div>';
+  }
+  function samRenewHTML() {
+    const st = window._samState;
+    const days = samDaysLeft(st.activated_at);
+    const ex = samExpiry(st.activated_at);
+    let cls = 'green', lbl = 'Active. We\'ll remind you at 60, 30 and 7 days before it expires.';
+    if (days != null) {
+      if (days < 0) { cls = 'red'; lbl = 'Expired ' + Math.abs(days) + ' days ago — renew now to unblock payments.'; }
+      else if (days <= 30) { cls = 'red'; lbl = 'Renew now — re-validation can take a week or two.'; }
+      else if (days <= 60) { cls = 'amber'; lbl = 'Your renewal window is open. Don\'t wait for a deadline.'; }
+    }
+    const num = (days == null) ? '—' : (days < 0 ? '0' : days);
+    return '<div class="sam-renew ' + cls + '">' +
+      '<div style="text-align:center;min-width:60px"><div class="sam-renew-num">' + num + '</div><div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">days left</div></div>' +
+      '<div><div style="font-weight:700;color:var(--ink);font-size:14px">SAM.gov ' + (days != null && days < 0 ? 'has expired' : 'is active') + (st.uei ? ' · UEI ' + escHtml(st.uei) : '') + '</div>' +
+      '<div class="sam-renew-lbl">' + escHtml(lbl) + (ex ? ' Expires ' + escHtml(ex) + '.' : '') + '</div></div></div>';
+  }
+
+  window.samSetNeed = function (v) { window._samState.need = v; samPersist(); samRender(); };
+  window.samSetPath = function (v) { window._samState.path = v; samPersist(); samRender(); };
+  window.samSaveReg = function () {
+    const uei = ((document.getElementById('sam-uei') || {}).value || '').trim().toUpperCase();
+    const act = (document.getElementById('sam-active') || {}).value || '';
+    if (uei && uei.length !== 12) { toast('A UEI is exactly 12 characters.'); return; }
+    if (!act) { toast('Add your registration date so we can track the renewal.'); return; }
+    window._samState.uei = uei; window._samState.activated_at = act;
+    samPersist(); samRender();
+    toast('Saved. Grange will track your SAM.gov renewal.');
+  };
+  window.samClearReg = function () { window._samState.uei = ''; window._samState.activated_at = ''; samPersist(); samRender(); };
 </script>
 <script>
   /* ════════════════ SCORE-RING SWEEP ════════════════
