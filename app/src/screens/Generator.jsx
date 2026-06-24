@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { sb, streamProposal } from '../lib/supabase'
 import { useToast } from '../lib/toast'
+import PaywallBanner from '../components/PaywallBanner'
 
 const SECTIONS = [
   { key: 'executive_summary', label: 'Executive Summary', words: 300 },
@@ -29,7 +30,7 @@ const STATUS_PILLS = {
   final:      'pill-ok',
 }
 
-export default function Generator() {
+export default function Generator({ setPage }) {
   const { toast } = useToast()
   const [grants, setGrants] = useState([])
   const [selectedGrant, setSelectedGrant] = useState(null)
@@ -198,6 +199,13 @@ export default function Generator() {
             </div>
           </div>
         )}
+        {/* RAG paywall */}
+        <PaywallBanner
+          feature="Past Proposals (RAG)"
+          plan="Pro"
+          setPage={setPage}
+          style={{ marginTop: 4 }}
+        />
       </div>
 
       {/* Right: editor */}

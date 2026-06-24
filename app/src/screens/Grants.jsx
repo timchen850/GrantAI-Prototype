@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { sb } from '../lib/supabase'
 import { useToast } from '../lib/toast'
+import PaywallBanner from '../components/PaywallBanner'
 
 const STATUSES = ['discovered','saved','drafting','submitted','awarded','rejected']
 const STATUS_META = {
@@ -173,6 +174,23 @@ export default function Grants({ setPage }) {
             </table>
           </div>
         )}
+      </div>
+
+      {/* Post-award compliance — Pro feature */}
+      <div style={{ marginTop: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>Post-Award Compliance</h2>
+            <p style={{ fontSize: 12, color: 'var(--ink-tertiary)', margin: '2px 0 0' }}>
+              Track budget vs. actual spend and compliance requirements for awarded grants.
+            </p>
+          </div>
+        </div>
+        <PaywallBanner
+          feature="Post-Award Compliance Tracker"
+          plan="Starter"
+          setPage={setPage}
+        />
       </div>
     </div>
   )

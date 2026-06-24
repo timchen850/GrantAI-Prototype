@@ -5203,6 +5203,16 @@ label.field-label {
           </div>
         </div>
       </div>
+
+      <!-- RAG paywall banner -->
+      <div class="paywall-banner" style="margin:0 0 32px">
+        <div class="pwb-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.7-4 3-9 3s-9-1.3-9-3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/></svg></div>
+        <div class="pwb-body">
+          <div class="pwb-title">Learn from your past proposals <span class="pwb-badge">Pro</span></div>
+          <div class="pwb-sub">Upgrade to Pro and Grange will study your previous winning proposals to match your organization's voice and reuse your strongest language.</div>
+        </div>
+        <button class="pwb-btn" onclick="go('pricing')">View Plans →</button>
+      </div>
     </main>
   </div>
 </div>
@@ -5515,6 +5525,174 @@ label.field-label {
   </div>
 </div>
 
+<!-- ════════════════════════ APP: PRICING ════════════════════════ -->
+<style>
+  /* Plan badge in sidebar footer */
+  .side-plan-badge{ width:100%; display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg,rgba(217,79,48,.08),transparent); border:1px dashed rgba(217,79,48,.28); border-radius:10px; padding:10px 12px; cursor:pointer; transition:background .15s; margin-bottom:10px; font-family:inherit; }
+  .side-plan-badge:hover{ background:rgba(217,79,48,.12); }
+  .spb-left{ text-align:left; }
+  .spb-label{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:1px; }
+  .spb-name{ font-size:13px; font-weight:600; color:var(--ink-soft); }
+  .spb-cta{ font-size:11px; font-weight:700; color:var(--accent); background:var(--accent-tint); border:1px solid rgba(217,79,48,.2); border-radius:999px; padding:3px 10px; white-space:nowrap; }
+
+  /* Paywall banner (reusable) */
+  .paywall-banner{ display:flex; align-items:center; gap:16px; border:1.5px dashed rgba(217,79,48,.30); border-radius:14px; background:linear-gradient(135deg,rgba(217,79,48,.05),var(--surface)); padding:18px 20px; }
+  .pwb-icon{ width:40px; height:40px; flex-shrink:0; border-radius:11px; background:var(--accent-tint); border:1px solid rgba(217,79,48,.18); display:grid; place-items:center; }
+  .pwb-body{ flex:1; min-width:0; }
+  .pwb-title{ font-size:14px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:3px; }
+  .pwb-badge{ font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-ink); background:var(--accent-tint); border:1px solid rgba(217,79,48,.22); padding:2px 8px; border-radius:999px; }
+  .pwb-sub{ font-size:12.5px; color:var(--muted); line-height:1.45; }
+  .pwb-btn{ flex-shrink:0; padding:8px 16px; border-radius:999px; border:1.5px solid rgba(217,79,48,.35); background:transparent; color:var(--accent); font:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:background .15s; white-space:nowrap; }
+  .pwb-btn:hover{ background:var(--accent-tint); }
+
+  /* Pricing screen */
+  .pricing-screen-inner{ max-width:900px; margin:0 auto; }
+  .pricing-toggle{ display:inline-flex; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:4px; gap:4px; margin-bottom:36px; }
+  .pricing-toggle button{ padding:6px 20px; border-radius:999px; border:none; font:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:all .18s; background:transparent; color:var(--muted); }
+  .pricing-toggle button.on{ background:var(--accent); color:#fff; box-shadow:0 2px 10px rgba(217,79,48,.35); }
+  .pricing-toggle .save-pill{ font-size:10px; font-weight:700; background:var(--ok-tint); color:var(--ok); border-radius:999px; padding:1px 7px; margin-left:4px; }
+  .pricing-cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+  .pc{ background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:24px 22px 20px; position:relative; display:flex; flex-direction:column; transition:box-shadow .18s; }
+  .pc:hover{ box-shadow:0 8px 32px rgba(26,25,22,.08); }
+  .pc.featured{ border-color:rgba(217,79,48,.4); background:linear-gradient(145deg,rgba(217,79,48,.06),var(--surface)); box-shadow:0 6px 28px rgba(217,79,48,.12); }
+  .pc-badge{ position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:4px 14px; border-radius:999px; white-space:nowrap; box-shadow:0 2px 12px rgba(217,79,48,.45); }
+  .pc-tier{ font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+  .pc.featured .pc-tier{ color:var(--accent-ink); }
+  .pc-price{ display:flex; align-items:baseline; gap:4px; margin-bottom:4px; }
+  .pc-price .amt{ font-size:40px; font-weight:800; color:var(--ink); letter-spacing:-.03em; font-family:var(--display); }
+  .pc-price .per{ font-size:14px; color:var(--muted); }
+  .pc-billed{ font-size:11.5px; color:var(--muted); margin-bottom:6px; min-height:16px; }
+  .pc-desc{ font-size:13px; color:var(--ink-body); line-height:1.5; margin-bottom:20px; min-height:48px; }
+  .pc-cta{ display:block; width:100%; padding:11px; border-radius:999px; font:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:all .18s; margin-bottom:20px; text-align:center; }
+  .pc-cta.current{ background:var(--surface-2); border:1px solid var(--line); color:var(--muted); display:flex; align-items:center; justify-content:center; gap:8px; cursor:default; }
+  .pc-cta.current::before{ content:''; width:7px; height:7px; border-radius:50%; background:var(--ok); flex-shrink:0; }
+  .pc-cta.primary{ background:var(--accent); border:none; color:#fff; box-shadow:0 2px 12px rgba(217,79,48,.30); }
+  .pc-cta.primary:hover{ background:var(--accent-press); }
+  .pc-div{ border-top:1px solid var(--line); margin-bottom:18px; }
+  .pc-features{ display:flex; flex-direction:column; gap:10px; }
+  .pf-row{ display:flex; align-items:center; gap:10px; }
+  .pf-ic{ width:18px; height:18px; flex-shrink:0; border-radius:50%; display:grid; place-items:center; }
+  .pf-ic.yes{ background:var(--ok-tint); }
+  .pf-ic.no{ background:var(--surface-2); }
+  .pf-text{ font-size:13px; color:var(--ink-body); flex:1; }
+  .pf-text.dim{ color:var(--muted); }
+  .pf-note{ font-size:11px; font-weight:600; color:var(--accent-ink); background:var(--accent-tint); padding:1px 7px; border-radius:999px; white-space:nowrap; }
+  .pf-note.ok{ color:var(--ok); background:var(--ok-tint); }
+  .pricing-foot{ text-align:center; margin-top:32px; font-size:13px; color:var(--muted); }
+  @media(max-width:768px){ .pricing-cards{ grid-template-columns:1fr; } .pc.featured{ order:-1; } }
+</style>
+<div id="pricing" class="screen">
+  <div class="app">
+    <aside class="side" id="side-pricing"></aside>
+    <main class="app-main">
+      <section class="page-hero">
+        <div class="ph-bg" aria-hidden="true"></div>
+        <div class="ph-row">
+          <div>
+            <div class="ph-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Plans</div>
+            <h1>Simple, transparent pricing</h1>
+            <div class="ps">Built for nonprofits at every stage. Start free, upgrade when you're ready.</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="pricing-screen-inner">
+        <div style="text-align:center">
+          <div class="pricing-toggle" id="billing-toggle">
+            <button class="on" onclick="setBilling('monthly')">Monthly</button>
+            <button onclick="setBilling('annual')">Annual <span class="save-pill">−20%</span></button>
+          </div>
+        </div>
+
+        <div class="pricing-cards" id="pricing-cards">
+          <!-- Free -->
+          <div class="pc">
+            <div class="pc-tier">Free</div>
+            <div class="pc-price"><span class="amt">$0</span></div>
+            <div class="pc-billed"></div>
+            <p class="pc-desc">Get started with the basics — no credit card needed.</p>
+            <div class="pc-cta current">Your current plan</div>
+            <div class="pc-div"></div>
+            <div class="pc-features">
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Readiness checker</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Grant discovery <span class="pf-note ok">5 results</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Funder AI policy warnings</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">AI draft sections <span class="pf-note ok">2/mo</span></span></div>
+              <div class="pf-row"><div class="pf-ic no"><svg width="8" height="8" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div><span class="pf-text dim">RAG over past proposals</span></div>
+              <div class="pf-row"><div class="pf-ic no"><svg width="8" height="8" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div><span class="pf-text dim">Post-award compliance</span></div>
+              <div class="pf-row"><div class="pf-ic no"><svg width="8" height="8" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div><span class="pf-text dim">Export (submission-ready)</span></div>
+            </div>
+          </div>
+
+          <!-- Starter -->
+          <div class="pc featured">
+            <div class="pc-badge">Most Popular</div>
+            <div class="pc-tier">Starter</div>
+            <div class="pc-price" id="starter-price"><span class="amt">$49</span><span class="per">/mo</span></div>
+            <div class="pc-billed" id="starter-billed"></div>
+            <p class="pc-desc">For growing nonprofits ready to scale their grant pipeline.</p>
+            <button class="pc-cta primary">Start Free Trial</button>
+            <div class="pc-div"></div>
+            <div class="pc-features">
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Readiness checker</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Grant discovery <span class="pf-note">Unlimited</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Funder AI policy warnings</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">AI draft sections <span class="pf-note">15/mo</span></span></div>
+              <div class="pf-row"><div class="pf-ic no"><svg width="8" height="8" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div><span class="pf-text dim">RAG over past proposals</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Post-award compliance</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Export (submission-ready)</span></div>
+            </div>
+          </div>
+
+          <!-- Pro -->
+          <div class="pc">
+            <div class="pc-tier">Pro</div>
+            <div class="pc-price" id="pro-price"><span class="amt">$149</span><span class="per">/mo</span></div>
+            <div class="pc-billed" id="pro-billed"></div>
+            <p class="pc-desc">Full platform access for serious grant-seeking organizations.</p>
+            <button class="pc-cta primary">Start Free Trial</button>
+            <div class="pc-div"></div>
+            <div class="pc-features">
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Readiness checker</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Grant discovery <span class="pf-note">Unlimited + federal</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Funder AI policy warnings</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">AI draft sections <span class="pf-note">Unlimited</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">RAG over past proposals</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Post-award compliance</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Export (submission-ready)</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Team roles / multi-user</span></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="pricing-foot">All paid plans include a 14-day free trial. No credit card required to start.</p>
+      </div>
+    </main>
+  </div>
+</div>
+<script>
+(function(){
+  var billing = 'monthly';
+  window.setBilling = function(b){
+    billing = b;
+    document.querySelectorAll('#billing-toggle button').forEach(function(btn,i){
+      btn.classList.toggle('on', (i===0&&b==='monthly')||(i===1&&b==='annual'));
+    });
+    var mult = b==='annual' ? 0.8 : 1;
+    var starterAmt = Math.round(49 * mult);
+    var proAmt = Math.round(149 * mult);
+    var starterP = document.getElementById('starter-price');
+    if(starterP) starterP.innerHTML = '<span class="amt">$'+starterAmt+'</span><span class="per">/mo</span>';
+    var proP = document.getElementById('pro-price');
+    if(proP) proP.innerHTML = '<span class="amt">$'+proAmt+'</span><span class="per">/mo</span>';
+    var starterB = document.getElementById('starter-billed');
+    if(starterB) starterB.textContent = b==='annual' ? 'Billed $'+(starterAmt*12)+'/year' : '';
+    var proB = document.getElementById('pro-billed');
+    if(proB) proB.textContent = b==='annual' ? 'Billed $'+(proAmt*12)+'/year' : '';
+  };
+})();
+</script>
+
 <!-- ════════════════════════ APP: GRANT MANAGEMENT (post-award) ════════════════════════ -->
 <style>
   .pa-card{ border:1px solid var(--line); border-radius:14px; background:var(--surface); margin-bottom:18px; overflow:hidden; }
@@ -5554,6 +5732,16 @@ label.field-label {
         </div>
       </section>
       <div id="pa-content"><div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div></div>
+
+      <!-- Export paywall banner -->
+      <div class="paywall-banner" style="margin:0 0 32px">
+        <div class="pwb-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+        <div class="pwb-body">
+          <div class="pwb-title">Export submission-ready package <span class="pwb-badge">Starter</span></div>
+          <div class="pwb-sub">Download a complete, formatted proposal package ready to submit — cover page, budget narrative, and all sections included.</div>
+        </div>
+        <button class="pwb-btn" onclick="go('pricing')">View Plans →</button>
+      </div>
     </main>
   </div>
 </div>
@@ -5633,8 +5821,14 @@ function SIDE(active) {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Org profile</a>
     <a href="#" onclick="tutReplay();return false;" class="side-tour">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z"/></svg>Take the tour</a>
+    <a href="#" onclick="go('pricing')" class="${active==='pricing'?'on':''}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Pricing</a>
   </nav>
   <div class="side-foot">
+    <button class="side-plan-badge" onclick="go('pricing')">
+      <div class="spb-left"><div class="spb-label">Current plan</div><div class="spb-name">Free</div></div>
+      <span class="spb-cta">Upgrade</span>
+    </button>
     ${showSurveyBtn ? `<button class="side-survey-btn" onclick="go('onboarding')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
       Complete your profile →</button>` : ''}
@@ -5643,7 +5837,7 @@ function SIDE(active) {
   </div>`;
 }
 function rebuildSidebars() {
-  ['dashboard','discovery','readiness','generator','manage','profile'].forEach(s => {
+  ['dashboard','discovery','readiness','generator','manage','profile','pricing'].forEach(s => {
     const el = document.getElementById('side-' + s);
     if (el) el.innerHTML = SIDE(s);
   });
@@ -5660,7 +5854,7 @@ window._currentScreen = 'landing';
 document.body.dataset.screen = 'landing';
 
 /* ─── navigation ────────────────────────────────────────── */
-const SCREENS = ['landing','login','signin','tutorial','onboarding','demo','dashboard','discovery','readiness','generator','manage','profile','privacy','terms','security','contact'];
+const SCREENS = ['landing','login','signin','tutorial','onboarding','demo','dashboard','discovery','readiness','generator','manage','profile','pricing','privacy','terms','security','contact'];
 
 /* ─── mobile hamburger drawer (phones only) ─────────────── */
 function mNavMarkup() {

@@ -11,6 +11,7 @@ import Readiness from './screens/Readiness'
 import Chat from './screens/Chat'
 import Profile from './screens/Profile'
 import ApplicationWriter from './screens/ApplicationWriter'
+import Pricing from './screens/Pricing'
 
 const SCREENS = {
   dashboard: Dashboard,
@@ -21,6 +22,7 @@ const SCREENS = {
   chat: Chat,
   profile: Profile,
   'application-writer': ApplicationWriter,
+  pricing: Pricing,
 }
 
 export default function App() {

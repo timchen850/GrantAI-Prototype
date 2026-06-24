@@ -22,6 +22,7 @@ const NAV = [
     section: 'ACCOUNT',
     items: [
       { id: 'profile', label: 'Organization', icon: OrgIcon },
+      { id: 'pricing', label: 'Pricing', icon: PricingIcon },
     ],
   },
 ]
@@ -56,6 +57,43 @@ export default function Sidebar({ page, setPage }) {
           </div>
         ))}
       </nav>
+
+      {/* Plan badge */}
+      <div
+        onClick={() => setPage('pricing')}
+        style={{
+          margin: '0 8px 8px',
+          padding: '10px 12px',
+          borderRadius: 'var(--r)',
+          border: '1px solid rgba(232,92,58,0.25)',
+          background: 'linear-gradient(135deg, rgba(232,92,58,0.08) 0%, transparent 100%)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          transition: 'background var(--dur-fast)',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(232,92,58,0.12)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(135deg, rgba(232,92,58,0.08) 0%, transparent 100%)'}
+      >
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--ink-tertiary)', marginBottom: 2 }}>
+            Current Plan
+          </div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-secondary)' }}>Free</div>
+        </div>
+        <span style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: 'var(--accent-bright)',
+          padding: '4px 8px',
+          borderRadius: 'var(--r-pill)',
+          background: 'var(--accent-dim)',
+          border: '1px solid rgba(232,92,58,0.2)',
+        }}>
+          Upgrade
+        </span>
+      </div>
 
       <div className="sidebar-footer">
         <div className="user-pill" onClick={() => setPage('profile')}>
@@ -134,6 +172,15 @@ function OrgIcon({ className }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    </svg>
+  )
+}
+
+function PricingIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+      <rect x="2" y="5" width="20" height="14" rx="2"/>
+      <path d="M2 10h20"/>
     </svg>
   )
 }
