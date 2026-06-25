@@ -4828,6 +4828,30 @@ label.field-label {
 .next-step .ns-cta { flex: none; }
 @media (max-width: 640px) { .next-step { flex-direction: column; align-items: flex-start; } .next-step .ns-cta, .next-step .ns-cta .btn { width: 100%; } }
 
+/* ── First-grant activation wizard (dashboard, new users) ── */
+.actwz { position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px 22px; box-shadow: 0 1px 0 rgba(255,255,255,.8) inset, 0 22px 50px -30px rgba(26,25,22,.5); }
+.actwz-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.actwz-title { font-family: var(--display); font-weight: 750; font-size: 18px; letter-spacing: -.02em; color: var(--ink); }
+.actwz-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.actwz-dismiss { background: none; border: none; color: var(--muted); font-size: 12.5px; cursor: pointer; padding: 4px 7px; border-radius: 7px; flex: none; }
+.actwz-dismiss:hover { color: var(--accent); background: var(--accent-tint); }
+.actwz-track { height: 6px; border-radius: 4px; background: var(--line); overflow: hidden; margin: 14px 0 2px; }
+.actwz-track > span { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #f0814f, var(--accent)); transition: width .55s var(--ease); }
+.actwz-steps { margin-top: 8px; }
+.actwz-step { display: flex; align-items: center; gap: 13px; padding: 11px 0; border-top: 1px solid var(--line); }
+.actwz-step:first-child { border-top: none; }
+.actwz-mark { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 12.5px; font-weight: 700; background: var(--surface-2, #efede8); color: var(--muted); border: 1px solid var(--line); }
+.actwz-mark svg { width: 15px; height: 15px; }
+.actwz-step.done .actwz-mark { background: var(--ok-tint); color: #1c7a43; border-color: rgba(34,153,84,.4); }
+.actwz-step.active .actwz-mark { background: var(--accent); color: #fff; border-color: var(--accent); }
+.actwz-body { flex: 1; min-width: 0; }
+.actwz-st { font-size: 14px; font-weight: 650; color: var(--ink); }
+.actwz-step.todo .actwz-st { color: var(--ink-soft, var(--muted)); }
+.actwz-sd { font-size: 12.3px; color: var(--muted); margin-top: 2px; line-height: 1.45; }
+.actwz-donelbl { flex: none; font-size: 12px; font-weight: 600; color: var(--ok); }
+.actwz-skiplink { flex: none; background: none; border: none; color: var(--accent); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+@media (max-width: 640px) { .actwz-step { flex-wrap: wrap; } .actwz-step .btn, .actwz-step .actwz-skiplink, .actwz-step .actwz-donelbl { margin-left: 39px; } }
+
 /* ── Journey strip (mirrors the tutorial's 5 stages) ─── */
 .journey { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .journey .jx { position: relative; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 16px 15px; cursor: pointer; overflow: hidden; transition: transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease); }
@@ -4877,6 +4901,11 @@ label.field-label {
           </div>
         </div>
         <div class="next-step" id="dash-next"></div>
+      </section>
+
+      <!-- First-grant activation wizard (new users; auto-hides after first draft) -->
+      <section id="dash-activation-sec" style="display:none; margin-bottom:24px">
+        <div class="actwz" id="dash-activation"></div>
       </section>
 
       <!-- The journey: where you are in the 5-step arc (mirrors the tour) -->
@@ -9835,14 +9864,16 @@ async function updateDashboard() {
   }
 
   // ── 8. Journey + next step (directional IA) ──────────────────
-  renderJourney({
+  const _journeySig = {
     profileComplete: (window._dashProfilePct || 0) >= 80,
     discovered,
     saved: dbGrants.length,
     drafted,
     submitted,
     awarded,
-  });
+  };
+  renderJourney(_journeySig);
+  renderActivation(_journeySig);
 }
 
 /* The five-stage arc, mirrored from the tour, with live status + a single
@@ -9906,6 +9937,77 @@ function renderJourney(s) {
       <div class="ns-cta"><button class="btn btn-accent" onclick="go('${data.screen}')">${data.cta} →</button></div>`;
   }
 }
+
+/* ── First-grant activation wizard ──────────────────────────────
+   The report's #1 activation lever: a concrete, completion-tracked path to a
+   user's first drafted proposal, stringing together the features built this
+   cycle (profile → IRS verify → SAM branch → discovery+funders → fit check →
+   draft). Shown for new users in place of the generic next-step card; auto-hides
+   once the first proposal is drafted, or when the user dismisses it. */
+function actwzCheck() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>'; }
+
+function activationSteps(s) {
+  const uid = (window._grange && window._grange.user && window._grange.user.id) || 'anon';
+  let irs = null, sam = null, assessed = false;
+  try { irs = JSON.parse(localStorage.getItem('grange_irs_' + uid) || 'null'); } catch (_) {}
+  try { sam = JSON.parse(localStorage.getItem('grange_sam_' + uid) || 'null'); } catch (_) {}
+  try { assessed = Object.keys(localStorage).some(k => k.indexOf('grange_assess_' + uid) === 0); } catch (_) {}
+  const samDone = !!(sam && sam.need && (sam.need === 'no' || sam.path));
+  return [
+    { key: 'profile',  title: 'Complete your nonprofit profile', desc: 'Mission, EIN, focus areas and location — this powers matching, eligibility and drafting.', cta: 'Complete profile', screen: 'profile',   done: (window._dashProfilePct || 0) >= 80 },
+    { key: 'irs',      title: 'Verify your 501(c)(3) with the IRS', desc: 'An authoritative status check funders trust, straight from the IRS file.', cta: 'Verify status', screen: 'readiness', done: !!(irs && irs.found && irs.is_501c3) },
+    { key: 'sam',      title: 'Sort out federal registration, or skip it', desc: "Most small nonprofits don't need SAM.gov. Answer one question to find out.", cta: 'Check SAM.gov', screen: 'readiness', done: samDone },
+    { key: 'discover', title: 'See grants and funders matched to you', desc: 'Open opportunities plus the agencies that fund work like yours.', cta: 'Discover grants', screen: 'discovery', done: s.discovered > 0 },
+    { key: 'fit',      title: 'Check your fit on a grant', desc: 'Run an AI assessment to see your match, eligibility and watch-outs.', cta: 'Assess a grant', screen: 'discovery', done: assessed || s.saved > 0 },
+    { key: 'draft',    title: 'Draft your first proposal', desc: 'The AI writes your strongest grant in your voice. You stay the author.', cta: 'Start drafting', screen: 'generator', done: s.drafted > 0 },
+  ];
+}
+
+function renderActivation(s) {
+  const sec = document.getElementById('dash-activation-sec');
+  const box = document.getElementById('dash-activation');
+  const nextCard = document.getElementById('dash-next');
+  if (!sec || !box) return;
+  const uid = (window._grange && window._grange.user && window._grange.user.id) || 'anon';
+  let dismissed = false;
+  try { dismissed = localStorage.getItem('grange_actwz_dismissed_' + uid) === '1'; } catch (_) {}
+  const steps = activationSteps(s);
+  const firstGrantDrafted = steps[steps.length - 1].done;
+  // Active only while the user is still activating (no first draft yet) and hasn't hidden it.
+  if (firstGrantDrafted || dismissed) { sec.style.display = 'none'; if (nextCard) nextCard.style.display = ''; return; }
+  sec.style.display = '';
+  if (nextCard) nextCard.style.display = 'none';   // wizard replaces the generic next-step while activating
+
+  const doneCount = steps.filter(x => x.done).length;
+  const activeIdx = steps.findIndex(x => !x.done);
+  const pct = Math.round(doneCount / steps.length * 100);
+  box.innerHTML =
+    '<div class="actwz-head"><div>' +
+      '<div class="actwz-title">Get your first grant in ~10 minutes</div>' +
+      '<div class="actwz-sub">' + doneCount + ' of ' + steps.length + ' done — pick up where you left off.</div>' +
+    '</div><button class="actwz-dismiss" onclick="dismissActivation()">Hide</button></div>' +
+    '<div class="actwz-track"><span style="width:' + pct + '%"></span></div>' +
+    '<div class="actwz-steps">' + steps.map(function (x, i) {
+      const state = x.done ? 'done' : (i === activeIdx ? 'active' : 'todo');
+      const action = x.done
+        ? '<div class="actwz-donelbl">Done</div>'
+        : (i === activeIdx
+            ? '<button class="btn btn-accent btn-sm" onclick="go(\'' + x.screen + '\')">' + x.cta + ' →</button>'
+            : '<button class="actwz-skiplink" onclick="go(\'' + x.screen + '\')">' + x.cta + '</button>');
+      return '<div class="actwz-step ' + state + '">' +
+        '<div class="actwz-mark">' + (x.done ? actwzCheck() : (i + 1)) + '</div>' +
+        '<div class="actwz-body"><div class="actwz-st">' + x.title + '</div><div class="actwz-sd">' + x.desc + '</div></div>' +
+        action + '</div>';
+    }).join('') + '</div>';
+}
+
+window.dismissActivation = function () {
+  const uid = (window._grange && window._grange.user && window._grange.user.id) || 'anon';
+  try { localStorage.setItem('grange_actwz_dismissed_' + uid, '1'); } catch (_) {}
+  const sec = document.getElementById('dash-activation-sec'); if (sec) sec.style.display = 'none';
+  const nextCard = document.getElementById('dash-next'); if (nextCard) nextCard.style.display = '';
+  if (typeof toast === 'function') toast('Hidden. Your grant journey below still tracks your progress.');
+};
 
 
 /* Real, verifiable foundation grant programs. All funders are publicly
