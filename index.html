@@ -10209,6 +10209,16 @@ function grantCacheKey() {
 async function loadDiscoveryGrants(directAnswers) {
   const list = document.getElementById('disc-grants-list');
   if (!list) return;
+  // Each pull fans out to several Grants.gov queries, so guard against stacking:
+  // an in-flight load blocks a second, and a pull from the last 60s is reused
+  // (still fresh) rather than re-hitting the API on rapid tab clicks / revisits.
+  if (window._discLoading) return;
+  if (window._discAllGrants && window._discLastLoad && (Date.now() - window._discLastLoad < 60000)) {
+    renderDiscovery(window._discAllGrants, directAnswers || window._discAnswers || {});
+    return;
+  }
+  window._discLoading = true;
+  try {
 
   // Show loading state
   list.innerHTML = `<div class="disc-loading"><div class="disc-spinner"></div><div>Searching for grants matched to your profile…</div></div>`;
@@ -10261,10 +10271,12 @@ async function loadDiscoveryGrants(directAnswers) {
   let federalGrants = [], federalFailed = false;
   try {
     const raw = await fetchFederalGrants(answers);
+    const todayStr = new Date().toISOString().slice(0, 10);
     // Federal hits now carry real focus tags from the query that found them, so
     // calcGrantMatch scores them honestly; +8 is a small live-federal recency boost.
+    // Drop any opportunity whose deadline has already passed (never show expired).
     federalGrants = raw.map(g => ({ ...g, matchScore: calcGrantMatch(g, answers) + 8 }))
-                       .filter(g => g.matchScore >= 30);
+                       .filter(g => g.matchScore >= 30 && (!g.deadline || g.deadline >= todayStr));
   } catch (e) {
     federalFailed = true;
     console.log('Grants.gov API unavailable, using curated list only', e.message);
@@ -10291,7 +10303,9 @@ async function loadDiscoveryGrants(directAnswers) {
   // Cache for offline/failure fallback (never used to short-circuit a fresh pull)
   try { localStorage.setItem(grantCacheKey(), JSON.stringify({ ts: Date.now(), grants: merged })); } catch(_) {}
 
+  window._discLastLoad = Date.now();
   renderDiscovery(merged, answers);
+  } finally { window._discLoading = false; }
 }
 
 function renderDiscovery(grants, answers) {
