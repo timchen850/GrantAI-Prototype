@@ -9968,7 +9968,10 @@ function renderActivation(s) {
   const box = document.getElementById('dash-activation');
   const nextCard = document.getElementById('dash-next');
   if (!sec || !box) return;
-  const uid = (window._grange && window._grange.user && window._grange.user.id) || 'anon';
+  // Only render for a fully-loaded, authenticated user — never read/write the shared
+  // 'anon' namespace (a token-refresh blip must not leak another session's state).
+  if (!window._grange || !window._grange.user || !window._grange.user.id) { sec.style.display = 'none'; if (nextCard) nextCard.style.display = ''; return; }
+  const uid = window._grange.user.id;
   let dismissed = false;
   try { dismissed = localStorage.getItem('grange_actwz_dismissed_' + uid) === '1'; } catch (_) {}
   const steps = activationSteps(s);
@@ -9992,18 +9995,18 @@ function renderActivation(s) {
       const action = x.done
         ? '<div class="actwz-donelbl">Done</div>'
         : (i === activeIdx
-            ? '<button class="btn btn-accent btn-sm" onclick="go(\'' + x.screen + '\')">' + x.cta + ' →</button>'
-            : '<button class="actwz-skiplink" onclick="go(\'' + x.screen + '\')">' + x.cta + '</button>');
+            ? '<button class="btn btn-accent btn-sm" onclick="go(\'' + x.screen + '\')">' + escHtml(x.cta) + ' →</button>'
+            : '<button class="actwz-skiplink" onclick="go(\'' + x.screen + '\')">' + escHtml(x.cta) + '</button>');
       return '<div class="actwz-step ' + state + '">' +
         '<div class="actwz-mark">' + (x.done ? actwzCheck() : (i + 1)) + '</div>' +
-        '<div class="actwz-body"><div class="actwz-st">' + x.title + '</div><div class="actwz-sd">' + x.desc + '</div></div>' +
+        '<div class="actwz-body"><div class="actwz-st">' + escHtml(x.title) + '</div><div class="actwz-sd">' + escHtml(x.desc) + '</div></div>' +
         action + '</div>';
     }).join('') + '</div>';
 }
 
 window.dismissActivation = function () {
   const uid = (window._grange && window._grange.user && window._grange.user.id) || 'anon';
-  try { localStorage.setItem('grange_actwz_dismissed_' + uid, '1'); } catch (_) {}
+  try { localStorage.setItem('grange_actwz_dismissed_' + uid, '1'); } catch (e) { console.warn('actwz dismiss persist failed', e); }
   const sec = document.getElementById('dash-activation-sec'); if (sec) sec.style.display = 'none';
   const nextCard = document.getElementById('dash-next'); if (nextCard) nextCard.style.display = '';
   if (typeof toast === 'function') toast('Hidden. Your grant journey below still tracks your progress.');
@@ -10125,19 +10128,15 @@ function calcGrantMatch(grant, answers) {
   return Math.max(0, Math.min(99, score));
 }
 
-/* Convert a Grants.gov API hit into our internal grant shape */
+/* Convert a Grants.gov search2 oppHit into our internal grant shape. search2 is
+   an INDEX record — it has id / title / agency / closeDate / oppStatus / cfdaList
+   but NO synopsis or award amounts (those need fetchOpportunity), so we keep those
+   light and link out to the listing for full detail. */
 function parseGovHit(hit) {
-  const ceil = hit.awardCeiling || 0;
-  const floor = hit.awardFloor  || 0;
-  const amtLabel = ceil && floor ? `$${fmtK(floor)}–$${fmtK(ceil)}`
-                 : ceil           ? `Up to $${fmtK(ceil)}`
-                 : floor          ? `From $${fmtK(floor)}`
-                 : 'See listing';
-
-  // closeDate is "MM/DD/YYYY" from the API
-  let deadlineLabel = 'See listing', deadline = null;
+  const forecasted = String(hit.oppStatus || '').toLowerCase() === 'forecasted';
+  let deadlineLabel = forecasted ? 'Forecasted' : 'See Grants.gov', deadline = null;
   if (hit.closeDate) {
-    const parts = hit.closeDate.split('/');
+    const parts = String(hit.closeDate).split('/');   // MM/DD/YYYY
     if (parts.length === 3) {
       const d = new Date(`${parts[2]}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`);
       if (!isNaN(d)) {
@@ -10147,24 +10146,26 @@ function parseGovHit(hit) {
     }
   }
 
-  // extract 3 tag-worthy keywords from agency name + title
-  const tagSource = ((hit.agencyName||'') + ' ' + (hit.opportunityTitle||'')).toLowerCase();
+  const agency = hit.agency || hit.agencyCode || 'U.S. Federal Agency';
+  const cfda = Array.isArray(hit.cfdaList) && hit.cfdaList.length ? ` (CFDA ${hit.cfdaList[0]})` : '';
+  const tagSource = (agency + ' ' + (hit.title || '')).toLowerCase();
   const keywordCandidates = ['education','health','housing','food','environment','arts','youth',
-    'workforce','workforce development','community','veterans','mental health','nutrition','climate',
-    'rural','urban','equity','stem','research','prevention','training','legal aid','immigrant'];
-  const kws = keywordCandidates.filter(k => tagSource.includes(k)).slice(0,3);
-  if (kws.length < 3) kws.push('Federal grant','501(c)(3)','Nonprofit eligible');
+    'workforce','community','veterans','mental health','nutrition','climate','rural','urban',
+    'equity','stem','research','prevention','training','immigrant','disability','tribal'];
+  let kws = keywordCandidates.filter(k => tagSource.includes(k)).slice(0,3).map(k => k.charAt(0).toUpperCase() + k.slice(1));
+  if (!kws.length) kws = ['Federal grant', 'Nonprofit eligible'];
 
   return {
-    id: 'gov-' + (hit.opportunityId || Math.random()),
-    funder: hit.agencyName || 'U.S. Federal Agency',
-    title: hit.opportunityTitle || 'Federal Grant Opportunity',
-    desc: (hit.synopsis || 'Federal funding opportunity for eligible nonprofit organizations. See Grants.gov for full details.').replace(/<[^>]+>/g,'').slice(0,260),
-    amount: amtLabel, amountMax: ceil, amountMin: floor,
+    id: 'gov-' + hit.id,
+    govId: hit.id,
+    funder: agency,
+    title: hit.title || 'Federal Grant Opportunity',
+    desc: `${forecasted ? 'Forecasted' : 'Open'} federal opportunity from ${agency}${cfda}. Open the listing on Grants.gov for full eligibility, award size and how to apply.`,
+    amount: 'See Grants.gov', amountMax: 0, amountMin: 0,
     deadlineLabel, deadline,
     type: 'Federal',
-    focus: [], keywords: kws.map(k => k.charAt(0).toUpperCase() + k.slice(1)),
-    govId: hit.opportunityId,
+    focus: Array.isArray(hit.grangeFocus) ? hit.grangeFocus.slice() : [],
+    keywords: kws,
   };
 }
 
@@ -10175,35 +10176,28 @@ function fmtK(n) {
   return String(n);
 }
 
-/* Call Grants.gov public search API (no key required) */
+/* Pull federal grants via the discover-grants edge function. We proxy Grants.gov
+   server-side because the browser is CORS-blocked from api.grants.gov directly
+   (the old client-side call silently failed, leaving users with only the curated
+   list). The function fires several targeted queries + a broad sweep for high
+   recall and returns raw oppHits (tagged with grangeFocus) we map via parseGovHit. */
 async function fetchFederalGrants(answers) {
-  const focusAreas = answers.focus_areas || [];
-  const location   = answers.primary_location || '';
-  const mission    = answers.mission || '';
-  const programs   = answers.primary_programs || [];
-
-  const kw = [...focusAreas, ...programs,
-    ...(mission.split(/\W+/).filter(w => w.length > 5).slice(0,4)),
-    'nonprofit'].join(' ').trim().slice(0,200);
-
-  const category = (focusAreas.map(f => FOCUS_TO_GOV_CAT[f]).filter(Boolean)[0]) || '';
-
-  const body = {
-    rows: 15, startRecordNum: 0,
-    oppStatuses: 'posted',
-    keyword: kw,
-    eligibilities: '12', // 501(c)(3) nonprofits
-  };
-  if (category) body.fundingCategories = category;
-
-  const resp = await fetch('https://api.grants.gov/v1/api/search2', {
+  if (!window.sb) return [];
+  const { data: { session } } = await window.sb.auth.getSession();
+  if (!session) return [];
+  const resp = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/discover-grants', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify(body),
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+    body: JSON.stringify({
+      focus_areas: answers.focus_areas || [],
+      primary_programs: answers.primary_programs || [],
+      mission: answers.mission || '',
+    }),
   });
-  if (!resp.ok) throw new Error('Grants.gov ' + resp.status);
-  const data = await resp.json();
-  return (data?.data?.oppHits || []).map(parseGovHit);
+  if (!resp.ok) throw new Error('discover-grants ' + resp.status);
+  const j = await resp.json();
+  const hits = (j && j.output && Array.isArray(j.output.hits)) ? j.output.hits : [];
+  return hits.map(parseGovHit);
 }
 
 /* Cache key for localStorage */
@@ -10252,13 +10246,10 @@ async function loadDiscoveryGrants(directAnswers) {
     rebuildSidebars();
   }
 
-  // Try cached results first for quick render
+  // Always pull fresh on every visit — the user wants discovery regenerated each
+  // time, not a 24h cache. The cache is kept only as an offline/failure fallback.
   let cached = null;
   try { cached = JSON.parse(localStorage.getItem(grantCacheKey()) || 'null'); } catch(_) {}
-  if (cached && cached.ts && Date.now() - cached.ts < 24*60*60*1000) {
-    renderDiscovery(cached.grants, answers);
-    return;
-  }
 
   // Score + filter curated foundation grants
   const curatedScored = CURATED_GRANTS
@@ -10266,31 +10257,38 @@ async function loadDiscoveryGrants(directAnswers) {
     .filter(g => g.matchScore >= 30)
     .sort((a, b) => b.matchScore - a.matchScore);
 
-  // Try to fetch live federal grants from Grants.gov
-  let federalGrants = [];
+  // Fetch live federal grants (many unioned queries — high recall)
+  let federalGrants = [], federalFailed = false;
   try {
     const raw = await fetchFederalGrants(answers);
-    federalGrants = raw.map(g => ({
-      ...g,
-      matchScore: calcGrantMatch({ ...g, focus: answers.focus_areas || [] }, answers) + 10,
-    })).filter(g => g.matchScore >= 30);
-  } catch(e) {
+    // Federal hits now carry real focus tags from the query that found them, so
+    // calcGrantMatch scores them honestly; +8 is a small live-federal recency boost.
+    federalGrants = raw.map(g => ({ ...g, matchScore: calcGrantMatch(g, answers) + 8 }))
+                       .filter(g => g.matchScore >= 30);
+  } catch (e) {
+    federalFailed = true;
     console.log('Grants.gov API unavailable, using curated list only', e.message);
   }
 
-  // Merge, de-dup by STABLE identity (not a title prefix, which collapses distinct
-  // grants that share a long agency/program-name prefix), sort by match score, cap at 25
+  // Merge, de-dup by STABLE identity, sort by match score, cap at 75 (was 25 —
+  // the user wants as many real opportunities surfaced as possible).
   const all = [...federalGrants, ...curatedScored];
   const seen = new Set();
-  const merged = all.filter(g => {
+  let merged = all.filter(g => {
     const key = g.govId ? 'gov-' + g.govId
               : g.id ? String(g.id)
               : (g.funder || '') + '|' + String(g.title || '').toLowerCase().trim();
     if (seen.has(key)) return false;
     seen.add(key); return true;
-  }).sort((a,b) => b.matchScore - a.matchScore).slice(0, 25);
+  }).sort((a,b) => b.matchScore - a.matchScore).slice(0, 75);
 
-  // Cache
+  // Resilience: if the live federal pull failed and a richer cache exists, use it
+  // rather than dropping the user back to just the 9 curated foundations.
+  if (federalFailed && cached && Array.isArray(cached.grants) && cached.grants.length > merged.length) {
+    merged = cached.grants;
+  }
+
+  // Cache for offline/failure fallback (never used to short-circuit a fresh pull)
   try { localStorage.setItem(grantCacheKey(), JSON.stringify({ ts: Date.now(), grants: merged })); } catch(_) {}
 
   renderDiscovery(merged, answers);
@@ -10317,7 +10315,7 @@ function renderDiscovery(grants, answers) {
 
   document.getElementById('disc-filters').style.display = 'flex';
   document.getElementById('disc-subtitle').textContent =
-    `${grants.length} opportunities matched to your profile, updated daily.`;
+    `${grants.length} opportunities matched to your profile · refreshed just now.`;
 
   list.innerHTML = grants.map(g => renderGrantCard(g)).join('');
 }
