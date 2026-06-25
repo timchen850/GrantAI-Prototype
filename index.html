@@ -10332,6 +10332,52 @@ function renderDiscovery(grants, answers) {
     `${grants.length} opportunities matched to your profile · refreshed just now.`;
 
   list.innerHTML = grants.map(g => renderGrantCard(g)).join('');
+  enrichTopGrants(grants);   // progressively fill real award size + description into the top cards
+}
+
+/* ─── Enrich the top discovery cards with real detail (award size + description) ───
+   search2 is index-only, so we fetch fetchOpportunity for the top federal cards via
+   the grant-detail edge fn (the browser is CORS-blocked from grants.gov) and update
+   them IN PLACE after first paint. Already-enriched grants (amountMax>0) are skipped,
+   so the 60s recency-reuse path never re-fetches. */
+function grantAmountLabel(d) {
+  const c = d.awardCeiling || 0, f = d.awardFloor || 0;
+  if (c && f) return '$' + fmtK(f) + '–$' + fmtK(c);
+  if (c) return 'Up to $' + fmtK(c);
+  if (f) return 'From $' + fmtK(f);
+  if (d.estimatedFunding) return '~$' + fmtK(d.estimatedFunding) + ' available';
+  return '';
+}
+async function enrichTopGrants(grants) {
+  if (!window.sb) return;
+  const top = (grants || []).filter(g => g && g.govId && !(g.amountMax > 0)).slice(0, 12);
+  if (!top.length) return;
+  try {
+    const { data: { session } } = await window.sb.auth.getSession();
+    if (!session) return;
+    const r = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/grant-detail', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ ids: top.map(g => String(g.govId)) }),
+    });
+    if (!r.ok) return;
+    const j = await r.json();
+    const details = (j && j.output && j.output.details) || {};
+    Object.keys(details).forEach(id => {
+      const d = details[id], gid = 'gov-' + id;
+      const lab = grantAmountLabel(d);
+      const g = (window._grantsById && window._grantsById[gid]) || null;
+      if (g) {
+        if (lab) { g.amount = lab; g.amountMax = d.awardCeiling || 0; g.amountMin = d.awardFloor || 0; }
+        if (d.desc && d.desc.length > 30) g.desc = d.desc;
+        if (d.costShareRequired) g.costShare = true;
+      }
+      const card = document.querySelector('.gcard[data-id="' + gid + '"]');
+      if (card) {
+        const amtEl = card.querySelector('.gc-meta .amt'); if (amtEl && lab) amtEl.textContent = lab;
+        const dscEl = card.querySelector('.gc-body .dsc'); if (dscEl && d.desc && d.desc.length > 30) dscEl.textContent = d.desc;
+      }
+    });
+  } catch (_) {}
 }
 
 /* ─── USASpending coverage: funders who've backed work like yours (free federal award history) ─── */
