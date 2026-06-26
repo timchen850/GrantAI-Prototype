@@ -932,6 +932,16 @@ label.field-label {
 .gc-meta .amt { font-family: var(--display); font-weight: 800; font-size: 21px; color: var(--ink); letter-spacing: -0.03em; }
 .gc-meta .due { font-size: 12px; color: var(--muted); }
 .gc-meta .acts { display: flex; flex-direction: column; gap: 6px; width: 100%; align-items: stretch; margin-top: 4px; }
+/* self-screen facts surfaced from grant-detail enrichment (awards count, cost-share, who can apply) */
+.gc-screen { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin: 0 0 12px; }
+.gc-screen:empty { display: none; }
+.gcs-fact { font-size: 11.5px; font-weight: 600; color: var(--ink-body); line-height: 1.7;
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; }
+.gcs-fact.gcs-cs { background: var(--warn-tint); color: #7a5410; border-color: rgba(212,160,23,0.30); }  /* darker amber → WCAG AA on the cream tint */
+.gc-elig { font-size: 12.5px; color: var(--muted); margin: -3px 0 12px; line-height: 1.45; max-width: 44rem; }
+.gc-elig:empty { display: none; }
+.gc-elig .gce-label { font-weight: 700; color: var(--ink-body); }
+.gc-elig .gce-label::after { content: ' — '; color: var(--muted); font-weight: 400; }
 
 /* ─── DISCOVERY: dynamic states ─────────────────────────── */
 .disc-survey-prompt { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
@@ -10348,6 +10358,44 @@ function grantAmountLabel(d) {
   if (d.estimatedFunding) return '~$' + fmtK(d.estimatedFunding) + ' available';
   return '';
 }
+/* ─── Self-screen facts on a card (from grant-detail enrichment) ───
+   Lets an applicant gauge fit at a glance: how many awards, whether a cost-share
+   match is required, and who's eligible. Rendered empty until enrichTopGrants
+   fills them (the :empty CSS rule collapses the slots on un-enriched cards). */
+function grantAwardsLabel(n) {
+  const s = String(n == null ? '' : n).trim();
+  if (!s || !/\d/.test(s)) return '';                 // must carry a number to be a meaningful count
+  if (/^\d+$/.test(s)) { const num = +s; if (!num) return ''; return num === 1 ? '1 award' : '~' + num + ' awards'; }
+  return /award/i.test(s) ? s : s + ' awards';        // e.g. "5–10" → "5–10 awards"
+}
+function grantScreenHTML(g) {
+  if (!g) return '';
+  const parts = [];
+  const aw = grantAwardsLabel(g.numAwards);
+  if (aw) parts.push('<span class="gcs-fact">' + escHtml(aw) + '</span>');
+  if (g.costShare) parts.push('<span class="gcs-fact gcs-cs">Cost-share required</span>');
+  return parts.join('');
+}
+/* Grants.gov eligibility text carries a few entities the edge fn's cleanText
+   leaves intact (notably &bull;). Decode them client-side so the line reads
+   clean; escHtml still escapes the result, so this is display-only. */
+function cleanEligText(t) {
+  return String(t || '')
+    .replace(/^\*\s*/, '')                                   // drop a stray leading "*"
+    .replace(/&bull;/gi, ' • ')
+    .replace(/&mdash;/gi, '—').replace(/&ndash;/gi, '–')
+    .replace(/&nbsp;/gi, ' ').replace(/&#39;/g, "'").replace(/&apos;/gi, "'")
+    .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&quot;/gi, '"')
+    .replace(/&amp;/gi, '&')                                 // last, so we never double-decode
+    .replace(/\s+/g, ' ').trim();
+}
+function grantEligHTML(g) {
+  if (!g || !g.eligibility) return '';
+  let t = cleanEligText(g.eligibility);
+  if (!t) return '';
+  if (t.length > 150) t = t.slice(0, 147).replace(/\s+\S*$/, '') + '…';
+  return '<span class="gce-label">Who can apply</span>' + escHtml(t);
+}
 async function enrichTopGrants(grants) {
   if (!window.sb) return;
   const top = (grants || []).filter(g => g && g.govId && !(g.amountMax > 0)).slice(0, 12);
@@ -10370,11 +10418,17 @@ async function enrichTopGrants(grants) {
         if (lab) { g.amount = lab; g.amountMax = d.awardCeiling || 0; g.amountMin = d.awardFloor || 0; }
         if (d.desc && d.desc.length > 30) g.desc = d.desc;
         if (d.costShareRequired) g.costShare = true;
+        if (d.numberOfAwards) g.numAwards = d.numberOfAwards;
+        if (d.eligibility) g.eligibility = d.eligibility;
       }
       const card = document.querySelector('.gcard[data-id="' + ((window.CSS && CSS.escape) ? CSS.escape(gid) : gid) + '"]');
       if (card) {
         const amtEl = card.querySelector('.gc-meta .amt'); if (amtEl && lab) amtEl.textContent = lab;
         const dscEl = card.querySelector('.gc-body .dsc'); if (dscEl && d.desc && d.desc.length > 30) dscEl.textContent = d.desc;
+        // self-screen slots — build from d (robust even if the grant object is missing); helpers escape all text
+        const sObj = { numAwards: d.numberOfAwards, costShare: d.costShareRequired, eligibility: d.eligibility };
+        const scrEl = card.querySelector('.gc-screen'); if (scrEl) scrEl.innerHTML = grantScreenHTML(sObj);
+        const elgEl = card.querySelector('.gc-elig'); if (elgEl) elgEl.innerHTML = grantEligHTML(sObj);
       }
     });
   } catch (_) {}
@@ -10484,6 +10538,8 @@ function renderGrantCard(g) {
       <div class="funder">${escHtml(g.funder)}</div>
       <div class="ttl">${escHtml(g.title)}</div>
       <div class="dsc">${escHtml(g.desc)}</div>
+      <div class="gc-screen">${grantScreenHTML(g)}</div>
+      <div class="gc-elig">${grantEligHTML(g)}</div>
       <div class="tags"><span class="pill pill-ink">${escHtml(g.type)}</span>${tags}</div>
     </div>
     <div class="gc-meta">
