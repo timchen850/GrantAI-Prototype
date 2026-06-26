@@ -10371,7 +10371,7 @@ async function enrichTopGrants(grants) {
         if (d.desc && d.desc.length > 30) g.desc = d.desc;
         if (d.costShareRequired) g.costShare = true;
       }
-      const card = document.querySelector('.gcard[data-id="' + gid + '"]');
+      const card = document.querySelector('.gcard[data-id="' + ((window.CSS && CSS.escape) ? CSS.escape(gid) : gid) + '"]');
       if (card) {
         const amtEl = card.querySelector('.gc-meta .amt'); if (amtEl && lab) amtEl.textContent = lab;
         const dscEl = card.querySelector('.gc-body .dsc'); if (dscEl && d.desc && d.desc.length > 30) dscEl.textContent = d.desc;

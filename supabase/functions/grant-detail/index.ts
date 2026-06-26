@@ -11,6 +11,19 @@ const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers
 const json = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } });
 const GOV = 'https://api.grants.gov/v1/api/fetchOpportunity';
 
+// Strip tags + decode the common HTML entities Grants.gov emits (&amp; LAST so we
+// never double-decode). Rendered via textContent client-side, so this is display
+// quality, not safety.
+function cleanText(str: unknown, max: number): string {
+  return String(str || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"').replace(/&#39;/g, "'").replace(/&apos;/gi, "'")
+    .replace(/&amp;/gi, '&')
+    .replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
 async function detail(id: string): Promise<any | null> {
   try {
     const ctrl = new AbortController();
@@ -20,8 +33,8 @@ async function detail(id: string): Promise<any | null> {
     if (!r.ok) return null;
     const d = await r.json();
     const s = (d && d.data && d.data.synopsis) || {};
-    const desc = String(s.synopsisDesc || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/\s+/g, ' ').trim().slice(0, 420);
-    const eligDesc = String(s.applicantEligibilityDesc || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 240);
+    const desc = cleanText(s.synopsisDesc, 420);
+    const eligDesc = cleanText(s.applicantEligibilityDesc, 240);
     const numAwards = (s.numberOfAwards != null && s.numberOfAwards !== '') ? String(s.numberOfAwards).slice(0, 24) : null;
     const cs = s.costSharing;
     const costShareRequired = cs === true || String(cs).toLowerCase() === 'yes' || String(cs).toLowerCase() === 'true';
