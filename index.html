@@ -2367,6 +2367,25 @@ label.field-label {
 <!-- Supabase backend: config.js (gitignored) holds the project URL + anon key -->
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* Synchronous session check: if localStorage holds a Supabase token, hide the
+   body immediately so logged-in users never see the landing page flash. The body
+   is revealed by routeAfterAuth() (success) or the auth listener's no-session
+   branch (failure). */
+(function() {
+  try {
+    var key = 'sb-xewrvmqyzeiziimcmenj-auth-token';
+    var raw = localStorage.getItem(key);
+    if (raw) {
+      var tok = JSON.parse(raw);
+      if (tok && tok.access_token) {
+        document.documentElement.style.visibility = 'hidden';
+        window._authPending = true;
+      }
+    }
+  } catch (_) {}
+})();
+</script>
 </head>
 <body>
 <script>
@@ -8787,9 +8806,16 @@ async function currentProfile() {
   return { user, profile };
 }
 
+function revealPage() {
+  if (window._authPending) {
+    document.documentElement.style.visibility = '';
+    window._authPending = false;
+  }
+}
+
 async function routeAfterAuth() {
   const ctx = await currentProfile();
-  if (!ctx) { go('landing'); return; }
+  if (!ctx) { revealPage(); go('landing'); return; }
   window._grange = ctx;
   // check if meaningful survey answers exist
   if (window.sb && ctx.user) {
@@ -8801,15 +8827,18 @@ async function routeAfterAuth() {
     window._grange.surveySkipped = !hasAnswers;
   }
   applyOrgIdentity(ctx);
-  if (!ctx.profile) { go('landing'); return; }
+  if (!ctx.profile) { revealPage(); go('landing'); return; }
   // New users must complete the interactive tutorial FIRST, then the survey.
   if (!tutorialDone(ctx)) {
+    revealPage();
     go('tutorial');
     tutInit(ctx);
   } else if (!ctx.profile.onboarding_complete) {
+    revealPage();
     go('onboarding');
     obInit(ctx);
   } else {
+    revealPage();
     go('dashboard');
   }
 }
