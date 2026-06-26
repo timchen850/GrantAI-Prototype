@@ -5508,6 +5508,16 @@ label.field-label {
   .usa-loading{ display:flex; align-items:center; gap:10px; padding:18px 4px; color:var(--muted); font-size:13px; }
   .usa-foot{ font-size:11.5px; color:var(--muted); margin-top:13px; line-height:1.5; border-top:1px solid var(--line); padding-top:11px; }
 
+  /* ── USASpending historical-award "prospect" cards in the discovery list (relationship leads, NOT open calls) ── */
+  .disc-prospects-head{ margin:26px 0 14px; padding-top:20px; border-top:1px dashed var(--line); }
+  .disc-prospects-head .dph-t{ font-family:var(--display); font-weight:750; font-size:16px; color:var(--ink); letter-spacing:-.01em; }
+  .disc-prospects-head .dph-s{ font-size:12.8px; color:var(--muted); margin-top:3px; line-height:1.5; max-width:46rem; }
+  .gcard.gc-prospect{ background:var(--surface-2); border-style:dashed; cursor:default; }
+  .gcard.gc-prospect:hover{ border-color:var(--accent); transform:none; }
+  .gc-prospect-badge{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; width:64px; align-self:center; }
+  .gc-prospect-badge svg{ width:26px; height:26px; color:var(--accent-ink); }
+  .gc-prospect-badge span{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--accent-ink); }
+
   /* ── Match-assessment bands + explainable components ── */
   .gca-band{ display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; border-radius:999px; padding:3px 10px; letter-spacing:.01em; }
   .gca-band.strong{ background:var(--ok-tint); color:#1c5a36; }
@@ -10485,7 +10495,7 @@ function ensureUsaCard(answers) {
   if (!list || !list.parentNode) return;
   let card = document.getElementById('disc-usa');
   const kw = usaKeywords(answers);
-  if (!kw.length) { if (card) card.remove(); return; }       // need focus areas to query
+  if (!kw.length) { if (card) card.remove(); removeProspects(); return; }       // need focus areas to query
   if (!card) {
     card = document.createElement('div');
     card.id = 'disc-usa';
@@ -10495,7 +10505,7 @@ function ensureUsaCard(answers) {
   card.innerHTML =
     '<div class="usa-top" onclick="this.parentNode.classList.toggle(\'open\')">' +
       '<div class="usa-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10M9 21V10M15 21V10M19 21V10M4 10l8-6 8 6"/></svg></div>' +
-      '<div><div class="usa-tt">Funders who’ve backed work like yours</div><div class="usa-ts">Real federal grants awarded to similar nonprofits, even when there’s no open call.</div></div>' +
+      '<div><div class="usa-tt">Federal funding for your work</div><div class="usa-ts">The landscape: how much similar nonprofits typically win, and who’s won recently.</div></div>' +
       '<svg class="usa-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>' +
     '</div>' +
     '<div class="usa-body" id="disc-usa-body"><div class="usa-loading"><span class="gca-spin"></span> Finding funders active in ' + escHtml(kw.join(', ')) + '…</div></div>';
@@ -10507,9 +10517,9 @@ async function loadUsaSpending(answers) {
   if (!body) return;
   const kw = usaKeywords(answers), state = usaStateAbbr(answers);
   const ck = usaCacheKey(), sig = kw.join('|') + '#' + state;
-  try { const c = JSON.parse(localStorage.getItem(ck) || 'null'); if (c && c.sig === sig && Date.now() - c.ts < 24 * 60 * 60 * 1000) { body.innerHTML = usaResultHTML(c.out); return; } } catch (_) {}
+  try { const c = JSON.parse(localStorage.getItem(ck) || 'null'); if (c && c.sig === sig && Date.now() - c.ts < 24 * 60 * 60 * 1000) { body.innerHTML = usaResultHTML(c.out); renderProspects(c.out, answers); return; } } catch (_) {}
   if (!window.sb) { hideUsaCard(); return; }
-  const usaErr = m => { const b = document.getElementById('disc-usa-body'); if (b) b.innerHTML = '<div class="usa-foot" style="border-top:none;padding-top:2px">' + escHtml(m) + '</div>'; };
+  const usaErr = m => { const b = document.getElementById('disc-usa-body'); if (b) b.innerHTML = '<div class="usa-foot" style="border-top:none;padding-top:2px">' + escHtml(m) + '</div>'; removeProspects(); };
   try {
     const { data: { session } } = await window.sb.auth.getSession();
     if (!session) { hideUsaCard(); return; }   // not signed in — supplementary panel not relevant
@@ -10521,14 +10531,13 @@ async function loadUsaSpending(answers) {
     if (!(j.output.agencies || []).length) { hideUsaCard(); return; }   // no data for this profile — hide quietly
     try { localStorage.setItem(ck, JSON.stringify({ ts: Date.now(), sig, out: j.output })); } catch (_) {}
     body.innerHTML = usaResultHTML(j.output);
+    renderProspects(j.output, answers);
   } catch (e) { usaErr('Could not load federal funders right now. Try again in a moment.'); }
 }
-function hideUsaCard() { const c = document.getElementById('disc-usa'); if (c) c.remove(); }
+function hideUsaCard() { const c = document.getElementById('disc-usa'); if (c) c.remove(); removeProspects(); }
 function usaResultHTML(o) {
   const where = o.state ? ' in ' + escHtml(o.state) : ' nationwide';
-  const agencies = (o.agencies || []).map(a =>
-    '<div class="usa-ag"><div class="usa-ag-nm">' + escHtml(a.name) + '</div>' +
-    '<div class="usa-ag-meta">' + (Number(a.count) || 0) + ' grant' + ((Number(a.count) || 0) === 1 ? '' : 's') + (a.typical ? ' · typically ' + fmtUsd(a.typical) : '') + '</div></div>').join('');
+  // Agencies now render as prospect cards (renderProspects) below the open-grants list — the panel keeps the landscape stats + peer winners.
   const recs = (o.recipients || []).slice(0, 5).map(r =>
     '<div class="usa-rec">• <b>' + escHtml(r.name) + '</b> — ' + fmtUsd(r.amount) + (r.agency ? ', ' + escHtml(r.agency) : '') + (r.year ? ' (' + escHtml(r.year) + ')' : '') + '</div>').join('');
   const totalTxt = (Number(o.total_found) || o.sampled || 0).toLocaleString();
@@ -10538,10 +10547,78 @@ function usaResultHTML(o) {
       (o.award_median ? '<div class="s"><b>' + fmtUsd(o.award_median) + '</b>typical award</div>' : '') +
       (o.award_high ? '<div class="s"><b>' + fmtUsd(o.award_low) + '–' + fmtUsd(o.award_high) + '</b>award range</div>' : '') +
     '</div>' +
-    (agencies ? '<div class="usa-sec">Agencies funding your space</div>' + agencies : '') +
     (recs ? '<div class="usa-sec">Recent recipients like you</div>' + recs : '') +
-    '<div class="usa-foot">Organizations the federal government has funded for work in ' + escHtml((o.keywords || []).join(', ')) + '. Use them as prospects: study their winning awards, then watch the agency for its next open call. Source: USASpending.gov.</div>'
+    '<div class="usa-foot">Real federal awards for work in ' + escHtml((o.keywords || []).join(', ')) + '. The funder prospects below are drawn from this giving history. Source: USASpending.gov.</div>'
   );
+}
+/* ─── USASpending historical awards as discovery "prospect" cards ───
+   The same federal giving history that powers the coverage panel, surfaced as
+   a few clearly-labelled prospect cards in the main list: relationship/timing
+   leads (no deadline), NOT open calls. Adds honest inventory to the "vast
+   majority of grants" promise. Cards link out to USASpending and can be saved
+   to a lightweight local watch list. */
+function prospectsWatchKey() { return 'grange_prospects_' + (window._grange?.user?.id || 'anon'); }
+function getWatchedProspects() { try { return JSON.parse(localStorage.getItem(prospectsWatchKey()) || '[]') || []; } catch (_) { return []; } }
+window.saveProspect = function (btn, idx) {
+  const name = (window._discProspects || [])[idx];
+  if (!name) return;
+  const list = getWatchedProspects();
+  const has = list.includes(name);
+  const next = has ? list.filter(n => n !== name) : list.concat([name]);
+  try { localStorage.setItem(prospectsWatchKey(), JSON.stringify(next)); } catch (_) {}
+  if (btn) {
+    btn.classList.toggle('btn-primary', !has);
+    btn.classList.toggle('btn-outline', has);
+    btn.innerHTML = !has ? '✓&nbsp;Watching' : 'Save to watch';
+  }
+  toast(has ? 'Removed from your funder watch list' : 'Added to your funder watch list');
+};
+function removeProspects() { const p = document.getElementById('disc-prospects'); if (p) p.remove(); }
+function prospectCardHTML(a, idx) {
+  const name = a.name || 'Federal funder';
+  const count = Number(a.count) || 0;
+  const typical = a.typical ? fmtUsd(a.typical) : '';
+  const watched = getWatchedProspects().includes(name);
+  const usaUrl = 'https://www.usaspending.gov/search';
+  return `<div class="gcard gc-prospect">
+    <div class="gc-prospect-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="13" r="3.4"/><circle cx="17" cy="13" r="3.4"/><path d="M3.6 13V8.6A2 2 0 0 1 7 7.2M20.4 13V8.6A2 2 0 0 0 17 7.2M10.4 13h3.2"/></svg>
+      <span>Prospect</span>
+    </div>
+    <div class="gc-body">
+      <div class="funder">Federal funder · USASpending</div>
+      <div class="ttl">${escHtml(name)}</div>
+      <div class="dsc">Has awarded ${count ? `<b>${count}</b> grant${count === 1 ? '' : 's'}` : 'grants'} for work like yours${typical ? ` — typically <b>${typical}</b>` : ''}. There's no open call here right now; treat it as a funder to study and build toward.</div>
+      <div class="tags"><span class="pill pill-warn">No open call</span><span class="pill pill-ink">Relationship lead</span></div>
+    </div>
+    <div class="gc-meta">
+      <div class="amt">${typical || '—'}</div>
+      <div class="due" style="color:var(--muted)">No deadline</div>
+      <div class="acts">
+        <button class="btn ${watched ? 'btn-primary' : 'btn-outline'} btn-sm" onclick="event.stopPropagation();saveProspect(this,${idx})">${watched ? '✓&nbsp;Watching' : 'Save to watch'}</button>
+        <a href="${usaUrl}" target="_blank" rel="noopener" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">Explore on USASpending ↗</a>
+      </div>
+    </div>
+  </div>`;
+}
+function renderProspects(o, answers) {
+  const list = document.getElementById('disc-grants-list');
+  if (!list || !list.parentNode) return;
+  const agencies = ((o && o.agencies) || []).filter(a => a && a.name).slice(0, 4);
+  if (!agencies.length) { removeProspects(); return; }
+  window._discProspects = agencies.map(a => a.name);
+  let sec = document.getElementById('disc-prospects');
+  if (!sec) {
+    sec = document.createElement('div');
+    sec.id = 'disc-prospects';
+    list.parentNode.insertBefore(sec, list.nextSibling);   // directly after the open-grants list
+  }
+  sec.innerHTML =
+    '<div class="disc-prospects-head">' +
+      '<div class="dph-t">Funder prospects · no open call</div>' +
+      '<div class="dph-s">A few funders to build toward — no deadline to hit. Study their past awards and watch for their next open opportunity.</div>' +
+    '</div>' +
+    agencies.map((a, i) => prospectCardHTML(a, i)).join('');
 }
 function ringClass(score) { return score >= 80 ? 'hi' : score >= 65 ? 'mid' : ''; }
 
