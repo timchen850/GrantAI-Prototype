@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useAuth } from '../lib/auth'
 
 const TIERS = [
   {
@@ -59,7 +60,20 @@ const TIERS = [
 ]
 
 export default function Pricing() {
-  const [billing, setBilling] = useState('monthly') // 'monthly' | 'annual'
+  const { profile, updateProfile } = useAuth()
+  const currentTier = profile?.tier || 'free'
+  const [billing, setBilling] = useState('monthly')
+  const [switching, setSwitching] = useState(null)
+
+  async function selectTier(tierId) {
+    if (tierId === currentTier) return
+    setSwitching(tierId)
+    try {
+      await updateProfile({ tier: tierId })
+    } finally {
+      setSwitching(null)
+    }
+  }
 
   return (
     <div style={{ padding: '40px 32px', maxWidth: 1100, margin: '0 auto' }}>
@@ -148,6 +162,7 @@ export default function Pricing() {
             ? Math.round(tier.price * 0.8)
             : tier.price
           const isHighlighted = tier.id === 'starter'
+          const isCurrent = tier.id === currentTier
 
           return (
             <div
@@ -221,8 +236,8 @@ export default function Pricing() {
                 {tier.desc}
               </p>
 
-              {/* Current plan indicator (Free) */}
-              {tier.id === 'free' && (
+              {/* Current plan indicator or CTA */}
+              {isCurrent ? (
                 <div style={{
                   width: '100%',
                   padding: '10px',
@@ -242,29 +257,29 @@ export default function Pricing() {
                   <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--ok)', display: 'inline-block', flexShrink: 0 }} />
                   Your current plan
                 </div>
-              )}
-
-              {/* CTA */}
-              {tier.id !== 'free' && (
+              ) : (
                 <button
+                  onClick={() => selectTier(tier.id)}
+                  disabled={switching === tier.id}
                   style={{
                     width: '100%',
                     padding: '11px',
                     borderRadius: 'var(--r)',
-                    border: 'none',
-                    background: 'var(--accent)',
-                    color: '#fff',
+                    border: tier.id === 'free' ? '1px solid var(--border)' : 'none',
+                    background: tier.id === 'free' ? 'transparent' : 'var(--accent)',
+                    color: tier.id === 'free' ? 'var(--ink-secondary)' : '#fff',
                     fontSize: 14,
                     fontWeight: 600,
-                    cursor: 'pointer',
+                    cursor: switching === tier.id ? 'wait' : 'pointer',
                     transition: 'all var(--dur) var(--ease)',
                     marginBottom: 24,
-                    boxShadow: '0 2px 12px rgba(232,92,58,0.35)',
+                    boxShadow: tier.id !== 'free' ? '0 2px 12px rgba(232,92,58,0.35)' : 'none',
+                    opacity: switching === tier.id ? 0.7 : 1,
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-bright)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)' }}
+                  onMouseEnter={e => { if (tier.id !== 'free') e.currentTarget.style.background = 'var(--accent-bright)' }}
+                  onMouseLeave={e => { if (tier.id !== 'free') e.currentTarget.style.background = 'var(--accent)' }}
                 >
-                  {tier.cta}
+                  {switching === tier.id ? 'Switching…' : tier.id === 'free' ? 'Switch to Free' : tier.cta}
                 </button>
               )}
 
