@@ -1,5 +1,8 @@
 import React, { useState } from 'react'
 import { useAuth } from '../lib/auth'
+import { sb } from '../lib/supabase'
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://xewrvmqyzeiziimcmenj.supabase.co'
 
 const TIERS = [
   {
@@ -67,9 +70,32 @@ export default function Pricing() {
 
   async function selectTier(tierId) {
     if (tierId === currentTier) return
+    // Free tier — no payment needed
+    if (tierId === 'free') {
+      setSwitching('free')
+      try { await updateProfile({ tier: 'free' }) } finally { setSwitching(null) }
+      return
+    }
     setSwitching(tierId)
     try {
-      await updateProfile({ tier: tierId })
+      const { data: { session } } = await sb.auth.getSession()
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/create-checkout`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ tier: tierId, billing }),
+        }
+      )
+      const { url, error } = await res.json()
+      if (error) throw new Error(error)
+      window.location.href = url
+    } catch (err) {
+      console.error('Checkout error:', err)
+      alert('Could not start checkout. Please try again.')
     } finally {
       setSwitching(null)
     }
