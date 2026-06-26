@@ -17,6 +17,13 @@ Deno.serve(async (req: Request) => {
   const { data: { user }, error: aerr } = await sb.auth.getUser();
   if (aerr || !user) return json({ error: 'Unauthorized' }, 401);
 
+  // RAG is a Pro-only feature
+  const sbAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  const { data: prof } = await sbAdmin.from('profiles').select('tier').eq('user_id', user.id).maybeSingle();
+  if ((prof?.tier as string) !== 'pro') {
+    return json({ chunks: [], error: 'RAG (Past Proposals) is a Pro plan feature.' }, 403);
+  }
+
   let body: any; try { body = await req.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
   const query = (body?.query || '').toString().slice(0, 4000);
   const matchCount = Math.min(Math.max(parseInt(body?.match_count, 10) || 6, 1), 12);

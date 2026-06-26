@@ -1,7 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { sb, streamProposal } from '../lib/supabase'
 import { useToast } from '../lib/toast'
+import { useAuth } from '../lib/auth'
 import PaywallBanner from '../components/PaywallBanner'
+
+const TIER_LIMITS = { free: 2, starter: 15, pro: Infinity }
 
 const SECTIONS = [
   { key: 'executive_summary', label: 'Executive Summary', words: 300 },
@@ -32,6 +35,11 @@ const STATUS_PILLS = {
 
 export default function Generator({ setPage }) {
   const { toast } = useToast()
+  const { profile } = useAuth()
+  const tier = profile?.tier || 'free'
+  const monthlyLimit = TIER_LIMITS[tier] ?? TIER_LIMITS.free
+  const isProUser = tier === 'pro'
+
   const [grants, setGrants] = useState([])
   const [selectedGrant, setSelectedGrant] = useState(null)
   const [proposal, setProposal] = useState(null)
@@ -40,6 +48,7 @@ export default function Generator({ setPage }) {
   const [streaming, setStreaming] = useState(false)
   const [editing, setEditing] = useState(false)
   const [editContent, setEditContent] = useState('')
+  const [monthlyUsed, setMonthlyUsed] = useState(0)
   const textareaRef = useRef(null)
 
   useEffect(() => {
@@ -48,7 +57,15 @@ export default function Generator({ setPage }) {
       .in('status', ['saved', 'drafting'])
       .order('updated_at', { ascending: false })
       .then(({ data }) => setGrants(data || []))
+    loadMonthlyUsage()
   }, [])
+
+  async function loadMonthlyUsage() {
+    const monthStart = new Date().toISOString().slice(0, 7) + '-01'
+    const { data } = await sb.from('proposal_usage').select('count').gte('used_on', monthStart)
+    const total = (data || []).reduce((s, r) => s + (r.count ?? 0), 0)
+    setMonthlyUsed(total)
+  }
 
   async function loadProposal(grant) {
     setSelectedGrant(grant)
@@ -103,6 +120,7 @@ export default function Generator({ setPage }) {
 
       setSections(prev => ({ ...prev, [sectionKey]: saved }))
       toast('Section drafted!', 'ok')
+      loadMonthlyUsage()
     } catch (err) {
       toast('Drafting failed: ' + err.message, 'danger')
       setSections(prev => ({
@@ -199,13 +217,22 @@ export default function Generator({ setPage }) {
             </div>
           </div>
         )}
-        {/* RAG paywall */}
-        <PaywallBanner
-          feature="Past Proposals (RAG)"
-          plan="Pro"
-          setPage={setPage}
-          style={{ marginTop: 4 }}
-        />
+        {/* RAG — show paywall for non-Pro, feature panel for Pro */}
+        {isProUser ? (
+          <div className="card" style={{ padding: 14, marginTop: 4 }}>
+            <div className="label" style={{ marginBottom: 6 }}>Past Proposals (RAG)</div>
+            <p style={{ fontSize: 12, color: 'var(--ink-tertiary)', margin: 0 }}>
+              Your past proposals will automatically ground new drafts in your org's voice.
+            </p>
+          </div>
+        ) : (
+          <PaywallBanner
+            feature="Past Proposals (RAG)"
+            plan="Pro"
+            setPage={setPage}
+            style={{ marginTop: 4 }}
+          />
+        )}
       </div>
 
       {/* Right: editor */}
@@ -253,13 +280,25 @@ export default function Generator({ setPage }) {
                     <button className="btn btn-accent btn-sm" onClick={saveEdit}>Save</button>
                   </>
                 )}
+                {/* Draft quota pill */}
+                {monthlyLimit !== Infinity && (
+                  <span style={{
+                    fontSize: 11, color: monthlyUsed >= monthlyLimit ? 'var(--danger, #e05)' : 'var(--ink-tertiary)',
+                    fontWeight: 500, alignSelf: 'center',
+                  }}>
+                    {monthlyUsed}/{monthlyLimit} drafts
+                  </span>
+                )}
                 <button
                   className="btn btn-accent btn-sm"
                   onClick={() => draftSection(activeSection)}
-                  disabled={streaming}
+                  disabled={streaming || monthlyUsed >= monthlyLimit}
+                  title={monthlyUsed >= monthlyLimit ? `Monthly limit reached (${monthlyLimit} drafts on ${tier} plan)` : undefined}
                 >
-                  {streaming && activeSection === activeSection ? (
+                  {streaming ? (
                     <><span className="spinner" style={{ width: 12, height: 12, borderWidth: 1.5 }} /> Drafting…</>
+                  ) : monthlyUsed >= monthlyLimit ? (
+                    <>Limit reached</>
                   ) : (
                     <><SparkleIcon /> {activeSec?.content ? 'Re-draft' : 'Draft with AI'}</>
                   )}

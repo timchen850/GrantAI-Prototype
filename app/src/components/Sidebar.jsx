@@ -80,19 +80,23 @@ export default function Sidebar({ page, setPage }) {
           <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--ink-tertiary)', marginBottom: 2 }}>
             Current Plan
           </div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-secondary)' }}>Free</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-secondary)' }}>
+            {profile?.tier ? profile.tier.charAt(0).toUpperCase() + profile.tier.slice(1) : 'Free'}
+          </div>
         </div>
-        <span style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: 'var(--accent-bright)',
-          padding: '4px 8px',
-          borderRadius: 'var(--r-pill)',
-          background: 'var(--accent-dim)',
-          border: '1px solid rgba(232,92,58,0.2)',
-        }}>
-          Upgrade
-        </span>
+        {profile?.tier !== 'pro' && (
+          <span style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: 'var(--accent-bright)',
+            padding: '4px 8px',
+            borderRadius: 'var(--r-pill)',
+            background: 'var(--accent-dim)',
+            border: '1px solid rgba(232,92,58,0.2)',
+          }}>
+            Upgrade
+          </span>
+        )}
       </div>
 
       <div className="sidebar-footer">

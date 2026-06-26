@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { sb, runAiJob } from '../lib/supabase'
 import { useToast } from '../lib/toast'
+import { useAuth } from '../lib/auth'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://xewrvmqyzeiziimcmenj.supabase.co'
 
@@ -8,6 +9,9 @@ const SCORE_COLOR = s => s >= 80 ? 'var(--ok)' : s >= 60 ? 'var(--warn)' : 'var(
 
 export default function Discovery({ setPage }) {
   const { toast } = useToast()
+  const { profile } = useAuth()
+  const tier = profile?.tier || 'free'
+  const FREE_RESULT_LIMIT = 5
   const [opps, setOpps] = useState([])
   const [loading, setLoading] = useState(true)
   const [discovering, setDiscovering] = useState(false)
@@ -114,7 +118,9 @@ export default function Discovery({ setPage }) {
     return match
   })
 
-  const displayList = mode === 'semantic' ? semanticResults : catalogFiltered
+  const fullList = mode === 'semantic' ? semanticResults : catalogFiltered
+  const isLimited = tier === 'free' && fullList.length > FREE_RESULT_LIMIT
+  const displayList = isLimited ? fullList.slice(0, FREE_RESULT_LIMIT) : fullList
 
   return (
     <div className="fade-in">
@@ -221,6 +227,30 @@ export default function Discovery({ setPage }) {
               onDraft={() => setPage('generator')}
             />
           ))}
+          {isLimited && (
+            <div style={{
+              borderRadius: 'var(--r-xl)',
+              border: '1px dashed rgba(232,92,58,0.35)',
+              background: 'linear-gradient(135deg, rgba(232,92,58,0.06) 0%, var(--bg-elevated) 100%)',
+              padding: '16px 20px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+            }}>
+              <span style={{ fontSize: 13, color: 'var(--ink-secondary)' }}>
+                Showing {FREE_RESULT_LIMIT} of {fullList.length} results — upgrade to Starter for unlimited grant discovery.
+              </span>
+              <button
+                onClick={() => setPage('pricing')}
+                style={{
+                  flexShrink: 0, padding: '8px 16px', borderRadius: 'var(--r)',
+                  border: '1px solid rgba(232,92,58,0.4)', background: 'transparent',
+                  color: 'var(--accent-bright)', fontSize: 13, fontWeight: 600,
+                  cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >
+                View Plans →
+              </button>
+            </div>
+          )}
         </div>
       )}
 

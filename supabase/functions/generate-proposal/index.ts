@@ -13,9 +13,22 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+async function sendEmail(userId: string, emailType: string, data: Record<string, string>) {
+  const url = `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
+      body: JSON.stringify({ user_id: userId, email_type: emailType, data }),
+    });
+  } catch (e) { console.error('sendEmail failed', e); }
+}
+
 const GEMINI_MODEL = 'gemini-2.5-flash'; // current, free-tier eligible, strong prose
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
-const DAILY_LIMIT = 10;
+
+// Monthly draft limits per tier (Pro = no cap)
+const TIER_LIMITS: Record<string, number> = { free: 2, starter: 15, pro: Infinity };
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -49,16 +62,31 @@ Deno.serve(async (req: Request) => {
   const { data: { user }, error: authErr } = await sb.auth.getUser();
   if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
 
-  // ── 2. Per-user daily rate limit ─────────────────────────────
+  // ── 2. Per-user monthly rate limit (plan-aware) ──────────────
+  // Fetch the user's tier from profiles
+  const sbAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  const { data: prof } = await sbAdmin.from('profiles').select('tier').eq('user_id', user.id).maybeSingle();
+  const tier: string = (prof?.tier as string) || 'free';
+  const monthlyLimit = TIER_LIMITS[tier] ?? TIER_LIMITS.free;
+
   const today = new Date().toISOString().slice(0, 10);
+  // Sum all drafts this calendar month
+  const monthStart = today.slice(0, 7) + '-01'; // YYYY-MM-01
+  const { data: monthlyRows } = await sb
+    .from('proposal_usage').select('id, count, used_on')
+    .eq('user_id', user.id).gte('used_on', monthStart);
+  const monthlyTotal: number = (monthlyRows ?? []).reduce((s: number, r: any) => s + ((r.count as number) ?? 0), 0);
+
+  if (monthlyTotal >= monthlyLimit) {
+    const upgrade = tier === 'free' ? 'Upgrade to Starter for 15 drafts/month.' : tier === 'starter' ? 'Upgrade to Pro for unlimited drafts.' : '';
+    return json({ error: `Monthly limit reached (${monthlyLimit} drafts/month on ${tier} plan). ${upgrade}`.trim() }, 429);
+  }
+
+  // Increment today's row up-front to avoid races; refunded below if BOTH providers fail
   const { data: usage } = await sb
     .from('proposal_usage').select('id, count')
     .eq('user_id', user.id).eq('used_on', today).maybeSingle();
   const currentCount: number = (usage?.count as number) ?? 0;
-  if (currentCount >= DAILY_LIMIT) {
-    return json({ error: `Daily limit reached (${DAILY_LIMIT} proposals/day). Try again tomorrow.` }, 429);
-  }
-  // increment up-front to avoid races; refunded below if BOTH providers fail
   let usageId = usage?.id as string | undefined;
   if (usageId) {
     await sb.from('proposal_usage').update({ count: currentCount + 1 }).eq('id', usageId);
@@ -88,6 +116,10 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify(body),
       });
       if (res.ok && res.body) {
+        // Fire proposal-ready email after streaming starts (non-blocking)
+        sendEmail(user.id, 'proposal_ready', {
+          grant_title: (body?.contents?.[0]?.parts?.[0]?.text || '').slice(0, 80),
+        });
         return new Response(res.body, {
           status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
