@@ -7,15 +7,20 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const initialized = React.useRef(false)
 
   useEffect(() => {
     sb.auth.getSession().then(({ data: { session } }) => {
+      initialized.current = true
       setSession(session)
       if (session) fetchProfile(session.user.id)
       else setLoading(false)
     })
 
     const { data: { subscription } } = sb.auth.onAuthStateChange((_, session) => {
+      // Ignore events that arrive before getSession() completes to prevent
+      // the landing page from flashing before the real session is known.
+      if (!initialized.current) return
       setSession(session)
       if (session) fetchProfile(session.user.id)
       else { setProfile(null); setLoading(false) }
