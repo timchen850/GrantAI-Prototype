@@ -10040,6 +10040,7 @@ async function updateDashboard() {
         </div>`;
       }).join('');
     }
+    loadDashboardDeadlines();   // overwrite the in-memory fallback with persisted deadlines (saved grants + renewals) when present
   }
 
   // ── 7. Profile strength ──────────────────────────────────────
@@ -10991,15 +10992,89 @@ async function saveGrantToPipeline(grant, status) {
       if (error) throw error;
       gid = ins.id;
       if (grant.deadline) {
-        await sb.from('deadlines').insert({
+        const { data: dl } = await sb.from('deadlines').insert({
           user_id: uid, grant_id: gid, kind: 'proposal',
           title: (grant.funder || grant.title) + ' — proposal due', due_date: grant.deadline,
-        });
+        }).select('id').single();
+        if (dl) await seedReminders(dl.id, grant.deadline, uid);
       }
     }
     toast(status === 'drafting' ? 'Added to your pipeline — drafting' : 'Saved to your pipeline');
     return gid;
   } catch (e) { console.error('saveGrantToPipeline', e); toast('Could not save — please try again.'); return null; }
+}
+
+/* Multi-stage reminders: seed 30/14/7/1-day nudges for a deadline (UTC-safe; only
+   reminders still in the future are inserted). Non-blocking — a failure here never
+   breaks the save. A backend job consumes the `reminders` rows to actually notify. */
+async function seedReminders(deadlineId, dueDate, uid) {
+  if (!window.sb || !deadlineId || !dueDate) return;
+  const dueMs = Date.parse(String(dueDate).slice(0, 10) + 'T00:00:00Z');
+  if (isNaN(dueMs)) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = [30, 14, 7, 1].map(off => ({
+    deadline_id: deadlineId, user_id: uid, offset_days: off,
+    scheduled_for: new Date(dueMs - off * 86400000).toISOString().slice(0, 10), channel: 'email',
+  })).filter(r => r.scheduled_for >= today);   // YYYY-MM-DD compares correctly as strings
+  if (!rows.length) return;
+  try {
+    await sb.from('reminders').delete().eq('deadline_id', deadlineId);   // idempotent — never stack duplicate reminders
+    await sb.from('reminders').insert(rows);
+  } catch (e) { console.warn('seedReminders', e); }
+}
+
+/* ─── Persisted deadline tracker (dashboard) ───────────────────
+   Reads the deadlines table — saved-grant proposal deadlines + SAM/registration
+   renewals — so the widget reflects real commitments (and their reminders), not
+   just whatever's in the in-memory discovery list. Falls back to that in-memory
+   render (already painted by updateDashboard) when nothing is persisted yet. */
+function dlKindLabel(kind) {
+  return ({ proposal: 'Proposal due', loi: 'LOI due', report: 'Report due', sam_gov: 'Registration renewal', registration: 'Registration renewal', renewal: 'Renewal' })[kind] || 'Deadline';
+}
+function nextReminderLabel(daysLeft) {
+  const ahead = [30, 14, 7, 1].filter(o => o < daysLeft);   // reminders still in the future
+  if (!ahead.length) return daysLeft <= 1 ? '' : 'Reminders set';
+  const inDays = daysLeft - ahead[0];                        // soonest upcoming reminder
+  return inDays <= 0 ? 'Reminder due' : 'We’ll remind you in ' + inDays + 'd';
+}
+async function loadDashboardDeadlines() {
+  const el = document.getElementById('dash-deadlines');
+  if (!el || !window.sb) return;
+  const uid = window._grange?.user?.id;
+  if (!uid) return;
+  const today = new Date().toISOString().slice(0, 10);
+  let rows;
+  try {
+    const { data, error } = await window.sb.from('deadlines')
+      .select('id,title,due_date,kind,status')
+      .eq('user_id', uid).eq('status', 'upcoming').gte('due_date', today)
+      .order('due_date', { ascending: true }).limit(6);
+    if (error) return;          // keep the in-memory fallback already painted
+    rows = data || [];
+  } catch (_) { return; }
+  if (!rows.length) return;     // nothing persisted yet — keep the in-memory matched deadlines
+  const todayMs = Date.parse(today + 'T00:00:00Z');
+  el.innerHTML = rows.map(d => {
+    const daysLeft = Math.round((Date.parse(String(d.due_date).slice(0, 10) + 'T00:00:00Z') - todayMs) / 86400000);
+    const cls = daysLeft <= 14 ? 'red' : daysLeft <= 45 ? 'amber' : 'green';
+    const sub = [dlKindLabel(d.kind), nextReminderLabel(daysLeft)].filter(Boolean).join(' · ');
+    const ddTxt = daysLeft <= 0 ? 'Today' : daysLeft + 'd';
+    return '<div class="dl">'
+      + '<div><div class="dn">' + escHtml(d.title || 'Deadline') + '</div><div class="dt">' + escHtml(sub) + '</div></div>'
+      + '<div style="display:flex;align-items:center;gap:10px">'
+      + '<div class="dd ' + cls + '">' + ddTxt + '</div>'
+      + '<button class="btn btn-ghost btn-sm" title="Mark as done" onclick="markDeadlineDone(\'' + escHtml(d.id) + '\')">Done</button>'
+      + '</div></div>';
+  }).join('');
+}
+async function markDeadlineDone(id) {
+  if (!window.sb || !id) return;
+  try {
+    const { error } = await window.sb.from('deadlines').update({ status: 'done', completed_at: new Date().toISOString() }).eq('id', id);
+    if (error) throw error;   // supabase-js returns {error} rather than throwing — surface real failures
+    toast('Marked done');
+    loadDashboardDeadlines();
+  } catch (_) { toast('Could not update — please try again.'); }
 }
 
 /* Draft flow: select the grant, save it to the pipeline, open the generator. */
