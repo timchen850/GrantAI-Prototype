@@ -997,6 +997,12 @@ label.field-label {
 .doc h4 { font-size: 13.5px; color: var(--ink); margin: 18px 0 7px; letter-spacing: -0.01em; }
 .doc h4:first-child { margin-top: 0; }
 .doc p { font-size: 13.5px; line-height: 1.75; color: var(--ink-body); margin-bottom: 10px; }
+/* Export dropdown (Word / PDF / plain text) */
+.exp-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 60; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(26,25,22,0.16); padding: 6px; min-width: 188px; }
+.exp-menu button { display: block; width: 100%; text-align: left; background: none; border: none; padding: 9px 11px;
+  border-radius: 7px; font: inherit; font-size: 13px; color: var(--ink); cursor: pointer; }
+.exp-menu button:hover { background: var(--surface-2); }
 .cursor { display: inline-block; width: 2px; height: 1em; background: var(--accent);
   vertical-align: text-bottom; margin-left: 1px; animation: blink 1s step-end infinite; }
 @keyframes blink { 50% { opacity: 0; } }
@@ -5252,7 +5258,7 @@ label.field-label {
           <div id="out-doc" style="display:none">
             <div class="out-head">
               <div class="oh-l"><div class="ol1" id="gen-out-type">Draft, full grant narrative</div><div class="ol2" id="gen-out-funder">DHHS Healthy Communities</div></div>
-              <div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="genShowConfig()" title="Back to the configuration form">&larr; Configure</button><button class="btn btn-outline btn-sm" onclick="copyProposal()">Copy</button><button class="btn btn-accent btn-sm" id="export-btn" onclick="exportProposal()">Export .txt</button></div>
+              <div style="display:flex;gap:8px;align-items:center"><button class="btn btn-ghost btn-sm" onclick="genShowConfig()" title="Back to the configuration form">&larr; Configure</button><button class="btn btn-outline btn-sm" onclick="copyProposal()">Copy</button><div class="exp-wrap" id="exp-wrap" style="position:relative"><button class="btn btn-accent btn-sm" id="export-btn" onclick="toggleExportMenu(event)" aria-haspopup="true">Export &#9662;</button><div class="exp-menu" id="exp-menu" style="display:none" role="menu"><button type="button" role="menuitem" onclick="exportProposalDoc()">Word document (.doc)</button><button type="button" role="menuitem" onclick="exportProposalPdf()">PDF</button><button type="button" role="menuitem" onclick="exportProposalTxt()">Plain text (.txt)</button></div></div></div>
             </div>
             <div id="ai-policy-banner" style="display:none;padding:10px 28px 0"></div>
             <div class="out-body"><div class="doc" id="doc-content"></div></div>
@@ -7848,29 +7854,109 @@ function copyDisclosure() {
   navigator.clipboard.writeText(t.value).then(() => toast('AI-use disclosure copied'), () => toast('Copy failed — select and copy manually'));
 }
 
+/* ─── Clean exports for portal forms ───────────────────────
+   The proposal lives in #doc-content as <h4> section titles + <p> body, with
+   optional <mark class="verify-flag"> "double-check this" highlights. For a
+   clean, professional artifact those highlights are unwrapped to plain text
+   (the words stay — the in-app draft keeps the highlight + double-check banner).
+   Word = a self-contained HTML doc (application/msword opens it in Word/Docs);
+   PDF = a print view the browser saves as PDF; text = clean plain text. */
+function proposalCleanClone() {
+  const src = document.getElementById('doc-content');
+  if (!src || !src.innerText.trim()) return null;
+  const clone = src.cloneNode(true);
+  clone.querySelectorAll('mark.verify-flag').forEach(m => m.replaceWith(document.createTextNode(m.textContent)));
+  // defensive: the PDF path writes this HTML into a new window — never carry executable nodes/handlers/URIs
+  clone.querySelectorAll('script,style,link,iframe,object,embed').forEach(e => e.remove());
+  clone.querySelectorAll('*').forEach(el => {
+    [...el.attributes].forEach(a => {
+      if (/^on/i.test(a.name)) el.removeAttribute(a.name);
+      else if ((a.name === 'href' || a.name === 'src') && /^\s*javascript:/i.test(a.value)) el.removeAttribute(a.name);
+    });
+  });
+  return clone;
+}
+function proposalPlainText() {
+  const clone = proposalCleanClone();   // same cleaned source as the doc export (scripts/handlers stripped, verify-flags unwrapped)
+  if (!clone) return '';
+  const out = [];
+  clone.childNodes.forEach(node => {
+    const text = (node.textContent || '').replace(/\s+/g, ' ').trim();   // each block (h4/p) → its own line; collapse inner whitespace
+    if (text) out.push(text);
+  });
+  return out.join('\n\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+}
+function proposalFilename(ext) {
+  const clean = s => (s || '').replace(/[^\w]+/g, '_').replace(/^_+|_+$/g, '');
+  const org = clean(window._grange?.profile?.org_name) || 'org';
+  const grant = clean(getVal('gen-program', 'proposal')) || 'proposal';
+  const date = new Date().toISOString().slice(0, 10);
+  return `${org}_${grant}_${date}.${ext}`;
+}
+function downloadBlob(blob, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function proposalDocHtml() {
+  const clone = proposalCleanClone();
+  if (!clone) return '';
+  clone.querySelectorAll('h4').forEach(h => { const h2 = document.createElement('h2'); h2.innerHTML = h.innerHTML; h.replaceWith(h2); });
+  const org = (window._grange?.profile?.org_name || '').trim();
+  const program = (getVal('gen-program', '') || '').trim();
+  const title = escHtml([org, program].filter(Boolean).join(' — ') || 'Grant proposal');
+  const funder = escHtml((document.getElementById('gen-out-funder')?.textContent || '').trim());
+  const style = "body{font-family:'Calibri','Segoe UI',Arial,sans-serif;font-size:11pt;line-height:1.5;color:#1a1916;max-width:7.5in;margin:0 auto;padding:0.6in 0;}"
+    + "h1{font-size:18pt;margin:0 0 4pt;}.sub{color:#555;font-size:10pt;margin:0 0 18pt;}"
+    + "h2{font-size:13pt;margin:16pt 0 5pt;color:#111;}p{margin:0 0 8pt;}@media print{body{padding:0;}}";
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + title + '</title><style>' + style + '</style></head><body>'
+    + '<h1>' + title + '</h1>' + (funder ? '<div class="sub">' + funder + '</div>' : '')
+    + clone.innerHTML + '</body></html>';
+}
 function copyProposal() {
-  const content = document.getElementById('doc-content');
-  if (!content || !content.innerText.trim()) { toast('Nothing to copy yet.'); return; }
-  navigator.clipboard.writeText(content.innerText).then(
-    () => toast('Proposal copied to clipboard'),
+  const text = proposalPlainText();
+  if (!text.trim()) { toast('Nothing to copy yet.'); return; }
+  navigator.clipboard.writeText(text).then(
+    () => toast('Proposal copied — clean text, ready to paste'),
     () => toast('Copy failed — please select and copy manually')
   );
 }
-
-function exportProposal() {
-  const content = document.getElementById('doc-content');
-  if (!content || !content.innerText.trim()) { toast('Nothing to export yet.'); return; }
-  const grantName  = getVal('gen-program', 'proposal').replace(/\s+/g, '_');
-  const orgName    = (window._grange?.profile?.org_name || 'org').replace(/\s+/g, '_');
-  const dateStr    = new Date().toISOString().slice(0, 10);
-  const filename   = `${orgName}_${grantName}_${dateStr}.txt`;
-  const blob       = new Blob([content.innerText], { type: 'text/plain' });
-  const a          = document.createElement('a');
-  a.href           = URL.createObjectURL(blob);
-  a.download       = filename;
-  a.click();
-  URL.revokeObjectURL(a.href);
-  toast(`Exported as ${filename}`);
+function toggleExportMenu(e) {
+  if (e) e.stopPropagation();
+  const m = document.getElementById('exp-menu');
+  if (!m) return;
+  const open = !m.style.display || m.style.display === 'none';
+  m.style.display = open ? 'block' : 'none';
+  if (open) setTimeout(() => document.addEventListener('click', closeExportMenuOnce), 0);
+  else closeExportMenu();
+}
+function closeExportMenu() { const m = document.getElementById('exp-menu'); if (m) m.style.display = 'none'; document.removeEventListener('click', closeExportMenuOnce); }
+function closeExportMenuOnce(e) { const w = document.getElementById('exp-wrap'); if (w && w.contains(e.target)) return; closeExportMenu(); }
+function exportProposalTxt() {
+  closeExportMenu();
+  const text = proposalPlainText();
+  if (!text.trim()) { toast('Nothing to export yet.'); return; }
+  downloadBlob(new Blob([text], { type: 'text/plain' }), proposalFilename('txt'));
+  toast('Exported as plain text');
+}
+function exportProposalDoc() {
+  closeExportMenu();
+  const html = proposalDocHtml();
+  if (!html) { toast('Nothing to export yet.'); return; }
+  downloadBlob(new Blob(['﻿' + html], { type: 'application/msword' }), proposalFilename('doc'));
+  toast('Exported as a Word document');
+}
+function exportProposalPdf() {
+  closeExportMenu();
+  const html = proposalDocHtml();
+  if (!html) { toast('Nothing to export yet.'); return; }
+  const w = window.open('', '_blank');
+  if (!w) { toast('Allow pop-ups to save as PDF, or use Word / Plain text.'); return; }
+  w.document.open(); w.document.write(html); w.document.close(); w.focus();
+  setTimeout(() => { try { w.print(); } catch (_) {} }, 350);
+  toast('Opening your print dialog — choose “Save as PDF”.');
 }
 
 /* ─── Google Sign-In (via Supabase OAuth) ────────────────── */
