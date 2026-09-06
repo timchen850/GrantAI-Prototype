@@ -900,6 +900,15 @@ label.field-label {
 .dl .dt { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .dl .dd { font-size: 13px; font-weight: 700; }
 .dd.red { color: var(--accent); } .dd.amber { color: var(--warn-ink); } .dd.green { color: var(--ok); }
+/* Dedicated Deadlines screen */
+.dlx-group { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 8px 22px 14px; margin-bottom: 18px; }
+.dlx-head { font-family: var(--display); font-weight: 750; font-size: 15px; color: var(--ink); padding: 12px 0 4px; display: flex; align-items: center; gap: 9px; }
+.dlx-count { font-size: 12px; font-weight: 700; color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
+.dl.dlx-done { opacity: .68; }
+.dl.dlx-done .dn { text-decoration: line-through; text-decoration-color: var(--line); }
+.dlx-empty { padding: 60px 40px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 15px; color: var(--muted);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
+.dlx-empty p { max-width: 30rem; font-size: 14px; line-height: 1.6; margin: 0; }
 
 .bars { display: flex; flex-direction: column; gap: 14px; }
 .bar-row .bl { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: var(--ink-soft); }
@@ -2431,7 +2440,6 @@ label.field-label {
         </a>
       </div>
       <div class="nav-right">
-        <a class="btn btn-ghost" href="#download" onclick="goHome();setTimeout(function(){document.getElementById('download').scrollIntoView({behavior:'smooth'})},60);return false;">Get the app</a>
         <button class="btn btn-ghost" onclick="go('signin')">Sign in</button>
         <button class="btn btn-primary btn-sm" onclick="go('login')">Start free</button>
       </div>
@@ -2982,59 +2990,6 @@ label.field-label {
     </div>
   </section>
 
-  <!-- VOICES v2 -->
-  <section class="section" style="padding-top:0">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <h2>From people running<br>lean nonprofits.</h2>
-        <p>Grant writers charge $3,000–$15,000 a proposal. Here's what organizations do instead.</p>
-      </div>
-
-      <div class="tc-outer reveal" id="tc-outer" aria-label="Testimonials">
-
-        <!-- Column 1 — speed 15s -->
-        <div class="tc-col">
-          <div class="tc-track" style="--dur:15s">
-            <!-- real items -->
-            <div class="tc-card"><p class="tc-q">"Grange AI found a foundation we'd never heard of and drafted the whole application in an afternoon. We won it."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">MR</div><div><div class="tc-name">Maria Reyes</div></div></div></div>
-            <div class="tc-card"><p class="tc-q">"Three grants in our first sixty days. It costs less per month than one hour of a professional grant writer."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">JT</div><div><div class="tc-name">James Thornton</div></div></div></div>
-            <div class="tc-card"><p class="tc-q">"I stopped giving up my Sundays to the 990 binder. Grange AI handles the compliance prep I used to dread."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">AN</div><div><div class="tc-name">Amara Nwosu</div></div></div></div>
-            <!-- duplicates for seamless loop -->
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Grange AI found a foundation we'd never heard of and drafted the whole application in an afternoon. We won it."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">MR</div><div><div class="tc-name">Maria Reyes</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Three grants in our first sixty days. It costs less per month than one hour of a professional grant writer."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">JT</div><div><div class="tc-name">James Thornton</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"I stopped giving up my Sundays to the 990 binder. Grange AI handles the compliance prep I used to dread."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">AN</div><div><div class="tc-name">Amara Nwosu</div></div></div></div>
-          </div>
-        </div>
-
-        <!-- Column 2 — speed 19s, offset start -->
-        <div class="tc-col">
-          <div class="tc-track" style="--dur:19s; transform:translateY(-16%)">
-            <div class="tc-card"><p class="tc-q">"We applied to 11 grants last quarter. Before Grange AI we could barely manage two. Our funding doubled."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">PS</div><div><div class="tc-name">Priya Sharma</div></div></div></div>
-            <div class="tc-card"><p class="tc-q">"The SAM.gov validation alone saved us from a rejection that would have cost six weeks. That feature pays for itself."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">DW</div><div><div class="tc-name">Derek Walsh</div></div></div></div>
-            <div class="tc-card"><p class="tc-q">"Our board asked why we suddenly had so much capacity. The answer was Grange AI doing the proposal writing."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">KM</div><div><div class="tc-name">Keisha Monroe</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"We applied to 11 grants last quarter. Before Grange AI we could barely manage two. Our funding doubled."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">PS</div><div><div class="tc-name">Priya Sharma</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"The SAM.gov validation alone saved us from a rejection that would have cost six weeks. That feature pays for itself."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">DW</div><div><div class="tc-name">Derek Walsh</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Our board asked why we suddenly had so much capacity. The answer was Grange AI doing the proposal writing."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">KM</div><div><div class="tc-name">Keisha Monroe</div></div></div></div>
-          </div>
-        </div>
-
-        <!-- Column 3 — speed 17s, offset start -->
-        <div class="tc-col">
-          <div class="tc-track" style="--dur:17s; transform:translateY(-30%)">
-            <div class="tc-card"><p class="tc-q">"The logic model diagram it generates is better than anything I was producing manually. Funders notice."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">CI</div><div><div class="tc-name">Carlos Ibáñez</div></div></div></div>
-            <div class="tc-card"><p class="tc-q">"First federal grant we'd ever submitted. Grange AI walked us through SAM registration and wrote the full narrative. We got funded."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">NA</div><div><div class="tc-name">Ngozi Adeyemi</div></div></div></div>
-            <div class="tc-card"><p class="tc-q">"Deadline reminders synced to my calendar and a draft ready two weeks before due. I've never submitted anything late since."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">TR</div><div><div class="tc-name">Thomas Reid</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"The logic model diagram it generates is better than anything I was producing manually. Funders notice."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">CI</div><div><div class="tc-name">Carlos Ibáñez</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"First federal grant we'd ever submitted. Grange AI walked us through SAM registration and wrote the full narrative. We got funded."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">NA</div><div><div class="tc-name">Ngozi Adeyemi</div></div></div></div>
-            <div class="tc-card" aria-hidden="true"><p class="tc-q">"Deadline reminders synced to my calendar and a draft ready two weeks before due. I've never submitted anything late since."</p><div class="tc-footer"><div class="tc-avatar" aria-hidden="true">TR</div><div><div class="tc-name">Thomas Reid</div></div></div></div>
-          </div>
-        </div>
-
-      </div>
-      <p class="tc-note reveal">Illustrative of the outcomes Grange AI is built to deliver. Early access is just getting started.</p>
-    </div>
-  </section>
-
   <!-- FOUNDER / OUR STORY section archived to _archive/founder-section.html (2026-06-20) — hold for the 4-cofounder intro -->
 
   <!-- PRICING -->
@@ -3083,133 +3038,6 @@ label.field-label {
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Dedicated account manager</li>
           </ul>
           <button class="btn btn-outline btn-block" onclick="go('login')">Start free</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TRUST / OBJECTION HANDLING: answer the risk-averse buyer's fears -->
-  <section class="section" id="trust" style="padding-top:0">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <h2>Built for people who<br>don't love software.</h2>
-        <p>You're running a nonprofit, not an IT department. Here are the questions we hear most, answered plainly.</p>
-      </div>
-      <div class="trust-grid reveal-group">
-        <div class="trust-card">
-          <div class="trust-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9.5" x2="9.01" y2="9.5"/><line x1="15" y1="9.5" x2="15.01" y2="9.5"/></svg></div>
-          <h3>Not tech-savvy? Good.</h3>
-          <p>If you can fill out a form, you can use Grange. We walk you through one step at a time and explain every grant term as it comes up.</p>
-        </div>
-        <div class="trust-card">
-          <div class="trust-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
-          <h3>Your data stays yours.</h3>
-          <p>We never use your data to train public AI models, and any documents you connect are read-only. Read our <a href="#" onclick="go('privacy');return false;">privacy policy</a>.</p>
-        </div>
-        <div class="trust-card">
-          <div class="trust-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></div>
-          <h3>You approve every word.</h3>
-          <p>Grange writes the draft. You decide what stays. Nothing is ever submitted for you, and every sentence is yours to edit first.</p>
-        </div>
-        <div class="trust-card">
-          <div class="trust-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4-3 7-7 8-4-1-7-4-7-8V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></div>
-          <h3>Still your original work.</h3>
-          <p>Grange writes in your voice, grounded in your real programs, so your application stays your own, the way funders and policies like NIH's expect.</p>
-        </div>
-        <div class="trust-card">
-          <div class="trust-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 13.4L13 21l-9-9V4h8z"/><line x1="7.5" y1="7.5" x2="7.51" y2="7.5"/></svg></div>
-          <h3>Nothing to lose.</h3>
-          <p>Start free, no credit card. Cancel anytime. Your first proposals are on us, so you can see the drafts before you ever pay.</p>
-        </div>
-        <div class="trust-card">
-          <div class="trust-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-          <h3>We're new, and honest about it.</h3>
-          <p>We're not the cheapest enterprise suite, and we won't pretend to be. We're built by people who actually run nonprofits, and we'd rather earn your trust than overpromise.</p>
-        </div>
-      </div>
-      <p class="trust-foot reveal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Built to WCAG AA: keyboard-friendly, screen-reader-friendly, and respects reduced motion.</p>
-    </div>
-  </section>
-
-  <!-- ════════════════════════ GET THE APP ════════════════════════ -->
-  <section class="section" id="download" style="padding-top:0">
-    <div class="wrap">
-      <div class="get-app reveal">
-        <div class="get-app-head">
-          <div class="get-app-eyebrow">Download the desktop app</div>
-          <h2 class="get-app-title">Grange&nbsp;AI, as a real app.</h2>
-          <p class="get-app-sub">A full desktop application that installs onto your computer — its own icon in the dock, its own window, no browser. Download it free and run it like any other app.</p>
-        </div>
-
-        <!-- Primary: auto-detected platform download -->
-        <div class="dl-hero" id="dl-hero">
-          <div class="dl-hero-ico" id="dl-hero-ico">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-          </div>
-          <div class="dl-hero-body">
-            <h3 id="dl-hero-title">Download for your computer</h3>
-            <p id="dl-hero-note">Free • installs as a standalone app</p>
-          </div>
-          <a class="btn btn-accent btn-lg" id="dl-hero-btn" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest" target="_blank" rel="noopener">Download</a>
-        </div>
-
-        <!-- All platforms -->
-        <div class="get-app-grid">
-          <!-- macOS -->
-          <div class="app-card">
-            <div class="app-card-ico">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c.1 1-.3 2-1 2.8-.7.8-1.7 1.4-2.7 1.3-.1-1 .4-2 1-2.7.7-.8 1.8-1.4 2.7-1.4zM19 17.3c-.5 1.1-.7 1.6-1.3 2.6-.9 1.4-2.1 3.1-3.6 3.1-1.4 0-1.7-.9-3.5-.9s-2.2.9-3.5.9c-1.5 0-2.7-1.6-3.5-2.9C1.5 17.3.9 13 2.4 10.3c.9-1.6 2.5-2.6 4-2.6 1.4 0 2.3.9 3.5.9 1.1 0 1.8-.9 3.5-.9 1.3 0 2.7.7 3.6 1.9-3.2 1.7-2.7 6.3.5 7.7z"/></svg>
-            </div>
-            <h3>macOS</h3>
-            <p>Universal — works on Apple Silicon &amp; Intel. Drag to Applications.</p>
-            <a class="btn btn-outline btn-block" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-mac.dmg" target="_blank" rel="noopener">Download .dmg</a>
-          </div>
-
-          <!-- Windows -->
-          <div class="app-card">
-            <div class="app-card-ico">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5L10.5 4.5V11.5H3V5.5zM10.5 12.5V19.5L3 18.5V12.5H10.5zM11.5 4.3L21 3V11.5H11.5V4.3zM21 12.5V21L11.5 19.7V12.5H21z"/></svg>
-            </div>
-            <h3>Windows</h3>
-            <p>Standard installer with Start-menu &amp; desktop shortcuts.</p>
-            <a class="btn btn-outline btn-block" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-Setup.exe" target="_blank" rel="noopener">Download .exe</a>
-          </div>
-
-          <!-- Android -->
-          <div class="app-card">
-            <div class="app-card-ico">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.5l1.4-2.4c.1-.2 0-.4-.1-.5-.2-.1-.4 0-.5.1l-1.4 2.5c-1.1-.5-2.3-.8-3.5-.8s-2.4.3-3.5.8L8.1 6.7c-.1-.2-.3-.2-.5-.1-.2.1-.2.3-.1.5l1.4 2.4C6.5 10.8 5 13 5 15.5h14c0-2.5-1.5-4.7-3.4-6zM9 13.2c-.4 0-.7-.3-.7-.7s.3-.7.7-.7.7.3.7.7-.3.7-.7.7zm6 0c-.4 0-.7-.3-.7-.7s.3-.7.7-.7.7.3.7.7-.3.7-.7.7z"/></svg>
-            </div>
-            <h3>Android</h3>
-            <p>Install the .apk directly — enable "install unknown apps" once.</p>
-            <a class="btn btn-outline btn-block" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-android.apk" target="_blank" rel="noopener">Download .apk</a>
-          </div>
-
-          <!-- Linux -->
-          <div class="app-card">
-            <div class="app-card-ico">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            </div>
-            <h3>Linux</h3>
-            <p>Portable AppImage — make it executable and run.</p>
-            <a class="btn btn-outline btn-block" href="https://github.com/timchen850/GrantAI-Prototype/releases/latest/download/Grange-AI-linux.AppImage" target="_blank" rel="noopener">Download .AppImage</a>
-          </div>
-
-          <!-- iPhone -->
-          <div class="app-card">
-            <div class="app-card-ico">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="3"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-            </div>
-            <h3>iPhone &amp; iPad</h3>
-            <p>App Store version coming soon. For now, add it to your home screen.</p>
-            <a class="btn btn-outline btn-block" href="#" id="ios-install-btn">Add to Home Screen</a>
-          </div>
-        </div>
-
-        <!-- First-launch help -->
-        <div class="ios-steps" id="ios-steps">
-          <div class="ios-step"><span class="ios-step-n">!</span><span><strong>First launch on Mac:</strong> right-click the app and choose <strong>Open</strong> (just once) to get past the "unidentified developer" notice. On Windows, click <strong>More info → Run anyway</strong> if SmartScreen appears. These are free unsigned builds — completely safe.</span></div>
-          <div class="ios-step"><span class="ios-step-n">📱</span><span><strong>Android:</strong> after downloading, tap the .apk and allow installs from your browser when prompted. <strong>iPhone:</strong> open this page in Safari, tap <strong>Share</strong>, then <a href="#" id="pwa-fallback-link" style="color:var(--accent);font-weight:600;">Add to Home Screen</a> — a full App Store app is on the way.</span></div>
         </div>
       </div>
     </div>
@@ -5872,6 +5700,26 @@ label.field-label {
   </div>
 </div>
 
+<!-- ════════════════════════ APP: DEADLINES ════════════════════════ -->
+<div id="deadlines" class="screen">
+  <div class="app">
+    <aside class="side" id="side-deadlines"></aside>
+    <main class="app-main">
+      <section class="page-hero">
+        <div class="ph-bg" aria-hidden="true"></div>
+        <div class="ph-row">
+          <div>
+            <div class="ph-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Deadlines</div>
+            <h1>Deadlines</h1>
+            <div class="ps">Every deadline from your saved grants and registrations, with reminders as they approach. Never miss winnable money.</div>
+          </div>
+        </div>
+      </section>
+      <div id="deadlines-content"><div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div></div>
+    </main>
+  </div>
+</div>
+
 <!-- ════════════════════════ GRANT MODAL ════════════════════════ -->
 <div class="overlay" id="grant-modal">
   <div class="modal">
@@ -5943,6 +5791,8 @@ function SIDE(active) {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Proposal generator</a>
     <a href="#" onclick="go('manage')" class="${active==='manage'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>Grant management</a>
+    <a href="#" onclick="go('deadlines')" class="${active==='deadlines'?'on':''}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Deadlines</a>
     <a href="#" onclick="go('profile')" class="${active==='profile'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Org profile</a>
     <a href="#" onclick="tutReplay();return false;" class="side-tour">
@@ -5963,7 +5813,7 @@ function SIDE(active) {
   </div>`;
 }
 function rebuildSidebars() {
-  ['dashboard','discovery','readiness','generator','manage','profile','plan'].forEach(s => {
+  ['dashboard','discovery','readiness','generator','manage','deadlines','profile','plan'].forEach(s => {
     const el = document.getElementById('side-' + s);
     if (el) el.innerHTML = SIDE(s);
   });
@@ -5994,17 +5844,18 @@ window._currentScreen = 'landing';
 document.body.dataset.screen = 'landing';
 
 /* ─── navigation ────────────────────────────────────────── */
-const SCREENS = ['landing','login','signin','tutorial','onboarding','demo','dashboard','discovery','readiness','generator','manage','profile','plan','privacy','terms','security','contact'];
+const SCREENS = ['landing','login','signin','tutorial','onboarding','demo','dashboard','discovery','readiness','generator','manage','deadlines','profile','plan','privacy','terms','security','contact'];
 
 /* ─── mobile hamburger drawer (phones only) ─────────────── */
 function mNavMarkup() {
   const s = window._currentScreen || 'landing';
-  const app = ['dashboard','discovery','generator','profile'];
+  const app = ['dashboard','discovery','generator','deadlines','profile'];
   if (app.indexOf(s) >= 0) {
     return `
       <a href="#" onclick="mNavGo('dashboard');return false;" class="${s==='dashboard'?'on':''}">Dashboard</a>
       <a href="#" onclick="mNavGo('discovery');return false;" class="${s==='discovery'?'on':''}">Grant discovery</a>
       <a href="#" onclick="mNavGo('generator');return false;" class="${s==='generator'?'on':''}">Proposal generator</a>
+      <a href="#" onclick="mNavGo('deadlines');return false;" class="${s==='deadlines'?'on':''}">Deadlines</a>
       <a href="#" onclick="mNavGo('profile');return false;" class="${s==='profile'?'on':''}">Org profile</a>
       <div class="m-nav-div"></div>
       <a href="#" onclick="mNavGo('landing');return false;">Back to site</a>
@@ -6065,6 +5916,7 @@ function go(id) {
   if (id === 'profile')   requestAnimationFrame(() => populateProfile());
   if (id === 'readiness') requestAnimationFrame(() => loadReadiness());
   if (id === 'manage')    requestAnimationFrame(() => loadPostAward());
+  if (id === 'deadlines') requestAnimationFrame(() => loadDeadlinesScreen());
   if (id === 'plan')      requestAnimationFrame(() => { if (typeof renderPlanScreen === 'function') renderPlanScreen(); });
   window._acpOnScreen?.(id);
 }
@@ -11128,8 +10980,86 @@ async function markDeadlineDone(id) {
     const { error } = await window.sb.from('deadlines').update({ status: 'done', completed_at: new Date().toISOString() }).eq('id', id);
     if (error) throw error;   // supabase-js returns {error} rather than throwing — surface real failures
     toast('Marked done');
-    loadDashboardDeadlines();
+    afterDeadlineChange();
   } catch (_) { toast('Could not update — please try again.'); }
+}
+async function reopenDeadline(id) {
+  if (!window.sb || !id) return;
+  try {
+    const { error } = await window.sb.from('deadlines').update({ status: 'upcoming', completed_at: null }).eq('id', id);
+    if (error) throw error;
+    toast('Moved back to upcoming');
+    afterDeadlineChange();
+  } catch (_) { toast('Could not update — please try again.'); }
+}
+function afterDeadlineChange() {
+  loadDashboardDeadlines();                                       // keep the dashboard widget in sync
+  if (window._currentScreen === 'deadlines') loadDeadlinesScreen();
+}
+
+/* ─── Dedicated Deadlines screen ───────────────────────────────
+   The full view behind the dashboard widget: every deadline from saved grants +
+   registrations, grouped Overdue / Upcoming / Completed, with reminder hints and
+   mark-done / reopen. Reuses the pt-verified deadlines query + label helpers. */
+function fmtDeadlineDate(iso) {
+  const d = new Date(String(iso).slice(0, 10) + 'T00:00:00Z');
+  return isNaN(d) ? String(iso) : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+}
+function emptyDeadlinesHTML(msg) {
+  return '<div class="dlx-empty">'
+    + '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>'
+    + '<p>' + escHtml(msg || 'No deadlines yet. Save a grant from Discovery and its deadline shows up here — with reminders as it approaches.') + '</p>'
+    + (msg ? '' : '<button class="btn btn-accent btn-sm" onclick="go(\'discovery\')">Discover grants</button>')
+    + '</div>';
+}
+function deadlineRowHTML(d, today) {
+  const due = String(d.due_date).slice(0, 10);
+  const isDone = d.status === 'done';
+  const daysLeft = Math.round((Date.parse(due + 'T00:00:00Z') - Date.parse(today + 'T00:00:00Z')) / 86400000);
+  let ddTxt, ddCls;
+  if (isDone) { ddTxt = 'Done'; ddCls = 'green'; }
+  else if (daysLeft < 0) { ddTxt = Math.abs(daysLeft) + 'd ago'; ddCls = 'red'; }
+  else if (daysLeft === 0) { ddTxt = 'Today'; ddCls = 'red'; }
+  else { ddTxt = 'in ' + daysLeft + 'd'; ddCls = daysLeft <= 14 ? 'red' : daysLeft <= 45 ? 'amber' : 'green'; }
+  const sub = isDone
+    ? dlKindLabel(d.kind) + ' · was due ' + fmtDeadlineDate(due)
+    : [dlKindLabel(d.kind), fmtDeadlineDate(due), (daysLeft >= 0 ? nextReminderLabel(daysLeft) : '')].filter(Boolean).join(' · ');
+  const action = isDone
+    ? '<button class="btn btn-ghost btn-sm" onclick="reopenDeadline(\'' + escHtml(d.id) + '\')">Reopen</button>'
+    : '<button class="btn btn-ghost btn-sm" onclick="markDeadlineDone(\'' + escHtml(d.id) + '\')">Mark done</button>';
+  return '<div class="dl' + (isDone ? ' dlx-done' : '') + '">'
+    + '<div><div class="dn">' + escHtml(d.title || 'Deadline') + '</div><div class="dt">' + escHtml(sub) + '</div></div>'
+    + '<div style="display:flex;align-items:center;gap:12px"><div class="dd ' + ddCls + '">' + ddTxt + '</div>' + action + '</div></div>';
+}
+function deadlineGroupHTML(label, list, today) {
+  if (!list.length) return '';
+  return '<div class="dlx-group"><div class="dlx-head">' + escHtml(label) + ' <span class="dlx-count">' + list.length + '</span></div>'
+    + list.map(d => deadlineRowHTML(d, today)).join('') + '</div>';
+}
+async function loadDeadlinesScreen() {
+  const el = document.getElementById('deadlines-content');
+  if (!el) return;
+  const uid = window._grange?.user?.id;
+  if (!window.sb || !uid) { el.innerHTML = emptyDeadlinesHTML('Sign in to track your deadlines.'); return; }
+  el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading your deadlines…</div>';
+  const today = new Date().toISOString().slice(0, 10);
+  let rows;
+  try {
+    const { data, error } = await window.sb.from('deadlines')
+      .select('id,title,due_date,kind,status')
+      .eq('user_id', uid).in('status', ['upcoming', 'missed', 'done'])
+      .order('due_date', { ascending: true });
+    if (error) { el.innerHTML = emptyDeadlinesHTML('Could not load your deadlines. Please try again in a moment.'); return; }
+    rows = data || [];
+  } catch (_) { el.innerHTML = emptyDeadlinesHTML('Could not load your deadlines. Please try again in a moment.'); return; }
+  if (!rows.length) { el.innerHTML = emptyDeadlinesHTML(); return; }
+  const overdue = rows.filter(d => d.status !== 'done' && String(d.due_date).slice(0, 10) < today);
+  const upcoming = rows.filter(d => d.status !== 'done' && String(d.due_date).slice(0, 10) >= today);
+  const done = rows.filter(d => d.status === 'done').sort((a, b) => String(b.due_date).localeCompare(String(a.due_date)));
+  const html = deadlineGroupHTML('Overdue', overdue, today)
+    + deadlineGroupHTML('Upcoming', upcoming, today)
+    + deadlineGroupHTML('Completed', done, today);
+  el.innerHTML = html || emptyDeadlinesHTML();
 }
 
 /* Draft flow: select the grant, save it to the pipeline, open the generator. */
