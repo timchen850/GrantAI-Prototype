@@ -11,7 +11,7 @@
 //   match_count?: number,          // default 4, clamped 1..8
 //   filter_funder_type?: string,   // 'Federal'|'Foundation'|'Corporate'|'State'
 //   filter_award_band?: string,    // '<50k'|'50-150k'|'150-500k'|'500k+'
-//   min_similarity?: number,       // cosine floor, default 0.72 (gte-small baseline)
+//   min_similarity?: number,       // cosine floor, default 0.82 (exemplar-tuned; see below)
 // }
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -32,8 +32,14 @@ Deno.serve(async (req: Request) => {
   const matchCount = Math.min(Math.max(parseInt(body?.match_count, 10) || 4, 1), 8);
   const filterFunderType = body?.filter_funder_type ? String(body.filter_funder_type).slice(0, 40) : null;
   const filterAwardBand = body?.filter_award_band ? String(body.filter_award_band).slice(0, 40) : null;
-  // gte-small has a high baseline cosine; the meaningful relevance floor is ~0.72.
-  const minSim = typeof body?.min_similarity === 'number' ? body.min_similarity : 0.72;
+  // gte-small has a high baseline cosine, and grant proposals share so much
+  // boilerplate vocabulary that even off-topic proposals score ~0.78-0.81. The
+  // floor for EXEMPLARS (cross-org, cross-topic winning text) therefore sits
+  // higher than the 0.72 used for the user's own same-voice past writing:
+  // verified against real EPA narrative embeddings, related ~0.87-0.89 vs
+  // unrelated ~0.78-0.81, so 0.82 separates them. Tunable via min_similarity;
+  // revisit as the corpus grows more sector-diverse.
+  const minSim = typeof body?.min_similarity === 'number' ? body.min_similarity : 0.82;
   if (!query.trim()) return json({ chunks: [] });
 
   let session: any;
