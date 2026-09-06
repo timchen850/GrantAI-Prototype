@@ -7078,6 +7078,7 @@ function saveGenDraft() {
       doc: document.getElementById('doc-content')?.innerHTML || '',
       outType: document.getElementById('gen-out-type')?.textContent || '',
       outFunder: document.getElementById('gen-out-funder')?.textContent || '',
+      draftUid: window._draftUid || null,
       ts: Date.now(),
     }));
   } catch (_) {}
@@ -7088,6 +7089,7 @@ function restoreGenDraft() {
   if (!d) return false;
   if (d.grant) window._selectedGrant = d.grant;
   if (d.fields) Object.entries(d.fields).forEach(([id, v]) => { const el = document.getElementById(id); if (el && v != null) el.value = v; });
+  window._draftUid = d.draftUid || window._draftUid || null;
   window._parsedReq = d.req || null;
   reqShowStored();
   if (d.doc) {
@@ -7099,6 +7101,9 @@ function restoreGenDraft() {
     genWritingView(true); genSetStep(4);
     runComplianceChecklist({ amount: d.fields?.['gen-amount'], period: d.fields?.['gen-period'], population: d.fields?.['gen-population'], description: d.fields?.['gen-description'], proposalType: d.fields?.['gen-proposal-type'] }, content);
     renderDisclosure();
+    // rebuild outcome-tracking context so a restored draft can still be marked won/lost
+    captureDraftMeta({ program: d.fields?.['gen-program'], amount: d.fields?.['gen-amount'], proposalType: d.fields?.['gen-proposal-type'] }, d.grant || window._selectedGrant, content);
+    refreshOutcomeTracker();
     setGenBtnLabel('Regenerate');
     toast('Picked up your saved draft.');
     return true;
@@ -7118,6 +7123,225 @@ function bindGenAutosave() {
 
 let generating = false;
 let _genAbort = null;
+
+/* ══════════════ HUMANIZING REWRITE PASS (stop-slop) ══════════════
+   After the draft is written + judged, one more model pass strips AI tells
+   (throat-clearing, adverbs, consulting jargon, uniform rhythm, passive voice)
+   while PRESERVING every fact, number, HTML heading, [VERIFY] marker, and the
+   org's voice. Best-effort + safety-checked: a rewrite is accepted ONLY if it
+   keeps the structure and length, so it can never truncate or degrade a draft.
+   Runs through generate-proposal (raw model proxy) — no ai-worker dependency. */
+async function callGenerateOnce(prompt, signal) {
+  const { data: { session } } = await window.sb.auth.getSession();
+  if (!session) throw new Error('no session');
+  const res = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/generate-proposal', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+    signal,
+    body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: 0.6, maxOutputTokens: 2048 } }),
+  });
+  if (!res.ok) throw new Error('gen ' + res.status);
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '', out = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n'); buffer = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const sstr = line.slice(6).trim();
+      if (!sstr || sstr === '[DONE]') continue;
+      try { out += JSON.parse(sstr)?.candidates?.[0]?.content?.parts?.[0]?.text || ''; } catch (_) {}
+    }
+  }
+  return out.replace(/```html?\n?/gi, '').replace(/```\n?/g, '').trim();
+}
+function _countHeadings(html) { const m = String(html).match(/<h4/gi); return m ? m.length : 0; }
+function _plainLen(html) { const d = document.createElement('div'); d.innerHTML = html; return (d.innerText || d.textContent || '').trim().length; }
+
+async function humanizeDraft(contentEl, fields, grant, signal) {
+  try {
+    if (!contentEl || !window.sb) return;
+    const original = contentEl.innerHTML || '';
+    const baseLen = _plainLen(original);
+    if (baseLen < 200) return;                    // too short to bother
+    const heads = _countHeadings(original);
+    const prompt = [
+      'You are a line editor. Rewrite the grant-proposal draft below so it reads like an experienced human grant writer wrote it, NOT an AI. Keep clean HTML using the SAME <h4> section headings in the same order, with <p>/<b> for the body.',
+      '',
+      'PRESERVE EXACTLY: every fact, number, dollar figure, date, name, and [VERIFY: ...] marker. Do not add, remove, or invent any fact. Do not change the meaning or the section structure. Keep roughly the same length.',
+      '',
+      'REMOVE these AI tells:',
+      "- Throat-clearing openers (Here's the thing, It's worth noting, In today's world, At its core, The reality is, When it comes to). Start with the substance.",
+      '- Adverbs and intensifiers (really, very, truly, deeply, simply, significantly, fundamentally, critically).',
+      '- Empty emphasis and vague declaratives (The stakes are high, The implications are significant); use the specific number or fact already in the text instead.',
+      '- Consulting jargon (leverage, unpack, navigate, landscape, deep dive, game-changer, robust, holistic, synergy, impactful). Use plain words.',
+      '- Em dashes; passive voice (name the human doing the action); rhetorical "not X, but Y"; pull-quote one-liners.',
+      'Vary sentence length and rhythm. Write direct, plain sentences. Preserve the organization\'s authentic voice.',
+      '',
+      'Output ONLY the rewritten HTML. No preamble, no code fences.',
+      '',
+      'DRAFT:',
+      original,
+    ].join('\n');
+    const rewritten = await callGenerateOnce(prompt, signal);
+    if (!rewritten || rewritten.length < 40) return;
+    // Safety gates: never accept a rewrite that drops structure, materially
+    // shrinks/pads the draft, or injects markup.
+    if (_countHeadings(rewritten) < heads) return;
+    const newLen = _plainLen(rewritten);
+    if (newLen < baseLen * 0.8 || newLen > baseLen * 1.3) return;
+    if (/<\s*(script|style|iframe|object|embed|link)/i.test(rewritten)) return;
+    contentEl.innerHTML = rewritten;
+  } catch (e) { if (e && e.name === 'AbortError') throw e; /* keep the pre-humanize draft */ }
+}
+
+/* ══════════════ OUTCOME LOOP (win / loss capture) ══════════════
+   The compounding "training" lever: capture whether a drafted proposal was
+   submitted / won / lost so win rate is measurable, and (with consent) a WON
+   draft can be contributed to the shared exemplar library. Writes to the
+   user-scoped draft_outcomes table (RLS); no-ops when signed out. */
+const EXEMPLAR_ADMIN_EMAILS = ['tchen8108@gmail.com'];
+function _bandFromAmount(n) { n = Number(n); if (!Number.isFinite(n) || n <= 0) return null; return n < 50000 ? '<50k' : n < 150000 ? '50-150k' : n < 500000 ? '150-500k' : '500k+'; }
+function _amountNum(s) { const m = String(s == null ? '' : s).match(/[\d,]+(?:\.\d+)?/); return m ? parseFloat(m[0].replace(/,/g, '')) : null; }
+
+function captureDraftMeta(fields, grant, contentEl) {
+  const amt = _amountNum(grant && grant.amount != null ? grant.amount : (fields && fields.amount));
+  window._lastDraftMeta = {
+    draft_uid: window._draftUid || null,
+    program: (fields && fields.program) || null,
+    funder_name: (grant && (grant.funder || grant.title)) || null,
+    funder_type: (grant && (grant.type || '').trim()) || null,
+    sector: null,
+    award_amount: amt,
+    award_band: _bandFromAmount(amt),
+    proposal_type: (fields && fields.proposalType) || null,
+    draft_text: contentEl ? (contentEl.innerText || contentEl.textContent || '').trim().slice(0, 20000) : '',
+  };
+}
+
+function ensureOutcomeEl() {
+  let el = document.getElementById('gen-outcome');
+  if (el) return el;
+  const sc = (typeof ensureScorecardEl === 'function') ? ensureScorecardEl() : null;
+  const anchor = sc || document.getElementById('gen-section-map') || document.getElementById('compliance-checklist');
+  if (!anchor || !anchor.parentNode) return null;
+  el = document.createElement('div');
+  el.id = 'gen-outcome';
+  el.style.display = 'none';
+  anchor.parentNode.insertBefore(el, anchor);      // sits above the scorecard
+  return el;
+}
+
+function renderOutcomeTracker(el, s) {
+  s = s || {};
+  const status = s.status || null;
+  const pill = (val, label) => '<button class="btn btn-sm ' + (status === val ? 'btn-accent' : 'btn-outline') + '" onclick="setDraftOutcome(\'' + val + '\')">' + label + '</button>';
+  let h = '<div style="margin:0 0 16px;padding:14px 16px;background:var(--surface-2,rgba(0,0,0,0.02));border:1px solid var(--border,rgba(0,0,0,0.09));border-radius:14px">';
+  h += '<div style="font-weight:600;font-size:14px;margin-bottom:2px">Track this proposal’s outcome</div>';
+  h += '<div style="font-size:12.5px;color:var(--ink-muted,#666);margin-bottom:10px">Tell Grange what happened. It learns from what wins, and your win rate shows up here.</div>';
+  h += '<div style="display:flex;gap:8px;flex-wrap:wrap">' + pill('submitted', 'Submitted') + pill('won', 'Won 🎉') + pill('lost', 'Not funded') + '</div>';
+  if (typeof s.winRate === 'number') {
+    h += '<div style="margin-top:10px;font-size:13px;color:var(--accent-ink)"><b>' + s.winRate + '%</b> win rate across <b>' + s.decided + '</b> decided proposal' + (s.decided === 1 ? '' : 's') + '.</div>';
+  }
+  if (status === 'won') {
+    if (s.promoted) {
+      h += '<div style="margin-top:10px;font-size:12.5px;color:#1c7a43">✓ Added to the shared winning-examples library.</div>';
+    } else {
+      h += '<label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:12.5px;color:var(--ink-body,#333);cursor:pointer">' +
+        '<input type="checkbox" ' + (s.consent ? 'checked' : '') + ' onchange="setOutcomeConsent(this.checked)" style="margin-top:2px">' +
+        '<span>OK to use this winning draft as an anonymized example that helps other nonprofits (structure only, never your facts or names).</span></label>';
+      if (s.isAdmin && s.consent) {
+        h += '<div style="margin-top:10px"><button class="btn btn-outline btn-sm" onclick="promoteDraftToExemplar()">Add to shared library (admin)</button></div>';
+      }
+    }
+  }
+  h += '</div>';
+  el.innerHTML = h;
+  el.style.display = 'block';
+}
+
+async function refreshOutcomeTracker() {
+  try {
+    const el = ensureOutcomeEl();
+    if (!el) return;
+    const meta = window._lastDraftMeta;
+    if (!meta || !meta.draft_uid) { el.style.display = 'none'; return; }
+    let winRate = null, decided = 0, cur = window._outcomeStatus || null, consent = false, promoted = false, isAdmin = false;
+    const { data: { session } } = await window.sb.auth.getSession();
+    if (session) {
+      isAdmin = EXEMPLAR_ADMIN_EMAILS.includes((session.user.email || '').toLowerCase());
+      const { data: rows } = await window.sb.from('draft_outcomes')
+        .select('draft_uid,status,share_consent,promoted_exemplar_id').eq('user_id', session.user.id);
+      if (rows && rows.length) {
+        const won = rows.filter(r => r.status === 'won').length;
+        const lost = rows.filter(r => r.status === 'lost').length;
+        decided = won + lost;
+        if (decided) winRate = Math.round((won / decided) * 100);
+        const mine = rows.find(r => r.draft_uid === meta.draft_uid);
+        if (mine) { cur = mine.status; consent = !!mine.share_consent; promoted = !!mine.promoted_exemplar_id; }
+      }
+    }
+    renderOutcomeTracker(el, { status: cur, winRate, decided, consent, promoted, isAdmin });
+  } catch (_) { /* best-effort */ }
+}
+
+async function setDraftOutcome(status) {
+  if (!window.sb) { toast('Service unavailable — please refresh.'); return; }
+  const { data: { session } } = await window.sb.auth.getSession();
+  if (!session) { toast('Sign in to track outcomes.'); return; }
+  const meta = window._lastDraftMeta;
+  if (!meta || !meta.draft_uid) { toast('Generate a draft first.'); return; }
+  const row = {
+    user_id: session.user.id, draft_uid: meta.draft_uid,
+    program: meta.program, funder_name: meta.funder_name, funder_type: meta.funder_type,
+    sector: meta.sector, award_amount: meta.award_amount, award_band: meta.award_band,
+    proposal_type: meta.proposal_type, status,
+    decided_at: (status === 'won' || status === 'lost') ? new Date().toISOString() : null,
+    draft_text: meta.draft_text || null,
+  };
+  const { error } = await window.sb.from('draft_outcomes').upsert(row, { onConflict: 'user_id,draft_uid' });
+  if (error) { toast('Could not save outcome: ' + error.message); return; }
+  window._outcomeStatus = status;
+  toast(status === 'won' ? 'Marked as won. Congratulations!' : status === 'lost' ? 'Marked as not funded. Noted.' : 'Marked as submitted.');
+  await refreshOutcomeTracker();
+}
+
+async function setOutcomeConsent(checked) {
+  const meta = window._lastDraftMeta; if (!meta) return;
+  const { data: { session } } = await window.sb.auth.getSession(); if (!session) return;
+  await window.sb.from('draft_outcomes').update({ share_consent: !!checked })
+    .eq('user_id', session.user.id).eq('draft_uid', meta.draft_uid);
+  toast(checked ? 'Thanks — marked OK to use as an example.' : 'Consent removed.');
+  await refreshOutcomeTracker();
+}
+
+async function promoteDraftToExemplar() {
+  const meta = window._lastDraftMeta;
+  if (!meta || !meta.draft_text) { toast('No draft text to add.'); return; }
+  const { data: { session } } = await window.sb.auth.getSession(); if (!session) return;
+  const year = new Date().getFullYear();
+  try {
+    const r = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/exemplar-ingest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({
+        text: meta.draft_text, funder_name: meta.funder_name, funder_type: meta.funder_type,
+        sector: meta.sector, award_amount: meta.award_amount, year_won: year,
+        title: (meta.funder_name || 'Winning proposal') + (meta.program ? ' — ' + meta.program : ''),
+      }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok) {
+      await window.sb.from('draft_outcomes').update({ promoted_exemplar_id: d.exemplar_id })
+        .eq('user_id', session.user.id).eq('draft_uid', meta.draft_uid);
+      toast('Added to the shared winning-examples library (' + d.chunks + ' passages).');
+      await refreshOutcomeTracker();
+    } else { toast(d.error || 'Could not add to the library.'); }
+  } catch (e) { toast('Could not add to the library.'); }
+}
 
 async function generate() {
   if (generating) return;
@@ -7147,6 +7371,9 @@ async function generate() {
   if (stratNote) { stratNote.style.display = 'none'; stratNote.innerHTML = ''; }
   showVoiceNote(0);
   showExemplarNote(0);
+  window._draftUid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('d' + Date.now());
+  window._outcomeStatus = null; window._lastDraftMeta = null;
+  { const oEl = document.getElementById('gen-outcome'); if (oEl) { oEl.style.display = 'none'; oEl.innerHTML = ''; } }
   genWritingView(true);                       // collapse the config, give the draft full width
   genSetStep(3);                              // → step 3: Generate
   if (window._apStart) window._apStart();     // live step-by-step trace of what Grange is doing
@@ -7363,6 +7590,8 @@ async function generate() {
     genSetStep(4);                            // → step 4: Review & export
     renderSectionMap(fields);                 // why each funder section is here (rationale)
     await judgeAndImprove(content, fields, selectedGrant);  // score vs rubric, auto-revise weakest, show scorecard (may replace the draft)
+    toast('Polishing the voice…');
+    await humanizeDraft(content, fields, selectedGrant, _genAbort.signal);  // strip AI tells; preserves facts/structure/[VERIFY] (best-effort)
     flagVerifyMarkers(content);               // highlight any spots the AI flagged for a real detail (runs on the final, possibly revised, draft)
     showAIPolicyBanner(selectedGrant);
     runComplianceChecklist(fields, content);
@@ -7370,6 +7599,8 @@ async function generate() {
     showExemplarNote(window._lastExemplarCount || 0);
     renderDisclosure();
     saveGenDraft();                           // persist the finished draft (post-revision)
+    captureDraftMeta(fields, selectedGrant, content);  // snapshot for outcome tracking
+    refreshOutcomeTracker();                  // show the win/loss tracker + running win rate (async, best-effort)
 
     const elapsed = ((Date.now() - genStart) / 1000).toFixed(1);
     setGenBtnLabel('Regenerate');
