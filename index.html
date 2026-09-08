@@ -7344,6 +7344,71 @@ async function promoteDraftToExemplar() {
   } catch (e) { toast('Could not add to the library.'); }
 }
 
+/* ══════════════ REFERENCE EXEMPLARS (Option 1C: reference-only) ══════════════
+   EDUCATIONAL_ONLY winning proposals (IMLS/NEH etc.) shown beside the draft as
+   READ-ONLY reference — real funded examples to learn from, with attribution and
+   a link to the official source. These rows are usage='reference' with NO
+   embedding, so they can NEVER be retrieved into the generative writer path
+   (match_exemplar_chunks only returns usage='ingestable'). We store a neutral
+   description + source link, never the copyrighted narrative text. */
+function ensureReferenceEl() {
+  let el = document.getElementById('gen-reference');
+  if (el) return el;
+  const anchor = (typeof ensureOutcomeEl === 'function' && ensureOutcomeEl())
+    || (typeof ensureScorecardEl === 'function' && ensureScorecardEl())
+    || document.getElementById('gen-section-map') || document.getElementById('compliance-checklist');
+  if (!anchor || !anchor.parentNode) return null;
+  el = document.createElement('div'); el.id = 'gen-reference'; el.style.display = 'none';
+  anchor.parentNode.insertBefore(el, anchor);
+  return el;
+}
+
+function _safeUrl(u) { u = String(u || ''); return /^https?:\/\//i.test(u) ? u : ''; }
+
+function renderReferenceList(el, items) {
+  let h = '<div style="margin:0 0 16px;padding:16px 18px;background:var(--surface-2,rgba(0,0,0,0.02));border:1px solid var(--border,#e6e0d4);border-radius:14px">';
+  h += '<div style="display:flex;align-items:center;gap:7px;font-weight:600;font-size:14px;margin-bottom:3px">' +
+       '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>' +
+       'Winning examples to learn from</div>';
+  h += '<div style="font-size:12px;color:var(--ink-muted,#888);margin-bottom:12px;line-height:1.5">Real funded proposals for <b>reference</b>. Read them for structure and ideas — Grange does not copy them into your draft. Shown with attribution and a link to the official source.</div>';
+  h += '<div style="display:flex;flex-direction:column;gap:11px">';
+  items.forEach((it) => {
+    const meta = [it.funder_name, it.award_band, it.sector].filter(Boolean).map((x) => escHtml(String(x))).join(' · ');
+    const url = _safeUrl(it.source_url);
+    h += '<div style="padding:11px 13px;background:var(--surface,#fff);border:1px solid var(--border,#ece7db);border-radius:11px">';
+    if (it.title) h += '<div style="font-weight:600;font-size:13px;margin-bottom:2px">' + escHtml(String(it.title)) + '</div>';
+    if (meta) h += '<div style="font-size:11.5px;color:var(--ink-muted,#888);margin-bottom:5px">' + meta + '</div>';
+    if (it.content) h += '<div style="font-size:12.5px;color:var(--ink-body,#444);line-height:1.5">' + escHtml(String(it.content)) + '</div>';
+    if (it.section) h += '<div style="font-size:11.5px;color:var(--ink-muted,#999);margin-top:5px"><b>Sections:</b> ' + escHtml(String(it.section)) + '</div>';
+    if (url) h += '<div style="margin-top:7px"><a href="' + url + '" target="_blank" rel="noopener noreferrer" style="font-size:12.5px;color:var(--accent-ink);font-weight:500;text-decoration:none">Read the full winning application &rarr;</a></div>';
+    if (it.attribution) h += '<div style="font-size:10.5px;color:var(--ink-muted,#aaa);margin-top:6px">' + escHtml(String(it.attribution)) + '</div>';
+    h += '</div>';
+  });
+  h += '</div></div>';
+  el.innerHTML = h; el.style.display = 'block';
+}
+
+async function renderReferencePanel(grant) {
+  try {
+    const el = ensureReferenceEl();
+    if (!el || !window.sb) return;
+    const { data: { session } } = await window.sb.auth.getSession();
+    if (!session) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    const cols = 'funder_name,funder_type,sector,award_band,title,section,content,source_url,attribution,year_won';
+    const ft = (grant && (grant.type || '').trim()) || null;
+    let res = ft
+      ? await window.sb.from('exemplar_chunks').select(cols).eq('usage', 'reference').eq('funder_type', ft).limit(6)
+      : await window.sb.from('exemplar_chunks').select(cols).eq('usage', 'reference').limit(6);
+    let data = res.data;
+    if ((!data || !data.length) && ft) {   // fall back to any reference examples
+      const r = await window.sb.from('exemplar_chunks').select(cols).eq('usage', 'reference').limit(6);
+      data = r.data;
+    }
+    if (!data || !data.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    renderReferenceList(el, data);
+  } catch (_) { /* best-effort */ }
+}
+
 /* ══════════════ APPROACH PLAN (plan → approve → write) ══════════════
    BEFORE Grange writes, it shows an animated OUTLINE of how it will approach
    THIS grant: per section, the approach, WHY that fits this funder, real
@@ -7568,6 +7633,7 @@ async function generate() {
   { const oEl = document.getElementById('gen-outcome'); if (oEl) { oEl.style.display = 'none'; oEl.innerHTML = ''; } }
   _planResolve = null; window._approachPlan = null; window._planChoices = null;
   { const pEl = document.getElementById('gen-plan'); if (pEl) { pEl.style.display = 'none'; pEl.innerHTML = ''; } }
+  { const rEl = document.getElementById('gen-reference'); if (rEl) { rEl.style.display = 'none'; rEl.innerHTML = ''; } }
   genWritingView(true);                       // collapse the config, give the draft full width
   genSetStep(3);                              // → step 3: Generate
   if (window._apStart) window._apStart();     // live step-by-step trace of what Grange is doing
@@ -7820,6 +7886,7 @@ async function generate() {
     saveGenDraft();                           // persist the finished draft (post-revision)
     captureDraftMeta(fields, selectedGrant, content);  // snapshot for outcome tracking
     refreshOutcomeTracker();                  // show the win/loss tracker + running win rate (async, best-effort)
+    renderReferencePanel(selectedGrant);      // reference-only winning examples beside the draft (1C; never fed to the writer)
 
     const elapsed = ((Date.now() - genStart) / 1000).toFixed(1);
     setGenBtnLabel('Regenerate');

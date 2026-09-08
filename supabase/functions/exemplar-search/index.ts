@@ -71,6 +71,7 @@ Deno.serve(async (req: Request) => {
       year_won: d.year_won,
       license: d.license,
       attribution: d.attribution,
+      source_url: d.source_url,
       similarity: Math.round((d.similarity ?? 0) * 100) / 100,
     }));
   return json({ chunks });

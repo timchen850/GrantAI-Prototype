@@ -107,6 +107,10 @@ Deno.serve(async (req: Request) => {
   // Provenance (CC BY 4.0 sources REQUIRE attribution to the original authors).
   const license = body?.license ? String(body.license).slice(0, 80) : null;
   const attribution = body?.attribution ? String(body.attribution).slice(0, 400) : null;
+  const source_url = body?.source_url ? String(body.source_url).slice(0, 500) : null;
+  // usage: 'ingestable' (embedded + fed to the writer) vs 'reference' (display-only).
+  // This fn embeds, so it is for INGESTABLE (public-domain / permissive-CC) text.
+  const usage = body?.usage === 'reference' ? 'reference' : 'ingestable';
 
   // built-in, key-free embedder (runs locally in the edge runtime)
   let session: any;
@@ -135,7 +139,7 @@ Deno.serve(async (req: Request) => {
         const emb = await session.run(c, { mean_pool: true, normalize: true });
         rows.push({
           exemplar_id, title, funder_type, sector, award_band, funder_name, year_won,
-          license, attribution, section: u.section, chunk_index: ci++, content: c,
+          license, attribution, source_url, usage, section: u.section, chunk_index: ci++, content: c,
           embedding: JSON.stringify(Array.from(emb)),
         });
       }
