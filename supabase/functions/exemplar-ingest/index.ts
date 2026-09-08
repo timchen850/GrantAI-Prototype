@@ -104,11 +104,24 @@ Deno.serve(async (req: Request) => {
   else if (Number.isFinite(+body?.award_amount)) award_band = bandFromAmount(+body.award_amount);
   const title = (body?.title ? String(body.title)
     : [funder_name || funder_type, year_won, sector].filter(Boolean).join(' — ')).slice(0, 200) || null;
+  // Provenance (CC BY 4.0 sources REQUIRE attribution to the original authors).
+  const license = body?.license ? String(body.license).slice(0, 80) : null;
+  const attribution = body?.attribution ? String(body.attribution).slice(0, 400) : null;
 
   // built-in, key-free embedder (runs locally in the edge runtime)
   let session: any;
   try { session = new (globalThis as any).Supabase.ai.Session('gte-small'); }
   catch (e) { return json({ error: 'Embedding model unavailable: ' + (e instanceof Error ? e.message : String(e)) }, 502); }
+
+  // Edge compute ceiling: loading gte-small + embedding many chunks in ONE
+  // invocation can trip the worker resource limit (WORKER_RESOURCE_LIMIT / 546).
+  // Cap per call and fail with a clear message instead — callers should send one
+  // section (~7 chunks) at a time.
+  const unitChunks = units.map((u) => ({ section: u.section, chunks: chunkText(u.text) }));
+  const totalChunks = unitChunks.reduce((n, u) => n + u.chunks.length, 0);
+  if (totalChunks > 8) {
+    return json({ error: `Too much text for one call (${totalChunks} chunks). Send one section (~7 chunks / ~7000 chars) at a time.` }, 413);
+  }
 
   // Service-role client => rows are shared (not user-owned); bypasses RLS.
   const sbAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
@@ -117,13 +130,12 @@ Deno.serve(async (req: Request) => {
   try {
     const rows: any[] = [];
     let ci = 0;
-    for (const u of units) {
-      const chunks = chunkText(u.text);
-      for (const c of chunks) {
+    for (const u of unitChunks) {
+      for (const c of u.chunks) {
         const emb = await session.run(c, { mean_pool: true, normalize: true });
         rows.push({
           exemplar_id, title, funder_type, sector, award_band, funder_name, year_won,
-          section: u.section, chunk_index: ci++, content: c,
+          license, attribution, section: u.section, chunk_index: ci++, content: c,
           embedding: JSON.stringify(Array.from(emb)),
         });
       }
@@ -131,7 +143,7 @@ Deno.serve(async (req: Request) => {
     if (!rows.length) return json({ error: 'No usable text found.' }, 400);
     const { error: cerr } = await sbAdmin.from('exemplar_chunks').insert(rows);
     if (cerr) throw new Error(cerr.message);
-    return json({ ok: true, exemplar_id, title, funder_type, sector, award_band, funder_name, year_won, chunks: rows.length });
+    return json({ ok: true, exemplar_id, title, funder_type, sector, award_band, funder_name, year_won, license, attribution, chunks: rows.length });
   } catch (e) {
     // roll back partial insert for this exemplar_id
     await sbAdmin.from('exemplar_chunks').delete().eq('exemplar_id', exemplar_id);
