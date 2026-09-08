@@ -7344,111 +7344,186 @@ async function promoteDraftToExemplar() {
   } catch (e) { toast('Could not add to the library.'); }
 }
 
-/* ══════════════ PRE-DRAFT INTERVIEW (personalize before writing) ══════════════
-   BEFORE Grange writes, it inspects the org + program + funder inputs and asks
-   the FEWEST questions whose answers make a specific, TRUTHFUL first draft
-   possible — a missing number, a personal/community story, or a genuine
-   ambiguity. The answers are handed to the writer as authoritative facts, so the
-   very first draft is accurate rather than drafted-then-patched. Anything the
-   user skips is marked [VERIFY] in the draft, never fabricated. Best-effort: if
-   the model proposes no questions (or fails), drafting proceeds normally. */
-let _interviewResolve = null;
+/* ══════════════ APPROACH PLAN (plan → approve → write) ══════════════
+   BEFORE Grange writes, it shows an animated OUTLINE of how it will approach
+   THIS grant: per section, the approach, WHY that fits this funder, real
+   strategic OPTIONS the user can pick (not one fixed path), and a contextual
+   question where a specific detail is missing. Nothing is written until the user
+   APPROVES. The approved plan + chosen angles + answers steer the writer, and no
+   fact is invented (missing → [VERIFY]). Best-effort: if the plan can't be built
+   the flow falls back to drafting directly. */
+let _planResolve = null;
 
-async function preDraftQuestions(fields, org, grant, signal) {
+async function buildApproachPlan(fields, org, grant, signal) {
   try {
+    const req = (typeof window !== 'undefined' && window._parsedReq) ? window._parsedReq : null;
+    const secHint = req && (req.sections || []).length
+      ? 'The funder REQUIRES these sections — use them as the plan sections, in order: ' + req.sections.map((s) => s.title).filter(Boolean).join('; ') + '.'
+      : 'Proposal type: ' + (fields.proposalType || 'Full grant narrative') + '.';
     const ctx = [
-      'ORGANIZATION: ' + (org.name || '(unnamed)') + '. Mission: ' + (org.mission || '(not given)') + '.',
-      org.focusAreas ? 'Focus areas: ' + org.focusAreas : '',
+      'ORG: ' + (org.name || '(unnamed)') + ' — ' + (org.mission || '(mission not given)') + '.',
+      org.focusAreas ? 'Focus: ' + org.focusAreas : '',
       org.programs ? 'Programs: ' + org.programs : '',
-      org.peopleServed ? 'People served/year: ' + org.peopleServed : '',
-      org.budget ? 'Annual budget: ' + org.budget : '',
-      org.staffCount ? 'Staff: ' + org.staffCount : '',
-      'PROGRAM TO FUND: ' + (fields.program || '') + '. Population: ' + (fields.population || '') + '. What the grant funds: ' + (fields.description || '') + '. Amount: ' + (fields.amount || '') + '. Period: ' + (fields.period || '') + '.',
-      'FUNDER: ' + ((grant && grant.funder) || '(not specified)') + ' (' + ((grant && grant.type) || '') + ').',
+      org.peopleServed ? 'People served/yr: ' + org.peopleServed : '',
+      'PROGRAM: ' + (fields.program || '') + '. Population: ' + (fields.population || '') + '. Funds: ' + (fields.description || '') + '. Amount: ' + (fields.amount || '') + '.',
+      'FUNDER: ' + ((grant && grant.funder) || '(unspecified)') + ' (' + ((grant && grant.type) || '') + '). Writer emphasis: ' + (fields.emphasis || '') + '. Voice: ' + (fields.voice || '') + '.',
     ].filter(Boolean).join('\n');
     const prompt = [
-      'You are a grant coach. BEFORE a proposal is drafted, decide the FEWEST questions whose answers would let the writer produce a specific, TRUTHFUL proposal WITHOUT inventing anything. Look at what is provided below and ask only for what is MISSING and genuinely important.',
-      'Return ONLY a JSON array (no prose, no code fences), 0 to 5 items, each {"type":"number"|"story"|"clarify","q":"the question","why":"one short reason"}.',
-      '- "number": a specific figure the proposal will need that is NOT provided (people served, outcome %, cost per participant, prior results, dates, staff).',
-      '- "story": ONE invitation for a concrete personal or community moment, only if none is evident.',
-      '- "clarify": only if what the org does or needs is genuinely ambiguous.',
-      'Do NOT ask for anything already provided above. If nothing important is missing, return [].',
+      'You are a senior grant strategist. BEFORE writing, produce a short PLAN of how you will approach THIS grant so the applicant can review and steer it. Offer real strategic CHOICES where they exist (not one fixed path), explain WHY each choice fits this funder, and ask for anything essential that is missing. Never invent facts.',
+      secHint,
+      'Return ONLY JSON (no prose, no code fences): {"overview":"1-2 sentences on the overall winning strategy","sections":[{"title":"section name","approach":"how you will write it (1 sentence)","why":"why this fits THIS funder (1 sentence)","options":[{"label":"short angle name","desc":"one line"}],"question":{"type":"number|story|clarify","q":"one question","why":"short"}}]}',
+      'Rules: 4 to 6 sections. options: 0 to 2 per section, ONLY where a genuine strategic choice exists (e.g. lead with data vs a family story); otherwise []. question: include ONLY where a specific missing detail (a number, a story, or a real ambiguity) is needed for that section, at most one; otherwise omit. Keep every string short.',
       '',
       ctx,
     ].join('\n');
     const raw = await callGenerateOnce(prompt, signal);
-    const m = raw.match(/\[[\s\S]*\]/);
-    if (!m) return [];
-    let arr; try { arr = JSON.parse(m[0]); } catch { return []; }
-    if (!Array.isArray(arr)) return [];
-    const TYPES = ['number', 'story', 'clarify'];
-    return arr.filter((x) => x && x.q && TYPES.includes(x.type))
-      .slice(0, 5)
-      .map((x) => ({ type: x.type, q: String(x.q).slice(0, 240), why: String(x.why || '').slice(0, 200) }));
-  } catch (_) { return []; }
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (!m) return null;
+    let plan; try { plan = JSON.parse(m[0]); } catch { return null; }
+    if (!plan || !Array.isArray(plan.sections)) return null;
+    plan.overview = String(plan.overview || '').slice(0, 400);
+    plan.sections = plan.sections.slice(0, 6).map((s) => ({
+      title: String(s.title || 'Section').slice(0, 120),
+      approach: String(s.approach || '').slice(0, 300),
+      why: String(s.why || '').slice(0, 300),
+      options: Array.isArray(s.options) ? s.options.slice(0, 2).map((o) => ({ label: String(o.label || '').slice(0, 60), desc: String(o.desc || '').slice(0, 160) })).filter((o) => o.label) : [],
+      question: (s.question && s.question.q && ['number', 'story', 'clarify'].includes(s.question.type))
+        ? { type: s.question.type, q: String(s.question.q).slice(0, 240), why: String(s.question.why || '').slice(0, 200) } : null,
+    })).filter((s) => s.title);
+    return plan.sections.length ? plan : null;
+  } catch (_) { return null; }
 }
 
-function ensureInterviewEl() {
-  let el = document.getElementById('gen-interview');
+function _ensurePlanStyles() {
+  if (document.getElementById('plan-styles')) return;
+  const st = document.createElement('style'); st.id = 'plan-styles';
+  st.textContent =
+    '@keyframes planIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}' +
+    '.plan-node{opacity:0;animation:planIn 360ms cubic-bezier(0.23,1,0.32,1) forwards}' +
+    '.plan-opt{cursor:pointer;transition:transform 140ms ease-out,border-color 140ms ease,background 140ms ease,color 140ms ease}' +
+    '.plan-opt:active{transform:scale(0.97)}' +
+    '.plan-opt.sel{border-color:var(--accent,#c1440e)!important;background:var(--accent-tint);color:var(--accent-ink)}' +
+    '.plan-btn{transition:transform 140ms cubic-bezier(0.23,1,0.32,1)}.plan-btn:active{transform:scale(0.97)}' +
+    '@media (prefers-reduced-motion: reduce){.plan-node{animation:planIn 1ms linear forwards}.plan-opt,.plan-btn{transition:none}}';
+  document.head.appendChild(st);
+}
+
+function ensurePlanEl() {
+  let el = document.getElementById('gen-plan');
   if (el) return el;
   const anchor = document.getElementById('out-doc') || document.getElementById('gen-loader');
   if (!anchor || !anchor.parentNode) return null;
-  el = document.createElement('div'); el.id = 'gen-interview'; el.style.display = 'none';
+  el = document.createElement('div'); el.id = 'gen-plan'; el.style.display = 'none';
   anchor.parentNode.insertBefore(el, anchor);   // where the draft will appear
   return el;
 }
 
-function _qIcon(type) { return type === 'number' ? '#' : type === 'story' ? '❝' : '?'; }
+function _planQIcon(t) { return t === 'number' ? '#' : t === 'story' ? '❝' : '?'; }
 
-function renderInterviewPanel(el, qs) {
-  let h = '<div style="margin:8px 0 16px;padding:18px 20px;background:var(--accent-tint);border-radius:14px">';
-  h += '<div style="font-weight:600;font-size:15px;margin-bottom:3px">A few quick questions first</div>';
-  h += '<div style="font-size:12.5px;color:var(--accent-ink);margin-bottom:14px;line-height:1.5">So your draft is accurate and personal, Grange asks before it writes. Anything you leave blank is marked in the draft for you to fill in, never made up.</div>';
-  h += '<div style="display:flex;flex-direction:column;gap:12px">';
-  qs.forEach((q, i) => {
-    const short = q.type === 'number';
-    h += '<div>';
-    h += '<label for="intv-' + i + '" style="display:block;font-size:13px;font-weight:500;margin-bottom:4px;line-height:1.45">' +
-         '<span style="display:inline-block;width:18px;color:var(--accent-ink);font-weight:700">' + _qIcon(q.type) + '</span>' + escHtml(q.q) + '</label>';
-    if (q.why) h += '<div style="font-size:11.5px;color:var(--ink-muted,#777);margin:0 0 5px 18px">' + escHtml(q.why) + '</div>';
-    h += short
-      ? '<input id="intv-' + i + '" type="text" placeholder="Your real figure or fact…" style="width:100%;padding:8px 11px;border:1px solid var(--border,#d8d2c6);border-radius:9px;font-size:13px;box-sizing:border-box">'
-      : '<textarea id="intv-' + i + '" rows="2" placeholder="A sentence or two in your own words…" style="width:100%;padding:8px 11px;border:1px solid var(--border,#d8d2c6);border-radius:9px;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>';
-    h += '</div>';
+function renderPlanPanel(el, plan) {
+  _ensurePlanStyles();
+  let h = '<div style="margin:8px 0 16px;padding:20px 22px;background:var(--surface,#fff);border:1px solid var(--border,#e6e0d4);border-radius:16px">';
+  h += '<div style="font-weight:650;font-size:16px;margin-bottom:4px">Here’s how I’ll approach this grant</div>';
+  if (plan.overview) h += '<div style="font-size:13px;color:var(--ink-body,#444);line-height:1.55;margin-bottom:4px">' + escHtml(plan.overview) + '</div>';
+  h += '<div style="font-size:12px;color:var(--ink-muted,#888);margin-bottom:18px">Review the plan, pick any options, and answer what you can. Nothing is written until you approve, and I never invent facts.</div>';
+  plan.sections.forEach((s, i) => {
+    const last = i === plan.sections.length - 1;
+    h += '<div class="plan-node" style="display:flex;gap:14px;animation-delay:' + (i * 60) + 'ms">';
+    h += '<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">' +
+         '<div style="width:26px;height:26px;border-radius:50%;background:var(--accent-tint);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">' + (i + 1) + '</div>' +
+         (last ? '' : '<div style="flex:1;width:2px;background:var(--border,#e6e0d4);margin:4px 0;min-height:16px"></div>') +
+         '</div>';
+    h += '<div style="flex:1;padding-bottom:' + (last ? 4 : 18) + 'px;min-width:0">';
+    h += '<div style="font-weight:600;font-size:14px;margin-bottom:3px">' + escHtml(s.title) + '</div>';
+    if (s.approach) h += '<div style="font-size:12.5px;color:var(--ink-body,#444);line-height:1.5">' + escHtml(s.approach) + '</div>';
+    if (s.why) h += '<div style="font-size:11.5px;color:var(--ink-muted,#888);line-height:1.45;margin-top:3px"><b style="color:var(--accent-ink)">Why:</b> ' + escHtml(s.why) + '</div>';
+    if (s.options && s.options.length) {
+      h += '<div style="margin-top:9px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-muted,#999);margin-bottom:5px">Choose an angle</div><div style="display:flex;flex-wrap:wrap;gap:7px" data-opts="' + i + '">';
+      s.options.forEach((o, j) => {
+        h += '<button type="button" class="plan-opt' + (j === 0 ? ' sel' : '') + '" data-si="' + i + '" data-oi="' + j + '" onclick="planPickOption(' + i + ',' + j + ')" title="' + escHtml(o.desc) + '" style="border:1px solid var(--border,#d8d2c6);border-radius:999px;padding:6px 12px;font-size:12px;background:transparent">' + escHtml(o.label) + '</button>';
+      });
+      h += '<button type="button" class="plan-opt" data-si="' + i + '" data-oi="-1" onclick="planPickOption(' + i + ',-1)" style="border:1px dashed var(--border,#d8d2c6);border-radius:999px;padding:6px 12px;font-size:12px;background:transparent;color:var(--ink-muted,#888)">Let Grange choose</button>';
+      h += '</div></div>';
+    }
+    if (s.question) {
+      const short = s.question.type === 'number';
+      h += '<div style="margin-top:10px">';
+      h += '<label for="pq-' + i + '" style="display:block;font-size:12.5px;font-weight:500;margin-bottom:4px"><span style="display:inline-block;width:16px;color:var(--accent-ink);font-weight:700">' + _planQIcon(s.question.type) + '</span>' + escHtml(s.question.q) + '</label>';
+      h += short
+        ? '<input id="pq-' + i + '" type="text" placeholder="Your real figure or fact…" style="width:100%;max-width:440px;padding:7px 11px;border:1px solid var(--border,#d8d2c6);border-radius:9px;font-size:13px;box-sizing:border-box">'
+        : '<textarea id="pq-' + i + '" rows="2" placeholder="A sentence or two in your own words…" style="width:100%;max-width:540px;padding:7px 11px;border:1px solid var(--border,#d8d2c6);border-radius:9px;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>';
+      h += '</div>';
+    }
+    h += '</div></div>';
   });
-  h += '</div>';
-  h += '<div style="display:flex;gap:8px;margin-top:16px">' +
-       '<button class="btn btn-accent btn-sm" onclick="submitInterview()">Write my proposal</button>' +
-       '<button class="btn btn-ghost btn-sm" onclick="skipInterview()">Skip, write anyway</button></div>';
+  h += '<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">' +
+       '<button class="btn btn-accent btn-sm plan-btn" onclick="approvePlan()">Generate with this plan</button>' +
+       '<button class="btn btn-outline btn-sm plan-btn" onclick="replanPlan()">Rethink the plan</button>' +
+       '<button class="btn btn-ghost btn-sm plan-btn" onclick="cancelPlan()">Cancel</button></div>';
   h += '</div>';
   el.innerHTML = h; el.style.display = 'block';
 }
 
-// Returns a Promise of the user's answers; resolves when they click a button,
-// rejects (AbortError) if generation is cancelled mid-interview.
-function runInterview(qs, signal, loader) {
+function planPickOption(si, oi) {
+  const wrap = document.querySelector('[data-opts="' + si + '"]'); if (!wrap) return;
+  wrap.querySelectorAll('.plan-opt').forEach((b) => { b.classList.toggle('sel', Number(b.getAttribute('data-oi')) === oi); });
+}
+
+function _collectPlanChoices(plan) {
+  const choices = [], answers = [];
+  plan.sections.forEach((s, i) => {
+    let chosen = null;
+    if (s.options && s.options.length) {
+      const selBtn = document.querySelector('[data-opts="' + i + '"] .plan-opt.sel');
+      const oi = selBtn ? Number(selBtn.getAttribute('data-oi')) : 0;
+      if (oi >= 0 && s.options[oi]) chosen = s.options[oi];
+    }
+    choices.push({ title: s.title, approach: s.approach, why: s.why, chosen });
+    if (s.question) {
+      const inp = document.getElementById('pq-' + i);
+      const val = (inp && inp.value || '').trim();
+      if (val) answers.push({ type: s.question.type, q: s.question.q, answer: val });
+    }
+  });
+  return { choices, answers };
+}
+
+// Promise: resolves {choices,answers} on approve, {replan:true}, or {cancel:true};
+// rejects AbortError if generation is aborted elsewhere.
+function runApproachPlan(plan, signal, loader) {
   return new Promise((resolve, reject) => {
-    const el = ensureInterviewEl();
-    if (!el) { resolve([]); return; }
+    const el = ensurePlanEl();
+    if (!el) { resolve({ choices: [], answers: [] }); return; }
     if (loader) loader.style.display = 'none';
-    renderInterviewPanel(el, qs);
-    _interviewResolve = (skip) => {
-      _interviewResolve = null;
-      const answers = skip ? [] : qs.map((q, i) => {
-        const inp = document.getElementById('intv-' + i);
-        return Object.assign({}, q, { answer: (inp && inp.value || '').trim() });
-      }).filter((a) => a.answer);
+    renderPlanPanel(el, plan);
+    _planResolve = (mode) => {
+      _planResolve = null;
+      if (mode === 'replan') { el.style.display = 'none'; resolve({ replan: true }); return; }
+      if (mode === 'cancel') { el.style.display = 'none'; el.innerHTML = ''; resolve({ cancel: true }); return; }
+      const res = _collectPlanChoices(plan);
       el.style.display = 'none'; el.innerHTML = '';
       if (loader) loader.style.display = '';
-      resolve(answers);
+      resolve(res);
     };
     if (signal) signal.addEventListener('abort', () => {
-      if (_interviewResolve) { _interviewResolve = null; el.style.display = 'none'; el.innerHTML = ''; reject(new DOMException('aborted', 'AbortError')); }
+      if (_planResolve) { _planResolve = null; el.style.display = 'none'; el.innerHTML = ''; reject(new DOMException('aborted', 'AbortError')); }
     }, { once: true });
   });
 }
-window.submitInterview = function () { if (_interviewResolve) _interviewResolve(false); };
-window.skipInterview = function () { if (_interviewResolve) _interviewResolve(true); };
+window.approvePlan = function () { if (_planResolve) _planResolve('approve'); };
+window.replanPlan = function () { if (_planResolve) _planResolve('replan'); };
+window.cancelPlan = function () { if (_planResolve) _planResolve('cancel'); };
+
+// Turn the approved plan + chosen angles into a writer instruction block.
+function planToPromptBlock(plan, choices) {
+  if (!plan || !plan.sections || !plan.sections.length) return '';
+  const lines = (choices || []).map((c) =>
+    '- ' + c.title + ': ' + (c.approach || '') + (c.chosen ? ' [Chosen angle: ' + c.chosen.label + (c.chosen.desc ? ' — ' + c.chosen.desc : '') + ']' : '')
+  ).join('\n');
+  return '\n\nAPPROVED WRITING PLAN (the applicant reviewed and approved this approach — follow it). ' +
+    (plan.overview ? 'Overall strategy: ' + plan.overview + '\n' : '') + lines +
+    '\nWrite each section to this plan and the chosen angles. Do not explain the plan inside the proposal text; just write the strongest version of it.';
+}
 
 // The authoritative facts block the writer must use (together with org data, as
 // its ONLY sources of concrete facts).
@@ -7491,8 +7566,8 @@ async function generate() {
   window._draftUid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('d' + Date.now());
   window._outcomeStatus = null; window._lastDraftMeta = null;
   { const oEl = document.getElementById('gen-outcome'); if (oEl) { oEl.style.display = 'none'; oEl.innerHTML = ''; } }
-  _interviewResolve = null;
-  { const iEl = document.getElementById('gen-interview'); if (iEl) { iEl.style.display = 'none'; iEl.innerHTML = ''; } }
+  _planResolve = null; window._approachPlan = null; window._planChoices = null;
+  { const pEl = document.getElementById('gen-plan'); if (pEl) { pEl.style.display = 'none'; pEl.innerHTML = ''; } }
   genWritingView(true);                       // collapse the config, give the draft full width
   genSetStep(3);                              // → step 3: Generate
   if (window._apStart) window._apStart();     // live step-by-step trace of what Grange is doing
@@ -7633,21 +7708,33 @@ async function generate() {
       ]);
     } catch (e) { if (e.name === 'AbortError') throw e; }
 
-    // ── Pre-draft interview: ask for the specific facts + story the draft needs,
-    // BEFORE writing, so the FIRST draft is accurate and never fabricated. The
-    // answers become authoritative source facts for the writer. Best-effort. ──
-    let interviewBlock = '';
+    // ── Approach plan: show HOW Grange will tackle THIS grant (per-section
+    // approach + why + strategic options + any contextual question), let the user
+    // steer, and require APPROVAL before writing — so the first draft is on-plan,
+    // personalized, and never fabricated. Best-effort: if no plan can be built,
+    // drafting proceeds directly. ──
+    let planBlock = '', interviewBlock = '';
     try {
-      genLoaderCap('Checking what Grange needs from you…');
-      const qs = await preDraftQuestions(fields, org, selectedGrant, _genAbort.signal);
-      if (qs.length) {
-        const answers = await runInterview(qs, _genAbort.signal, loader);
-        interviewBlock = answersBlock(answers);
+      genLoaderCap('Mapping out the approach…');
+      let plan = await buildApproachPlan(fields, org, selectedGrant, _genAbort.signal);
+      while (plan && plan.sections && plan.sections.length) {
+        const res = await runApproachPlan(plan, _genAbort.signal, loader);
+        if (res.cancel) { generating = false; genShowConfig(); return; }
+        if (res.replan) {
+          genLoaderCap('Rethinking the approach…');
+          const np = await buildApproachPlan(fields, org, selectedGrant, _genAbort.signal);
+          if (np && np.sections && np.sections.length) { plan = np; continue; }
+          break;
+        }
+        window._approachPlan = plan; window._planChoices = res.choices;
+        planBlock = planToPromptBlock(plan, res.choices);
+        interviewBlock = answersBlock(res.answers);
+        break;
       }
     } catch (e) { if (e.name === 'AbortError') throw e; }
 
     if (strategy) showStrategyNote(strategy);
-    const prompt = writePrompt + voiceBlock + exemplarBlock + interviewBlock +
+    const prompt = writePrompt + voiceBlock + exemplarBlock + planBlock + interviewBlock +
       (strategy ? '\n\nSTRATEGY BRIEF (internal, let this shape the angle, emphasis, and what you lead with; do not quote it verbatim):\n' + strategy : '');
     genLoaderCap('Writing your draft…');
 
@@ -7833,6 +7920,25 @@ function renderSectionMap(fields) {
     checklist.parentNode.insertBefore(el, checklist);   // sits above the pre-export checklist
   }
   if (!el) return;
+  // If the user approved an Approach Plan, show it as the decision trail (the
+  // "why" behind each choice) — this is how Grange explains its decisions.
+  const plan = (typeof window !== 'undefined') ? window._approachPlan : null;
+  const planChoices = (typeof window !== 'undefined') ? window._planChoices : null;
+  if (plan && plan.sections && plan.sections.length) {
+    const funderNmP = (window._selectedGrant && (window._selectedGrant.funder || window._selectedGrant.title)) || 'this funder';
+    const rowsP = plan.sections.map((s, i) => {
+      const ch = planChoices && planChoices[i] && planChoices[i].chosen;
+      const angle = ch ? `<span class="secmap-lim">${escHtml(ch.label)}</span>` : '';
+      const appr = s.approach ? `<div class="secmap-desc">${escHtml(s.approach)}</div>` : '';
+      const why = s.why ? `<div class="secmap-desc"><b>Why:</b> ${escHtml(s.why)}</div>` : '';
+      return `<li class="secmap-row"><div class="secmap-top"><span class="secmap-title">${escHtml(s.title)}</span>${angle}</div>${appr}${why}</li>`;
+    }).join('');
+    el.innerHTML = `<div class="secmap"><div class="secmap-hd">How Grange approached this</div>` +
+      `<div class="secmap-sub">The plan you approved, and why each choice fits ${escHtml(funderNmP)}.</div>` +
+      `<ul class="secmap-list">${rowsP}</ul></div>`;
+    el.style.display = 'block';
+    return;
+  }
   const req = (typeof window !== 'undefined' && window._parsedReq) ? window._parsedReq : null;
   const ptype = fields.proposalType || 'Full grant narrative';
   const use = ptype === 'Full grant narrative' && req && (req.sections || []).length;
