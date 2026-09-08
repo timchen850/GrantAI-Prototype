@@ -7343,6 +7343,179 @@ async function promoteDraftToExemplar() {
   } catch (e) { toast('Could not add to the library.'); }
 }
 
+/* ══════════════ PERSONALIZE: AI clarifying questions ══════════════
+   After a draft is written, Grange inspects it for gaps and asks the user
+   targeted questions to make the proposal specific and human:
+     • missing numbers/facts  — every [VERIFY] highlight becomes a question;
+       the answer replaces the highlight directly (deterministic, no model).
+     • a missing personal/community STORY — model-generated, woven in.
+     • an unclear program NEED — model-generated, woven in.
+   Best-effort: the model half degrades gracefully to the fact questions alone. */
+let _clarifyQs = [];
+
+function _collectVerifyQuestions(contentEl) {
+  const marks = Array.from(contentEl.querySelectorAll('mark.verify-flag'));
+  const qs = [];
+  marks.forEach((m, i) => {
+    m.setAttribute('data-vf', String(i));
+    const what = (m.textContent || '').trim();
+    if (what) qs.push({
+      type: 'fact', vf: i,
+      q: 'What is the real figure or fact for “' + what + '”?',
+      why: 'The draft marks this spot for a specific detail from your records.',
+    });
+  });
+  return qs;
+}
+
+async function _modelClarifyQuestions(contentEl, fields, org, signal) {
+  try {
+    const draft = (contentEl.innerText || '').slice(0, 6000);
+    const prompt = [
+      'You are a grant coach reviewing a DRAFT proposal for a nonprofit. Ask the FEWEST questions that would most improve it. Return ONLY a JSON array (no prose, no code fences), 0 to 3 items, each {"type":"story"|"clarify","q":"the question","why":"one short reason"}.',
+      '- Include ONE "story" question inviting a concrete personal or community moment the writer could add, ONLY if the draft lacks a real human narrative.',
+      '- Include a "clarify" question ONLY if what the organization actually does or needs is genuinely ambiguous in the draft.',
+      '- Do NOT ask for numbers (handled separately). Do NOT ask about things already present. If the draft is already specific and human, return [].',
+      '',
+      'ORG: ' + (org.name || '') + ' — ' + (org.mission || '') + '. Program: ' + (fields.program || '') + '. Serves: ' + (fields.population || org.beneficiaries || '') + '.',
+      '',
+      'DRAFT:\n' + draft,
+    ].join('\n');
+    const raw = await callGenerateOnce(prompt, signal);
+    const m = raw.match(/\[[\s\S]*\]/);
+    if (!m) return [];
+    let arr; try { arr = JSON.parse(m[0]); } catch { return []; }
+    if (!Array.isArray(arr)) return [];
+    return arr.filter((x) => x && x.q && (x.type === 'story' || x.type === 'clarify'))
+      .slice(0, 3)
+      .map((x) => ({ type: x.type, q: String(x.q).slice(0, 240), why: String(x.why || '').slice(0, 200) }));
+  } catch (_) { return []; }
+}
+
+function ensureClarifyEl() {
+  let el = document.getElementById('gen-clarify');
+  if (el) return el;
+  const anchor = (typeof ensureOutcomeEl === 'function' && ensureOutcomeEl())
+    || (typeof ensureScorecardEl === 'function' && ensureScorecardEl())
+    || document.getElementById('gen-section-map') || document.getElementById('compliance-checklist');
+  if (!anchor || !anchor.parentNode) return null;
+  el = document.createElement('div'); el.id = 'gen-clarify'; el.style.display = 'none';
+  anchor.parentNode.insertBefore(el, anchor);   // sits at the top, above the outcome tracker
+  return el;
+}
+
+function _clarifyIcon(type) { return type === 'fact' ? '#' : type === 'story' ? '❝' : '?'; }
+
+function renderClarifyPanel(el, qs) {
+  let h = '<div style="margin:0 0 16px;padding:16px 18px;background:var(--accent-tint);border-radius:14px">';
+  h += '<div style="font-weight:600;font-size:14.5px;margin-bottom:3px">Make this proposal unmistakably yours</div>';
+  h += '<div style="font-size:12.5px;color:var(--accent-ink);margin-bottom:12px;line-height:1.5">Grange spotted a few places where your own numbers and story would make this stronger. Answer what you can, then Grange weaves them in. Skip anything you don’t have.</div>';
+  h += '<div style="display:flex;flex-direction:column;gap:12px">';
+  qs.forEach((q, i) => {
+    const isFact = q.type === 'fact';
+    h += '<div>';
+    h += '<label for="clar-' + i + '" style="display:block;font-size:13px;font-weight:500;margin-bottom:4px;line-height:1.45">' +
+         '<span style="display:inline-block;width:18px;color:var(--accent-ink);font-weight:700">' + _clarifyIcon(q.type) + '</span>' + escHtml(q.q) + '</label>';
+    if (q.why) h += '<div style="font-size:11.5px;color:var(--ink-muted,#777);margin:0 0 5px 18px">' + escHtml(q.why) + '</div>';
+    h += isFact
+      ? '<input id="clar-' + i + '" type="text" placeholder="Your real figure or fact…" style="width:100%;padding:8px 11px;border:1px solid var(--border,#d8d2c6);border-radius:9px;font-size:13px;box-sizing:border-box">'
+      : '<textarea id="clar-' + i + '" rows="2" placeholder="A sentence or two in your own words…" style="width:100%;padding:8px 11px;border:1px solid var(--border,#d8d2c6);border-radius:9px;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>';
+    h += '</div>';
+  });
+  h += '</div>';
+  h += '<div style="display:flex;gap:8px;margin-top:14px">' +
+       '<button class="btn btn-accent btn-sm" onclick="submitClarifications()">Weave in my answers</button>' +
+       '<button class="btn btn-ghost btn-sm" onclick="dismissClarify()">Not now</button></div>';
+  h += '</div>';
+  el.innerHTML = h; el.style.display = 'block';
+}
+
+function dismissClarify() { const el = document.getElementById('gen-clarify'); if (el) { el.style.display = 'none'; } }
+
+async function renderClarify(contentEl, fields, org, grant, signal) {
+  try {
+    if (!contentEl) return;
+    window._lastGenCtx = { fields, org, grant };
+    const factQs = _collectVerifyQuestions(contentEl);
+    const modelQs = await _modelClarifyQuestions(contentEl, fields, org, signal);
+    _clarifyQs = factQs.concat(modelQs).slice(0, 6);
+    const el = ensureClarifyEl();
+    if (!el) return;
+    if (!_clarifyQs.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    renderClarifyPanel(el, _clarifyQs);
+  } catch (_) { /* best-effort */ }
+}
+
+// Recount the [VERIFY] highlights that remain and refresh the "things to double-check" banner.
+function _updateVerifyBanner(contentEl) {
+  const count = contentEl.querySelectorAll('mark.verify-flag').length;
+  const note = document.getElementById('gen-verify-note');
+  if (!note) return count;
+  if (count > 0) {
+    note.innerHTML = '<div class="gen-verify-banner">' +
+      '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>' +
+      '<div><b>' + count + ' thing' + (count > 1 ? 's' : '') + ' to double-check.</b> Grange highlighted where a specific detail belongs but was not in your profile. Replace each highlight with your real number or fact before you submit.</div></div>';
+    note.style.display = 'block';
+  } else { note.style.display = 'none'; note.innerHTML = ''; }
+  return count;
+}
+
+async function submitClarifications() {
+  const contentEl = document.getElementById('doc-content');
+  if (!contentEl || !_clarifyQs.length) return;
+  const answers = _clarifyQs.map((q, i) => {
+    const el = document.getElementById('clar-' + i);
+    return Object.assign({}, q, { answer: (el && el.value || '').trim() });
+  }).filter((a) => a.answer);
+  if (!answers.length) { toast('Add at least one answer, or choose Not now.'); return; }
+
+  // 1) Facts — replace each highlight with the user's real value (deterministic).
+  let applied = 0;
+  answers.filter((a) => a.type === 'fact').forEach((a) => {
+    const mark = contentEl.querySelector('mark.verify-flag[data-vf="' + a.vf + '"]');
+    if (mark) { const span = document.createElement('span'); span.textContent = a.answer; mark.replaceWith(span); applied++; }
+  });
+
+  // 2) Story / clarify — weave in via a safety-gated model revise pass.
+  const prose = answers.filter((a) => a.type !== 'fact');
+  const panel = document.getElementById('gen-clarify');
+  if (prose.length) {
+    if (panel) panel.style.opacity = '0.55';
+    toast('Weaving your answers into the draft…');
+    const original = contentEl.innerHTML;
+    const heads = _countHeadings(original), baseLen = _plainLen(original);
+    const qa = prose.map((a) => '- ' + (a.type === 'story' ? 'STORY' : 'CLARIFICATION') + ' — Q: ' + a.q + '\n  A: ' + a.answer).join('\n');
+    const prompt = [
+      'Revise the grant-proposal draft below to weave in the writer’s answers naturally, as the writer’s own words. Keep the SAME <h4> section headings and structure, and clean HTML (<p>/<b>).',
+      'Place each answer in the most relevant section. Do NOT invent facts beyond what they gave. Do NOT copy the Q/A labels. Keep every existing fact, number, and <mark class="verify-flag"> highlight intact. Preserve the human, non-AI voice. Keep about the same length.',
+      'Output ONLY the revised HTML, no preamble or code fences.',
+      '',
+      'WRITER ANSWERS:\n' + qa,
+      '',
+      'DRAFT:\n' + original,
+    ].join('\n');
+    try {
+      const rewritten = await callGenerateOnce(prompt);
+      if (rewritten && rewritten.length > 60 && _countHeadings(rewritten) >= heads) {
+        const nl = _plainLen(rewritten);
+        if (nl >= baseLen * 0.85 && nl <= baseLen * 1.5 && !/<\s*(script|style|iframe|object|embed|link)/i.test(rewritten)) {
+          contentEl.innerHTML = rewritten;
+          applied += prose.length;
+        }
+      }
+    } catch (_) { /* keep the fact-corrected draft */ }
+    if (panel) panel.style.opacity = '';
+  }
+
+  flagVerifyMarkers(contentEl);          // convert any new [VERIFY] the model emitted
+  _updateVerifyBanner(contentEl);        // then set the banner from the true remaining count
+  saveGenDraft();
+  const ctx = window._lastGenCtx || {};
+  captureDraftMeta(ctx.fields || {}, ctx.grant || window._selectedGrant, contentEl);
+  toast(applied ? 'Your answers are woven in. Review the changes before you submit.' : 'No changes applied.');
+  dismissClarify();
+}
+
 async function generate() {
   if (generating) return;
 
@@ -7374,6 +7547,8 @@ async function generate() {
   window._draftUid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('d' + Date.now());
   window._outcomeStatus = null; window._lastDraftMeta = null;
   { const oEl = document.getElementById('gen-outcome'); if (oEl) { oEl.style.display = 'none'; oEl.innerHTML = ''; } }
+  _clarifyQs = [];
+  { const cEl = document.getElementById('gen-clarify'); if (cEl) { cEl.style.display = 'none'; cEl.innerHTML = ''; } }
   genWritingView(true);                       // collapse the config, give the draft full width
   genSetStep(3);                              // → step 3: Generate
   if (window._apStart) window._apStart();     // live step-by-step trace of what Grange is doing
@@ -7601,6 +7776,7 @@ async function generate() {
     saveGenDraft();                           // persist the finished draft (post-revision)
     captureDraftMeta(fields, selectedGrant, content);  // snapshot for outcome tracking
     refreshOutcomeTracker();                  // show the win/loss tracker + running win rate (async, best-effort)
+    renderClarify(content, fields, org, selectedGrant, _genAbort.signal);  // gap-spotting Q&A to personalize (async, best-effort)
 
     const elapsed = ((Date.now() - genStart) / 1000).toFixed(1);
     setGenBtnLabel('Regenerate');
