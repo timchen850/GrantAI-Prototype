@@ -6142,12 +6142,17 @@ function populateProfile() {
       : '<span style="font-size:13px;color:var(--muted)">No programs added yet — add them in onboarding or save here.</span>';
   }
 
-  // completeness ring
-  const textFields = ['pf-legal-name', 'pf-ein', 'pf-mission', 'pf-budget', 'pf-program-desc'];
+  // completeness ring — EIN and NTEE only count for registered nonprofits, so a
+  // business / individual / pre-incorporation org can still reach 100% (Phase 2).
+  const _isNp = rdyIsNonprofit((window._grange && window._grange.profile) || {});
+  const textFields = _isNp
+    ? ['pf-legal-name', 'pf-ein', 'pf-mission', 'pf-budget', 'pf-program-desc']
+    : ['pf-legal-name', 'pf-mission', 'pf-budget', 'pf-program-desc'];
+  const nteeSlots = _isNp ? 1 : 0;
   const filled = textFields.filter(id => (document.getElementById(id)?.value || '').trim()).length
-    + (document.getElementById('pf-ntee')?.value ? 1 : 0)
+    + (_isNp && document.getElementById('pf-ntee')?.value ? 1 : 0)
     + (arr(a.primary_programs).length ? 1 : 0);
-  const pct = Math.round((filled / (textFields.length + 2)) * 100);
+  const pct = Math.round((filled / (textFields.length + nteeSlots + 1)) * 100);
   const pctEl = document.getElementById('pf-ring-pct'); if (pctEl) pctEl.textContent = pct + '%';
   const ringEl = document.getElementById('pf-ring');
   if (ringEl) {
@@ -12293,6 +12298,11 @@ function applyDiscFilters(query, type) {
   ];
   let _rdyStatus = {};
 
+  // Requirements that only make sense for a registered nonprofit — hidden for
+  // businesses, individuals, and pre-incorporation groups (Phase 2).
+  const RDY_NP_ONLY = new Set(['determination_letter', 'form_990', 'board_list', 'bylaws']);
+  function rdyIsNonprofit(p) { return ['501c3', '501c4', '501c6'].includes((p && p.tax_exempt_status) || ''); }
+
   function rdyIcon(status) {
     if (status === 'have') return '<svg class="ap-done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>';
     if (status === 'in_progress') return '<svg class="ap-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/></svg>';
@@ -12306,9 +12316,13 @@ function applyDiscFilters(query, type) {
   function rdyEligBasics(p, a) {
     const arr = x => Array.isArray(x) ? x : (x ? [x] : []);
     const irsOk = irsVerified501c3(p, a);
+    const isNp = rdyIsNonprofit(p);
+    const firstGate = isNp
+      ? { label: irsOk ? '501(c)(3) status, verified by the IRS' : '501(c)(3) tax-exempt status', ok: irsOk || !!(p.tax_exempt_status && p.tax_exempt_status !== 'unknown'), detail: irsOk ? 'Confirmed against the IRS Exempt Organizations file.' : 'Required by almost every foundation grant — it is the gate.', fix:'Set your tax status' }
+      : { label: 'Entity type set', ok: !!(p.tax_exempt_status && p.tax_exempt_status !== 'unknown'), detail: 'Nonprofit status is not required for the grants we show you.', fix:'Set your entity type' };
     return [
-      { label: irsOk ? '501(c)(3) status, verified by the IRS' : '501(c)(3) tax-exempt status', ok: irsOk || !!(p.tax_exempt_status && p.tax_exempt_status !== 'unknown'), detail: irsOk ? 'Confirmed against the IRS Exempt Organizations file.' : 'Required by almost every funder — it is the gate.', fix:'Set your tax status' },
-      { label:'EIN on file', ok: !!(a.ein || p.ein), detail:'Your federal tax ID, asked for on every application.', fix:'Add your EIN' },
+      firstGate,
+      { label:'EIN or tax ID on file', ok: !!(a.ein || p.ein), detail:'Your federal tax ID, asked for on most applications.', fix:'Add your EIN' },
       { label:'Service area defined', ok: !!(a.geo_focus || a.primary_location || (p.service_geographies && p.service_geographies.length)), detail:'Funders fund specific places — this drives eligibility.', fix:'Add your location' },
       { label:'Annual budget on file', ok: !!(a.annual_budget || p.annual_budget), detail:'Many funders screen applicants by organization size.', fix:'Add your budget' },
       { label:'Mission & focus areas set', ok: !!((a.mission || p.mission) && arr(a.focus_areas).length), detail:'Drives grant matching and funder-priority fit.', fix:'Add your mission' },
@@ -12382,9 +12396,25 @@ function applyDiscFilters(query, type) {
 
   function rdyScore(p, a) {
     const elig = rdyEligBasics(p, a);
+    const isNp = rdyIsNonprofit(p);
+    const reqs = RDY_REQS.filter(r => isNp || !RDY_NP_ONLY.has(r.key));
     let pts = elig.filter(e => e.ok).length;
-    RDY_REQS.forEach(r => { const s = _rdyStatus[r.key]; if (s === 'have') pts += 1; else if (s === 'in_progress') pts += 0.5; });
-    return Math.round(pts / (elig.length + RDY_REQS.length) * 100);
+    reqs.forEach(r => { const s = _rdyStatus[r.key]; if (s === 'have') pts += 1; else if (s === 'in_progress') pts += 0.5; });
+    return Math.round(pts / (elig.length + reqs.length) * 100);
+  }
+
+  // For non-nonprofits: replace the IRS 501(c)(3) verification card with a clear
+  // "you don't need nonprofit status" card + an optional path to becoming one.
+  function rdyNonprofitStatusCard(p) {
+    const pending = (p && p.tax_exempt_status) === '501c3_pending';
+    const title = pending ? 'You\'re on your way to nonprofit status' : 'Nonprofit status: not required for your matches';
+    const body = pending
+      ? 'While your 501(c)(3) is in progress, you can still pursue grants that don\'t require it — and apply under a fiscal sponsor for those that do.'
+      : 'Plenty of funding — small-business, individual, and unrestricted grants — doesn\'t require 501(c)(3) status, and we\'ve tuned your grant matches accordingly.';
+    return '<div class="rdy-irs" id="rdy-irs"><div class="rdy-irs-head"><div class="rdy-irs-ic">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 4.4-3.1 7.8-8 9-4.9-1.2-8-4.6-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div>' +
+      '<div><div class="rdy-irs-t">' + title + '</div><div class="rdy-irs-sub">' + body +
+      ' <a href="https://www.councilofnonprofits.org/running-nonprofit/how-start-nonprofit" target="_blank" rel="noopener noreferrer" style="color:var(--accent);font-weight:600;cursor:pointer">Thinking of becoming a nonprofit? ↗</a></div></div></div></div>';
   }
 
   window.loadReadiness = async function () {
@@ -12405,7 +12435,8 @@ function applyDiscFilters(query, type) {
     const el = document.getElementById('rdy-content');
     const elig = rdyEligBasics(p, a);
     const pct = rdyScore(p, a);
-    const both = RDY_REQS.filter(r => r.applies_to === 'both');
+    const isNp = rdyIsNonprofit(p);
+    const both = RDY_REQS.filter(r => r.applies_to === 'both' && (isNp || !RDY_NP_ONLY.has(r.key)));
     const fed = RDY_REQS.filter(r => r.applies_to === 'federal');
 
     const item = r => {
@@ -12438,7 +12469,7 @@ function applyDiscFilters(query, type) {
       '</div>' +
       '<div class="rdy-section-title">Eligibility basics</div>' +
       '<div class="rdy-section-sub">The universal gates almost every funder checks — auto-filled from your profile.</div>' +
-      irsCardHTML(p, a) +
+      (isNp ? irsCardHTML(p, a) : rdyNonprofitStatusCard(p)) +
       elig.map(e => '<div class="rdy-elig"><span class="ic">' + (e.ok ? rdyIcon('have') : rdyIcon('missing')) + '</span>' +
         '<span class="lbl">' + e.label + '<small>' + e.detail + '</small></span>' +
         (e.ok ? '<span style="font-size:12px;color:var(--ok);font-weight:600">Confirmed</span>' : '<span class="act" onclick="go(\'profile\')">' + e.fix + ' →</span>') + '</div>').join('') +
