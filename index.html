@@ -9494,15 +9494,35 @@ if (window.sb) {
 }
 
 /* ════════════════════ ONBOARDING ════════════════════ */
+// Entity type drives which grants we show and which fields apply. Only actual
+// registered nonprofits are asked for an EIN / 501(c)(3) status / state of
+// incorporation — everyone else (businesses, individuals, pre-incorporation
+// groups, fiscal sponsees) gets through without them.
+const OB_NONPROFIT_ENTITY = ['501(c)(3) nonprofit', 'Other nonprofit (501c4/c6)'];
+function obIsNonprofitAns(a) { return OB_NONPROFIT_ENTITY.includes((a || {}).entity_type); }
+// Map the friendly entity_type answer to the profiles.tax_exempt_status enum.
+const ENTITY_TO_TAXSTATUS = {
+  '501(c)(3) nonprofit': '501c3',
+  'Other nonprofit (501c4/c6)': '501c6',
+  'Fiscal sponsorship': 'fiscal_sponsorship',
+  'Government / tribal': 'government',
+  'Not a nonprofit': 'other',
+  'Becoming a nonprofit': '501c3_pending',
+  'Not sure': 'unknown',
+};
+
 const OB_STEPS = [
-  { eyebrow: 'Step 1 of 6 · Your organization', title: 'Tell us about your nonprofit',
-    sub: 'The basics that establish your eligibility for most grants.',
+  { eyebrow: 'Step 1 of 6 · Your organization', title: 'Tell us about your organization',
+    sub: 'The basics that help us match you to grants you can actually win.',
     fields: [
-      { key: 'org_name', label: 'Organization legal name', type: 'text', placeholder: 'Eastside Youth Foundation', required: true },
-      { key: 'ein', label: 'EIN (Employer Identification Number)', type: 'text', placeholder: '47-1234567', required: true, help: 'Your EIN is the 9-digit tax ID the IRS gave your nonprofit, written like 47-1234567. It is on your IRS determination letter or any tax filing. Funders use it to confirm you are a real registered organization.' },
-      { key: 'status_501c3', label: '501(c)(3) status confirmed?', type: 'radio', options: ['Yes','No','In progress'], required: true, help: '501(c)(3) is the IRS status for tax-exempt charities, and most grants require it. Not approved yet? You can still apply through a fiscal sponsor: an approved nonprofit that accepts the grant on your behalf.' },
+      { key: 'org_name', label: 'Organization or project name', type: 'text', placeholder: 'Eastside Youth Collective', required: true },
+      { key: 'entity_type', label: 'What kind of organization are you?', type: 'radio', required: true, rerender: true,
+        options: ['501(c)(3) nonprofit', 'Other nonprofit (501c4/c6)', 'Fiscal sponsorship', 'Government / tribal', 'Not a nonprofit', 'Becoming a nonprofit', 'Not sure'],
+        help: 'This decides which grants we show you. Plenty of funding — small business, individual, and unrestricted grants — does not require nonprofit status at all. Pick whatever fits today; you can change it any time.' },
+      { key: 'ein', label: 'EIN (Employer Identification Number)', type: 'text', placeholder: '47-1234567', required: false, requiredIf: obIsNonprofitAns, showIf: obIsNonprofitAns, help: 'Your EIN is the 9-digit tax ID the IRS gave your organization, written like 47-1234567. Funders use it to confirm you are a registered organization. No EIN yet? Pick an option above that fits and you will not be asked for one.' },
+      { key: 'status_501c3', label: '501(c)(3) status confirmed?', type: 'radio', options: ['Yes','No','In progress'], required: false, showIf: obIsNonprofitAns, help: '501(c)(3) is the IRS status for tax-exempt charities. Not approved yet? You can still apply through a fiscal sponsor: an approved nonprofit that accepts the grant on your behalf.' },
+      { key: 'state_incorp', label: 'State of incorporation', type: 'text', placeholder: 'California', required: false, requiredIf: obIsNonprofitAns, showIf: obIsNonprofitAns, help: 'The state where you legally registered and filed your articles of incorporation.' },
       { key: 'year_founded', label: 'Year founded', type: 'number', placeholder: '2011' },
-      { key: 'state_incorp', label: 'State of incorporation', type: 'text', placeholder: 'California', required: true, help: 'The state where you legally registered your nonprofit and filed your articles of incorporation. This can be different from the state where you do your work today.' },
     ] },
   { eyebrow: 'Step 2 of 6 · Your mission', title: 'What do you work on?',
     sub: 'This drives which grants we match you to — the more detail, the better your matches.',
@@ -9640,10 +9660,11 @@ function obRender() {
   document.getElementById('ob-progress-fill').style.width = ((obState.idx) / OB_STEPS.length * 100) + '%';
 
   const wrap = document.getElementById('ob-fields');
-  wrap.innerHTML = (obState.idx === 0 ? ob990AutofillHTML() : '') + step.fields.map(f => obFieldHTML(f)).join('');
+  const vis = obVisibleFields(step);
+  wrap.innerHTML = (obState.idx === 0 ? ob990AutofillHTML() : '') + vis.map(f => obFieldHTML(f)).join('');
 
   // wire inputs back into state
-  step.fields.forEach(f => {
+  vis.forEach(f => {
     if (f.type === 'multi') {
       wrap.querySelectorAll('[data-multi="'+f.key+'"] .ob-chip').forEach(chip => {
         chip.onclick = () => {
@@ -9663,6 +9684,7 @@ function obRender() {
           chip.classList.add('on');
           obState.answers[f.key] = chip.dataset.val;
           obClearInvalid(f.key);
+          if (f.rerender) obRender();   // conditional fields may appear/disappear
         };
       });
     } else if (f.type === 'file') {
@@ -9694,7 +9716,7 @@ function obFieldHTML(f) {
   const open = `<div class="fieldset" id="ob-wrap-${f.key}" style="margin:0">`;
   const helpBtn = f.help ? ` <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="toggleTip(this)">?</button>` : '';
   const helpText = f.help ? `<div class="ob-help-text" id="ob-help-${f.key}" hidden>${escHtml(f.help)}</div>` : '';
-  const lab = `<label class="field-label">${f.label}${f.required ? ' <span class="ob-req" title="Required">*</span>' : ''}${helpBtn}</label>${helpText}`;
+  const lab = `<label class="field-label">${f.label}${obFieldRequired(f) ? ' <span class="ob-req" title="Required">*</span>' : ''}${helpBtn}</label>${helpText}`;
   if (f.type === 'textarea')
     return `${open}${lab}<textarea id="ob-${f.key}" placeholder="${escHtml(f.placeholder||'')}">${escHtml(v||'')}</textarea></div>`;
   if (f.type === 'select')
@@ -9732,6 +9754,13 @@ function obClearInvalid(key) {
   }
 }
 
+/* Fields the current step actually shows (a field may be conditional on prior
+   answers, e.g. EIN only appears for registered nonprofits). */
+function obVisibleFields(step) { return step.fields.filter(f => typeof f.showIf !== 'function' || f.showIf(obState.answers)); }
+/* A field is required now if statically required, or conditionally required
+   given the current answers (e.g. EIN when the org is a registered nonprofit). */
+function obFieldRequired(f) { return f.required === true || (typeof f.requiredIf === 'function' && f.requiredIf(obState.answers)); }
+
 /* a required answer is "filled" when: text/number/select non-empty, multi has >=1, radio is set */
 function obFieldFilled(f) {
   const v = obState.answers[f.key];
@@ -9742,9 +9771,10 @@ function obFieldFilled(f) {
 /* validate the CURRENT step's required fields; flag any blanks and block advance */
 function obValidateStep() {
   const step = OB_STEPS[obState.idx];
-  const missing = step.fields.filter(f => f.required && !obFieldFilled(f));
+  const vis = obVisibleFields(step);
+  const missing = vis.filter(f => obFieldRequired(f) && !obFieldFilled(f));
   // reset prior flags on this step
-  step.fields.forEach(f => { const w = document.getElementById('ob-wrap-' + f.key); if (w) w.classList.remove('ob-invalid'); });
+  vis.forEach(f => { const w = document.getElementById('ob-wrap-' + f.key); if (w) w.classList.remove('ob-invalid'); });
   const errEl = document.getElementById('ob-error');
   if (!missing.length) { if (errEl) errEl.textContent = ''; return true; }
   missing.forEach(f => { const w = document.getElementById('ob-wrap-' + f.key); if (w) w.classList.add('ob-invalid'); });
@@ -9798,6 +9828,7 @@ async function obFinish(skipped) {
       org_name: a.org_name || ctx.profile?.org_name || null,
       ein: a.ein || null,
       mission: a.mission || null,
+      tax_exempt_status: (ENTITY_TO_TAXSTATUS[a.entity_type] || 'unknown'),
       onboarding_complete: true,
     }).eq('user_id', uid);
   } catch (e) {
@@ -10533,7 +10564,7 @@ async function updateDashboard() {
    "what to do next" recommendation. This is the portal's sense of direction. */
 const JOURNEY_STAGES = [
   { key: 'profile',  label: 'Profile',  screen: 'profile',   icon: 'profile',
-    next: { kicker: 'Start here',  title: 'Tell us about your nonprofit', desc: 'A complete profile unlocks matching, eligibility checks, and AI drafting.', cta: 'Complete profile' } },
+    next: { kicker: 'Start here',  title: 'Tell us about your organization', desc: 'A complete profile unlocks matching, eligibility checks, and AI drafting.', cta: 'Complete profile' } },
   { key: 'discover', label: 'Discover', screen: 'discovery', icon: 'discover',
     next: { kicker: 'Next step', title: 'Find grants you can win', desc: 'Run discovery to surface funders matched to your mission and budget.', cta: 'Discover grants' } },
   { key: 'prepare',  label: 'Prepare',  screen: 'readiness',  icon: 'prepare',
@@ -10806,7 +10837,7 @@ function parseGovHit(hit) {
     'workforce','community','veterans','mental health','nutrition','climate','rural','urban',
     'equity','stem','research','prevention','training','immigrant','disability','tribal'];
   let kws = keywordCandidates.filter(k => tagSource.includes(k)).slice(0,3).map(k => k.charAt(0).toUpperCase() + k.slice(1));
-  if (!kws.length) kws = ['Federal grant', 'Nonprofit eligible'];
+  if (!kws.length) kws = ['Federal grant'];
 
   return {
     id: 'gov-' + hit.id,
@@ -10818,6 +10849,7 @@ function parseGovHit(hit) {
     deadlineLabel, deadline,
     type: 'Federal',
     focus: Array.isArray(hit.grangeFocus) ? hit.grangeFocus.slice() : [],
+    eligTags: Array.isArray(hit.eligTags) ? hit.eligTags.slice() : [],
     keywords: kws,
   };
 }
@@ -10845,6 +10877,10 @@ async function fetchFederalGrants(answers) {
       focus_areas: answers.focus_areas || [],
       primary_programs: answers.primary_programs || [],
       mission: answers.mission || '',
+      // entity type steers which eligibility sweeps run (nonprofit vs everyone else)
+      tax_exempt_status: (window._grange?.profile?.tax_exempt_status)
+        || (answers.entity_type ? ENTITY_TO_TAXSTATUS[answers.entity_type] : '')
+        || 'unknown',
     }),
   });
   if (!resp.ok) throw new Error('discover-grants ' + resp.status);
@@ -10896,8 +10932,8 @@ async function loadDiscoveryGrants(directAnswers) {
     list.innerHTML = `
       <div class="disc-survey-prompt">
         <div class="dsp-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 10a3 3 0 1 1 3 3v2"/><circle cx="12" cy="18" r=".5" fill="currentColor"/></svg></div>
-        <h2 style="font-size:22px;letter-spacing:-.02em;color:var(--ink)">Tell us about your nonprofit</h2>
-        <p style="font-size:15px;color:var(--muted);max-width:34rem">Complete a 3-minute profile and we'll search real grant databases to find opportunities matched to your mission, location, and programs.</p>
+        <h2 style="font-size:22px;letter-spacing:-.02em;color:var(--ink)">Tell us about your organization</h2>
+        <p style="font-size:15px;color:var(--muted);max-width:34rem">Complete a 3-minute profile and we'll search real grant databases to find opportunities you can actually win — whether or not you're a nonprofit.</p>
         <button class="btn btn-accent" style="margin-top:8px" onclick="go('onboarding')">Complete your profile →</button>
       </div>`;
     document.getElementById('disc-subtitle').textContent = 'Complete your profile to see matched grants.';
@@ -11244,6 +11280,10 @@ function renderGrantCard(g) {
   const rc = ringClass(g.matchScore);
   const tags = (g.keywords || []).slice(0,3).map(k =>
     `<span class="pill pill-ink">${escHtml(k)}</span>`).join('');
+  // Why-eligible badges (e.g. "No 501(c)(3) required", "Open to small business")
+  // from the discovery eligibility sweeps — so non-nonprofits see why a grant fits.
+  const eligBadges = (g.eligTags || []).slice(0,2).map(e =>
+    `<span class="pill" style="background:rgba(28,122,67,.10);color:var(--ok,#1c7a43);border:1px solid rgba(28,122,67,.30)">${escHtml(e)}</span>`).join('');
 
   const duePill = g.deadline
     ? `<span class="pill ${dueUrgency(g.deadline)}" style="font-size:11px">${escHtml(g.deadlineLabel)}</span>`
@@ -11264,7 +11304,7 @@ function renderGrantCard(g) {
       <div class="dsc">${escHtml(g.desc)}</div>
       <div class="gc-screen">${grantScreenHTML(g)}</div>
       <div class="gc-elig">${grantEligHTML(g)}</div>
-      <div class="tags"><span class="pill pill-ink">${escHtml(g.type)}</span>${tags}</div>
+      <div class="tags">${eligBadges}<span class="pill pill-ink">${escHtml(g.type)}</span>${tags}</div>
     </div>
     <div class="gc-meta">
       <div class="amt">${escHtml(g.amount)}</div>
