@@ -6705,6 +6705,14 @@ function buildPrompt(fields, org, grant) {
     'Capacity':       'organizational track record, infrastructure, and readiness — establish credibility early and reinforce it in every section',
   };
 
+  /* ── Applicant type: don't write a nonprofit-framed proposal for a business,
+     individual, or pre-incorporation applicant (entity-aware writer). ── */
+  const _tax = (typeof window !== 'undefined' && window._grange && window._grange.profile && window._grange.profile.tax_exempt_status) || '';
+  const _isNp = ['501c3', '501c4', '501c6', 'fiscal_sponsorship'].includes(_tax);
+  const writerRole = _isNp ? 'nonprofit ' : '';
+  const applicantNote = _isNp ? '' :
+    '\n- APPLICANT TYPE: this applicant is NOT necessarily a 501(c)(3) nonprofit. Do NOT assume or reference tax-exempt status, a board of directors, a Form 990, or bylaws unless the data above provides them. Build credibility from the applicant\'s actual track record, team, and results instead.';
+
   /* ── Grant context ───────────────────────────────────────── */
   const funderType  = (grant?.type || 'Grant').trim();
   const funderName  = grant?.funder || 'this funder';
@@ -6795,7 +6803,7 @@ RULES (follow exactly):
   - Vary sentence length and rhythm. Do not write three same-length sentences in a row. Prefer two concrete items over a rhetorical list of three.
   - No pull-quote one-liners or manufactured inspiration. Trust the reader; state facts plainly.
 - Ground every factual claim in the data above. Do not fabricate citations, study names, or statistics; if you reference a fact, it must come from the organization data provided.
-- If a sentence genuinely needs a specific figure, date, name, or statistic that was NOT provided above, do not invent it. Write the sentence and insert a marker exactly like [VERIFY: what to add] at the spot where the real detail belongs. Use these sparingly, only where a concrete, checkable detail is needed.
+- If a sentence genuinely needs a specific figure, date, name, or statistic that was NOT provided above, do not invent it. Write the sentence and insert a marker exactly like [VERIFY: what to add] at the spot where the real detail belongs. Use these sparingly, only where a concrete, checkable detail is needed.${applicantNote}
 `.trim() + reqPromptBlock() + rubricPromptBlock(proposalType, funderType);
 
   /* ── Funder-defined sections (from an analyzed call) override the generic structure ── */
@@ -6805,7 +6813,7 @@ RULES (follow exactly):
       const lim = Number(s.word_limit) ? ` (no more than ${Number(s.word_limit)} words)` : '';
       return `<h4>${s.title}</h4>\n${s.description || 'Write this section, grounded in the organization data.'}${lim}`;
     }).join('\n\n');
-    return `You are a senior nonprofit grant writer with 15 years of experience winning competitive awards. Write a complete proposal using EXACTLY the funder's required sections below, in this order, with the exact <h4> titles. Respect every stated word limit.
+    return `You are a senior ${writerRole}grant writer with 15 years of experience winning competitive awards. Write a complete proposal using EXACTLY the funder's required sections below, in this order, with the exact <h4> titles. Respect every stated word limit.
 
 ${sharedContext}
 
@@ -6816,7 +6824,7 @@ ${secList}`;
 
   /* ── Full grant narrative ─────────────────────────────── */
   if (proposalType === 'Full grant narrative') {
-    return `You are a senior nonprofit grant writer with 15 years of experience winning 7-figure awards. Write a complete, compelling Full Grant Narrative. Target: 900–1,100 words across all sections.
+    return `You are a senior ${writerRole}grant writer with 15 years of experience winning 7-figure awards. Write a complete, compelling Full Grant Narrative. Target: 900–1,100 words across all sections.
 
 ${sharedContext}
 
@@ -6849,7 +6857,7 @@ Establish credibility without bragging. Cite track record with similar programs,
 
   /* ── Letter of Inquiry (LOI) ──────────────────────────── */
   if (proposalType === 'Letter of inquiry') {
-    return `You are a senior nonprofit grant writer. Write a Letter of Inquiry (LOI) — not a full proposal. An LOI is a concise introduction that gets you invited to submit a full application. Target: 450–600 words, 4–5 tight paragraphs. No section headings.
+    return `You are a senior ${writerRole}grant writer. Write a Letter of Inquiry (LOI) — not a full proposal. An LOI is a concise introduction that gets you invited to submit a full application. Target: 450–600 words, 4–5 tight paragraphs. No section headings.
 
 ${sharedContext}
 
@@ -6868,7 +6876,7 @@ Paragraph 5 — CLOSE: Express genuine alignment with the funder's mission (spec
 
   /* ── Concept Paper ────────────────────────────────────── */
   if (proposalType === 'Concept paper') {
-    return `You are a senior nonprofit grant writer. Write a Concept Paper — a pre-solicitation document that tests funder interest before a full proposal is invited. It should feel exploratory and collaborative, not final. Target: 600–750 words.
+    return `You are a senior ${writerRole}grant writer. Write a Concept Paper — a pre-solicitation document that tests funder interest before a full proposal is invited. It should feel exploratory and collaborative, not final. Target: 600–750 words.
 
 ${sharedContext}
 
@@ -6915,7 +6923,7 @@ Briefly note whether spending is on track with the approved budget. If there are
   }
 
   /* ── Fallback (unknown type) ──────────────────────────── */
-  return `You are a senior nonprofit grant writer. Write a compelling grant document of type "${proposalType}". Target: 700–900 words.
+  return `You are a senior ${writerRole}grant writer. Write a compelling grant document of type "${proposalType}". Target: 700–900 words.
 
 ${sharedContext}
 
