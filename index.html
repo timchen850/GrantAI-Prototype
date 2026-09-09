@@ -11191,11 +11191,21 @@ function ensureUsaCard(answers) {
   card.classList.add('open');
   loadUsaSpending(answers);
 }
+// Map the org's entity type to USASpending recipient categories, so a business
+// or individual sees who funds businesses/individuals like them (not a nonprofit-
+// skewed prospect list). Nonprofits are left unfiltered — unchanged behavior.
+function usaRecipientTypes() {
+  const st = (window._grange && window._grange.profile && window._grange.profile.tax_exempt_status) || '';
+  if (['other', '501c3_pending', 'unknown'].includes(st)) return ['small_business', 'other_than_small_business', 'individuals'];
+  return [];
+}
+
 async function loadUsaSpending(answers) {
   const body = document.getElementById('disc-usa-body');
   if (!body) return;
   const kw = usaKeywords(answers), state = usaStateAbbr(answers);
-  const ck = usaCacheKey(), sig = kw.join('|') + '#' + state;
+  const rt = usaRecipientTypes();
+  const ck = usaCacheKey(), sig = kw.join('|') + '#' + state + '#' + rt.join(',');
   try { const c = JSON.parse(localStorage.getItem(ck) || 'null'); if (c && c.sig === sig && Date.now() - c.ts < 24 * 60 * 60 * 1000) { body.innerHTML = usaResultHTML(c.out); renderProspects(c.out, answers); return; } } catch (_) {}
   if (!window.sb) { hideUsaCard(); return; }
   const usaErr = m => { const b = document.getElementById('disc-usa-body'); if (b) b.innerHTML = '<div class="usa-foot" style="border-top:none;padding-top:2px">' + escHtml(m) + '</div>'; removeProspects(); };
@@ -11204,7 +11214,7 @@ async function loadUsaSpending(answers) {
     if (!session) { hideUsaCard(); return; }   // not signed in — supplementary panel not relevant
     const r = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/usaspending-search', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
-      body: JSON.stringify({ keywords: kw, state }) });
+      body: JSON.stringify({ keywords: kw, state, recipient_types: rt }) });
     const j = await r.json().catch(() => ({}));
     if (!r.ok || !j || !j.output) { usaErr('Could not load federal funders right now. Try again in a moment.'); return; }
     if (!(j.output.agencies || []).length) { hideUsaCard(); return; }   // no data for this profile — hide quietly

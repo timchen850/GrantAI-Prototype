@@ -5,7 +5,10 @@
 // there is no open opportunity, this shows the agencies that have funded similar
 // organizations and the realistic award sizes — the win-probability signal.
 // DETERMINISTIC (no LLM, does not touch the AI provider quota).
-// Body: { keywords: string[], state?: string }.  Auth: own (verify_jwt=false).
+// Body: { keywords: string[], state?: string, recipient_types?: string[] }.
+//   recipient_types focuses the prospects on the org's own kind of recipient
+//   (e.g. a small business sees who funds small businesses, not just nonprofits) —
+//   USASpending recipient_type_names, empirically validated. Auth: own (verify_jwt=false).
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -38,6 +41,11 @@ Deno.serve(async (req: Request) => {
     .map((k: any) => (k || '').toString().trim().slice(0, 40)).filter(Boolean).slice(0, 6);
   if (!keywords.length) return json({ error: 'Provide at least one keyword (e.g. your focus areas).' }, 400);
   const state = (body?.state || '').toString().trim().toUpperCase().slice(0, 2);
+  // Recipient business categories (USASpending recipient_type_names), validated
+  // against the API so an unknown value can never silently return zero results.
+  const RECIP_OK = new Set(['small_business', 'other_than_small_business', 'nonprofit', 'individuals', 'higher_education']);
+  const recipientTypes = (Array.isArray(body?.recipient_types) ? body.recipient_types : [])
+    .map((x: any) => String(x || '').trim()).filter((x: string) => RECIP_OK.has(x)).slice(0, 5);
 
   // Last ~4 federal fiscal years of awards.
   const now = new Date();
@@ -46,6 +54,7 @@ Deno.serve(async (req: Request) => {
 
   const filters: any = { award_type_codes: GRANT_CODES, keywords, time_period: [{ start_date: start, end_date: end }] };
   if (/^[A-Z]{2}$/.test(state)) filters.recipient_locations = [{ country: 'USA', state }];
+  if (recipientTypes.length) filters.recipient_type_names = recipientTypes;
 
   let data: any;
   try {
@@ -101,6 +110,7 @@ Deno.serve(async (req: Request) => {
     sampled: rows.length,
     state: /^[A-Z]{2}$/.test(state) ? state : null,
     keywords,
+    recipient_types: recipientTypes,
     award_low: amounts.length ? Math.min(...amounts) : 0,
     award_median: median(amounts),
     award_high: amounts.length ? Math.max(...amounts) : 0,
