@@ -10774,6 +10774,37 @@ const CURATED_GRANTS = [
     focus:['Education','Health','Environment','Youth','Community Development'], keywords:['Social entrepreneurship','Fellowship','Early-stage'] }
 ];
 
+/* Hand-vetted funders that DON'T require nonprofit status — shown only to
+   businesses, individuals, and pre-incorporation orgs (Phase 1 source lane).
+   Each verified real + open to non-nonprofits; recurring, so deadlines say
+   "check the site". Grants.gov / foundation grants above cover nonprofits. */
+const NON_NONPROFIT_FUNDERS = [
+  { id:'amber-grant', funder:'WomensNet (Amber Grant)', title:'Amber Grant for Women-Owned Businesses',
+    desc:'Monthly $10,000 grants (three awarded each month) plus year-end $50,000 grants for women-owned businesses in any category. No nonprofit status required — for-profit businesses welcome.',
+    amount:'$10K monthly · $50K year-end', amountMax:50000, amountMin:10000,
+    deadlineLabel:'Monthly — check the site', deadline:null, type:'Corporate',
+    url:'https://ambergrantsforwomen.com/', focus:['Workforce','Community Development'],
+    eligTags:['Open to small business','No 501(c)(3) required'], keywords:['Women-owned business','Small business','Monthly grant'] },
+  { id:'awesome-foundation', funder:'The Awesome Foundation', title:'$1,000 Micro-Grants for Awesome Projects',
+    desc:'No-strings $1,000 grants awarded every month by local chapters for creative and community projects. Individuals and unincorporated groups are welcome — no nonprofit status or registration required.',
+    amount:'$1,000', amountMax:1000, amountMin:1000,
+    deadlineLabel:'Monthly (by local chapter)', deadline:null, type:'Foundation',
+    url:'https://www.awesomefoundation.org/', focus:['Arts','Community Development','Youth'],
+    eligTags:['Open to individuals','No 501(c)(3) required'], keywords:['Micro-grant','Community project','Individuals'] },
+  { id:'fca-artists', funder:'Foundation for Contemporary Arts', title:'Grants to Individual Artists & Collectives',
+    desc:'Grants and emergency awards to individual artists and collectives working in dance, music and sound, performance, poetry, and visual arts. No nonprofit status required — the foundation funds artists directly.',
+    amount:'Varies by program', amountMax:40000, amountMin:0,
+    deadlineLabel:'By program — check the site', deadline:null, type:'Foundation',
+    url:'https://www.foundationforcontemporaryarts.org/grants/', focus:['Arts'],
+    eligTags:['Open to individuals','No 501(c)(3) required'], keywords:['Individual artists','Emergency grant','Creative']  },
+  { id:'pollination-project', funder:'The Pollination Project', title:'Seed Grants for Grassroots Changemakers',
+    desc:'Seed grants (up to $500, awarded daily) to individual changemakers and early-stage, volunteer-led grassroots projects in community, health, environment, and equity. Built for people and projects without their own 501(c)(3).',
+    amount:'Up to $500 (seed)', amountMax:500, amountMin:0,
+    deadlineLabel:'Rolling (daily)', deadline:null, type:'Foundation',
+    url:'https://thepollinationproject.org/', focus:['Community Development','Health','Environment'],
+    eligTags:['Open to individuals','No 501(c)(3) required'], keywords:['Seed grant','Grassroots','Changemaker'] },
+];
+
 /* Map survey focus areas → Grants.gov funding category codes */
 const FOCUS_TO_GOV_CAT = {
   'Education':'ED','Health':'HL','Housing':'HO','Food Security':'FN',
@@ -10981,6 +11012,15 @@ async function loadDiscoveryGrants(directAnswers) {
     .filter(g => g.matchScore >= 30)
     .sort((a, b) => b.matchScore - a.matchScore);
 
+  // For non-nonprofits, add the hand-vetted funders that don't require 501(c)(3).
+  // Floored so they always surface for the orgs they're meant for.
+  const _st = (window._grange?.profile?.tax_exempt_status)
+    || (answers.entity_type ? ENTITY_TO_TAXSTATUS[answers.entity_type] : '') || '';
+  const nonNpScored = ['other', '501c3_pending', 'unknown'].includes(_st)
+    ? NON_NONPROFIT_FUNDERS.map(g => ({ ...g, matchScore: Math.max(58, calcGrantMatch(g, answers)) }))
+        .sort((a, b) => b.matchScore - a.matchScore)
+    : [];
+
   // Fetch live federal grants (many unioned queries — high recall)
   let federalGrants = [], federalFailed = false;
   try {
@@ -10998,7 +11038,7 @@ async function loadDiscoveryGrants(directAnswers) {
 
   // Merge, de-dup by STABLE identity, sort by match score, cap at 75 (was 25 —
   // the user wants as many real opportunities surfaced as possible).
-  const all = [...federalGrants, ...curatedScored];
+  const all = [...federalGrants, ...curatedScored, ...nonNpScored];
   const seen = new Set();
   let merged = all.filter(g => {
     const key = g.govId ? 'gov-' + g.govId
@@ -11324,9 +11364,12 @@ function renderGrantCard(g) {
     ? `<span class="pill ${dueUrgency(g.deadline)}" style="font-size:11px">${escHtml(g.deadlineLabel)}</span>`
     : `<span style="font-size:12px;color:var(--muted)">${escHtml(g.deadlineLabel || 'Rolling')}</span>`;
 
+  const funderUrl = _safeUrl(g.url);
   const govLink = g.govId
     ? `<a href="https://www.grants.gov/search-results-detail/${g.govId}" target="_blank" rel="noopener" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">View on Grants.gov</a>`
-    : `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();saveGrantToPipeline(window._grantsById&&window._grantsById['${escHtml(g.id)}'],'saved')">Save</button>`;
+    : funderUrl
+      ? `<a href="${funderUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">Visit funder ↗</a>`
+      : `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();saveGrantToPipeline(window._grantsById&&window._grantsById['${escHtml(g.id)}'],'saved')">Save</button>`;
 
   return `<div class="gcard" data-type="${escHtml(g.type)}" data-id="${escHtml(g.id)}">
     <div class="gc-ring">
