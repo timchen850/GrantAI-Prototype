@@ -7383,7 +7383,9 @@ async function promoteDraftToExemplar() {
    a link to the official source. These rows are usage='reference' with NO
    embedding, so they can NEVER be retrieved into the generative writer path
    (match_exemplar_chunks only returns usage='ingestable'). We store a neutral
-   description + source link, never the copyrighted narrative text. */
+   description + source link, never the narrative text. Also holds CC BY-SA
+   winners (share-alike, so kept out of the writer to protect users' drafts) and
+   state/local public-record applications (no licence). */
 function ensureReferenceEl() {
   let el = document.getElementById('gen-reference');
   if (el) return el;
@@ -7421,7 +7423,41 @@ function renderReferenceList(el, items) {
   el.innerHTML = h; el.style.display = 'block';
 }
 
-async function renderReferencePanel(grant) {
+// Grant boilerplate that appears in nearly every proposal, so it says nothing
+// about relevance.
+const _REF_STOP = new Set(('about after also among and are because been being both but can could each from have help '
+  + 'into its more most must other over provide such than that their them then there these they this those through '
+  + 'under were what when where which while will with within would your community communities program programs '
+  + 'project projects grant grants funding fund funds support organization organizations people local year years '
+  + 'work works build building based including expand expanding serve serving served increase improve create '
+  + 'develop using plan need needs goal goals impact model small large service services').split(' '));
+function _refTokens(text) {
+  const out = new Set();
+  String(text || '').toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').split(/[\s-]+/).forEach((w) => {
+    if (w.length < 4 || _REF_STOP.has(w)) return;
+    out.add(w.length > 4 && w.endsWith('s') ? w.slice(0, -1) : w);
+  });
+  return out;
+}
+
+// Rank reference examples by overlap with THIS draft (program, population,
+// mission, focus areas), with a small boost for the same funder type / award
+// band, and show only the relevant few — never an arbitrary slice.
+function rankReferenceItems(items, ctxText, funderType, band) {
+  const ctx = _refTokens(ctxText);
+  if (!ctx.size) return [];
+  return items.map((it) => {
+    const toks = _refTokens([it.title, it.sector, it.content, it.funder_name].join(' '));
+    let overlap = 0;
+    toks.forEach((t) => { if (ctx.has(t)) overlap++; });
+    const typeMatch = !!(funderType && it.funder_type === funderType);
+    const score = overlap + (typeMatch ? 1.5 : 0) + (band && it.award_band === band ? 0.5 : 0);
+    return { it, overlap, typeMatch, score };
+  }).filter((r) => r.overlap >= 2)
+    .sort((a, b) => b.score - a.score).slice(0, 4).map((r) => r.it);
+}
+
+async function renderReferencePanel(grant, ctxText) {
   try {
     const el = ensureReferenceEl();
     if (!el || !window.sb) return;
@@ -7429,16 +7465,14 @@ async function renderReferencePanel(grant) {
     if (!session) { el.style.display = 'none'; el.innerHTML = ''; return; }
     const cols = 'funder_name,funder_type,sector,award_band,title,section,content,source_url,attribution,year_won';
     const ft = (grant && (grant.type || '').trim()) || null;
-    let res = ft
-      ? await window.sb.from('exemplar_chunks').select(cols).eq('usage', 'reference').eq('funder_type', ft).limit(6)
-      : await window.sb.from('exemplar_chunks').select(cols).eq('usage', 'reference').limit(6);
-    let data = res.data;
-    if ((!data || !data.length) && ft) {   // fall back to any reference examples
-      const r = await window.sb.from('exemplar_chunks').select(cols).eq('usage', 'reference').limit(6);
-      data = r.data;
-    }
-    if (!data || !data.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
-    renderReferenceList(el, data);
+    const amt = parseFloat((String((grant && grant.amount) || '').match(/[\d,]+(?:\.\d+)?/) || [''])[0].replace(/,/g, ''));
+    const band = Number.isFinite(amt) && amt > 0
+      ? (amt < 50000 ? '<50k' : amt < 150000 ? '50-150k' : amt < 500000 ? '150-500k' : '500k+') : null;
+    // The reference set is small and curated, so rank all of it client-side.
+    const { data } = await window.sb.from('exemplar_chunks').select(cols).eq('usage', 'reference').limit(200);
+    const items = rankReferenceItems(data || [], ctxText || (grant && grant.title) || '', ft, band);
+    if (!items.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    renderReferenceList(el, items);
   } catch (_) { /* best-effort */ }
 }
 
@@ -7919,7 +7953,8 @@ async function generate() {
     saveGenDraft();                           // persist the finished draft (post-revision)
     captureDraftMeta(fields, selectedGrant, content);  // snapshot for outcome tracking
     refreshOutcomeTracker();                  // show the win/loss tracker + running win rate (async, best-effort)
-    renderReferencePanel(selectedGrant);      // reference-only winning examples beside the draft (1C; never fed to the writer)
+    renderReferencePanel(selectedGrant,       // reference-only winning examples beside the draft (1C; never fed to the writer)
+      [fields.program, fields.description, fields.population, org.mission, org.focusAreas, selectedGrant?.title].filter(Boolean).join(' '));
 
     const elapsed = ((Date.now() - genStart) / 1000).toFixed(1);
     setGenBtnLabel('Regenerate');
