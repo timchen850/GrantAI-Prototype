@@ -1054,6 +1054,39 @@ label.field-label {
 .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
 .modal-head .mt { font-size: 21px; letter-spacing: -0.03em; }
 .modal-head .mf { font-size: 12.5px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
+/* "Finish your organization info" reminder (modal + Discovery banner) */
+.oi-modal { max-width: 520px; }
+.oi-meter { display: flex; align-items: center; gap: 12px; margin: -6px 0 14px; }
+.oi-bar { flex: 1; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.oi-bar span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 320ms var(--ease); }
+.oi-pct { font-size: 12.5px; font-weight: 700; color: var(--ink-body); white-space: nowrap; }
+.oi-lede { font-size: 14px; color: var(--ink-body); line-height: 1.6; margin: 0 0 16px; }
+.oi-type { margin: 0 0 16px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2, rgba(0,0,0,0.02)); }
+.oi-type label { display: block; font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+.oi-type-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.oi-type-row select { flex: 1; min-width: 0; min-height: 36px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; }
+.oi-list { display: flex; flex-direction: column; gap: 10px; margin: 0 0 16px; }
+.oi-item { display: flex; gap: 10px; align-items: flex-start; }
+.oi-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 6px; flex: none; }
+.oi-soft .oi-dot { background: var(--line); }
+.oi-label { font-size: 14px; font-weight: 600; color: var(--ink); }
+.oi-opt { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-left: 4px; }
+.oi-why { font-size: 13px; color: var(--muted); line-height: 1.45; }
+.oi-np { font-size: 13px; color: var(--ink-body); margin: 0 0 18px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2, rgba(0,0,0,0.02)); }
+.oi-np a, .gc-np-note a { color: var(--accent-ink, var(--accent)); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.oi-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.oi-banner { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.oi-banner-ic { flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-size: 12.5px; font-weight: 800; color: var(--accent); background: var(--surface-2, rgba(0,0,0,0.03)); }
+.oi-banner-body { flex: 1; min-width: 0; font-size: 13.5px; color: var(--ink-body); line-height: 1.5; }
+.oi-banner-body strong { color: var(--ink); }
+.oi-banner-x { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); }
+.oi-banner-x:hover { background: var(--line-soft); color: var(--ink); }
+.gc-np-note { margin-top: 6px; font-size: 12.5px; color: var(--ink-body); }
+@media (max-width: 640px) {
+  .oi-banner { flex-wrap: wrap; }
+  .oi-banner-body { flex-basis: calc(100% - 100px); }
+  .oi-actions .btn { flex: 1 1 100%; }
+}
 .x { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
   color: var(--muted); transition: background 140ms var(--ease), color 140ms var(--ease); flex-shrink: 0; }
 .x:hover { background: var(--surface-2); color: var(--ink); }
@@ -5764,7 +5797,7 @@ label.field-label {
       <div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--warn-ink)" stroke-width="2.4"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>LOI must come before the full proposal, 2-page limit</div>
     </div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-accent" style="flex:1" onclick="selectGrantForDraft(window._modalGrant||null);saveGrantToPipeline(window._modalGrant,'drafting');window._genDirectGrant=true;closeGrant();go('generator')">Draft the LOI</button>
+      <button class="btn btn-accent" style="flex:1" onclick="closeGrant();orgInfoReminder('apply').then(function(ok){if(!ok)return;selectGrantForDraft(window._modalGrant||null);saveGrantToPipeline(window._modalGrant,'drafting');window._genDirectGrant=true;go('generator')})">Draft the LOI</button>
       <button class="btn btn-outline" onclick="saveGrantToPipeline(window._modalGrant,'saved');closeGrant()">Save</button>
     </div>
   </div>
@@ -5795,6 +5828,13 @@ label.field-label {
 
 <script>
 /* ─── sidebar template ──────────────────────────────────── */
+// Who the "Become a nonprofit" pathway is for: everyone except confirmed
+// nonprofits and government/tribal bodies. 'unknown' (accounts from before the
+// organization-type question, or "Not sure") is included so they can find it.
+function npPathVisible() {
+  const st = (window._grange && window._grange.profile && window._grange.profile.tax_exempt_status) || 'unknown';
+  return !['501c3', '501c4', '501c6', 'government', 'tribal'].includes(st);
+}
 function SIDE(active) {
   const showSurveyBtn = window._grange && window._grange.surveySkipped;
   return `
@@ -5806,6 +5846,8 @@ function SIDE(active) {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Grant discovery</a>
     <a href="#" onclick="go('readiness')" class="${active==='readiness'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l1.8 1.8L15 12"/></svg>Readiness</a>
+    ${npPathVisible() ? `<a href="#" onclick="go('nonprofit-setup')" class="${active==='nonprofit-setup'?'on':''}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V10M19 21V10"/><path d="M9 21v-5h6v5"/><path d="M2 10l10-6 10 6"/></svg>Nonprofit setup</a>` : ''}
     <a href="#" onclick="go('generator')" class="${active==='generator'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Proposal generator</a>
     <a href="#" onclick="go('manage')" class="${active==='manage'?'on':''}">
@@ -5824,7 +5866,7 @@ function SIDE(active) {
       <div class="spb-left"><div class="spb-label">Current plan</div><div class="spb-name" id="sidebar-plan-name">Free</div></div>
       <span class="spb-cta">Upgrade</span>
     </button>
-    ${showSurveyBtn ? `<button class="side-survey-btn" onclick="go('onboarding')">
+    ${showSurveyBtn ? `<button class="side-survey-btn" onclick="openOrgInfoEditor()">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
       Complete your profile →</button>` : ''}
     <div class="org-card"><div class="oc-ava" data-org-avatar></div><div class="oc-text"><div class="nm" data-org-name>Your organization</div><div class="pl">Grange AI</div></div></div>
@@ -5868,11 +5910,13 @@ const SCREENS = ['landing','login','signin','tutorial','onboarding','demo','dash
 /* ─── mobile hamburger drawer (phones only) ─────────────── */
 function mNavMarkup() {
   const s = window._currentScreen || 'landing';
-  const app = ['dashboard','discovery','generator','deadlines','profile'];
+  const app = ['dashboard','discovery','readiness','nonprofit-setup','generator','manage','deadlines','profile'];
   if (app.indexOf(s) >= 0) {
     return `
       <a href="#" onclick="mNavGo('dashboard');return false;" class="${s==='dashboard'?'on':''}">Dashboard</a>
       <a href="#" onclick="mNavGo('discovery');return false;" class="${s==='discovery'?'on':''}">Grant discovery</a>
+      <a href="#" onclick="mNavGo('readiness');return false;" class="${s==='readiness'?'on':''}">Readiness</a>
+      ${npPathVisible() ? `<a href="#" onclick="mNavGo('nonprofit-setup');return false;" class="${s==='nonprofit-setup'?'on':''}">Nonprofit setup</a>` : ''}
       <a href="#" onclick="mNavGo('generator');return false;" class="${s==='generator'?'on':''}">Proposal generator</a>
       <a href="#" onclick="mNavGo('deadlines');return false;" class="${s==='deadlines'?'on':''}">Deadlines</a>
       <a href="#" onclick="mNavGo('profile');return false;" class="${s==='profile'?'on':''}">Org profile</a>
@@ -5929,7 +5973,7 @@ function go(id) {
   if (id === 'landing')   requestAnimationFrame(() => { window._tlActivateHome?.(); window._scrollHeroReset?.(); });
   if (id === 'signin')    requestAnimationFrame(() => window._siInit?.());
   if (id === 'demo')      requestAnimationFrame(() => window._dpReset?.());
-  if (id === 'discovery') requestAnimationFrame(() => loadDiscoveryGrants());
+  if (id === 'discovery') requestAnimationFrame(() => { loadDiscoveryGrants(); renderDiscOrgInfoBanner(); });
   if (id === 'dashboard') requestAnimationFrame(() => updateDashboard());
   if (id === 'generator') requestAnimationFrame(() => { populateGeneratorGrant(); applyRagGate(); });
   if (id === 'profile')   requestAnimationFrame(() => populateProfile());
@@ -7678,6 +7722,8 @@ async function generate() {
     go('signin');
     return;
   }
+  // Remind (or, in 'require' mode, require) the org to finish its info first.
+  if (!(await orgInfoReminder('apply'))) return;
 
   generating = true;
   const empty  = document.getElementById('out-empty');
@@ -9579,6 +9625,183 @@ const ENTITY_TO_TAXSTATUS = {
   'Not sure': 'unknown',
 };
 
+/* ════ ORGANIZATION INFO: what funders will ask for + the "finish it" reminder ════
+   One entity-aware definition of a complete organization profile, used by the
+   Discovery banner, the reminder before drafting/applying, and the dashboard.
+   While ORG_INFO_GATE is 'remind' the reminder never blocks; set it to
+   'require' to make the critical items mandatory before searching and drafting. */
+const ORG_INFO_GATE = 'remind';   // 'remind' | 'require'
+const ORG_INFO_PROFILE_KEYS = new Set(['org_name', 'mission', 'ein', 'annual_budget', 'programs']);
+// Which onboarding field to open for each item edited outside the profile screen.
+const ORG_INFO_OB_KEY = { entity_type: 'entity_type', focus_areas: 'focus_areas', location: 'primary_location', people_served: 'people_served', programs: 'primary_programs' };
+
+function orgInfoStatus(p, a) {
+  p = p || {}; a = a || {};
+  const st = p.tax_exempt_status || 'unknown';
+  const isNp = ['501c3', '501c4', '501c6'].includes(st) || (st === 'unknown' && obIsNonprofitAns(a));
+  const has = (v) => Array.isArray(v) ? v.length > 0 : !!String(v == null ? '' : v).trim();
+  const items = [
+    { key: 'entity_type', label: 'What kind of organization you are', ask: 'organization type', why: 'Decides which grants you can apply for and what funders will ask you for.', done: has(a.entity_type) || st !== 'unknown', critical: true },
+    { key: 'org_name', label: 'Organization name', ask: 'legal name', why: 'Funders check it against your registration.', done: has(p.org_name) || has(a.org_name), critical: true },
+    { key: 'mission', label: 'Mission statement', ask: 'mission statement', why: 'Almost every application opens with it.', done: has(p.mission) || has(a.mission), critical: true },
+    { key: 'focus_areas', label: 'Focus areas', ask: 'focus areas', why: 'How Grange matches you to grants.', done: has(a.focus_areas), critical: true },
+    { key: 'location', label: 'Where you work', ask: 'location', why: 'Most funders only give in specific places.', done: has(a.primary_location) || has(a.geo_focus), critical: true },
+    { key: 'annual_budget', label: 'Annual budget', ask: 'annual budget', why: 'Funders size awards to it, and many have budget limits.', done: has(a.annual_budget) || has(p.annual_budget), critical: true },
+    { key: 'programs', label: 'Programs and who you serve', ask: 'programs', why: 'The heart of your need and approach sections.', done: has(a.primary_programs) || has(a.beneficiaries), critical: false },
+    { key: 'people_served', label: 'People served each year', ask: 'number of people served', why: 'Funders look for reach.', done: has(a.people_served), critical: false },
+  ];
+  if (isNp) items.splice(2, 0, { key: 'ein', label: 'EIN (tax ID)', ask: 'EIN', why: 'Funders use it to confirm your nonprofit status.', done: has(p.ein) || has(a.ein), critical: true });
+  const missing = items.filter((i) => !i.done);
+  return { pct: Math.round((items.length - missing.length) / items.length * 100), items, missing, critical: missing.filter((i) => i.critical), isNp, status: st };
+}
+function _orgInfoNow() { const c = window._grange || {}; return orgInfoStatus(c.profile, c._cachedAnswers); }
+
+// Session-scoped "Continue anyway": nag at most once per moment per session.
+function _orgInfoDismissed(moment) {
+  try { return sessionStorage.getItem('grange_orginfo_' + moment) === '1'; }
+  catch (_) { return !!(window._orgInfoDismiss && window._orgInfoDismiss[moment]); }
+}
+function _orgInfoDismiss(moment) {
+  try { sessionStorage.setItem('grange_orginfo_' + moment, '1'); }
+  catch (_) { window._orgInfoDismiss = Object.assign(window._orgInfoDismiss || {}, { [moment]: true }); }
+}
+
+// Take the user to where a missing item is edited: the profile screen for the
+// fields it holds, otherwise onboarding — pre-filled and opened at that step.
+function openOrgInfoEditor(key) {
+  const st = _orgInfoNow();
+  const target = key || (st.missing[0] && st.missing[0].key) || null;
+  if (target && ORG_INFO_PROFILE_KEYS.has(target) && st.missing.every((m) => ORG_INFO_PROFILE_KEYS.has(m.key))) { go('profile'); return; }
+  go('onboarding');
+  obInit(window._grange || {}, target ? (ORG_INFO_OB_KEY[target] || target) : null);
+}
+
+// Save the organization type from a one-click choice (same mapping as onboarding).
+async function confirmOrgType(entityType) {
+  const st = ENTITY_TO_TAXSTATUS[entityType];
+  if (!st) return false;
+  const ctx = window._grange || {};
+  const uid = ctx.user && ctx.user.id;
+  if (window.sb && uid) {
+    try {
+      const r1 = await sb.from('profiles').update({ tax_exempt_status: st }).eq('user_id', uid);
+      if (r1.error) throw r1.error;
+      const r2 = await sb.from('onboarding_answers').upsert([{ user_id: uid, question_key: 'entity_type', answer: entityType }], { onConflict: 'user_id,question_key' });
+      if (r2.error) throw r2.error;
+    } catch (_) { toast('Could not save that. Please try again.'); return false; }
+  }
+  if (window._grange) {
+    window._grange.profile = Object.assign({}, ctx.profile || {}, { tax_exempt_status: st });
+    window._grange._cachedAnswers = Object.assign({}, ctx._cachedAnswers || {}, { entity_type: entityType });
+  }
+  rebuildSidebars();
+  if (document.getElementById('readiness')?.classList.contains('active') && window.loadReadiness) window.loadReadiness();
+  if (document.getElementById('discovery')?.classList.contains('active')) renderDiscOrgInfoBanner();
+  return true;
+}
+
+function _orgInfoTypeSelectHTML(a, selId, onSave) {
+  // Suggest the nonprofit option when the old survey already captured an EIN or 501(c)(3) status.
+  const guess = (a && (a.status_501c3 === 'Yes' || (a.ein && String(a.ein).trim()))) ? '501(c)(3) nonprofit' : '';
+  const opts = OB_STEPS[0].fields.find((f) => f.key === 'entity_type').options;
+  return '<div class="oi-type"><label for="' + selId + '">What kind of organization are you?</label><div class="oi-type-row">' +
+    '<select id="' + selId + '"><option value="">Choose one…</option>' +
+    opts.map((o) => '<option' + (o === guess ? ' selected' : '') + '>' + escHtml(o) + '</option>').join('') +
+    '</select><button class="btn btn-outline btn-sm" onclick="' + onSave + '()">Save</button></div></div>';
+}
+
+let _orgInfoResolve = null;
+function _orgInfoClose(proceed) {
+  document.getElementById('orginfo-modal')?.classList.remove('open');
+  const r = _orgInfoResolve; _orgInfoResolve = null;
+  if (r) r(!!proceed);
+}
+function _orgInfoModalEl() {
+  let el = document.getElementById('orginfo-modal');
+  if (el) return el;
+  el = document.createElement('div');
+  el.className = 'overlay'; el.id = 'orginfo-modal';
+  el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'oi-title');
+  el.innerHTML = '<div class="modal oi-modal"></div>';
+  el.addEventListener('click', (e) => { if (e.target === el) _orgInfoClose(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && el.classList.contains('open')) _orgInfoClose(false); });
+  document.body.appendChild(el);
+  return el;
+}
+function _orgInfoRenderModal(moment) {
+  const el = _orgInfoModalEl();
+  const c = window._grange || {};
+  const s = orgInfoStatus(c.profile, c._cachedAnswers);
+  const mustFinish = ORG_INFO_GATE === 'require' && s.critical.length > 0;
+  const kicker = moment === 'search' ? 'Before you search' : 'Before you apply';
+  const needsType = s.missing.some((m) => m.key === 'entity_type');
+  const rows = s.missing.filter((m) => m.key !== 'entity_type').map((m) =>
+    '<div class="oi-item' + (m.critical ? '' : ' oi-soft') + '"><div class="oi-dot"></div><div><div class="oi-label">' + escHtml(m.label) +
+    (m.critical ? '' : ' <span class="oi-opt">helpful</span>') + '</div><div class="oi-why">' + escHtml(m.why) + '</div></div></div>').join('');
+  el.querySelector('.oi-modal').innerHTML =
+    '<div class="modal-head"><div><div class="mf">' + kicker + '</div><div class="mt" id="oi-title">Finish your organization info</div></div>' +
+    '<button class="x" aria-label="Close" onclick="_orgInfoClose(false)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>' +
+    '<div class="oi-meter"><div class="oi-bar"><span style="width:' + s.pct + '%"></span></div><span class="oi-pct">' + s.pct + '% complete</span></div>' +
+    '<p class="oi-lede">Funders will ask for these, and Grange writes stronger, more accurate drafts with them. ' +
+    (mustFinish ? 'You need the required items before you continue.' : 'It takes about two minutes.') + '</p>' +
+    (needsType ? _orgInfoTypeSelectHTML(c._cachedAnswers, 'oi-type-sel', 'orgInfoSaveType') : '') +
+    (rows ? '<div class="oi-list">' + rows + '</div>' : '') +
+    (npPathVisible() ? '<div class="oi-np">Not a registered nonprofit yet? Many grants require one. <a href="#" onclick="_orgInfoClose(false);go(\'nonprofit-setup\');return false;">See your options →</a></div>' : '') +
+    '<div class="oi-actions"><button class="btn btn-accent" style="flex:1" onclick="_orgInfoClose(false);openOrgInfoEditor()">Finish now</button>' +
+    (mustFinish ? '' : '<button class="btn btn-outline" onclick="_orgInfoDismiss(\'' + moment + '\');_orgInfoClose(true)">Continue anyway</button>') + '</div>';
+  return s;
+}
+window.rdySaveOrgType = async function () {
+  const v = document.getElementById('rdy-type-sel')?.value;
+  if (!v) { toast('Choose the option that fits best.'); return; }
+  if (await confirmOrgType(v)) toast('Saved. Your checklist now matches your organization.');
+};
+window.orgInfoSaveType = async function () {
+  const v = document.getElementById('oi-type-sel')?.value;
+  if (!v) { toast('Choose the option that fits best.'); return; }
+  if (await confirmOrgType(v)) {
+    const moment = document.getElementById('orginfo-modal')?.dataset.moment || 'apply';
+    const s = _orgInfoRenderModal(moment);
+    if (!s.critical.length) { toast('Saved. Your organization info is complete.'); _orgInfoClose(true); }
+    else toast('Saved.');
+  }
+};
+
+// Resolves true to proceed with the action, false to stop (the user chose to
+// finish their info, closed the dialog, or the gate is in 'require' mode).
+function orgInfoReminder(moment) {
+  const s = _orgInfoNow();
+  if (!s.critical.length) return Promise.resolve(true);
+  if (ORG_INFO_GATE === 'remind' && _orgInfoDismissed(moment)) return Promise.resolve(true);
+  if (_orgInfoResolve) _orgInfoClose(false);   // never stack two reminders
+  const el = _orgInfoModalEl();
+  el.dataset.moment = moment;
+  _orgInfoRenderModal(moment);
+  el.classList.add('open');
+  return new Promise((resolve) => { _orgInfoResolve = resolve; });
+}
+
+// Non-blocking strip above the Discovery results (remind mode).
+function renderDiscOrgInfoBanner() {
+  const list = document.getElementById('disc-grants-list');
+  if (!list || !list.parentNode) return;
+  let el = document.getElementById('disc-orginfo');
+  if (!el) { el = document.createElement('div'); el.id = 'disc-orginfo'; list.parentNode.insertBefore(el, list); }
+  const s = _orgInfoNow();
+  const a = (window._grange && window._grange._cachedAnswers) || {};
+  const basicsMissing = !(a.mission && Array.isArray(a.focus_areas) && a.focus_areas.length);   // the hard prompt covers this case
+  if (!s.critical.length || basicsMissing || _orgInfoDismissed('search')) { el.innerHTML = ''; el.style.display = 'none'; return; }
+  const names = s.critical.slice(0, 3).map((m) => m.ask);
+  const ask = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
+  el.style.display = '';
+  el.innerHTML = '<div class="oi-banner" role="status"><div class="oi-banner-ic">' + s.pct + '%</div>' +
+    '<div class="oi-banner-body"><strong>Finish your organization info before you apply.</strong> Funders will ask for your ' + escHtml(ask) +
+    '. It also sharpens your matches.</div>' +
+    '<button class="btn btn-accent btn-sm" onclick="openOrgInfoEditor()">Finish now</button>' +
+    '<button class="oi-banner-x" aria-label="Dismiss for this session" onclick="_orgInfoDismiss(\'search\');renderDiscOrgInfoBanner()">' +
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>';
+}
+
 const OB_STEPS = [
   { eyebrow: 'Step 1 of 6 · Your organization', title: 'Tell us about your organization',
     sub: 'The basics that help us match you to grants you can actually win.',
@@ -9632,10 +9855,16 @@ const OB_STEPS = [
 
 let obState = { idx: 0, answers: {}, files: {}, ctx: null };
 
-function obInit(ctx) {
-  obState = { idx: 0, answers: {}, files: {}, ctx };
-  // prefill org_name from the profile we already have
+function obInit(ctx, startKey) {
+  // Pre-fill whatever the org already told us, so returning to finish the
+  // profile never means retyping it; optionally open at the step holding startKey.
+  const saved = (ctx && ctx._cachedAnswers) || {};
+  obState = { idx: 0, answers: Object.assign({}, saved), files: {}, ctx };
   if (ctx && ctx.profile && ctx.profile.org_name) obState.answers.org_name = ctx.profile.org_name;
+  if (startKey) {
+    const i = OB_STEPS.findIndex((st) => st.fields.some((f) => f.key === startKey));
+    if (i >= 0) obState.idx = i;
+  }
   obRender();
 }
 
@@ -10598,10 +10827,16 @@ async function updateDashboard() {
   if (barsEl) {
     const p = window._grange?.profile || {};
     const answers = window._grange?._cachedAnswers || {};
+    // EIN only counts for registered nonprofits; programs/location use the keys
+    // onboarding actually saves (primary_programs / beneficiaries / primary_location / geo_focus).
+    const oi = orgInfoStatus(p, answers);
+    const hasProg = (answers.primary_programs?.length > 0) || !!answers.beneficiaries;
+    const hasLoc = !!(answers.primary_location || answers.geo_focus);
+    const hasName = !!(p.org_name || answers.org_name);
     const rows = [
       { label: 'Mission & focus areas', pct: (p.mission || answers.mission) && (answers.focus_areas?.length > 0) ? 100 : (p.mission || answers.mission) ? 60 : 0 },
-      { label: 'Organization details',  pct: (p.org_name && p.ein) ? 100 : p.org_name ? 50 : 0 },
-      { label: 'Programs & location',   pct: (answers.programs?.length > 0 || answers.program_desc) && answers.location ? 100 : answers.location ? 50 : 0 },
+      { label: 'Organization details',  pct: oi.isNp ? ((hasName && (p.ein || answers.ein)) ? 100 : hasName ? 50 : 0) : (hasName && oi.status !== 'unknown' ? 100 : hasName ? 50 : 0) },
+      { label: 'Programs & location',   pct: hasProg && hasLoc ? 100 : (hasProg || hasLoc) ? 50 : 0 },
     ];
     barsEl.innerHTML = rows.map(r => {
       const done = r.pct === 100;
@@ -10705,9 +10940,21 @@ function activationSteps(s) {
   try { sam = JSON.parse(localStorage.getItem('grange_sam_' + uid) || 'null'); } catch (_) {}
   try { assessed = Object.keys(localStorage).some(k => k.indexOf('grange_assess_' + uid) === 0); } catch (_) {}
   const samDone = !!(sam && sam.need && (sam.need === 'no' || sam.path));
+  const _p = (window._grange && window._grange.profile) || {};
+  const isNp = rdyIsNonprofit(_p);
+  let npDone = false;
+  try { npDone = localStorage.getItem('grange_np_path_' + uid) === '1'; } catch (_) {}
+  // Step 2 depends on what kind of organization this is: registered nonprofits
+  // verify with the IRS; everyone else (except government) picks a path to
+  // nonprofit-only funding; government/tribal bodies skip it.
+  const statusStep = isNp
+    ? { key: 'irs',      title: 'Verify your 501(c)(3) with the IRS', desc: 'An authoritative status check funders trust, straight from the IRS file.', cta: 'Verify status', screen: 'readiness', done: !!(irs && irs.found && irs.is_501c3) }
+    : npPathVisible()
+      ? { key: 'nppath', title: 'Choose your path to nonprofit funding', desc: 'Many grants require 501(c)(3). Apply through a fiscal sponsor now, or start your own nonprofit step by step.', cta: 'See your options', screen: 'nonprofit-setup', done: npDone }
+      : null;
   return [
-    { key: 'profile',  title: 'Complete your nonprofit profile', desc: 'Mission, EIN, focus areas and location — this powers matching, eligibility and drafting.', cta: 'Complete profile', screen: 'profile',   done: (window._dashProfilePct || 0) >= 80 },
-    { key: 'irs',      title: 'Verify your 501(c)(3) with the IRS', desc: 'An authoritative status check funders trust, straight from the IRS file.', cta: 'Verify status', screen: 'readiness', done: !!(irs && irs.found && irs.is_501c3) },
+    { key: 'profile',  title: isNp ? 'Complete your nonprofit profile' : 'Complete your organization profile', desc: isNp ? 'Mission, EIN, focus areas and location — this powers matching, eligibility and drafting.' : 'Mission, focus areas, location and budget — this powers matching, eligibility and drafting.', cta: 'Complete profile', screen: 'profile',   done: (window._dashProfilePct || 0) >= 80 },
+    ...(statusStep ? [statusStep] : []),
     { key: 'sam',      title: 'Sort out federal registration, or skip it', desc: "Most small nonprofits don't need SAM.gov. Answer one question to find out.", cta: 'Check SAM.gov', screen: 'readiness', done: samDone },
     { key: 'discover', title: 'See grants and funders matched to you', desc: 'Open opportunities plus the agencies that fund work like yours.', cta: 'Discover grants', screen: 'discovery', done: s.discovered > 0 },
     { key: 'fit',      title: 'Check your fit on a grant', desc: 'Run an AI assessment to see your match, eligibility and watch-outs.', cta: 'Assess a grant', screen: 'discovery', done: assessed || s.saved > 0 },
@@ -10997,6 +11244,15 @@ function grantCacheKey() {
 async function loadDiscoveryGrants(directAnswers) {
   const list = document.getElementById('disc-grants-list');
   if (!list) return;
+  if (ORG_INFO_GATE === 'require') {
+    const oi = _orgInfoNow();
+    if (oi.critical.length) {
+      list.innerHTML = '<div class="disc-survey-prompt"><h2 style="font-size:22px;letter-spacing:-.02em;color:var(--ink)">Finish your organization info to search</h2>' +
+        '<p style="font-size:15px;color:var(--muted);max-width:34rem">Funders need these before you can apply: ' + escHtml(oi.critical.map((m) => m.ask).join(', ')) + '.</p>' +
+        '<button class="btn btn-accent" style="margin-top:8px" onclick="openOrgInfoEditor()">Finish now →</button></div>';
+      return;
+    }
+  }
   // Each pull fans out to several Grants.gov queries, so guard against stacking:
   // an in-flight load blocks a second, and a pull from the last 60s is reused
   // (still fresh) rather than re-hitting the API on rapid tab clicks / revisits.
@@ -11033,7 +11289,7 @@ async function loadDiscoveryGrants(directAnswers) {
         <div class="dsp-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 10a3 3 0 1 1 3 3v2"/><circle cx="12" cy="18" r=".5" fill="currentColor"/></svg></div>
         <h2 style="font-size:22px;letter-spacing:-.02em;color:var(--ink)">Tell us about your organization</h2>
         <p style="font-size:15px;color:var(--muted);max-width:34rem">Complete a 3-minute profile and we'll search real grant databases to find opportunities you can actually win — whether or not you're a nonprofit.</p>
-        <button class="btn btn-accent" style="margin-top:8px" onclick="go('onboarding')">Complete your profile →</button>
+        <button class="btn btn-accent" style="margin-top:8px" onclick="openOrgInfoEditor()">Complete your profile →</button>
       </div>`;
     document.getElementById('disc-subtitle').textContent = 'Complete your profile to see matched grants.';
     return;
@@ -11190,12 +11446,24 @@ function cleanEligText(t) {
     .replace(/&amp;/gi, '&')                                 // last, so we never double-decode
     .replace(/\s+/g, ' ').trim();
 }
+// True when a grant's eligibility text asks for 501(c)(3) status and doesn't
+// also open the door to businesses or individuals.
+function grantNeeds501c3(g) {
+  const t = String((g && g.eligibility) || '');
+  if (!/501\s*\(?\s*c\s*\)?\s*\(?\s*3\s*\)?/i.test(t)) return false;
+  if ((g.eligTags || []).some((e) => /no 501\(c\)\(3\) required/i.test(e))) return false;
+  return !/(for-profit|for profit|small business|sole proprietor|individual applicants|individuals are eligible)/i.test(t);
+}
 function grantEligHTML(g) {
   if (!g || !g.eligibility) return '';
   let t = cleanEligText(g.eligibility);
   if (!t) return '';
   if (t.length > 150) t = t.slice(0, 147).replace(/\s+\S*$/, '') + '…';
-  return '<span class="gce-label">Who can apply</span>' + escHtml(t);
+  // Point orgs without 501(c)(3) status at their options instead of a dead end.
+  const npNote = (typeof npPathVisible === 'function' && npPathVisible() && grantNeeds501c3(g))
+    ? '<div class="gc-np-note">This one looks like it needs 501(c)(3) status. <a href="#" onclick="event.stopPropagation();go(\'nonprofit-setup\');return false;">Apply through a fiscal sponsor or start your nonprofit →</a></div>'
+    : '';
+  return '<span class="gce-label">Who can apply</span>' + escHtml(t) + npNote;
 }
 async function enrichTopGrants(grants) {
   if (!window.sb) return;
@@ -11768,7 +12036,8 @@ async function loadDeadlinesScreen() {
 }
 
 /* Draft flow: select the grant, save it to the pipeline, open the generator. */
-function draftGrant(id) {
+async function draftGrant(id) {
+  if (!(await orgInfoReminder('apply'))) return;   // reminder, not a blocker (ORG_INFO_GATE)
   selectGrantForDraft(id);
   const g = window._grantsById && window._grantsById[id];
   if (g) saveGrantToPipeline(g, 'drafting');
@@ -12522,6 +12791,14 @@ function applyDiscFilters(query, type) {
   // For non-nonprofits: replace the IRS 501(c)(3) verification card with a clear
   // "you don't need nonprofit status" card + an optional path to becoming one.
   function rdyNonprofitStatusCard(p) {
+    if (!((p && p.tax_exempt_status) && p.tax_exempt_status !== 'unknown')) {
+      const a = (window._grange && window._grange._cachedAnswers) || {};
+      return '<div class="rdy-irs" id="rdy-irs"><div class="rdy-irs-head"><div class="rdy-irs-ic">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.4"/><path d="M12 17h.01"/></svg></div>' +
+        '<div><div class="rdy-irs-t">What kind of organization are you?</div><div class="rdy-irs-sub">Tell us once and this checklist, your grant matches and your drafts all adjust. ' +
+        'Registered nonprofits get the IRS documents; everyone else gets options for grants that require 501(c)(3).</div>' +
+        _orgInfoTypeSelectHTML(a, 'rdy-type-sel', 'rdySaveOrgType') + '</div></div></div>';
+    }
     const pending = (p && p.tax_exempt_status) === '501c3_pending';
     const title = pending ? 'You\'re on your way to nonprofit status' : 'Nonprofit status: not required for your matches';
     const body = pending
@@ -12670,6 +12947,7 @@ function applyDiscFilters(query, type) {
     if (window.sb && uid) {
       try { const { data } = await sb.from('readiness_items').select('req_key,status').eq('user_id', uid).like('req_key', 'inc_%'); (data || []).forEach(r => { _incStatus[r.req_key] = r.status; }); } catch (_) {}
     }
+    _npMarkPath();
     renderNonprofitSetup();
   };
 
@@ -12719,8 +12997,16 @@ function applyDiscFilters(query, type) {
       '<div style="margin-top:20px;font-size:12.5px;color:var(--muted);line-height:1.5;padding:14px 16px;background:var(--surface-2);border-radius:10px">Grange guides you through the steps and links the official IRS and Secretary of State portals. We do not file incorporation or tax paperwork for you, and this is not legal or tax advice — for anything specific to your situation, consult an attorney or CPA.</div>';
   }
 
+  // The dashboard's "Choose your path" step counts as done once the decide step
+  // is started or done.
+  function _npMarkPath() {
+    const uid = window._grange && window._grange.user && window._grange.user.id;
+    if (!uid || !['have', 'in_progress'].includes(_incStatus.inc_decide)) return;
+    try { localStorage.setItem('grange_np_path_' + uid, '1'); } catch (_) {}
+  }
   window.incSet = async function (key, status) {
     _incStatus[key] = status;
+    _npMarkPath();
     const ic = document.getElementById('inc-ic-' + key); if (ic) ic.innerHTML = rdyIcon(status);
     const itemEl = document.getElementById('inc-' + key);
     if (itemEl) {
