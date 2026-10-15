@@ -1,0 +1,40 @@
+name: Supabase keep-alive
+
+# Free-tier Supabase projects pause after about a week without activity, and a
+# paused project takes grangeai.net's login, drafting and discovery down (this
+# happened in October 2026). Twice a week this makes one real database read
+# through the public REST API so the project never looks idle.
+#
+# It uses only the publishable key that config.js already ships to every
+# browser; Row Level Security returns no rows to it. If the project has paused
+# anyway, the request fails, the run goes red and GitHub emails a failure notice.
+#
+# Delete this file once the project moves to a paid plan (paid projects never pause).
+
+on:
+  schedule:
+    - cron: '17 15 * * 1,4'   # Mondays and Thursdays, 15:17 UTC
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/supabase-keepalive.yml']   # test run when this file changes
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the database through PostgREST
+        run: |
+          url=$(sed -nE "s/.*url: *'([^']+)'.*/\1/p" config.js)
+          key=$(sed -nE "s/.*anonKey: *'([^']+)'.*/\1/p" config.js)
+          if [ -z "$url" ] || [ -z "$key" ]; then echo "Could not read url/anonKey from config.js"; exit 1; fi
+          code=$(curl -sS -o body.txt -w '%{http_code}' --max-time 60 --retry 3 --retry-delay 20 \
+            -H "apikey: $key" "$url/rest/v1/grants?select=id&limit=1")
+          echo "HTTP $code"
+          head -c 300 body.txt; echo
+          test "$code" = 200
