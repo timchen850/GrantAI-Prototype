@@ -47,6 +47,13 @@ flow('contact-form', async (browser, check) => {
 
 
 const screen = (p) => p.evaluate(() => window._currentScreen);
+// With an Approach Plan the draft only starts after approval; click it when it appears.
+async function approvePlanIfShown(p, wait = 3000) {
+  await p.waitForTimeout(wait);
+  const b = await p.$('button:has-text("Generate with this plan")');
+  if (b) { await b.click(); }
+}
+
 const NEW_UID = '00000000-0000-4000-8000-000000000001';
 
 
@@ -182,7 +189,7 @@ flow('discovery-save-and-draft', async (browser, check) => {
   await p.click('#disc-grants-list .gcard button:has-text("Draft proposal")'); await p.waitForTimeout(1500);
   check('Draft proposal opens the generator', (await screen(p)) === 'generator');
   check('drafted grant marked drafting in the pipeline', t.db.grants.some((r) => r.status === 'drafting' && r.user_id === UID.np));
-  await p.click('#gen-btn'); await p.waitForTimeout(6000);
+  await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(6000);
   const out = await p.evaluate(() => (document.getElementById('out-doc')?.innerText || '').slice(0, 400));
   check('generator streams a draft with section headings', /Statement of Need/.test(out));
   check('generate-proposal edge function was called', t.fnLog.includes('generate-proposal'));
@@ -282,7 +289,7 @@ flow('draft-outcome-and-assistant', async (browser, check) => {
   const p = t.page;
   await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
   await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
-  await p.click('#gen-btn'); await p.waitForTimeout(7000);
+  await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(7000);
   const won = await p.$('button:has-text("Won")');
   check('outcome tracker offered after a draft', !!won);
   if (won) { await won.click(); await p.waitForTimeout(1200); }
@@ -306,6 +313,30 @@ flow('irs-check-and-call-analysis', async (browser, check) => {
   const txt = (await p.textContent('#readiness')).replace(/\s+/g, ' ');
   check('call analysis responds without breaking the page', !/undefined|NaN|\[object Object\]/.test(txt));
   check('no server-setup instructions shown to users', !/API key|Edge Functions|Secrets/.test(txt));
+  return t;
+});
+
+flow('approach-plan', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
+  await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
+  await p.click('#gen-btn'); await p.waitForTimeout(3000);
+  const btn = await p.$('button:has-text("Generate with this plan")');
+  check('approach plan shown for approval before writing', !!btn);
+  await p.screenshot({ path: 'out/plan-1440.png' });
+  const planText = await p.evaluate(() => document.querySelector('.plan-btn')?.closest('div')?.parentElement?.innerText || '');
+  check('plan shows its sections', /Statement of Need/.test(planText) && /Program Design/.test(planText));
+  await p.click('button:has-text("Rethink the plan")'); await p.waitForTimeout(3000);
+  check('rethink builds a new plan', !!(await p.$('button:has-text("Generate with this plan")')));
+  await p.click('button:has-text("Generate with this plan")'); await p.waitForTimeout(7000);
+  const out = await p.evaluate(() => (document.getElementById('out-doc')?.innerText || ''));
+  check('approved plan leads to a draft', /Statement of Need/.test(out) && /Program Description/.test(out));
+  // cancel path
+  await p.evaluate(() => genShowConfig()); await p.waitForTimeout(500);
+  await p.click('#gen-btn'); await p.waitForTimeout(3000);
+  await p.click('button:has-text("Cancel")'); await p.waitForTimeout(800);
+  check('cancel returns to the setup form', await p.evaluate(() => getComputedStyle(document.querySelector('.gen-config')).display !== 'none'));
   return t;
 });
 

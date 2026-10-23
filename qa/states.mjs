@@ -84,7 +84,9 @@ if (groups.includes('draft')) {
   await p.evaluate(() => go('discovery')); await p.waitForTimeout(2500);
   await p.click('#disc-grants-list .gcard button:has-text("Draft proposal")'); await p.waitForTimeout(1500);
   await shot(p, 'draft-config');
-  await p.click('#gen-btn'); await p.waitForTimeout(9000);
+  await p.click('#gen-btn'); await p.waitForTimeout(3000); await shot(p, 'draft-plan');
+  const ap = await p.$('button:has-text("Generate with this plan")'); if (ap) await ap.click();
+  await p.waitForTimeout(9000);
   await shot(p, 'draft-done');
   await p.evaluate(() => { const o = document.getElementById('out-doc'); if (o) o.scrollIntoView({ block: 'start' }); }); await p.waitForTimeout(400);
   await shot(p, 'draft-doc');

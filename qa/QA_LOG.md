@@ -57,6 +57,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 34 | Performance | `logo.png` (favicon and 26px brand mark) was a 1254×1254, 1.7 MB file loaded by every visitor. | Resized to 256×256: 60 KB. |
 | 35 | Sharing | No meta description or link-preview tags. | Description + Open Graph/Twitter tags. |
 | 36 | Readiness, Generator | When the AI service failed or returned nothing, the funder-call reader told users "Add a Gemini API key on the server (Supabase → Edge Functions → Secrets)". | "Couldn't read that call right now, try again" (with the sample as a fallback). No setup instructions are shown to users anywhere now. |
+| 37 | Generator | While the Approach Plan waited for approval ("Nothing is written until you approve"), the progress panel above it said "Draft your proposal — Working / Write the statement of need — Drafting". | Panel holds at "waiting for your approval" with drafting not started, and resumes when the plan is approved. Approve / rethink / cancel covered by `approach-plan`. |
 
 ## Needs Tim's decision
 

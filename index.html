@@ -7948,6 +7948,7 @@ async function generate() {
     try {
       genLoaderCap('Mapping out the approach…');
       let plan = await buildApproachPlan(fields, org, selectedGrant, _genAbort.signal);
+      if (plan && plan.sections && plan.sections.length) window._apCtl?.hold?.();
       while (plan && plan.sections && plan.sections.length) {
         const res = await runApproachPlan(plan, _genAbort.signal, loader);
         if (res.cancel) { generating = false; genShowConfig(); return; }
@@ -7962,6 +7963,7 @@ async function generate() {
         interviewBlock = answersBlock(res.answers);
         break;
       }
+      window._apCtl?.resume?.();   // approved (or no plan): writing starts now
     } catch (e) { if (e.name === 'AbortError') throw e; }
 
     if (strategy) showStrategyNote(strategy);
@@ -12735,6 +12737,18 @@ function applyDiscFilters(query, type) {
           at(() => { setTask(4, 'active'); openOnly(4); }, dd); dd += 220;
           rs.forEach((s, si) => { at(() => setSub(4, si, 'active'), dd); dd += 300; at(() => setSub(4, si, s.help ? 'help' : 'done'), dd); });
           at(() => { setTask(4, rs[rs.length - 1].help ? 'help' : 'done'); const sub = document.getElementById('ap-sub'); if (sub) { sub.textContent = 'ready for your review'; sub.style.color = 'var(--warn-ink)'; } }, dd + 50);
+        };
+        // Waiting on the user (Approach Plan): prep is done, nothing is being written yet.
+        ctl.hold = function (msg) {
+          ctl._t.forEach(clearTimeout); ctl._t = [];
+          for (let ti = 0; ti < DRAFT; ti++) { PLAN[ti].subs.forEach((_, si) => setSub(ti, si, 'done')); setTask(ti, 'done'); }
+          setTask(DRAFT, 'pending'); PLAN[DRAFT].subs.forEach((_, si) => setSub(DRAFT, si, 'pending'));
+          const b = document.getElementById('ap-tbadge-' + DRAFT); if (b) b.style.display = 'none';
+          const sub = document.getElementById('ap-sub'); if (sub) { sub.textContent = msg || 'waiting for your approval'; sub.style.color = 'var(--warn-ink)'; }
+        };
+        ctl.resume = function () {
+          setTask(DRAFT, 'active'); openOnly(DRAFT); setSub(DRAFT, ctl._draftDone, 'active');
+          const sub = document.getElementById('ap-sub'); if (sub) { sub.textContent = 'working…'; sub.style.color = ''; }
         };
         ctl.fail = function (msg) {
           ctl._t.forEach(clearTimeout); ctl._t = [];

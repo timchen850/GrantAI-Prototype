@@ -160,6 +160,12 @@ const SAMPLE_DRAFT = '<h4>Executive Summary</h4><p>Eastside Youth Collective req
   '<h4>Program Description</h4><p>Students meet four afternoons a week for hands-on robotics, coding and tutoring led by trained mentors.</p>' +
   '<h4>Evaluation</h4><p>We track attendance, pre/post math assessments and family surveys each semester.</p>' +
   '<h4>Budget Overview</h4><p>Mentor stipends $14,000; materials $6,000; transportation $5,000.</p>';
+const SAMPLE_PLAN = { overview: 'Lead with the math-proficiency gap in Boyle Heights, then show how four afternoons a week of hands-on STEM closes it.',
+  sections: [
+    { title: 'Statement of Need', approach: 'Open with the 38% proficiency figure and what families told us.', why: 'Reviewers fund documented need.', options: [{ label: 'Lead with data' }, { label: 'Lead with a family story' }], question: '' },
+    { title: 'Program Design', approach: 'Walk through a week of the program.', why: 'Shows the program is concrete.', options: [], question: 'How many mentors will work with each group?' },
+    { title: 'Evaluation', approach: 'Pre/post assessments and attendance.', why: 'The funder asks for measurable outcomes.', options: [], question: '' },
+    { title: 'Budget', approach: 'Tie each line to an activity.', why: 'Clear budgets score higher.', options: [], question: '' } ] };
 function sse(text) {
   const parts = text.match(/.{1,120}/gs) || [];
   return parts.map((p) => 'data: ' + JSON.stringify({ candidates: [{ content: { parts: [{ text: p }] } }] }) + '\n\n').join('') + 'data: [DONE]\n\n';
@@ -187,7 +193,12 @@ function fnHandler(fnLog, opts) {
       case 'discover-grants': return json({ output: { hits: govHits() } });
       case 'grant-detail': { const d = {}; (body.ids || []).forEach((id, i) => { d[id] = { awardCeiling: 50000 * (i + 1), awardFloor: 10000, desc: 'Supports community organizations that run programs in this area. Applicants describe need, approach, evaluation and budget.', numberOfAwards: 12, eligibility: 'Nonprofits having a 501(c)(3) status with the IRS, other than institutions of higher education' }; }); return json({ output: { details: d } }); }
       case 'usaspending-search': return json({ output: { state: 'CA', sampled: 40, total_found: 312, award_low: 15000, award_median: 85000, award_high: 750000, keywords: ['youth', 'education'], agencies: [{ name: 'Department of Education', amount: 4200000, count: 18 }, { name: 'Department of Health and Human Services', amount: 2100000, count: 9 }], recipients: [{ name: 'Boys & Girls Club of East LA', amount: 250000, year: 2025, agency: 'ED' }, { name: 'LA Youth Network', amount: 120000, year: 2024, agency: 'HHS' }] } });
-      case 'generate-proposal': return route.fulfill({ status: 200, headers: { 'Content-Type': 'text/event-stream', 'Access-Control-Allow-Origin': '*' }, body: sse(SAMPLE_DRAFT) });
+      case 'generate-proposal': {
+        const prompt = JSON.stringify(body.contents || '');
+        const isPlan = /PLAN of how you will approach/.test(prompt);
+        const text = isPlan ? JSON.stringify(SAMPLE_PLAN) : SAMPLE_DRAFT;
+        return route.fulfill({ status: 200, headers: { 'Content-Type': 'text/event-stream', 'Access-Control-Allow-Origin': '*' }, body: sse(text) });
+      }
       case 'ai-chat': return json({ reply: 'Lead with your outcomes: 180 students served, 38% math proficiency baseline. Ask for $25,000 and tie each budget line to an activity.' });
       case 'ai-worker': {
         const out = body.job_type === 'assess_grant' ? { score: 78, band: 'strong', verdict: 'Worth applying', headline: 'Strong fit for your after-school STEM work', why: 'Your mission, location and budget match what this funder supports.', rationale: 'Funds out-of-school programs for low-income youth in your region.', recommendation: 'Apply. Lead with your attendance and math-score outcomes.', components: [{ label: 'Mission', score: 90, note: 'Youth education' }, { label: 'Geography', score: 85, note: 'Serves your county' }, { label: 'Budget', score: 60, note: 'Award is large for your budget' }], eligibility: [{ label: '501(c)(3) status', status: 'likely', note: 'Confirmed' }, { label: 'Matching funds', status: 'unclear', note: '1:1 match may be required' }], watch_outs: ['Check whether a 1:1 match is required.'] } : {};
