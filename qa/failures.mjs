@@ -1,0 +1,21 @@
+// How the app behaves when every edge function fails (AI quota out, function down).
+import { startServer, launch, openApp } from './harness.mjs';
+const srv = await startServer(); const browser = await launch();
+const t = await openApp(browser, { persona: 'np', failFunctions: true });
+const p = t.page;
+const report = async (label) => { const txt = await p.evaluate(() => { const toast = document.getElementById('toast'); return { toast: toast?.classList.contains('show') ? document.getElementById('toast-text').textContent : '', screen: window._currentScreen }; }); console.log(label.padEnd(26), JSON.stringify(txt)); };
+await p.evaluate(() => go('discovery')); await p.waitForTimeout(3000);
+console.log('discovery cards:', (await p.$$('#disc-grants-list .gcard')).length, '| list text:', (await p.textContent('#disc-grants-list')).trim().slice(0, 160).replace(/\s+/g, ' '));
+await report('after discovery');
+const usa = await p.evaluate(() => (document.querySelector('[id^="usa"]')?.innerText || '').slice(0, 120));
+console.log('federal funding card:', JSON.stringify(usa));
+await p.click('#disc-grants-list .gcard button:has-text("AI assessment")').catch(() => console.log('no assess button'));
+await p.waitForTimeout(1500);
+console.log('assess panel:', JSON.stringify(await p.evaluate(() => (document.querySelector('[id^="gca-"].open')?.innerText || '').slice(0, 160))));
+await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
+await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
+await p.click('#gen-btn').catch(() => console.log('no gen button')); await p.waitForTimeout(6000);
+await report('after generate');
+console.log('generator out:', JSON.stringify(await p.evaluate(() => ({ empty: getComputedStyle(document.getElementById('out-empty')).display, doc: (document.getElementById('out-doc')?.innerText || '').slice(0, 200), plan: document.getElementById('ap-sub')?.textContent }))));
+console.log('page errors:', t.errors.filter((e) => !/500|Internal Server Error/.test(e)));
+await browser.close(); srv.close();

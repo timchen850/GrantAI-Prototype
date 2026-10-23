@@ -182,6 +182,7 @@ function fnHandler(fnLog, opts) {
     fnLog.push(name);
     const json = (o, status = 200) => route.fulfill({ status, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(o) });
     if (opts.failFunctions) return json({ error: 'qa: forced failure' }, 500);
+    if (opts.fnOverride && opts.fnOverride[name]) { const o = opts.fnOverride[name]; return json(o.body, o.status); }
     switch (name) {
       case 'discover-grants': return json({ output: { hits: govHits() } });
       case 'grant-detail': { const d = {}; (body.ids || []).forEach((id, i) => { d[id] = { awardCeiling: 50000 * (i + 1), awardFloor: 10000, desc: 'Supports community organizations that run programs in this area. Applicants describe need, approach, evaluation and budget.', numberOfAwards: 12, eligibility: 'Nonprofits having a 501(c)(3) status with the IRS, other than institutions of higher education' }; }); return json({ output: { details: d } }); }
@@ -200,7 +201,7 @@ function fnHandler(fnLog, opts) {
 }
 
 /* ───────── page factory ───────── */
-export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], reducedMotion = false, base = 'http://127.0.0.1:3456/' } = {}) {
+export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], fnOverride = {}, reducedMotion = false, base = 'http://127.0.0.1:3456/' } = {}) {
   const P = PERSONAS[persona];
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, isMobile: width < 600, hasTouch: width < 600, reducedMotion: reducedMotion ? 'reduce' : 'no-preference' });
   const db = buildDb(persona);
@@ -214,7 +215,7 @@ export async function openApp(browser, { persona = 'np', width = 1440, height = 
   await ctx.route('https://fonts.googleapis.com/**', (r) => r.fulfill({ body: fontCss(), contentType: 'text/css' }));
   await ctx.route('https://fonts.gstatic.com/qa/**', (r) => { const [pkg, file] = new URL(r.request().url()).pathname.split('/').slice(-2); r.fulfill({ path: path.join(NM, '@fontsource', pkg, 'files', file), contentType: 'font/woff2' }); });
   await ctx.route(SUPA + '/rest/v1/**', restHandler(db, restLog, failTables));
-  await ctx.route(SUPA + '/functions/v1/**', fnHandler(fnLog, { failFunctions }));
+  await ctx.route(SUPA + '/functions/v1/**', fnHandler(fnLog, { failFunctions, fnOverride }));
   await ctx.route(SUPA + '/storage/v1/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ Key: 'documents/qa', signedURL: '/qa-signed' }) }));
   await ctx.route(SUPA + '/auth/v1/**', async (r) => {
     const u = new URL(r.request().url()); const p = u.pathname.replace('/auth/v1', '');

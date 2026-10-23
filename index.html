@@ -7969,7 +7969,7 @@ async function generate() {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error?.message || `API error ${res.status}`);
+      throw new Error(genErrorText(res.status, err));
     }
 
     // Update the output header with real grant + proposal type
@@ -8047,14 +8047,25 @@ async function generate() {
     if (err.name !== 'AbortError') {
       generating = false;                     // let genShowConfig() run
       genShowConfig();
-      toast('Generation failed: ' + (err.message || 'Unknown error'));
-      console.error('[Grange AI] generate():', err);
+      const offline = err instanceof TypeError || /failed to fetch|network/i.test(err.message || '');
+      toast(offline ? 'Couldn’t reach Grange. Check your connection and try again.' : (err.message || 'Couldn’t write the draft. Please try again.'));
+      console.warn('[Grange AI] generate():', err);
     }
   } finally {
     generating    = false;
     btn.disabled  = false;
     _genAbort     = null;
   }
+}
+
+// Turn a failed generate-proposal response into something a user can act on.
+// The function sends { error: "<message>" } (a string), e.g. the monthly-limit notice.
+function genErrorText(status, body) {
+  const msg = typeof body?.error === 'string' ? body.error : (body?.error?.message || '');
+  if (status === 429) return msg || 'You’ve used this month’s drafts on your plan. See Pricing to draft more.';
+  if (status === 401) return 'Your session expired. Sign in again to keep drafting.';
+  if (status >= 500) return 'The AI writer is unavailable right now. Please try again in a minute.';
+  return msg || 'Couldn’t write the draft (error ' + status + '). Please try again.';
 }
 
 function showAIPolicyBanner(grant) {
@@ -11825,7 +11836,11 @@ async function assessGrant(id) {
     const substantive = o && ((o.score > 0) || o.headline || o.why || (o.components && o.components.length) || (o.eligibility && o.eligibility.length));
     if (substantive) { try { localStorage.setItem(ck, JSON.stringify(r.output)); } catch (_) {} panel.innerHTML = assessHTML(r.output); }
     else if (o) { panel.innerHTML = wrapAssess(assessMsgHTML('That assessment came back incomplete. Please try again.')); }
-    else { panel.innerHTML = wrapAssess(assessKeyHTML()); }
+    else {
+      // Server-side setup problems (no AI key) are for us, not the user.
+      if (r && r.error) console.warn('assess_grant:', r.error);
+      panel.innerHTML = wrapAssess(assessMsgHTML('The AI assessment isn’t available right now. Please try again in a minute.'));
+    }
   } catch (e) { panel.innerHTML = wrapAssess(assessMsgHTML('Could not run the assessment. Please try again.')); }
 }
 /* ─── full funder-call analysis (per discovery card, reuses parse_rfp) ───
@@ -11874,9 +11889,6 @@ function draftFromFullCall(id) {
 }
 function wrapAssess(inner) { return '<div class="gc-assess-inner">' + inner + '</div>'; }
 function assessMsgHTML(msg, signin) { return '<div class="gca-msg">' + escHtml(msg) + (signin ? ' <a onclick="go(\'signin\')">Sign in →</a>' : '') + '</div>'; }
-function assessKeyHTML() {
-  return '<div class="gca-key"><strong>✦ AI assessment is ready to switch on</strong><p>Add a Gemini API key on the server (Supabase → Edge Functions → Secrets) and Grange will score your fit and flag eligibility for this grant instantly — grounded in your org profile. Until then, use the match score and Draft proposal.</p></div>';
-}
 function assessVColor(v) { return v === 'strong' ? 'var(--ok)' : v === 'good' ? '#4f8a4f' : v === 'weak' ? 'var(--warn-ink)' : 'var(--accent)'; }
 function assessEligIcon(s) {
   if (s === 'likely') return '<svg class="ic" style="color:var(--ok)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>';

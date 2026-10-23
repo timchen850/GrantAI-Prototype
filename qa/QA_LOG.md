@@ -47,8 +47,12 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 24 | Generator (phone) | Draft header squeezed the funder name into 3 lines and cut off Export. | Header wraps under 560px. |
 | 25 | Tour | "100%" wrapped its % sign under the number (grid item); step 3/5 guide bubbles could revert to the "tap the document" hint after it was tapped (900ms/800ms timer race); step 5 still said "due soon" after scheduling. | Ring on one line; timers check state; label updates. |
 | 26 | Discovery | "Eligibility read" heading had no space above it in the AI assessment panel. | Top margin. |
+| 27 | Generator | Failed drafts showed "Generation failed: API error 429": the function sends `{ error: "<text>" }` but the app read `error.message`, so the monthly-limit notice ("Monthly limit reached… Upgrade to Starter…") never reached the user; outages showed raw status codes. | `genErrorText()` passes the server's message through and words 401/5xx/offline plainly. Covered by `draft-limit-message`. |
+| 28 | Discovery | When the AI service failed, the assessment panel told users to "Add a Gemini API key on the server (Supabase → Edge Functions → Secrets)". | Plain "isn't available right now, try again" message; detail goes to the console. |
 
 ## Needs Tim's decision
+
+- **Draft credits (needs the Supabase connector reconnected).** `generate-proposal` reads the plan from `profiles.tier`, but the live `profiles` table had no `tier` column on 2026-10-15 (migration `20260626_subscription_tiers.sql` looks unapplied), so every account is treated as Free: 2 calls a month. One click of Draft makes up to three calls (Approach Plan, the draft, the editing pass), so a free account gets one draft a month. Fix: apply the tier migration, and count one credit per draft (the app sends a draft id with every pass; the function counts the first). Workaround before recording the demo: delete your own `proposal_usage` rows for this month in the Supabase table editor.
 
 - **Pricing mismatch.** Landing page: Starter free / Growth $19.99 / Scale $39.99 (set June 19). In-app Pricing screen and Stripe checkout: Free / Starter $49 / Pro $149 (June 24–26). Visitors are shown lower prices than checkout charges. Pick one and I'll make both match.
 

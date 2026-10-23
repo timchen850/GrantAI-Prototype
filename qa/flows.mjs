@@ -136,6 +136,22 @@ flow('onboarding-save-failure', async (browser, check) => {
   return t;
 });
 
+flow('draft-limit-message', async (browser, check) => {
+  const LIMIT = 'Monthly limit reached (2 drafts/month on free plan). Upgrade to Starter for 15 drafts/month.';
+  const t = await openApp(browser, { persona: 'np', fnOverride: { 'generate-proposal': { status: 429, body: { error: LIMIT } } } });
+  const p = t.page;
+  const toasts = [];
+  await p.exposeFunction('_qaToast', (m) => toasts.push(m));
+  await p.evaluate(() => { const o = window.toast; window.toast = (m) => { window._qaToast(m); return o(m); }; });
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
+  await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
+  await p.click('#gen-btn'); await p.waitForTimeout(2500);
+  check('monthly-limit message from the server reaches the user', toasts.includes(LIMIT));
+  check('no "API error 429" jargon', !toasts.some((m) => /API error/.test(m)));
+  t.errors = t.errors.filter((e) => !/429|Too Many/.test(e));
+  return t;
+});
+
 flow('discovery-save-and-draft', async (browser, check) => {
   const t = await openApp(browser, { persona: 'np' });
   const p = t.page;
