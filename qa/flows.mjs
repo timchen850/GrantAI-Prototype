@@ -367,6 +367,23 @@ flow('backend-down-messages', async (browser, check) => {
   return t;
 });
 
+flow('backend-down-signed-in', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' , backendDown: true });
+  const p = t.page;
+  const toasts = []; await p.exposeFunction('_qt3', (m) => toasts.push(m));
+  await p.addInitScript(() => {});
+  await p.waitForTimeout(500);
+  // the first load already happened; reload with the spy installed early
+  await p.evaluate(() => { const o = window.toast; window.toast = (m) => { window._qt3(m); return o(m); }; });
+  const posts = []; p.on('request', (r) => { if (r.method() === 'POST' && r.url().includes('/rest/v1/profiles')) posts.push(r.url()); });
+  await p.evaluate(() => routeAfterAuth()); await p.waitForTimeout(1500);
+  check('signed-in user is told the servers are unreachable', toasts.some((m) => /can.t reach its servers/.test(m)));
+  check('no profile insert attempted while unreachable', posts.length === 0);
+  check('page visible', await p.evaluate(() => document.documentElement.style.visibility !== 'hidden'));
+  t.errors = t.errors.filter((e) => !/status of 540/.test(e));
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;

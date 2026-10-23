@@ -9608,7 +9608,13 @@ async function currentProfile() {
     try { const { data: { session } } = await sb.auth.getSession(); user = session?.user || null; } catch (_) {}
   }
   if (!user) return null;
-  let { data: profile } = await sb.from('profiles').select('*').eq('user_id', user.id).maybeSingle();
+  let { data: profile, error: readErr } = await sb.from('profiles').select('*').eq('user_id', user.id).maybeSingle();
+  if (readErr && !profile) {
+    // Couldn't read (not "no row"): don't try to create one; say why the app looks signed out.
+    console.warn('profile read failed', readErr);
+    toast(/jwt|expired|401/i.test(readErr.message || '') ? 'Your session expired. Please sign in again.' : 'Grange can’t reach its servers right now. Please try again in a few minutes.');
+    return { user, profile: null };
+  }
   if (!profile) {
     const ins = await sb.from('profiles')
       .insert({ user_id: user.id, org_name: user.user_metadata?.org_name || null })
