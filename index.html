@@ -38,14 +38,14 @@
   --line:       rgba(26,25,22,0.10);
   --line-soft:  rgba(26,25,22,0.06);
 
-  --accent:     #d94f30;     /* vermilion, pulled from hero aurora */
-  --accent-press:#bf4123;
+  --accent:     #c34426;     /* vermilion, pulled from hero aurora; deep enough for 4.5:1 text on white */
+  --accent-press:#a8391f;
   --accent-tint:#fbe9e2;
   --accent-ink: #8a2c16;
 
-  --ok:         #2f7d4f;     /* semantic success only */
+  --ok:         #2b7449;     /* semantic success only; 4.5:1 on --ok-tint */
   --ok-tint:    #e6f1ea;
-  --warn-ink:   #9a6a16;
+  --warn-ink:   #8a5f13;
   --warn-tint:  #f7eed8;
 
   /* type */
@@ -291,6 +291,9 @@ label.field-label {
 .sec-stats { max-width: 1100px; display: grid; grid-template-columns: repeat(4, 1fr); }
 .sec-stat { padding: 0 32px; text-align: center; border-left: 1px solid var(--line); }
 .sec-stat:first-child { border-left: none; }
+/* legal pages: links must not rely on color alone */
+.legal-doc p a, .legal-doc li a { text-decoration: underline !important; text-underline-offset: 2px; }
+.legal-doc [style*="accent-tint"] a { color: var(--accent-ink) !important; }
 .sec-stat-fig { font-size: 28px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
 .sec-stat-cap { font-size: 13px; color: var(--muted); margin-top: 4px; }
 @media (max-width: 640px) {
@@ -918,7 +921,7 @@ label.field-label {
 .dlx-group { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 8px 22px 14px; margin-bottom: 18px; }
 .dlx-head { font-family: var(--display); font-weight: 750; font-size: 15px; color: var(--ink); padding: 12px 0 4px; display: flex; align-items: center; gap: 9px; }
 .dlx-count { font-size: 12px; font-weight: 700; color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
-.dl.dlx-done { opacity: .68; }
+.dl.dlx-done .dn, .dl.dlx-done .dt { color: var(--muted); }   /* done: struck through and muted, still readable */
 .dl.dlx-done .dn { text-decoration: line-through; text-decoration-color: var(--line); }
 .dlx-empty { padding: 60px 40px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 15px; color: var(--muted);
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
@@ -1755,7 +1758,7 @@ label.field-label {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .demo-gr-meta { font-size: 10.5px; color: #6f6c64; margin-top: 2px; }
-.demo-draft-btn { font-size: 11px; font-weight: 600; color: #d94f30; flex-shrink: 0; }
+.demo-draft-btn { font-size: 11px; font-weight: 600; color: var(--accent); flex-shrink: 0; }
 /* write */
 .demo-ai-badge {
   font-size: 10px; font-weight: 700;
@@ -3124,7 +3127,7 @@ label.field-label {
   <div style="background:var(--surface-2);border-bottom:1px solid var(--line);padding:72px 0 64px;">
     <div class="wrap" style="max-width:860px;">
       <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:32px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to home</button>
-      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Legal</div>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent-ink);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Legal</div>
       <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">Privacy Policy</h1>
       <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:600px;margin-bottom:28px;">We believe privacy is a right, not a feature. This policy explains exactly what data we collect, why we collect it, and how you can control it.</p>
       <div style="display:flex;gap:24px;flex-wrap:wrap;">
@@ -3302,7 +3305,7 @@ label.field-label {
   <div style="background:var(--surface-2);border-bottom:1px solid var(--line);padding:72px 0 64px;">
     <div class="wrap" style="max-width:860px;">
       <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:32px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to home</button>
-      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Legal</div>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent-ink);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Legal</div>
       <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">Terms of Service</h1>
       <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:620px;margin-bottom:28px;">These terms govern your use of Grange AI. Please read them carefully. By creating an account, you agree to be bound by them.</p>
       <div style="display:flex;gap:24px;flex-wrap:wrap;">
@@ -3468,7 +3471,7 @@ label.field-label {
   <div style="background:var(--surface-2);border-bottom:1px solid var(--line);padding:72px 0 64px;">
     <div class="wrap" style="max-width:1100px;">
       <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:32px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to home</button>
-      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Trust &amp; Safety</div>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent-ink);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Trust &amp; Safety</div>
       <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">Security at Grange AI</h1>
       <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:640px;margin-bottom:0;">Your organization's grant data is sensitive. We build our security program around that reality, not as an afterthought.</p>
     </div>
@@ -3665,7 +3668,7 @@ label.field-label {
   <div style="background:var(--surface-2);border-bottom:1px solid var(--line);padding:72px 0 64px;">
     <div class="wrap" style="max-width:860px;">
       <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:32px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to home</button>
-      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Get in touch</div>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent-ink);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Get in touch</div>
       <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">We'd love to hear from you.</h1>
       <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:580px;">Whether you have a question about the product, need help getting started, or want to share feedback — we read every message and respond personally.</p>
     </div>
@@ -3698,7 +3701,7 @@ label.field-label {
           <input id="contact-org" type="text" placeholder="Hope Harbor Foundation" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
         </div>
         <div>
-          <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Topic <span style="color:var(--accent);">*</span></label>
+          <label for="contact-topic" style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Topic <span style="color:var(--accent);">*</span></label>
           <select id="contact-topic" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;appearance:none;cursor:pointer;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
             <option value="">Select a topic…</option>
             <option>General question</option>
@@ -3845,7 +3848,7 @@ label.field-label {
 
   <!-- Step 1: Profile -->
   <section class="dp-phase" id="dp-phase-1">
-    <div class="dp-phase-inner">
+    <div class="dp-phase-inner" tabindex="0">
       <div>
         <div class="dp-step-tag">Step 01 &middot; Profile</div>
         <h2 class="dp-headline">We read your whole<br>organization</h2>
@@ -3870,7 +3873,7 @@ label.field-label {
 
   <!-- Step 2: Scan -->
   <section class="dp-phase" id="dp-phase-2">
-    <div class="dp-phase-inner">
+    <div class="dp-phase-inner" tabindex="0">
       <div>
         <div class="dp-step-tag">Step 02 &middot; Discovery</div>
         <h2 class="dp-headline">Every open grant,<br>scanned for you</h2>
@@ -3903,7 +3906,7 @@ label.field-label {
 
   <!-- Step 3: Matching -->
   <section class="dp-phase" id="dp-phase-3">
-    <div class="dp-phase-inner">
+    <div class="dp-phase-inner" tabindex="0">
       <div>
         <div class="dp-step-tag">Step 03 &middot; Matching</div>
         <h2 class="dp-headline">Your top matches,<br>ranked by fit</h2>
@@ -3930,7 +3933,7 @@ label.field-label {
 
   <!-- Step 4: Writing -->
   <section class="dp-phase" id="dp-phase-4">
-    <div class="dp-phase-inner">
+    <div class="dp-phase-inner" tabindex="0">
       <div>
         <div class="dp-step-tag">Step 04 &middot; Drafting</div>
         <h2 class="dp-headline">Full proposal drafted<br>in minutes</h2>
@@ -3954,7 +3957,7 @@ label.field-label {
 
   <!-- Step 5: Done -->
   <section class="dp-phase" id="dp-phase-5">
-    <div class="dp-phase-inner">
+    <div class="dp-phase-inner" tabindex="0">
       <div>
         <div class="dp-step-tag">Step 05 &middot; Submit</div>
         <h2 class="dp-headline">Ready to submit<br>in under 5 minutes</h2>
@@ -5199,7 +5202,7 @@ label.field-label {
         <div class="fieldset full"><label class="field-label">Mission statement</label>
           <textarea id="pf-mission" style="min-height:100px" placeholder="What is your organization's mission?"></textarea></div>
         <div class="fieldset"><label class="field-label">Primary NTEE code <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="toggleTip(this)">?</button></label><div class="ob-help-text" hidden>The National Taxonomy of Exempt Entities (NTEE) code is a standard category for your nonprofit, like Education or Human Services. It is on your IRS records. If you are unsure, pick the closest fit.</div>
-          <select id="pf-ntee">
+          <select id="pf-ntee" aria-label="Primary NTEE code">
             <option value="">Select…</option>
             <option value="B20">B20, Elementary &amp; Secondary Education</option>
             <option value="O50">O50, Youth Development</option>
@@ -5503,7 +5506,7 @@ label.field-label {
   .spb-left{ text-align:left; }
   .spb-label{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:1px; }
   .spb-name{ font-size:13px; font-weight:600; color:var(--ink-soft); }
-  .spb-cta{ font-size:11px; font-weight:700; color:var(--accent); background:var(--accent-tint); border:1px solid rgba(217,79,48,.2); border-radius:999px; padding:3px 10px; white-space:nowrap; }
+  .spb-cta{ font-size:11px; font-weight:700; color:var(--accent-ink); background:var(--accent-tint); border:1px solid rgba(217,79,48,.2); border-radius:999px; padding:3px 10px; white-space:nowrap; }
 
   /* Paywall banner (reusable) */
   .paywall-banner{ display:flex; align-items:center; gap:16px; border:1.5px dashed rgba(217,79,48,.30); border-radius:14px; background:linear-gradient(135deg,rgba(217,79,48,.05),var(--surface)); padding:18px 20px; }
@@ -13537,7 +13540,7 @@ function applyDiscFilters(query, type) {
       const candidates = (grants || []).filter(g => !awardedIds.has(g.id));
       let html = '<div class="pa-card"><div class="pa-body"><div class="pa-sub">Record a win</div>' +
         (candidates.length
-          ? '<div class="pa-addform"><select id="pa-award-grant"><option value="">Choose a grant you won…</option>' +
+          ? '<div class="pa-addform"><select id="pa-award-grant" aria-label="Grant you won"><option value="">Choose a grant you won…</option>' +
             candidates.map(g => '<option value="' + g.id + '">' + escHtml(g.title) + (g.funder ? ' — ' + escHtml(g.funder) : '') + '</option>').join('') + '</select>' +
             '<input class="num" id="pa-award-amt" type="text" placeholder="$ awarded"><button class="btn btn-accent btn-sm" onclick="markAwarded()">Mark as awarded</button></div>' +
             '<p style="font-size:12px;color:var(--muted);margin-top:8px">Marking a grant awarded sets up its compliance checklist and spending tracker automatically.</p>'
@@ -13578,7 +13581,7 @@ function applyDiscFilters(query, type) {
           (over ? '<p style="font-size:12.5px;color:var(--accent-ink);margin:-4px 0 12px">⚠ You\'ve spent more than the award — exactly what triggers a clawback. Move costs to another funder or cut spend.</p>' : '') +
           (!hasBudget ? '<p style="font-size:12.5px;color:var(--muted);margin:-4px 0 12px">No award amount on file, so spend can\'t be tracked against a budget yet.</p>' : '') +
           (exps || []).map(e => '<div class="pa-exp-row"><span class="cat">' + escHtml(catLabel(e.category_key)) + '</span>' + escHtml(e.description || '') + '<span class="amt">' + _paFmt(Number(e.amount || 0)) + '</span></div>').join('') +
-          '<div class="pa-addform"><select id="paexp-cat-' + a.id + '">' + (_paCats || []).map(c => '<option value="' + c.key + '">' + escHtml(c.label) + '</option>').join('') + '</select>' +
+          '<div class="pa-addform"><select id="paexp-cat-' + a.id + '" aria-label="Spending category">' + (_paCats || []).map(c => '<option value="' + c.key + '">' + escHtml(c.label) + '</option>').join('') + '</select>' +
             '<input class="desc" id="paexp-desc-' + a.id + '" type="text" placeholder="What was it for?"><input class="num" id="paexp-amt-' + a.id + '" type="text" placeholder="$ amount"><button class="btn btn-outline btn-sm" onclick="addExpense(\'' + a.id + '\')">Add</button></div>' +
         '</div></div></div>';
   }

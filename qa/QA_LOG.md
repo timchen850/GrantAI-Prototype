@@ -49,6 +49,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 26 | Discovery | "Eligibility read" heading had no space above it in the AI assessment panel. | Top margin. |
 | 27 | Generator | Failed drafts showed "Generation failed: API error 429": the function sends `{ error: "<text>" }` but the app read `error.message`, so the monthly-limit notice ("Monthly limit reached… Upgrade to Starter…") never reached the user; outages showed raw status codes. | `genErrorText()` passes the server's message through and words 401/5xx/offline plainly. Covered by `draft-limit-message`. |
 | 28 | Discovery | When the AI service failed, the assessment panel told users to "Add a Gemini API key on the server (Supabase → Edge Functions → Secrets)". | Plain "isn't available right now, try again" message; detail goes to the console. |
+| 29 | Accessibility | axe-core (WCAG 2 A/AA) flagged 91 elements: the brand accent `#d94f30` was 4.1:1 as text on white and on white button labels, 3.5:1 on its tint; success green and warning text just under 4.5:1; faded completed deadlines at 2.8:1; legal-page links distinguishable by color only; 4 unlabeled selects; 5 scroll areas unreachable by keyboard. | `--accent` `#c34426`, `--ok` `#2b7449`, `--warn-ink` `#8a5f13` (same look, all ≥4.5:1); tinted pills use `--accent-ink`; completed deadlines struck through instead of faded; legal links underlined; selects labelled; scroll areas focusable. Now 0 violations on every screen, all accounts, desktop and phone (`qa/a11y.mjs`). |
 
 ## Needs Tim's decision
 
