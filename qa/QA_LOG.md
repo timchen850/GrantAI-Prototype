@@ -58,6 +58,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 35 | Sharing | No meta description or link-preview tags. | Description + Open Graph/Twitter tags. |
 | 36 | Readiness, Generator | When the AI service failed or returned nothing, the funder-call reader told users "Add a Gemini API key on the server (Supabase → Edge Functions → Secrets)". | "Couldn't read that call right now, try again" (with the sample as a fallback). No setup instructions are shown to users anywhere now. |
 | 37 | Generator | While the Approach Plan waited for approval ("Nothing is written until you approve"), the progress panel above it said "Draft your proposal — Working / Write the statement of need — Drafting". | Panel holds at "waiting for your approval" with drafting not started, and resumes when the plan is approved. Approve / rethink / cancel covered by `approach-plan`. |
+| 38 | Landing (laptop/tablet) | At 1280px and 1024px the page was wider than the screen (1296px / 1138px): the hero's 3D tablet and the fanned deadline cards stuck out. Hidden by `body { overflow-x: hidden }` on most desktops, but iPad Safari ignores that on `body`. | `#landing { overflow-x: clip }`. Swept clean at 12 widths from 360 to 1440. |
 
 ## Needs Tim's decision
 

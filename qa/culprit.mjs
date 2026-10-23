@@ -2,7 +2,7 @@
 import { startServer, launch, openApp } from './harness.mjs';
 const [persona = 'np', screen = 'dashboard', width = '390'] = process.argv.slice(2);
 const srv = await startServer(); const browser = await launch();
-const t = await openApp(browser, { persona, width: +width, height: 844 });
+const t = await openApp(browser, { persona, width: +width, height: +width < 600 ? 844 : 800 });
 await t.page.evaluate((s) => go(s), screen); await t.page.waitForTimeout(1800);
 const res = await t.page.evaluate(() => {
   const vw = document.documentElement.clientWidth, base = document.documentElement.scrollWidth, hits = [];

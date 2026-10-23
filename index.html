@@ -294,6 +294,9 @@ label.field-label {
 .stat-cell .fig { font-family: var(--display); font-weight: 800; font-size: 40px;
   color: var(--ink); letter-spacing: -0.04em; line-height: 1; }
 .stat-cell .cap { font-size: 13.5px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+/* The hero's 3D tablet and the stacked deadline cards are wider than the screen at
+   laptop/tablet widths; clip them to the page (clip, unlike hidden, keeps sticky working). */
+#landing { overflow-x: clip; }
 /* security page stats */
 .sec-stats { max-width: 1100px; display: grid; grid-template-columns: repeat(4, 1fr); }
 .sec-stat { padding: 0 32px; text-align: center; border-left: 1px solid var(--line); }
