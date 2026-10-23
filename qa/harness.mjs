@@ -90,9 +90,19 @@ function embed(db, rows, select) {
 }
 // The live tables' unique keys (from the Supabase schema), so duplicate inserts fail the way they do in production.
 const UNIQUE = { profiles: [['user_id']], onboarding_answers: [['user_id', 'question_key']], readiness_items: [['user_id', 'req_key']], draft_outcomes: [['user_id', 'draft_uid']] };
-function restHandler(db, log) {
+// The live check constraints the app writes against (from supabase/migrations + the live schema).
+const CHECKS = {
+  profiles: { tax_exempt_status: ['unknown', '501c3_pending', '501c3', '501c4', '501c6', 'fiscal_sponsorship', 'government', 'tribal', 'other'] },
+  grants: { status: ['discovered', 'saved', 'eligibility_review', 'drafting', 'internal_review', 'submitted', 'awarded', 'declined', 'withdrawn'] },
+  deadlines: { kind: ['proposal', 'loi', 'report', 'renewal', 'registration_renewal', 'meeting', 'custom'], status: ['upcoming', 'done', 'missed', 'cancelled'] },
+};
+const checkViolation = (table, row) => Object.entries(CHECKS[table] || {}).find(([col, ok]) => col in row && row[col] != null && !ok.includes(row[col]));
+const checkFail = (route, table, col) => route.fulfill({ status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ code: '23514', message: `new row for relation "${table}" violates check constraint "${table}_${col}_check"`, details: null, hint: null }) });
+function restHandler(db, log, failTables = []) {
   return async (route) => {
     await new Promise((ok) => setTimeout(ok, 40 + Math.random() * 60));   // real network latency, so races show up
+    { const tb = new URL(route.request().url()).pathname.split('/').pop();
+      if (failTables.includes(tb) && route.request().method() !== 'GET') { log.push(`${route.request().method()} ${tb} -> 503 (forced)`); return route.fulfill({ status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ code: 'PGRST000', message: 'qa: forced outage', details: null, hint: null }) }); } }
     const req = route.request(); const url = new URL(req.url()); const table = url.pathname.split('/').pop();
     const sp = [...url.searchParams.entries()]; const method = req.method(); const h = req.headers();
     const prefer = h['prefer'] || ''; const wantObj = (h['accept'] || '').includes('vnd.pgrst.object');
@@ -106,6 +116,7 @@ function restHandler(db, log) {
       rows = embed(db, rows, url.searchParams.get('select'));
     } else if (method === 'POST') {
       let body = req.postDataJSON(); body = Array.isArray(body) ? body : [body];
+      for (const b of body) { const v = checkViolation(table, b); if (v) { log.push(`POST ${table} -> 400 check ${v[0]}=${b[v[0]]}`); return checkFail(route, table, v[0]); } }
       const conflict = (url.searchParams.get('on_conflict') || '').split(',').filter(Boolean);
       const upsert = prefer.includes('merge-duplicates') || prefer.includes('ignore-duplicates');
       rows = body.map((b) => {
@@ -125,7 +136,9 @@ function restHandler(db, log) {
       }
       status = 201;
     } else if (method === 'PATCH') {
-      const body = req.postDataJSON(); rows = filterRows(db[table], sp); rows.forEach((r) => Object.assign(r, body));
+      const body = req.postDataJSON();
+      const v = checkViolation(table, body); if (v) { log.push(`PATCH ${table} -> 400 check ${v[0]}=${body[v[0]]}`); return checkFail(route, table, v[0]); }
+      rows = filterRows(db[table], sp); rows.forEach((r) => Object.assign(r, body));
     } else if (method === 'DELETE') {
       rows = filterRows(db[table], sp); db[table] = db[table].filter((r) => !rows.includes(r));
     }
@@ -184,11 +197,12 @@ function fnHandler(fnLog, opts) {
 }
 
 /* ───────── page factory ───────── */
-export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, base = 'http://127.0.0.1:3456/' } = {}) {
+export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], reducedMotion = false, base = 'http://127.0.0.1:3456/' } = {}) {
   const P = PERSONAS[persona];
-  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, isMobile: width < 600, hasTouch: width < 600 });
+  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, isMobile: width < 600, hasTouch: width < 600, reducedMotion: reducedMotion ? 'reduce' : 'no-preference' });
   const db = buildDb(persona);
   const restLog = [], fnLog = [], errors = [], external = [];
+  let authUser = P.user;   // who the fake auth server thinks is signed in
   // Anything off-box that no route below answers is unexpected: record it and fail it fast.
   // (Playwright runs the most recently registered matching route first, so this goes first.)
   await ctx.route(/^https?:\/\/(?!127\.0\.0\.1|localhost)/, (r) => { external.push(r.request().url()); r.abort(); });
@@ -196,16 +210,16 @@ export async function openApp(browser, { persona = 'np', width = 1440, height = 
   await ctx.route('https://cdn.jsdelivr.net/npm/three@0.158.0/**', (r) => r.fulfill({ path: path.join(NM, 'three/build/three.min.js'), contentType: 'text/javascript' }));
   await ctx.route('https://fonts.googleapis.com/**', (r) => r.fulfill({ body: fontCss(), contentType: 'text/css' }));
   await ctx.route('https://fonts.gstatic.com/qa/**', (r) => { const [pkg, file] = new URL(r.request().url()).pathname.split('/').slice(-2); r.fulfill({ path: path.join(NM, '@fontsource', pkg, 'files', file), contentType: 'font/woff2' }); });
-  await ctx.route(SUPA + '/rest/v1/**', restHandler(db, restLog));
+  await ctx.route(SUPA + '/rest/v1/**', restHandler(db, restLog, failTables));
   await ctx.route(SUPA + '/functions/v1/**', fnHandler(fnLog, { failFunctions }));
   await ctx.route(SUPA + '/storage/v1/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ Key: 'documents/qa', signedURL: '/qa-signed' }) }));
   await ctx.route(SUPA + '/auth/v1/**', async (r) => {
     const u = new URL(r.request().url()); const p = u.pathname.replace('/auth/v1', '');
     const json = (o, status = 200) => r.fulfill({ status, contentType: 'application/json', body: JSON.stringify(o) });
-    if (p === '/user') return P.user ? json(P.user) : json({ code: 401, msg: 'no user' }, 401);
-    if (p === '/token') return json(makeSession(P.user || PERSONAS.np.user));
-    if (p === '/signup') return json(makeSession(P.user || PERSONAS.newuser.user));
-    if (p === '/logout') return r.fulfill({ status: 204, body: '' });
+    if (p === '/user') return authUser ? json(authUser) : json({ code: 401, msg: 'no user' }, 401);
+    if (p === '/token') { authUser = P.user || PERSONAS.np.user; return json(makeSession(authUser)); }
+    if (p === '/signup') { authUser = P.user || PERSONAS.newuser.user; return json(makeSession(authUser)); }
+    if (p === '/logout') { authUser = null; return r.fulfill({ status: 204, body: '' }); }
     return json({});
   });
   if (P.user) {

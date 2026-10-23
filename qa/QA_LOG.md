@@ -40,14 +40,22 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 17 | Contact | The form never sent anything: it waited 900ms and showed "Message received!". | Opens the visitor's email app with the message addressed to support, says so plainly, gives the address as a fallback; validates email; no `alert()`. |
 | 18 | Assistant (desktop) | The tip bubble sat over grant cards' action buttons until closed. | Hides on scroll or after 9 seconds. |
 | 19 | Generator/Manage (phone) | Pro/Starter upsell banners squeezed their text into a 120px column. | Button drops under the text on phones. |
+| 20 | Onboarding | Survey save failures were silent: supabase-js reports errors in `.error` (it doesn't throw), so the user saw "Profile saved! Welcome" and landed on the dashboard with nothing saved. | Checks `.error`; on failure stays on the survey with answers intact, explains, re-enables Finish. Covered by `onboarding-save-failure`. |
 
 ## Needs Tim's decision
 
 - **Pricing mismatch.** Landing page: Starter free / Growth $19.99 / Scale $39.99 (set June 19). In-app Pricing screen and Stripe checkout: Free / Starter $49 / Pro $149 (June 24–26). Visitors are shown lower prices than checkout charges. Pick one and I'll make both match.
 
+## Verified working (flows.mjs, all passing)
+
+Sign up → guided tour (normal + reduced motion) → survey → dashboard; profile save/reload;
+contact hand-off; Discovery save (grant + deadline + reminders) → Draft → streamed proposal;
+legacy-account type picker writes `tax_exempt_status`; deadlines done/reopen; readiness
+"Have it"; onboarding save failure handling. Static audit: all 96 inline-handler functions
+exist, no duplicate ids. Sweep: 0 console errors, no sideways scroll on any screen.
+
 ## Next up
 
-- Static audit: inline handlers that call undefined functions, missing element ids, duplicate ids.
-- Screen sweep at 1440px and 390px: console errors, sideways scroll, clipped or overlapping elements, spacing.
-- Core flows: sign up, onboarding, discovery search, save grant, draft proposal, deadlines, readiness.
+- Visual review: tour, survey, sign-in steps, modals, generator output, mobile menu; `biz`/`legacy` differences.
+- Other silent `.error` swallowing on writes (grant save, deadlines, readiness).
 - Submission materials: README for judges, AI-use disclosure notes, demo-video script.

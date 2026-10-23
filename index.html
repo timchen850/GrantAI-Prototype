@@ -10148,7 +10148,10 @@ async function obFinish(skipped) {
     const rows = Object.keys(a)
       .filter(k => a[k] !== undefined && a[k] !== '' && !(Array.isArray(a[k]) && a[k].length === 0))
       .map(k => ({ user_id: uid, question_key: k, answer: a[k] }));
-    if (rows.length) await sb.from('onboarding_answers').upsert(rows, { onConflict: 'user_id,question_key' });
+    if (rows.length) {
+      const { error } = await sb.from('onboarding_answers').upsert(rows, { onConflict: 'user_id,question_key' });
+      if (error) throw error;   // supabase-js reports failures here instead of throwing
+    }
 
     // 2) upload any documents to private Storage + record metadata
     for (const key of Object.keys(obState.files)) {
@@ -10161,16 +10164,22 @@ async function obFinish(skipped) {
     }
 
     // 3) patch the profile + mark onboarding complete
-    await sb.from('profiles').update({
+    const { error: pErr } = await sb.from('profiles').update({
       org_name: a.org_name || ctx.profile?.org_name || null,
       ein: a.ein || null,
       mission: a.mission || null,
       tax_exempt_status: (ENTITY_TO_TAXSTATUS[a.entity_type] || 'unknown'),
       onboarding_complete: true,
     }).eq('user_id', uid);
+    if (pErr) throw pErr;
   } catch (e) {
-    console.error('onboarding save failed', e);
-    toast('Saved locally, but something went wrong syncing. You can edit later in your profile.');
+    // Nothing reached the server, so stay here with the answers intact and let them retry.
+    console.warn('onboarding save failed', e);
+    if (btn) { btn.disabled = false; btn.textContent = obState.idx === OB_STEPS.length - 1 ? 'Finish' : 'Continue'; }
+    const err = document.getElementById('ob-error');
+    if (err) err.textContent = 'We couldn’t save your answers. Check your connection and try again.';
+    toast('Could not save — please try again.');
+    return;
   }
 
   document.getElementById('ob-progress-fill').style.width = '100%';
