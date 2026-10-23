@@ -10,6 +10,8 @@ cd qa && npm install          # Playwright + local copies of supabase-js, three.
 node smoke.mjs                # boots every test account, prints screen, console errors, queries
 node sweep.mjs                # every screen x account x desktop/phone, scrolled screenshots in qa/out/
 node flows.mjs                # click-through flows; checks what reached the (fake) database
+node a11y.mjs                 # axe-core WCAG 2 A/AA audit of every screen
+node monkey.mjs [screens] [account]   # clicks every visible button, reports JS errors
 ```
 
 The harness (`harness.mjs`, `fixtures.mjs`) runs `index.html` in Chromium with a fake
@@ -78,7 +80,8 @@ outcome "Won" saved; assistant chat reply; IRS check; funder-call analysis; reco
 log spending, toggle compliance; legacy-account type picker writes `tax_exempt_status`;
 deadlines done/reopen; readiness "Have it"; failure paths (survey save, readiness save,
 monthly draft limit). Static audit: all 96 inline-handler functions
-exist, no duplicate ids. Sweep: 0 console errors, no sideways scroll on any screen.
+exist, no duplicate ids. Sweep: 0 console errors, no sideways scroll on any screen at 12 widths
+(360–1440). Monkey test: 350 buttons clicked across all accounts, 0 JS errors. Accessibility: 0 axe violations.
 
 - **Plans and billing (after Monday).** "Start Free Trial" sets `profiles.tier` straight from the browser with no payment ("Stripe to be wired later"), and row-level security lets any user update their own `tier`, so anyone could give themselves Pro once the column exists. Before charging: let only the Stripe webhook set `tier` (for example `revoke update (tier) on profiles from authenticated`), fix `stripe-webhook` (it needs `verify_jwt` off with Stripe signature checking, and it updates by `id` instead of `user_id`).
 
