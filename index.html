@@ -5268,14 +5268,17 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
         </div>
 
         <div class="divider">Financial documents</div>
-        <div class="fieldset"><label class="field-label">IRS Form 990</label>
-          <div class="upl" onclick="toast('Document upload is coming soon')">Drop a file or click to upload</div></div>
-        <div class="fieldset"><label class="field-label">IRS determination letter</label>
-          <div class="upl" onclick="toast('Document upload is coming soon')">Drop a file or click to upload</div></div>
-        <div class="fieldset"><label class="field-label">Audited financials</label>
-          <div class="upl" onclick="toast('Document upload is coming soon')">Drop a file or click to upload</div></div>
+        <div class="fieldset"><label class="field-label" for="pf-file-doc_990">IRS Form 990</label>
+          <div class="upl" id="pf-upl-doc_990" role="button" tabindex="0" onclick="pfPickDoc('doc_990')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pfPickDoc('doc_990')}">Drop a PDF here or click to upload</div>
+          <input type="file" id="pf-file-doc_990" accept="application/pdf,.pdf" hidden onchange="pfUploadDoc('doc_990', this.files[0]); this.value=''"></div>
+        <div class="fieldset"><label class="field-label" for="pf-file-doc_determination">IRS determination letter</label>
+          <div class="upl" id="pf-upl-doc_determination" role="button" tabindex="0" onclick="pfPickDoc('doc_determination')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pfPickDoc('doc_determination')}">Drop a PDF here or click to upload</div>
+          <input type="file" id="pf-file-doc_determination" accept="application/pdf,.pdf" hidden onchange="pfUploadDoc('doc_determination', this.files[0]); this.value=''"></div>
+        <div class="fieldset"><label class="field-label" for="pf-file-doc_financials">Audited financials</label>
+          <div class="upl" id="pf-upl-doc_financials" role="button" tabindex="0" onclick="pfPickDoc('doc_financials')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pfPickDoc('doc_financials')}">Drop a PDF here or click to upload</div>
+          <input type="file" id="pf-file-doc_financials" accept="application/pdf,.pdf" hidden onchange="pfUploadDoc('doc_financials', this.files[0]); this.value=''"></div>
         <div class="fieldset"><label class="field-label">SAM.gov registration</label>
-          <div class="upl" onclick="toast('Required for federal grants')">Required for federal grants</div></div>
+          <div class="upl" role="button" tabindex="0" onclick="go('readiness')" onkeydown="if(event.key==='Enter'){go('readiness')}">Needed for federal grants. <b style="color:var(--accent-ink)">Set it up in Readiness →</b></div></div>
 
         <div class="divider">Logic model</div>
         <div class="fieldset"><label class="field-label">Inputs</label><textarea id="pf-inputs" placeholder="Staff, volunteers, facilities, curriculum, budget…"></textarea></div>
@@ -6223,6 +6226,7 @@ async function ragDeleteDoc(id) {
 
 function populateProfile() {
   loadRagDocs();
+  pfLoadDocs();
   const ctx = window._grange || {};
   const a = ctx._cachedAnswers || {};
   const p = ctx.profile || {};
@@ -6278,6 +6282,55 @@ function populateProfile() {
 }
 
 /* ── Profile: persist edits to Supabase (profiles + onboarding_answers) ── */
+// Financial documents on the profile: stored like onboarding's uploads (Storage bucket
+// "documents" + a documents row with this kind) and they tick the matching readiness item.
+const PF_DOCS = { doc_990: 'form_990', doc_determination: 'determination_letter', doc_financials: 'financials' };
+function pfPickDoc(kind) { document.getElementById('pf-file-' + kind)?.click(); }
+function pfShowDoc(kind, name) {
+  const box = document.getElementById('pf-upl-' + kind);
+  if (!box) return;
+  box.classList.toggle('has', !!name);
+  box.innerHTML = name ? '<div class="fn">' + escHtml(name) + '</div><div style="font-size:12.5px;color:var(--muted)">Saved. Click to replace.</div>' : 'Drop a PDF here or click to upload';
+}
+async function pfUploadDoc(kind, file) {
+  if (!file) return;
+  const uid = window._grange?.user?.id;
+  if (!window.sb || !uid) { toast('Sign in to upload documents.'); return; }
+  if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') { toast('Please upload a PDF.'); return; }
+  if (file.size > 15 * 1024 * 1024) { toast('That file is over 15 MB. Please upload a smaller PDF.'); return; }
+  const box = document.getElementById('pf-upl-' + kind);
+  if (box) box.textContent = 'Uploading ' + file.name + '…';
+  const path = uid + '/' + kind + '-' + file.name;
+  try {
+    const up = await sb.storage.from('documents').upload(path, file, { upsert: true });
+    if (up.error) throw up.error;
+    await sb.from('documents').delete().eq('user_id', uid).eq('kind', kind);   // one current file per kind
+    const ins = await sb.from('documents').insert({ user_id: uid, kind, file_path: path, file_name: file.name });
+    if (ins.error) throw ins.error;
+    pfShowDoc(kind, file.name);
+    if (PF_DOCS[kind] && window.rdySet) window.rdySet(PF_DOCS[kind], 'have');   // the readiness checklist now knows you have it
+    toast('Saved ' + file.name + '.');
+  } catch (e) {
+    console.warn('document upload', e);
+    pfShowDoc(kind, null);
+    toast('Couldn’t upload that file. Please try again.');
+  }
+}
+async function pfLoadDocs() {
+  const uid = window._grange?.user?.id;
+  Object.keys(PF_DOCS).forEach((k) => pfShowDoc(k, null));
+  if (!window.sb || !uid) return;
+  try {
+    const { data } = await sb.from('documents').select('kind,file_name,created_at').eq('user_id', uid).in('kind', Object.keys(PF_DOCS)).order('created_at', { ascending: false });
+    const seen = {};
+    (data || []).forEach((d) => { if (!seen[d.kind]) { seen[d.kind] = 1; pfShowDoc(d.kind, d.file_name); } });
+  } catch (_) {}
+}
+// drag-and-drop onto the boxes
+document.addEventListener('dragover', (e) => { const b = e.target.closest && e.target.closest('[id^="pf-upl-"]'); if (b) { e.preventDefault(); b.style.borderColor = 'var(--accent)'; } });
+document.addEventListener('dragleave', (e) => { const b = e.target.closest && e.target.closest('[id^="pf-upl-"]'); if (b) b.style.borderColor = ''; });
+document.addEventListener('drop', (e) => { const b = e.target.closest && e.target.closest('[id^="pf-upl-"]'); if (!b) return; e.preventDefault(); b.style.borderColor = ''; pfUploadDoc(b.id.replace('pf-upl-', ''), e.dataTransfer.files[0]); });
+
 // Logic-model boxes on the profile screen and the onboarding_answers keys they save to.
 const PF_LOGIC_MODEL = [['pf-inputs', 'lm_inputs'], ['pf-activities', 'lm_activities'], ['pf-outputs', 'lm_outputs'], ['pf-outcomes', 'lm_outcomes']];
 async function saveProfile() {

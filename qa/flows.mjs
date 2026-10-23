@@ -384,6 +384,23 @@ flow('backend-down-signed-in', async (browser, check) => {
   return t;
 });
 
+flow('profile-document-upload', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page; const toasts = await toastSpy(p);
+  await p.evaluate(() => go('profile')); await p.waitForTimeout(1000);
+  const pdf = { name: 'form-990-2025.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n% qa test\n') };
+  await p.setInputFiles('#pf-file-doc_990', pdf); await p.waitForTimeout(1500);
+  check('upload saved as a documents row', t.db.documents.some((d) => d.kind === 'doc_990' && d.file_name === 'form-990-2025.pdf'));
+  check('readiness item ticked "have"', t.db.readiness_items.some((r) => r.req_key === 'form_990' && r.status === 'have'));
+  check('box shows the saved file', /form-990-2025\.pdf/.test(await p.textContent('#pf-upl-doc_990')));
+  await p.reload(); await p.waitForTimeout(1500); await p.evaluate(() => go('profile')); await p.waitForTimeout(1200);
+  check('saved file listed after reload', /form-990-2025\.pdf/.test(await p.textContent('#pf-upl-doc_990')));
+  await p.evaluate(() => { const o = window.toast; window.toast = (m) => { window._qaToast2(m); return o(m); }; });   // reload dropped the spy
+  await p.setInputFiles('#pf-file-doc_financials', { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hello') }); await p.waitForTimeout(600);
+  check('non-PDF rejected with a message', toasts.some((m) => /upload a PDF/.test(m)) && !t.db.documents.some((d) => d.kind === 'doc_financials'));
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;
