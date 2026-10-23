@@ -340,6 +340,17 @@ flow('approach-plan', async (browser, check) => {
   return t;
 });
 
+flow('revoked-session-not-blank', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np', revokedSession: true });
+  const p = t.page;
+  await p.waitForTimeout(2500);
+  const st = await p.evaluate(() => ({ vis: document.documentElement.style.visibility, screen: window._currentScreen }));
+  check('page is visible within 2.5s when the saved session was revoked', st.vis !== 'hidden');
+  check('visitor lands on the public site, ready to sign in again', st.screen === 'landing');
+  t.errors = t.errors.filter((e) => !/400 \(Bad Request\)/.test(e));   // the refresh being refused is the scenario itself
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;

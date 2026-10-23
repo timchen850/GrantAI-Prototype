@@ -2461,6 +2461,8 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
       if (tok && tok.access_token) {
         document.documentElement.style.visibility = 'hidden';
         window._authPending = true;
+        // Backstop: never leave the page blank if the session check stalls.
+        setTimeout(function () { if (window._authPending) { document.documentElement.style.visibility = ''; window._authPending = false; } }, 6000);
       }
     }
   } catch (_) {}
@@ -9682,6 +9684,10 @@ if (window.sb) {
     // refresh completes.
     if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
       if (PUBLIC_SCREENS.includes(window._currentScreen || 'landing')) routeAfterAuth();
+    } else if ((event === 'INITIAL_SESSION' && !session) || event === 'SIGNED_OUT') {
+      // A saved token that no longer works (signed out on another device, revoked):
+      // the page was hidden while we checked, so show the visitor site.
+      revealPage();
     }
   });
 }

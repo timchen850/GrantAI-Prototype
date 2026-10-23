@@ -212,7 +212,7 @@ function fnHandler(fnLog, opts) {
 }
 
 /* ───────── page factory ───────── */
-export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], fnOverride = {}, signedOut = false, reducedMotion = false, base = 'http://127.0.0.1:3456/' } = {}) {
+export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], fnOverride = {}, signedOut = false, revokedSession = false, reducedMotion = false, base = 'http://127.0.0.1:3456/' } = {}) {
   const P = PERSONAS[persona];
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, isMobile: width < 600, hasTouch: width < 600, reducedMotion: reducedMotion ? 'reduce' : 'no-preference' });
   const db = buildDb(persona);
@@ -232,6 +232,7 @@ export async function openApp(browser, { persona = 'np', width = 1440, height = 
     const u = new URL(r.request().url()); const p = u.pathname.replace('/auth/v1', '');
     const json = (o, status = 200) => r.fulfill({ status, contentType: 'application/json', body: JSON.stringify(o) });
     if (p === '/user') return authUser ? json(authUser) : json({ code: 401, msg: 'no user' }, 401);
+    if (p === '/token' && revokedSession && u.searchParams.get('grant_type') === 'refresh_token') return json({ code: 400, error_code: 'refresh_token_not_found', msg: 'Invalid Refresh Token: Refresh Token Not Found' }, 400);
     if (p === '/token') { authUser = P.user || PERSONAS.np.user; return json(makeSession(authUser)); }
     if (p === '/otp') { otpSent.push(JSON.parse(r.request().postData() || '{}').email); return json({}); }
     if (p === '/signup') { authUser = P.user || PERSONAS.newuser.user; return json(makeSession(authUser)); }
@@ -240,7 +241,8 @@ export async function openApp(browser, { persona = 'np', width = 1440, height = 
   });
   const otpSent = [];
   if (P.user && !signedOut) {
-    const s = JSON.stringify(makeSession(P.user));
+    const sess = makeSession(P.user); if (revokedSession) { sess.expires_at = Math.floor(Date.now() / 1000) - 3600; authUser = null; }
+    const s = JSON.stringify(sess);
     await ctx.addInitScript(([k, v, tut]) => { try { localStorage.setItem(k, v); if (tut) localStorage.setItem('grange_tut_' + tut, '1'); } catch (_) {} }, [STORAGE_KEY, s, P.tutorialDone ? P.user.id : '']);
   }
   const page = await ctx.newPage();
