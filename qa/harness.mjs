@@ -239,3 +239,12 @@ export async function overflowReport(page) {
     return { vw, docW, items: out.slice(0, 25) };
   });
 }
+
+/* Scroll through the page so scroll-triggered reveals run before a full-page screenshot. */
+export async function revealAll(page) {
+  await page.evaluate(async () => {
+    const step = Math.max(300, Math.floor(innerHeight * 0.8));
+    for (let y = 0; y < document.documentElement.scrollHeight; y += step) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 120)); }
+    window.scrollTo(0, 0); await new Promise((r) => setTimeout(r, 300));
+  });
+}

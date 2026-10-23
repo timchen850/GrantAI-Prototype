@@ -46,7 +46,7 @@ export function buildDb(persona) {
       { id: 'd3', user_id: uid, grant_id: null, kind: 'registration', title: 'Renew SAM.gov registration', due_date: day(4), status: 'upcoming', created_at: iso(-9) },
       { id: 'd4', user_id: uid, grant_id: 'g3', kind: 'report', title: 'Weingart interim report', due_date: day(-3), status: 'done', completed_at: iso(-3), created_at: iso(-30) },
     );
-    db.readiness_items.push({ id: 'r1', user_id: uid, req_key: 'determination_letter', status: 'done' }, { id: 'r2', user_id: uid, req_key: 'form_990', status: 'in_progress' });
+    db.readiness_items.push({ id: 'r1', user_id: uid, req_key: 'determination_letter', status: 'have' }, { id: 'r2', user_id: uid, req_key: 'form_990', status: 'in_progress' });
     db.awards.push({ id: 'aw1', user_id: uid, grant_id: 'g4', amount_awarded: 30000, period_start: day(-60), period_end: day(305), created_at: iso(-60) });
     db.compliance_requirements.push({ id: 'c1', award_id: 'aw1', label: 'Mid-year progress report', detail: 'Two pages, outcomes to date', status: 'pending', created_at: iso(-55) });
     db.expenditures.push({ id: 'e1', user_id: uid, award_id: 'aw1', category_key: 'personnel', description: 'Tutor stipends (Sept)', amount: 4200, spent_on: day(-20) });

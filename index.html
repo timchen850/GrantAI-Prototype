@@ -287,6 +287,17 @@ label.field-label {
 .stat-cell .fig { font-family: var(--display); font-weight: 800; font-size: 40px;
   color: var(--ink); letter-spacing: -0.04em; line-height: 1; }
 .stat-cell .cap { font-size: 13.5px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+/* security page stats */
+.sec-stats { max-width: 1100px; display: grid; grid-template-columns: repeat(4, 1fr); }
+.sec-stat { padding: 0 32px; text-align: center; border-left: 1px solid var(--line); }
+.sec-stat:first-child { border-left: none; }
+.sec-stat-fig { font-size: 28px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
+.sec-stat-cap { font-size: 13px; color: var(--muted); margin-top: 4px; }
+@media (max-width: 640px) {
+  .sec-stats { grid-template-columns: 1fr 1fr; row-gap: 24px; }
+  .sec-stat { padding: 0 12px; }
+  .sec-stat:nth-child(odd) { border-left: none; }
+}
 
 /* ═══════════════════════════════════════════════════════════
    SECTION scaffolding
@@ -552,6 +563,7 @@ label.field-label {
   .fcar-panel h3 { font-size:20px; }
   .fd-body { padding:14px; }
   .fd-match, .fd-report { flex-direction:column; }
+  .fd-match .fdm-bars { width:100%; flex:none; }   /* stacked: give the bars a width, or their 1fr track collapses to 0 */
 }
 
 /* ─── VOICES v2: infinite-scroll testimonial columns ────── */
@@ -1123,7 +1135,7 @@ label.field-label {
 }
 @media (max-width: 860px) {
   .nav-links { display: none; }
-  .stat-band .wrap { grid-template-columns: 1fr 1fr; }
+  .stat-band .wrap { grid-template-columns: 1fr 1fr; column-gap: 24px; }
   .stat-cell { border-left: none; padding: 24px 0; border-top: 1px solid var(--line); }
   .stat-cell:nth-child(-n+2) { border-top: none; }
   .proc-step { grid-template-columns: 1fr; gap: 14px; }
@@ -3115,7 +3127,7 @@ label.field-label {
       <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">Privacy Policy</h1>
       <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:600px;margin-bottom:28px;">We believe privacy is a right, not a feature. This policy explains exactly what data we collect, why we collect it, and how you can control it.</p>
       <div style="display:flex;gap:24px;flex-wrap:wrap;">
-        <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Last updated June 5, 2025</span>
+        <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Last updated June 5, 2026</span>
         <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L2 4v4.5c0 3.5 2.5 6 6 7 3.5-1 6-3.5 6-7V4L8 1.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Effective immediately upon posting</span>
       </div>
     </div>
@@ -3293,7 +3305,7 @@ label.field-label {
       <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">Terms of Service</h1>
       <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:620px;margin-bottom:28px;">These terms govern your use of Grange AI. Please read them carefully. By creating an account, you agree to be bound by them.</p>
       <div style="display:flex;gap:24px;flex-wrap:wrap;">
-        <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Last updated June 5, 2025</span>
+        <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Last updated June 5, 2026</span>
         <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Governing law: United States</span>
       </div>
     </div>
@@ -3463,23 +3475,11 @@ label.field-label {
 
   <!-- stats bar -->
   <div style="border-bottom:1px solid var(--line);padding:32px 0;">
-    <div class="wrap" style="max-width:1100px;display:flex;gap:0;flex-wrap:wrap;">
-      <div style="flex:1;min-width:180px;padding:0 32px;border-right:1px solid var(--line);text-align:center;">
-        <div style="font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-.02em;">TLS 1.3</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Encryption in transit</div>
-      </div>
-      <div style="flex:1;min-width:180px;padding:0 32px;border-right:1px solid var(--line);text-align:center;">
-        <div style="font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-.02em;">AES-256</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Encryption at rest</div>
-      </div>
-      <div style="flex:1;min-width:180px;padding:0 32px;border-right:1px solid var(--line);text-align:center;">
-        <div style="font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-.02em;">99.9%</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Uptime SLA</div>
-      </div>
-      <div style="flex:1;min-width:180px;padding:0 32px;text-align:center;">
-        <div style="font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-.02em;">72h</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Breach notification</div>
-      </div>
+    <div class="wrap sec-stats">
+      <div class="sec-stat"><div class="sec-stat-fig">TLS 1.3</div><div class="sec-stat-cap">Encryption in transit</div></div>
+      <div class="sec-stat"><div class="sec-stat-fig">AES-256</div><div class="sec-stat-cap">Encryption at rest</div></div>
+      <div class="sec-stat"><div class="sec-stat-fig">99.9%</div><div class="sec-stat-cap">Uptime target</div></div>
+      <div class="sec-stat"><div class="sec-stat-fig">72h</div><div class="sec-stat-cap">Breach notification</div></div>
     </div>
   </div>
 
@@ -3718,8 +3718,8 @@ label.field-label {
           <p style="font-size:12.5px;color:var(--muted);margin-top:12px;">By submitting this form you agree to our <button onclick="go('privacy')" style="background:none;border:none;padding:0;color:var(--muted);font-size:inherit;font-family:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px;">Privacy Policy</button>.</p>
         </div>
         <div id="contact-success" style="display:none;padding:20px 24px;background:var(--accent-tint);border-radius:var(--r-sm);border-left:3px solid var(--accent);">
-          <p style="font-size:15px;color:var(--accent-ink);font-weight:600;margin-bottom:4px;">Message received!</p>
-          <p style="font-size:14px;color:var(--accent-ink);margin:0;opacity:.85;">Thanks for reaching out. We'll get back to you at the email you provided within one business day.</p>
+          <p style="font-size:15px;color:var(--accent-ink);font-weight:600;margin-bottom:4px;">Your message is ready to send</p>
+          <p style="font-size:14px;color:var(--accent-ink);margin:0;opacity:.85;">We opened your email app with it filled in. Press send there and we'll reply within one business day. Email app didn't open? Write to <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent-ink);font-weight:600">executivegrangeai@gmail.com</a>.</p>
         </div>
       </div>
     </div>
@@ -5512,6 +5512,7 @@ label.field-label {
   .pwb-sub{ font-size:12.5px; color:var(--muted); line-height:1.45; }
   .pwb-btn{ flex-shrink:0; padding:8px 16px; border-radius:999px; border:1.5px solid rgba(217,79,48,.35); background:transparent; color:var(--accent); font:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:background .15s; white-space:nowrap; }
   .pwb-btn:hover{ background:var(--accent-tint); }
+  @media (max-width:560px){ .paywall-banner{ flex-wrap:wrap; } .pwb-body{ flex-basis:calc(100% - 56px); } .pwb-btn{ margin-left:56px; } }
 
   /* Pricing screen */
   .pricing-screen-inner{ max-width:900px; margin:0 auto; }
@@ -6205,7 +6206,8 @@ function populateProfile() {
   setVal('pf-ein', a.ein || p.ein || '');
   setVal('pf-mission', a.mission || p.mission || '');
   setVal('pf-budget', a.annual_budget || (p.annual_budget ? '$' + p.annual_budget : ''));
-  setVal('pf-program-desc', a.people_served || a.beneficiaries || '');
+  setVal('pf-program-desc', a.beneficiaries || '');   // "who you serve" — also feeds the proposal writer
+  PF_LOGIC_MODEL.forEach(([id, key]) => setVal(id, a[key] || ''));
 
   const ntee = (p.ntee_code || a.ntee_code || '').toString().slice(0, 3).toUpperCase();
   const sel = document.getElementById('pf-ntee');
@@ -6248,6 +6250,8 @@ function populateProfile() {
 }
 
 /* ── Profile: persist edits to Supabase (profiles + onboarding_answers) ── */
+// Logic-model boxes on the profile screen and the onboarding_answers keys they save to.
+const PF_LOGIC_MODEL = [['pf-inputs', 'lm_inputs'], ['pf-activities', 'lm_activities'], ['pf-outputs', 'lm_outputs'], ['pf-outcomes', 'lm_outcomes']];
 async function saveProfile() {
   const uid = window._grange?.user?.id;
   if (!window.sb || !uid) { toast('Sign in to save your profile.'); return; }
@@ -6256,16 +6260,26 @@ async function saveProfile() {
   const ntee = document.getElementById('pf-ntee')?.value || null;
   const budget = get('pf-budget');
   try {
-    await sb.from('profiles').update({
+    const { error: pErr } = await sb.from('profiles').update({
       org_name: orgName || null, mission: mission || null, ein: ein || null, ntee_code: ntee,
     }).eq('user_id', uid);
-    const ups = [];
-    const put = (k, v) => { if (v) ups.push({ user_id: uid, question_key: k, answer: v }); };
+    if (pErr) throw pErr;
+    const ups = [], prev = window._grange?._cachedAnswers || {}, saved = {};
+    const put = (k, v) => { if (v) { ups.push({ user_id: uid, question_key: k, answer: v }); saved[k] = v; } };
+    // Free-text fields that can be cleared: save whenever they changed, empty included.
+    const putChanged = (k, v) => { if (JSON.stringify(v) !== JSON.stringify(prev[k] ?? (Array.isArray(v) ? [] : ''))) { ups.push({ user_id: uid, question_key: k, answer: v }); saved[k] = v; } };
     put('org_name', orgName); put('mission', mission); put('ein', ein); put('annual_budget', budget);
-    if (ups.length) await sb.from('onboarding_answers').upsert(ups, { onConflict: 'user_id,question_key' });
+    putChanged('beneficiaries', get('pf-program-desc'));
+    PF_LOGIC_MODEL.forEach(([id, key]) => putChanged(key, get(id)));
+    const tagsEl = document.getElementById('pf-programs-tags');
+    if (tagsEl) putChanged('primary_programs', [...tagsEl.querySelectorAll('.tg')].map((t) => t.firstChild.textContent.trim()).filter(Boolean));
+    if (ups.length) {
+      const { error } = await sb.from('onboarding_answers').upsert(ups, { onConflict: 'user_id,question_key' });
+      if (error) throw error;
+    }
     if (window._grange) {
       window._grange.profile = { ...(window._grange.profile || {}), org_name: orgName, mission, ein, ntee_code: ntee };
-      window._grange._cachedAnswers = { ...(window._grange._cachedAnswers || {}), org_name: orgName, mission, ein, annual_budget: budget };
+      window._grange._cachedAnswers = { ...(window._grange._cachedAnswers || {}), ...saved };
     }
     if (typeof applyOrgIdentity === 'function') applyOrgIdentity(window._grange);
     populateProfile();
@@ -6278,15 +6292,17 @@ function submitContact() {
   const email = document.getElementById('contact-email').value.trim();
   const topic = document.getElementById('contact-topic').value;
   const msg   = document.getElementById('contact-msg').value.trim();
-  if (!fname || !lname || !email || !topic || !msg) { alert('Please fill in all required fields.'); return; }
-  const btn = document.getElementById('contact-btn');
-  btn.style.opacity = '0.5'; btn.disabled = true; btn.textContent = 'Sending…';
-  setTimeout(() => {
-    document.getElementById('contact-success').style.display = 'block';
-    ['contact-fname','contact-lname','contact-email','contact-org','contact-msg'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('contact-topic').value = '';
-    btn.style.opacity = '1'; btn.disabled = false; btn.textContent = 'Send message →';
-  }, 900);
+  if (!fname || !lname || !email || !topic || !msg) { toast('Please fill in all required fields.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('Please enter a valid email address.'); return; }
+  // There is no mail server behind this form, so hand the message to the
+  // visitor's email app, addressed to us and ready to send.
+  const org = document.getElementById('contact-org').value.trim();
+  window.location.href = contactMailtoHref({ fname, lname, email, org, topic, msg });
+  document.getElementById('contact-success').style.display = 'block';
+}
+function contactMailtoHref(f) {
+  const body = f.msg + '\n\n— ' + f.fname + ' ' + f.lname + (f.org ? ', ' + f.org : '') + '\n' + f.email;
+  return 'mailto:executivegrangeai@gmail.com?subject=' + encodeURIComponent('[Grange AI] ' + f.topic) + '&body=' + encodeURIComponent(body);
 }
 function goHome() {
   // Signed-in users belong in the app, never the visitor (landing) site.
@@ -12459,6 +12475,11 @@ function applyDiscFilters(query, type) {
         document.getElementById('acp-nudge-text').textContent = ctx.tip;
         nudge.classList.add('show');
         nudgedThisSession[id] = true;
+        // It sits over the right-hand column, so get out of the way once the user
+        // starts reading (scrolls) or after a few seconds.
+        const hide = () => { nudge.classList.remove('show'); window.removeEventListener('scroll', hide); };
+        window.addEventListener('scroll', hide, { passive: true });
+        nudgeTimer = setTimeout(hide, 9000);
       }, 1100);
     };
     window.acpNudgeDismiss = function(stop){
