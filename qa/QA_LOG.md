@@ -54,6 +54,8 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 31 | Toasts | Messages slid in under the Ask Grange button, which covered their ends. | Raised above it on the screens that show it; full-width on phones. |
 | 32 | Dashboard | A returning user with a complete profile and tracked grants was told "Complete your profile and run grant discovery to get started." | Subtitle reflects what they're tracking / whether the profile is done. |
 | 33 | Readiness, nonprofit path, Pricing | Status buttons and plan changes ignored `.error`: a failed save looked saved, and "Start Free Trial" said "Plan updated to Pro!" even when the database rejected it. | Failures show "Couldn't save that" / "Couldn't change your plan"; the plan only changes locally after the database accepts it. Covered by `save-failures-are-visible`. |
+| 34 | Performance | `logo.png` (favicon and 26px brand mark) was a 1254×1254, 1.7 MB file loaded by every visitor. | Resized to 256×256: 60 KB. |
+| 35 | Sharing | No meta description or link-preview tags. | Description + Open Graph/Twitter tags. |
 
 ## Needs Tim's decision
 
