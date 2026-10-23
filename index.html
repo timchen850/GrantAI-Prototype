@@ -9529,6 +9529,9 @@ async function currentProfile() {
       .insert({ user_id: user.id, org_name: user.user_metadata?.org_name || null })
       .select().maybeSingle();
     profile = ins.data;
+    // Another tab (or the signup trigger) created it first: read that row
+    // instead of treating the user as signed out.
+    if (!profile) ({ data: profile } = await sb.from('profiles').select('*').eq('user_id', user.id).maybeSingle());
   }
   return { user, profile };
 }
@@ -9540,7 +9543,15 @@ function revealPage() {
   }
 }
 
-async function routeAfterAuth() {
+// Supabase fires INITIAL_SESSION and SIGNED_IN together on page load, and the
+// sign-up flow routes itself too. Share one in-flight run so the profile isn't
+// loaded (or created) twice and the dashboard doesn't render twice.
+let _routeAfterAuthRun = null;
+function routeAfterAuth() {
+  if (!_routeAfterAuthRun) _routeAfterAuthRun = _routeAfterAuth().finally(() => { _routeAfterAuthRun = null; });
+  return _routeAfterAuthRun;
+}
+async function _routeAfterAuth() {
   const ctx = await currentProfile();
   if (!ctx) { revealPage(); go('landing'); return; }
   window._grange = ctx;
