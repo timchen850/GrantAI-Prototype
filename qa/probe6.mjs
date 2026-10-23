@@ -1,0 +1,13 @@
+import { startServer, launch, openApp, overflowReport } from './harness.mjs';
+const srv = await startServer(); const browser = await launch();
+const t = await openApp(browser, { persona: 'np', width: 390, height: 844 });
+const p = t.page;
+await p.evaluate(() => go('discovery')); await p.waitForTimeout(2500);
+await p.click('#disc-grants-list .gcard button:has-text("AI assessment")'); await p.waitForTimeout(2000);
+const ov = await overflowReport(p);
+console.log('docW', ov.docW, 'vw', ov.vw); ov.items.slice(0, 8).forEach((o) => console.log(' ', o.tag, o.cls, o.left, o.right, JSON.stringify(o.text)));
+const r = await p.evaluate(() => { const el = document.querySelector('[id^="gca-"].open'); const b = el.getBoundingClientRect(); return { left: Math.round(b.left), right: Math.round(b.right), w: Math.round(b.width), cs: getComputedStyle(el).overflow }; });
+console.log('panel', r);
+await p.evaluate(() => document.querySelector('[id^="gca-"].open').scrollIntoView({ block: 'center' })); await p.waitForTimeout(400);
+await p.screenshot({ path: 'out/assess-390-vp.png' });
+await browser.close(); srv.close();

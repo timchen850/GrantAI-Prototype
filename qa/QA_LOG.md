@@ -41,6 +41,12 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 18 | Assistant (desktop) | The tip bubble sat over grant cards' action buttons until closed. | Hides on scroll or after 9 seconds. |
 | 19 | Generator/Manage (phone) | Pro/Starter upsell banners squeezed their text into a 120px column. | Button drops under the text on phones. |
 | 20 | Onboarding | Survey save failures were silent: supabase-js reports errors in `.error` (it doesn't throw), so the user saw "Profile saved! Welcome" and landed on the dashboard with nothing saved. | Checks `.error`; on failure stays on the survey with answers intact, explains, re-enables Finish. Covered by `onboarding-save-failure`. |
+| 21 | Generator | The "Grange is writing your proposal" panel could end stuck on "Draft your proposal — Working": its prep animation is timed (~3s) and a fast AI response finished first, then the queued steps flipped it back. | `finish()`/`fail()` cancel queued steps and complete the prep phases. |
+| 22 | Phone menu | Signed-in menu had no Grant management, Pricing or tour; on the Pricing screen it showed the visitor menu ("Sign in", "Start free") to signed-in users. | Menu keyed on being signed in; matches the desktop sidebar. |
+| 23 | Dialogs | The Ask Grange button (z-index 9000) floated over every dialog (z-index 1000), covering "Finish now" on phones; the tip stayed beside the org-info dialog. | Hidden while a dialog is open; tip dismissed when the dialog opens. |
+| 24 | Generator (phone) | Draft header squeezed the funder name into 3 lines and cut off Export. | Header wraps under 560px. |
+| 25 | Tour | "100%" wrapped its % sign under the number (grid item); step 3/5 guide bubbles could revert to the "tap the document" hint after it was tapped (900ms/800ms timer race); step 5 still said "due soon" after scheduling. | Ring on one line; timers check state; label updates. |
+| 26 | Discovery | "Eligibility read" heading had no space above it in the AI assessment panel. | Top margin. |
 
 ## Needs Tim's decision
 

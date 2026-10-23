@@ -1006,6 +1006,7 @@ label.field-label {
   border-bottom: 1px solid var(--line); }
 .out-head .oh-l .ol1 { font-size: 11.5px; color: var(--muted); font-weight: 600; }
 .out-head .oh-l .ol2 { font-size: 15px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+@media (max-width: 560px) { .out-head { flex-wrap: wrap; gap: 10px; padding: 14px 16px; } .out-head .oh-l { flex-basis: 100%; } }
 .out-body { padding: 26px 28px; }
 .out-empty { display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center; gap: 10px; min-height: 480px; color: var(--muted); padding: 40px; }
@@ -4559,6 +4560,7 @@ label.field-label {
 .tut-id-sub{ font-size:12.5px; color:var(--accent-ink); margin-top:3px; }
 .tut-ring{ --p:0; width:58px; height:58px; border-radius:50%; display:grid; place-items:center; flex:none; background:conic-gradient(var(--accent) calc(var(--p)*1%), rgba(26,25,22,.12) 0); transition:--p 1.4s var(--ease-expo); }
 .tut-ring i{ width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.92); display:grid; place-items:center; font-family:var(--display); font-weight:800; font-size:13px; color:var(--ink); font-style:normal; }
+.tut-ring i, .tut-ring i { grid-auto-flow: column; }   /* keep "100" and "%" on one line */
 .tut-id-rows{ display:grid; gap:9px; }
 .tut-id-row{ display:flex; align-items:center; gap:10px; font-size:12.8px; color:var(--ink-body); }
 .tut-id-row b{ color:var(--ink); font-weight:700; }
@@ -5449,7 +5451,7 @@ label.field-label {
   .gca-verdict{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:2px 9px; border-radius:999px; }
   .gca-main{ flex:1; min-width:0; }
   .gca-rationale{ font-size:13.5px; color:var(--ink); line-height:1.55; margin-bottom:12px; }
-  .gca-elig-title{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:6px; }
+  .gca-elig-title{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin:14px 0 6px; }
   .gca-elig{ display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--ink-body); padding:3px 0; }
   .gca-elig .ic{ flex-shrink:0; width:15px; height:15px; margin-top:2px; }
   .gca-rec{ margin-top:12px; font-size:13px; color:var(--ink-body); background:var(--surface-2); border-radius:9px; padding:10px 12px; line-height:1.5; }
@@ -5924,18 +5926,22 @@ const SCREENS = ['landing','login','signin','tutorial','onboarding','demo','dash
 /* ─── mobile hamburger drawer (phones only) ─────────────── */
 function mNavMarkup() {
   const s = window._currentScreen || 'landing';
-  const app = ['dashboard','discovery','readiness','nonprofit-setup','generator','manage','deadlines','profile'];
-  if (app.indexOf(s) >= 0) {
+  const app = ['dashboard','discovery','readiness','nonprofit-setup','generator','manage','deadlines','profile','plan'];
+  // Signed-in users always get the app menu (matches the desktop sidebar), on every screen.
+  if ((window._grange && window._grange.user) || app.indexOf(s) >= 0) {
+    const item = (id, label) => `<a href="#" onclick="mNavGo('${id}');return false;" class="${s===id?'on':''}">${label}</a>`;
     return `
-      <a href="#" onclick="mNavGo('dashboard');return false;" class="${s==='dashboard'?'on':''}">Dashboard</a>
-      <a href="#" onclick="mNavGo('discovery');return false;" class="${s==='discovery'?'on':''}">Grant discovery</a>
-      <a href="#" onclick="mNavGo('readiness');return false;" class="${s==='readiness'?'on':''}">Readiness</a>
-      ${npPathVisible() ? `<a href="#" onclick="mNavGo('nonprofit-setup');return false;" class="${s==='nonprofit-setup'?'on':''}">Nonprofit setup</a>` : ''}
-      <a href="#" onclick="mNavGo('generator');return false;" class="${s==='generator'?'on':''}">Proposal generator</a>
-      <a href="#" onclick="mNavGo('deadlines');return false;" class="${s==='deadlines'?'on':''}">Deadlines</a>
-      <a href="#" onclick="mNavGo('profile');return false;" class="${s==='profile'?'on':''}">Org profile</a>
+      ${item('dashboard', 'Dashboard')}
+      ${item('discovery', 'Grant discovery')}
+      ${item('readiness', 'Readiness')}
+      ${npPathVisible() ? item('nonprofit-setup', 'Nonprofit setup') : ''}
+      ${item('generator', 'Proposal generator')}
+      ${item('manage', 'Grant management')}
+      ${item('deadlines', 'Deadlines')}
+      ${item('profile', 'Org profile')}
       <div class="m-nav-div"></div>
-      <a href="#" onclick="mNavGo('landing');return false;">Back to site</a>
+      ${item('plan', 'Pricing')}
+      <a href="#" onclick="mNavClose();tutReplay();return false;">Take the tour</a>
       <a href="#" onclick="mNavClose();signOut();return false;">Sign out</a>`;
   }
   return `
@@ -9817,6 +9823,7 @@ function orgInfoReminder(moment) {
   const el = _orgInfoModalEl();
   el.dataset.moment = moment;
   _orgInfoRenderModal(moment);
+  window.acpNudgeDismiss?.();   // don't leave the assistant tip floating beside the dialog
   el.classList.add('open');
   return new Promise((resolve) => { _orgInfoResolve = resolve; });
 }
@@ -10438,7 +10445,7 @@ const TUT_STEPS = [
       const arm = () => { dueRow.onclick = () => { if (dueRow.classList.contains('on')) return; dueRow.classList.add('on'); dueRow.classList.remove('due'); tutUnlock(); tutGuide.point('#tut-next', "You're ready, and you know what's missing. Tap Continue. →"); }; };
       if (RM) { doScore(); chips.forEach(c => c.classList.add('in')); arm(); tutGuide.point(dueRow, 'Mark this open document as in progress to continue.'); return; }
       setTimeout(() => tutGuide.point('#tut-score', "Tap Score this match to see your fit and what's still missing."), 700);
-      btn.onclick = () => { btn.disabled = true; doScore(); arm(); const h = document.getElementById('tut-hint'); h.textContent = 'Tap the open item to mark it in progress'; h.classList.add('pulse'); setTimeout(() => tutGuide.point(dueRow, "87 — strong fit. Now tap the open document to mark it in progress."), 900); };
+      btn.onclick = () => { btn.disabled = true; doScore(); arm(); const h = document.getElementById('tut-hint'); h.textContent = 'Tap the open item to mark it in progress'; h.classList.add('pulse'); setTimeout(() => { if (!dueRow.classList.contains('on')) tutGuide.point(dueRow, "87 — strong fit. Now tap the open document to mark it in progress."); }, 900); };
     } },
 
   /* 4 — Write: living manuscript types itself */
@@ -10500,10 +10507,10 @@ const TUT_STEPS = [
       const dueRow = document.querySelector('#tut-mil .row.due'), btn = document.getElementById('tut-steward');
       const fill = () => { document.getElementById('tut-spb').style.width = '62%'; document.getElementById('tut-spv').textContent = '$212,000 / $342,000'; };
       const finishMsg = tutState.replay ? "That's the full journey. Tap Back to portal. →" : "That's the full journey — let's set up your account. →";
-      const arm = () => { dueRow.onclick = () => { if (dueRow.classList.contains('on')) return; dueRow.classList.add('on'); dueRow.classList.remove('due'); tutUnlock(); tutGuide.point('#tut-next', finishMsg); }; };
+      const arm = () => { dueRow.onclick = () => { if (dueRow.classList.contains('on')) return; dueRow.classList.add('on'); dueRow.classList.remove('due'); const l = dueRow.querySelector('.lbl'); if (l) l.textContent = 'Mid-year narrative · scheduled'; tutUnlock(); tutGuide.point('#tut-next', finishMsg); }; };
       if (RM) { fill(); arm(); tutGuide.point(dueRow, 'Schedule the due report to finish.'); return; }
       setTimeout(() => tutGuide.point('#tut-steward', "Open the console to track spend and report deadlines after you win."), 700);
-      btn.onclick = () => { btn.disabled = true; fill(); arm(); const h = document.getElementById('tut-hint'); h.textContent = 'Schedule the due report to continue'; h.classList.add('pulse'); setTimeout(() => tutGuide.point(dueRow, "Spend's tracked against budget. Now schedule the due report."), 800); };
+      btn.onclick = () => { btn.disabled = true; fill(); arm(); const h = document.getElementById('tut-hint'); h.textContent = 'Schedule the due report to continue'; h.classList.add('pulse'); setTimeout(() => { if (!dueRow.classList.contains('on')) tutGuide.point(dueRow, "Spend's tracked against budget. Now schedule the due report."); }, 800); };
     } },
 ];
 
@@ -12157,6 +12164,7 @@ function applyDiscFilters(query, type) {
   #ai-chat-fab{position:fixed;right:22px;bottom:22px;z-index:9000;height:56px;border-radius:30px;background:var(--surface);color:var(--ink);border:1px solid var(--line);cursor:pointer;display:none;align-items:center;gap:10px;box-shadow:0 12px 32px rgba(26,25,22,.18);transition:transform .2s var(--ease-expo,cubic-bezier(.16,1,.3,1)),box-shadow .18s,opacity .22s;padding:0 18px 0 6px;overflow:visible}
   #ai-chat-fab:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(26,25,22,.24)}
   #ai-chat-fab.acp-hide{opacity:0;transform:scale(.7);pointer-events:none}
+  body:has(.overlay.open) #ai-chat-fab, body:has(.overlay.open) #acp-nudge{display:none !important}   /* never float over a dialog */
   @media(max-width:640px){#ai-chat-fab{right:14px;bottom:14px;padding:0 6px;height:56px}#ai-chat-fab .acp-fab-label{display:none}}
   #ai-chat-fab .acp-fab-orb{position:relative;width:44px;height:44px;flex-shrink:0}
   #ai-chat-fab .acp-fab-label{font-family:var(--display);font-size:14.5px;font-weight:600;white-space:nowrap}
@@ -12669,7 +12677,11 @@ function applyDiscFilters(query, type) {
           while (ctl._draftDone < target) { setSub(DRAFT, ctl._draftDone, 'done'); ctl._draftDone++; setSub(DRAFT, ctl._draftDone, 'active'); }
         };
         ctl.finish = function () {
+          // A fast response can arrive before the prep animation has played out; drop the
+          // queued steps (or they'd flip "Draft" back to Working) and mark prep done.
+          ctl._t.forEach(clearTimeout); ctl._t = [];
           ctl.cancelled = false;
+          for (let ti = 0; ti < DRAFT; ti++) { PLAN[ti].subs.forEach((_, si) => setSub(ti, si, 'done')); setTask(ti, 'done'); }
           for (let si = ctl._draftDone; si < PLAN[DRAFT].subs.length; si++) setSub(DRAFT, si, 'done');
           setTask(DRAFT, 'done');
           let dd = 60; const rs = PLAN[4].subs;
@@ -12678,6 +12690,7 @@ function applyDiscFilters(query, type) {
           at(() => { setTask(4, rs[rs.length - 1].help ? 'help' : 'done'); const sub = document.getElementById('ap-sub'); if (sub) { sub.textContent = 'ready for your review'; sub.style.color = 'var(--warn-ink)'; } }, dd + 50);
         };
         ctl.fail = function (msg) {
+          ctl._t.forEach(clearTimeout); ctl._t = [];
           setSub(DRAFT, ctl._draftDone, 'help'); setTask(DRAFT, 'help');
           const sub = document.getElementById('ap-sub'); if (sub) { sub.textContent = msg || 'paused'; sub.style.color = 'var(--warn-ink)'; }
         };
