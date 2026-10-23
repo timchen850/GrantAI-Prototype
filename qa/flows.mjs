@@ -351,6 +351,22 @@ flow('revoked-session-not-blank', async (browser, check) => {
   return t;
 });
 
+flow('backend-down-messages', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'visitor', backendDown: true });
+  const p = t.page; const toasts = await toastSpy(p);
+  await p.evaluate(() => go('signin')); await p.waitForTimeout(800);
+  await p.fill('#si-email-input', 'someone@example.org'); await p.keyboard.press('Enter'); await p.waitForTimeout(1200);
+  await p.fill('#si-pw-input', 'whatever-123'); await p.click('#si-cont-btn'); await p.waitForTimeout(2500);
+  check('sign-in during an outage explains it plainly', toasts.some((m) => /can.t reach its servers/.test(m)) && !toasts.some((m) => /JSON|Unexpected token/.test(m)));
+  check('auth listener re-armed after a failed sign-in', await p.evaluate(() => window._manualAuthFlow === false));
+  await p.evaluate(() => go('login')); await p.waitForTimeout(600);
+  await p.fill('#reg-org', 'Riverside Reading'); await p.fill('#reg-email', 'x@example.org'); await p.fill('#reg-pw', 'correct-horse-9'); await p.fill('#reg-pw2', 'correct-horse-9');
+  await p.click('button:has-text("Create account")'); await p.waitForTimeout(2500);
+  check('sign-up during an outage explains it plainly', toasts.filter((m) => /can.t reach its servers/.test(m)).length >= 2);
+  t.errors = t.errors.filter((e) => !/status of 540/.test(e));
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;

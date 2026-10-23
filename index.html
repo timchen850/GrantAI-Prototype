@@ -6394,12 +6394,14 @@ async function submitSignup() {
   if (btn) { btn.disabled = false; btn.textContent = 'Create account'; }
 
   if (error) {
-    toast(error.message || 'Could not create account.');
+    window._manualAuthFlow = false;
+    toast(authErrorText(error, 'Could not create account.'));
     return;
   }
   // Email auto-confirm is on, so a session exists immediately → onboarding.
   // (If confirmation were required, data.session would be null here.)
   if (!data.session) {
+    window._manualAuthFlow = false;
     toast('Check your email to confirm your account, then sign in.');
     go('signin');
     return;
@@ -8603,7 +8605,19 @@ async function signInWithGoogle() {
   // On success the browser redirects to Google; control returns via the
   // OAuth callback, where onAuthStateChange routes the user. An error here
   // usually means the Google provider isn't configured in Supabase yet.
-  if (error) toast(error.message || 'Google sign-in is not set up yet.');
+  if (error) toast(authErrorText(error, 'Google sign-in isn’t available right now.'));
+}
+
+// Plain-language versions of Supabase Auth errors (its raw messages, or a JSON
+// parse error when the project is down, are not for users).
+function authErrorText(error, fallback) {
+  const m = String((error && error.message) || ''), st = error && error.status;
+  if (/invalid login credentials/i.test(m)) return 'That email and password don’t match. Try again, or email yourself a sign-in link.';
+  if (/email not confirmed/i.test(m)) return 'Confirm your email first. Check your inbox for the link we sent.';
+  if (/already (been )?registered|user already exists/i.test(m)) return 'An account with that email already exists. Sign in instead.';
+  if (st === 429 || /rate limit|too many/i.test(m)) return 'Too many attempts. Wait a minute and try again.';
+  if ((st && st >= 500) || /json|fetch|network|load failed/i.test(m)) return 'Grange can’t reach its servers right now. Please try again in a few minutes.';
+  return m || fallback;
 }
 
 /* ─── MOTION ENGINE (Emil-style scroll reveal, count-up, ring fill) ─── */
@@ -9459,7 +9473,8 @@ async function signInWithGoogle() {
     if (error) {
       siBusy = false;
       if (cb) { cb.disabled = false; cb.textContent = 'Sign in'; }
-      toast(error.message || 'Could not sign in.');
+      window._manualAuthFlow = false;
+      toast(authErrorText(error, 'Could not sign in.'));
       return;
     }
     // success: play the shader reveal, then route based on onboarding state
@@ -9476,7 +9491,7 @@ async function signInWithGoogle() {
       email,
       options: { emailRedirectTo: window.location.origin + window.location.pathname }
     });
-    if (error) { toast(error.message || 'Could not send link.'); return; }
+    if (error) { toast(authErrorText(error, 'Could not send the link.')); return; }
     toast('Check your email for a sign-in link.');
   };
 })();

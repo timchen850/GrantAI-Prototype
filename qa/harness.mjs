@@ -212,7 +212,7 @@ function fnHandler(fnLog, opts) {
 }
 
 /* ───────── page factory ───────── */
-export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], fnOverride = {}, signedOut = false, revokedSession = false, reducedMotion = false, base = 'http://127.0.0.1:3456/' } = {}) {
+export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], fnOverride = {}, signedOut = false, revokedSession = false, backendDown = false, reducedMotion = false, base = 'http://127.0.0.1:3456/' } = {}) {
   const P = PERSONAS[persona];
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, isMobile: width < 600, hasTouch: width < 600, reducedMotion: reducedMotion ? 'reduce' : 'no-preference' });
   const db = buildDb(persona);
@@ -239,6 +239,10 @@ export async function openApp(browser, { persona = 'np', width = 1440, height = 
     if (p === '/logout') { authUser = null; return r.fulfill({ status: 204, body: '' }); }
     return json({});
   });
+  if (backendDown) {   // registered last, so it wins over every Supabase route above
+    // A paused Supabase project: every API answers with an error page.
+    await ctx.route(SUPA + '/**', (r) => r.fulfill({ status: 540, contentType: 'text/plain', body: 'project paused' }));
+  }
   const otpSent = [];
   if (P.user && !signedOut) {
     const sess = makeSession(P.user); if (revokedSession) { sess.expires_at = Math.floor(Date.now() / 1000) - 3600; authUser = null; }
