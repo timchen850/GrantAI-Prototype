@@ -201,12 +201,12 @@ function fnHandler(fnLog, opts) {
 }
 
 /* ───────── page factory ───────── */
-export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], fnOverride = {}, reducedMotion = false, base = 'http://127.0.0.1:3456/' } = {}) {
+export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], fnOverride = {}, signedOut = false, reducedMotion = false, base = 'http://127.0.0.1:3456/' } = {}) {
   const P = PERSONAS[persona];
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, isMobile: width < 600, hasTouch: width < 600, reducedMotion: reducedMotion ? 'reduce' : 'no-preference' });
   const db = buildDb(persona);
   const restLog = [], fnLog = [], errors = [], external = [];
-  let authUser = P.user;   // who the fake auth server thinks is signed in
+  let authUser = signedOut ? null : P.user;   // who the fake auth server thinks is signed in
   // Anything off-box that no route below answers is unexpected: record it and fail it fast.
   // (Playwright runs the most recently registered matching route first, so this goes first.)
   await ctx.route(/^https?:\/\/(?!127\.0\.0\.1|localhost)/, (r) => { external.push(r.request().url()); r.abort(); });
@@ -222,11 +222,13 @@ export async function openApp(browser, { persona = 'np', width = 1440, height = 
     const json = (o, status = 200) => r.fulfill({ status, contentType: 'application/json', body: JSON.stringify(o) });
     if (p === '/user') return authUser ? json(authUser) : json({ code: 401, msg: 'no user' }, 401);
     if (p === '/token') { authUser = P.user || PERSONAS.np.user; return json(makeSession(authUser)); }
+    if (p === '/otp') { otpSent.push(JSON.parse(r.request().postData() || '{}').email); return json({}); }
     if (p === '/signup') { authUser = P.user || PERSONAS.newuser.user; return json(makeSession(authUser)); }
     if (p === '/logout') { authUser = null; return r.fulfill({ status: 204, body: '' }); }
     return json({});
   });
-  if (P.user) {
+  const otpSent = [];
+  if (P.user && !signedOut) {
     const s = JSON.stringify(makeSession(P.user));
     await ctx.addInitScript(([k, v, tut]) => { try { localStorage.setItem(k, v); if (tut) localStorage.setItem('grange_tut_' + tut, '1'); } catch (_) {} }, [STORAGE_KEY, s, P.tutorialDone ? P.user.id : '']);
   }
@@ -235,7 +237,7 @@ export async function openApp(browser, { persona = 'np', width = 1440, height = 
   page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().slice(0, 300)); });
   await page.goto(base + (screen ? '#' + screen : ''), { waitUntil: 'load' });
   await page.waitForTimeout(1200);
-  return { ctx, page, db, restLog, fnLog, errors, external };
+  return { ctx, page, db, restLog, fnLog, errors, external, otpSent };
 }
 
 /* Elements that stick out past the viewport (the usual cause of sideways scroll on phones). */

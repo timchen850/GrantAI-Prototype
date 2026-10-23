@@ -6554,7 +6554,7 @@ async function analyzeRfp() {
     } else if (e && e.message === 'nosession') {
       if (rr) rr.innerHTML = reqMsg('Sign in to analyze a funder’s call against your profile.', true);
     } else {
-      if (rr) rr.innerHTML = reqMsg('Grange’s requirement reader is ready to switch on. Add a Gemini API key on the server (Supabase → Edge Functions → Secrets) and it will read any RFP instantly. Meanwhile, tap “See a sample” above to preview it.');
+      if (rr) rr.innerHTML = reqMsg('Grange couldn’t read that call right now. Please try again in a minute, or tap “See a sample” above to see what the analysis looks like.');
     }
   } finally {
     if (btn) btn.disabled = false;
@@ -6645,7 +6645,7 @@ async function runReqAnalysis(text, target, cacheKey, btn) {
     throw new Error('nokey');
   } catch (e) {
     if (e && e.message === 'nosession') target.innerHTML = reqMsg('Sign in to analyze a funder’s call against your profile.', true);
-    else target.innerHTML = reqMsg('Grange’s requirement reader is ready to switch on. Add a Gemini API key on the server (Supabase → Edge Functions → Secrets) and it will read any RFP instantly.');
+    else target.innerHTML = reqMsg('Grange couldn’t read that call right now. Please try again in a minute.');
     return null;
   } finally {
     if (btn) btn.disabled = false;

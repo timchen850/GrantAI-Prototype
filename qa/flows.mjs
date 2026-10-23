@@ -230,6 +230,85 @@ flow('readiness-mark-have', async (browser, check) => {
   return t;
 });
 
+const toastSpy = async (p) => { const list = []; await p.exposeFunction('_qaToast2', (m) => list.push(m)); await p.evaluate(() => { const o = window.toast; window.toast = (m) => { window._qaToast2(m); return o(m); }; }); return list; };
+
+flow('signin-and-signout', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np', signedOut: true });
+  const p = t.page;
+  check('signed-out visitor sees the landing page', (await screen(p)) === 'landing');
+  await p.evaluate(() => go('signin')); await p.waitForTimeout(800);
+  await p.fill('#si-email-input', 'director@eastsideyouth.example.org'); await p.keyboard.press('Enter'); await p.waitForTimeout(1200);
+  await p.fill('#si-pw-input', 'correct-horse-9'); await p.waitForTimeout(200);
+  await p.click('#si-cont-btn'); await p.waitForTimeout(4500);
+  check('returning user lands on the dashboard', (await screen(p)) === 'dashboard');
+  check('greeting uses their org', /Director|Eastside/.test(await p.textContent('#dash-greeting') + (await p.textContent('#sidebar, .side').catch(() => ''))));
+  await p.click('#dashboard .side a:has-text("Sign out"), #dashboard .side button:has-text("Sign out"), .side-foot :text("Sign out")'); await p.waitForTimeout(1200);
+  check('sign out returns to the landing page', (await screen(p)) === 'landing');
+  check('session removed from storage', await p.evaluate(() => !localStorage.getItem('sb-xewrvmqyzeiziimcmenj-auth-token')));
+  return t;
+});
+
+flow('magic-link', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np', signedOut: true });
+  const p = t.page; const toasts = await toastSpy(p);
+  await p.evaluate(() => go('signin')); await p.waitForTimeout(800);
+  await p.fill('#si-email-input', 'director@eastsideyouth.example.org'); await p.keyboard.press('Enter'); await p.waitForTimeout(1200);
+  await p.click('text=Email me a sign-in link instead'); await p.waitForTimeout(800);
+  check('magic link requested for the typed email', t.otpSent.includes('director@eastsideyouth.example.org'));
+  check('user told to check email', toasts.some((m) => /check your email/i.test(m)));
+  return t;
+});
+
+flow('manage-award-and-spend', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('manage')); await p.waitForTimeout(1500);
+  await p.selectOption('#pa-award-grant', { index: 1 });
+  await p.fill('#pa-award-amt', '$40,000'); await p.click('#manage button:has-text("Mark as awarded")'); await p.waitForTimeout(1500);
+  check('award recorded with the amount', t.db.awards.length === 2 && t.db.awards.some((a) => Number(a.amount_awarded) === 40000));
+  const gid = t.db.awards.find((a) => Number(a.amount_awarded) === 40000)?.grant_id;
+  check('grant marked awarded', t.db.grants.find((g) => g.id === gid)?.status === 'awarded');
+  await p.fill('#paexp-desc-aw1', 'Robotics kits'); await p.fill('#paexp-amt-aw1', '1250');
+  await p.click('#manage .pa-addform:has(#paexp-desc-aw1) button'); await p.waitForTimeout(1200);
+  check('expense saved against the award', t.db.expenditures.some((e) => e.award_id === 'aw1' && Number(e.amount) === 1250 && e.description === 'Robotics kits'));
+  const before = t.db.compliance_requirements[0].status;
+  await p.click('#manage [onclick*="toggleCompliance"]'); await p.waitForTimeout(900);
+  check('compliance item toggles', t.db.compliance_requirements[0].status !== before);
+  return t;
+});
+
+flow('draft-outcome-and-assistant', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
+  await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
+  await p.click('#gen-btn'); await p.waitForTimeout(7000);
+  const won = await p.$('button:has-text("Won")');
+  check('outcome tracker offered after a draft', !!won);
+  if (won) { await won.click(); await p.waitForTimeout(1200); }
+  check('outcome saved as won', t.db.draft_outcomes.some((o) => o.status === 'won'));
+  await p.click('#ai-chat-fab'); await p.waitForTimeout(700);
+  await p.fill('#acp-text', 'How should I open the need statement?'); await p.click('#ai-chat-panel button[onclick*="acpSend"]').catch(async () => { await p.press('#acp-text', 'Enter'); });
+  await p.waitForTimeout(2500);
+  check('assistant replies in the chat', /Lead with your outcomes/.test(await p.textContent('#acp-log')));
+  return t;
+});
+
+flow('irs-check-and-call-analysis', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page; const toasts = await toastSpy(p);
+  await p.evaluate(() => go('readiness')); await p.waitForTimeout(1500);
+  await p.click('#rdy-irs-btn'); await p.waitForTimeout(1800);
+  check('IRS result shows the organization', /EASTSIDE YOUTH COLLECTIVE/i.test(await p.textContent('#readiness')));
+  const ta = await p.$('#readiness textarea');
+  if (ta) { await ta.fill('The Ahmanson Foundation invites proposals from 501(c)(3) organizations in Los Angeles County for youth education programs. Deadline: December 1.'); }
+  await p.click('#rdy-req-btn'); await p.waitForTimeout(2500);
+  const txt = (await p.textContent('#readiness')).replace(/\s+/g, ' ');
+  check('call analysis responds without breaking the page', !/undefined|NaN|\[object Object\]/.test(txt));
+  check('no server-setup instructions shown to users', !/API key|Edge Functions|Secrets/.test(txt));
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;

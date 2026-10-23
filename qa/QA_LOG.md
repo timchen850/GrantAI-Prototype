@@ -56,6 +56,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 33 | Readiness, nonprofit path, Pricing | Status buttons and plan changes ignored `.error`: a failed save looked saved, and "Start Free Trial" said "Plan updated to Pro!" even when the database rejected it. | Failures show "Couldn't save that" / "Couldn't change your plan"; the plan only changes locally after the database accepts it. Covered by `save-failures-are-visible`. |
 | 34 | Performance | `logo.png` (favicon and 26px brand mark) was a 1254×1254, 1.7 MB file loaded by every visitor. | Resized to 256×256: 60 KB. |
 | 35 | Sharing | No meta description or link-preview tags. | Description + Open Graph/Twitter tags. |
+| 36 | Readiness, Generator | When the AI service failed or returned nothing, the funder-call reader told users "Add a Gemini API key on the server (Supabase → Edge Functions → Secrets)". | "Couldn't read that call right now, try again" (with the sample as a fallback). No setup instructions are shown to users anywhere now. |
 
 ## Needs Tim's decision
 
@@ -65,10 +66,13 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 
 ## Verified working (flows.mjs, all passing)
 
-Sign up → guided tour (normal + reduced motion) → survey → dashboard; profile save/reload;
-contact hand-off; Discovery save (grant + deadline + reminders) → Draft → streamed proposal;
-legacy-account type picker writes `tax_exempt_status`; deadlines done/reopen; readiness
-"Have it"; onboarding save failure handling. Static audit: all 96 inline-handler functions
+Sign up → guided tour (normal + reduced motion) → survey → dashboard; returning sign-in with
+password → dashboard → sign out (session cleared); magic-link request; profile save/reload;
+contact hand-off; Discovery save (grant + deadline + reminders) → Draft → streamed proposal →
+outcome "Won" saved; assistant chat reply; IRS check; funder-call analysis; record an award,
+log spending, toggle compliance; legacy-account type picker writes `tax_exempt_status`;
+deadlines done/reopen; readiness "Have it"; failure paths (survey save, readiness save,
+monthly draft limit). Static audit: all 96 inline-handler functions
 exist, no duplicate ids. Sweep: 0 console errors, no sideways scroll on any screen.
 
 - **Plans and billing (after Monday).** "Start Free Trial" sets `profiles.tier` straight from the browser with no payment ("Stripe to be wired later"), and row-level security lets any user update their own `tier`, so anyone could give themselves Pro once the column exists. Before charging: let only the Stripe webhook set `tier` (for example `revoke update (tier) on profiles from authenticated`), fix `stripe-webhook` (it needs `verify_jwt` off with Stripe signature checking, and it updates by `id` instead of `user_id`).
