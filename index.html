@@ -894,7 +894,9 @@ label.field-label {
 .ring.mid { --rc: #d98b2b; color: #b06d12; }
 
 /* deadlines */
-.dl { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--line-soft); }
+.dl { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line-soft); }
+.dl > div:first-child { flex: 1; min-width: 0; }
+.dl .dd, .dl .btn { flex: none; }
 .dl:first-of-type { border-top: none; }
 .dl .dn { font-size: 13.5px; font-weight: 600; color: var(--ink); }
 .dl .dt { font-size: 12px; color: var(--muted); margin-top: 2px; }
@@ -985,7 +987,7 @@ label.field-label {
 .stp.done .sn { background: var(--ok); color: #fff; }
 .stp.now .sn { background: var(--ink); color: #fff; }
 
-.gen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+.gen-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 .out { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
   padding: 0; position: relative; overflow: hidden; min-height: 560px; position: sticky; top: 24px; }
 .out-head { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px;
@@ -1116,7 +1118,7 @@ label.field-label {
 @media (max-width: 1080px) {
   .hero-grid { grid-template-columns: 1fr; gap: 40px; }
   .hero-asset { max-width: 480px; }
-  .gen-grid { grid-template-columns: 1fr; }
+  .gen-grid { grid-template-columns: minmax(0, 1fr); }
   .out { position: static; }
 }
 @media (max-width: 860px) {
@@ -1143,9 +1145,9 @@ label.field-label {
   .app-main { padding: 24px 20px 48px; }
   .section { padding: 64px 0; }
   .cta-band { padding: 44px 28px; }
-  .kpi { grid-template-columns: 1fr; }
-  .kpi .k { border-left: none; border-top: 1px solid var(--line); }
-  .kpi .k:first-child { border-top: none; }
+  .kpi .k { padding: 16px 16px 18px; }
+  .kpi .kv { font-size: 25px; }
+  .kpi .k:nth-child(n+3) { border-top: 1px solid var(--line); }
 }
 
 /* ─── TUBELIGHT NAVBAR ──────────────────────────────────── */
@@ -4709,6 +4711,12 @@ label.field-label {
 .dash-hero-top h1 { font-family: var(--display); font-weight: 800; font-size: 30px; letter-spacing: -.03em; color: var(--ink); margin: 0; }
 .dash-hero-top .ps { font-size: 14.5px; color: var(--ink-soft); margin-top: 6px; max-width: 52ch; }
 .dash-hero-actions { display: flex; gap: 10px; flex: none; }
+@media (max-width: 640px) {
+  .dash-hero { padding: 22px 20px 24px; }
+  .dash-hero-top { flex-direction: column; gap: 14px; }
+  .dash-hero-top h1 { font-size: 26px; }
+  .dash-hero-actions { flex-wrap: wrap; }
+}
 .btn-tour { background: rgba(255,255,255,.7); border: 1px solid rgba(26,25,22,.12); color: var(--ink); backdrop-filter: blur(6px); display: inline-flex; align-items: center; gap: 8px; }
 .btn-tour svg { width: 16px; height: 16px; color: var(--accent); }
 @media (hover: hover) { .btn-tour:hover { background: #fff; transform: translateY(-1px); } }
@@ -4746,7 +4754,7 @@ label.field-label {
 .actwz-sd { font-size: 12.3px; color: var(--muted); margin-top: 2px; line-height: 1.45; }
 .actwz-donelbl { flex: none; font-size: 12px; font-weight: 600; color: var(--ok); }
 .actwz-skiplink { flex: none; background: none; border: none; color: var(--accent); font-size: 12.5px; font-weight: 600; cursor: pointer; }
-@media (max-width: 640px) { .actwz-step { flex-wrap: wrap; } .actwz-step .btn, .actwz-step .actwz-skiplink, .actwz-step .actwz-donelbl { margin-left: 39px; } }
+@media (max-width: 640px) { .actwz-step { flex-wrap: wrap; } .actwz-body { flex-basis: calc(100% - 39px); } .actwz-step .btn, .actwz-step .actwz-skiplink, .actwz-step .actwz-donelbl { margin-left: 39px; } }
 
 /* ── Journey strip (mirrors the tutorial's 5 stages) ─── */
 .journey { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
@@ -4772,7 +4780,12 @@ label.field-label {
 .journey .jx.active .jstat { color: var(--accent-ink); font-weight: 600; }
 .journey .jx.active .jstat .dot { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
 @media (max-width: 920px) { .journey { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 560px) { .journey { grid-template-columns: 1fr; } }
+@media (max-width: 560px) {
+  .journey { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .journey .jx { padding: 13px 14px; }
+  .journey .jx .jic { width: 34px; height: 34px; margin-bottom: 9px; }
+  .journey .jx:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
 @media (prefers-reduced-motion: reduce) { .dash-hero-bg::before, .dash-hero-bg::after { animation: none; } }
 </style>
 
@@ -4834,9 +4847,9 @@ label.field-label {
           </div>
           <div class="panel">
             <div class="panel-head"><h3>Profile strength</h3></div>
-            <p class="ps" style="margin-bottom:16px">A complete profile gets 3.4&times; more matches.</p>
+            <p class="ps" style="margin-bottom:16px" id="dash-profile-copy">A complete profile gets 3.4&times; more matches.</p>
             <div class="bars" id="dash-profile-bars"></div>
-            <button class="btn btn-outline btn-sm btn-block" style="margin-top:18px" onclick="go('profile')">Complete profile</button>
+            <button class="btn btn-outline btn-sm btn-block" style="margin-top:18px" onclick="go('profile')" id="dash-profile-btn">Complete profile</button>
           </div>
         </div>
       </section>
@@ -4928,7 +4941,7 @@ label.field-label {
         .pbox-generate svg{ flex-shrink:0; }
 
         /* Single column: Configure shows the form only; the draft appears in the Generate step */
-        .gen-grid{ grid-template-columns:1fr; }
+        .gen-grid{ grid-template-columns:minmax(0,1fr); }
         .gen-grid .gen-config{ max-width:680px; margin:0 auto; width:100%; }
         .gen-grid .out{ display:none; }
         .gen-grid.gen-writing .gen-config{ display:none; }
@@ -10727,7 +10740,8 @@ async function updateDashboard() {
 
   // ── 3. KPIs ──────────────────────────────────────────────────
   const discovered = discGrants.length;
-  const drafted    = dbProposals.length;
+  // Drafts live in this browser (listDrafts) and as grants marked "drafting".
+  const drafted    = Math.max(dbProposals.length, listDrafts().length, dbGrants.filter(g => g.status === 'drafting').length);
   const submitted  = dbGrants.filter(g => g.status === 'submitted').length
                    + dbProposals.filter(p => p.status === 'submitted').length;
   const awarded    = dbGrants.filter(g => g.status === 'awarded').length;
@@ -10776,7 +10790,33 @@ async function updateDashboard() {
       .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
       .slice(0, 5);
 
-    if (top5.length === 0) {
+    // No discovery results cached in this browser (new device, or discovery not
+    // run yet): show the grants the user is already tracking instead of an
+    // empty "No grants discovered yet" card.
+    const STATUS_LBL = { saved: ['Saved', 'pill-ok'], drafting: ['Drafting', 'pill-warn'], submitted: ['Submitted', 'pill-acc'] };
+    const RANK = { drafting: 0, saved: 1, submitted: 2 };   // work still to do first, then by deadline
+    const tracked = dbGrants.filter(g => !g.archived && STATUS_LBL[g.status])
+      .sort((a, b) => (RANK[a.status] - RANK[b.status]) || String(a.deadline || '9999').localeCompare(String(b.deadline || '9999')))
+      .slice(0, 5);
+    if (top5.length === 0 && tracked.length) {
+      pipelineEl.innerHTML = tracked.map(g => {
+        const days = g.deadline ? Math.ceil((new Date(g.deadline) - Date.now()) / 86400000) : null;
+        const due = days !== null && days >= 0 ? `<span class="pill ${days <= 30 ? 'pill-acc' : 'pill-ok'}">Due in ${days}d</span>` : '';
+        const amt = Number(g.amount) > 0 ? '$' + fmtK(Number(g.amount)) : (g.amount ? escHtml(String(g.amount)) : '');
+        const [lbl, cls] = STATUS_LBL[g.status];
+        const meta = [escHtml(g.funder || ''), amt].filter(Boolean).join(' · ');
+        const act = g.status === 'submitted'
+          ? `<button class="btn btn-outline btn-sm" onclick="go('manage')">View</button>`
+          : `<button class="btn btn-primary btn-sm" onclick="go('generator')">Draft</button>`;
+        return `<div class="grow">
+          <div class="gi">
+            <div class="gn">${escHtml(g.title || g.funder || 'Grant')}</div>
+            <div class="gm">${meta} <span class="pill ${cls}">${lbl}</span> ${due}</div>
+          </div>
+          ${act}
+        </div>`;
+      }).join('');
+    } else if (top5.length === 0) {
       pipelineEl.innerHTML = `
         <div style="text-align:center;padding:32px 16px;color:var(--muted)">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="margin-bottom:12px;opacity:.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -10800,8 +10840,8 @@ async function updateDashboard() {
         return `<div class="grow">
           <div class="ring ${ringCls}" style="--p:${score}"><span>${score}</span></div>
           <div class="gi">
-            <div class="gn">${g.title || g.funder}</div>
-            <div class="gm">${meta} ${pillHtml}</div>
+            <div class="gn">${escHtml(g.title || g.funder || '')}</div>
+            <div class="gm">${escHtml(meta)} ${pillHtml}</div>
           </div>
           <button class="btn btn-primary btn-sm" onclick="go('generator')">Draft</button>
         </div>`;
@@ -10859,6 +10899,9 @@ async function updateDashboard() {
     }).join('');
     var profilePct = Math.round(rows.reduce((s, r) => s + r.pct, 0) / rows.length);
     window._dashProfilePct = profilePct;
+    const pBtn = document.getElementById('dash-profile-btn'), pCopy = document.getElementById('dash-profile-copy');
+    if (pBtn) pBtn.textContent = profilePct === 100 ? 'View profile' : 'Complete profile';
+    if (pCopy) pCopy.textContent = profilePct === 100 ? 'Your profile is complete. Keep it current as your programs change.' : 'A complete profile gets 3.4× more matches.';
   }
 
   // ── 8. Journey + next step (directional IA) ──────────────────
@@ -12089,6 +12132,7 @@ function applyDiscFilters(query, type) {
   #ai-chat-fab{position:fixed;right:22px;bottom:22px;z-index:9000;height:56px;border-radius:30px;background:var(--surface);color:var(--ink);border:1px solid var(--line);cursor:pointer;display:none;align-items:center;gap:10px;box-shadow:0 12px 32px rgba(26,25,22,.18);transition:transform .2s var(--ease-expo,cubic-bezier(.16,1,.3,1)),box-shadow .18s,opacity .22s;padding:0 18px 0 6px;overflow:visible}
   #ai-chat-fab:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(26,25,22,.24)}
   #ai-chat-fab.acp-hide{opacity:0;transform:scale(.7);pointer-events:none}
+  @media(max-width:640px){#ai-chat-fab{right:14px;bottom:14px;padding:0 6px;height:56px}#ai-chat-fab .acp-fab-label{display:none}}
   #ai-chat-fab .acp-fab-orb{position:relative;width:44px;height:44px;flex-shrink:0}
   #ai-chat-fab .acp-fab-label{font-family:var(--display);font-size:14.5px;font-weight:600;white-space:nowrap}
   #ai-chat-fab .fab-on{position:absolute;right:0;bottom:1px;width:11px;height:11px;border-radius:50%;background:var(--ok);border:2.5px solid var(--surface)}
@@ -12175,7 +12219,7 @@ function applyDiscFilters(query, type) {
 </style>
 <!-- proactive contextual nudge: appears per screen, offers the next step -->
 <div id="acp-nudge" role="status">
-  <div class="acp-nudge-top"><span id="acp-nudge-ava" style="width:22px;height:22px;display:inline-flex"></span><b>Grange</b><button class="x" onclick="acpNudgeDismiss()" aria-label="Dismiss">&times;</button></div>
+  <div class="acp-nudge-top"><span id="acp-nudge-ava" style="width:22px;height:22px;display:inline-flex"></span><b>Grange</b><button class="x" onclick="acpNudgeDismiss(true)" aria-label="Dismiss">&times;</button></div>
   <p id="acp-nudge-text"></p>
   <button class="acp-nudge-cta" id="acp-nudge-cta" onclick="acpNudgeOpen()">Ask Grange</button>
 </div>
@@ -12407,7 +12451,9 @@ function applyDiscFilters(query, type) {
       nudge.classList.remove('show');
       if (panel.classList.contains('open')) { renderChips(); return; }
       const ctx = CTX[id];
-      if (!ctx || nudgedThisSession[id] || sessionStorage.getItem('acp_nudge_off')==='1') return;
+      let off = false; try { off = sessionStorage.getItem('acp_nudge_off') === '1'; } catch (_) {}
+      // On phones the bubble covers half the screen; the Ask Grange button is enough there.
+      if (!ctx || nudgedThisSession[id] || off || window.matchMedia('(max-width: 640px)').matches) return;
       nudgeTimer = setTimeout(() => {
         if (document.getElementById('ai-chat-panel').classList.contains('open')) return;
         document.getElementById('acp-nudge-text').textContent = ctx.tip;
@@ -12415,7 +12461,10 @@ function applyDiscFilters(query, type) {
         nudgedThisSession[id] = true;
       }, 1100);
     };
-    window.acpNudgeDismiss = function(){ document.getElementById('acp-nudge').classList.remove('show'); };
+    window.acpNudgeDismiss = function(stop){
+      document.getElementById('acp-nudge').classList.remove('show');
+      if (stop) { try { sessionStorage.setItem('acp_nudge_off', '1'); } catch (_) {} }   // closed with ×: no more tips this session
+    };
     window.acpNudgeOpen = function(){ acpNudgeDismiss(); if(!document.getElementById('ai-chat-panel').classList.contains('open')) acpToggle(); };
 
     function acpAdd(role, text){
