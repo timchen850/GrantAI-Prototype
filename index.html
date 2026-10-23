@@ -5685,22 +5685,24 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
     // Downgrade to free: just update profile directly
     if (tierId === 'free') {
       try {
-        await window.sb.from('profiles').update({ tier: 'free' }).eq('user_id', window._grange.user.id);
+        const { error } = await window.sb.from('profiles').update({ tier: 'free' }).eq('user_id', window._grange.user.id);
+        if (error) throw error;
         if (window._grange.profile) window._grange.profile.tier = 'free';
         rebuildSidebars();
         renderPlanScreen();
         toast('Switched to Free plan.');
-      } catch(e) { toast('Something went wrong. Please try again.'); }
+      } catch(e) { console.warn('plan change', e); toast('Couldn’t change your plan right now. Please try again.'); }
       return;
     }
     // Paid tier: update profile directly for now (Stripe to be wired later)
     try {
-      await window.sb.from('profiles').update({ tier: tierId }).eq('user_id', window._grange.user.id);
+      const { error } = await window.sb.from('profiles').update({ tier: tierId }).eq('user_id', window._grange.user.id);
+      if (error) throw error;   // don't claim a plan change the database didn't take
       if (window._grange.profile) window._grange.profile.tier = tierId;
       rebuildSidebars();
       renderPlanScreen();
       toast('Plan updated to ' + tierId.charAt(0).toUpperCase() + tierId.slice(1) + '!');
-    } catch(e) { toast('Something went wrong. Please try again.'); }
+    } catch(e) { console.warn('plan change', e); toast('Couldn’t change your plan right now. Please try again.'); }
   };
 
   window.setBilling = function(b){
@@ -13043,7 +13045,11 @@ function applyDiscFilters(query, type) {
     if (strong) strong.textContent = "You're " + pct + '% grant-ready.';
     // persist
     const uid = ctx.user && ctx.user.id;
-    if (window.sb && uid) { try { await sb.from('readiness_items').upsert({ user_id: uid, req_key: key, status }, { onConflict: 'user_id,req_key' }); } catch (e) { console.error('readiness save', e); } }
+    if (window.sb && uid) {
+      let err = null;
+      try { ({ error: err } = await sb.from('readiness_items').upsert({ user_id: uid, req_key: key, status }, { onConflict: 'user_id,req_key' })); } catch (e) { err = e; }
+      if (err) { console.warn('readiness save', err); toast('Couldn’t save that. Check your connection and try again.'); }
+    }
   };
 
   /* ════════════════ BECOME A NONPROFIT (Phase 3 pathway) ════════════════
@@ -13163,7 +13169,11 @@ function applyDiscFilters(query, type) {
     const strong = document.querySelector('#np-setup-content .complete .msg strong');
     if (strong) strong.textContent = "You're " + pct + '% of the way there.';
     const ctx = window._grange || {}; const uid = ctx.user && ctx.user.id;
-    if (window.sb && uid) { try { await sb.from('readiness_items').upsert({ user_id: uid, req_key: key, status }, { onConflict: 'user_id,req_key' }); } catch (e) { console.error('incorp save', e); } }
+    if (window.sb && uid) {
+      let err = null;
+      try { ({ error: err } = await sb.from('readiness_items').upsert({ user_id: uid, req_key: key, status }, { onConflict: 'user_id,req_key' })); } catch (e) { err = e; }
+      if (err) { console.warn('incorp save', err); toast('Couldn’t save that. Check your connection and try again.'); }
+    }
   };
 
   /* ════════════════ SAM.gov GUIDED SETUP (the registration concierge) ════════════════

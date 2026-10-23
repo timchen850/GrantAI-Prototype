@@ -53,6 +53,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 30 | Tour (phone) | The guide's speech bubble ran off the right edge on every step ("Three strong matches surfaced fr…"): it was centred on the orb, which sits at the screen edge when it points at Continue. | Bubble nudged back on screen, arrow still points at the orb; checked at 390px and 360px on every step. |
 | 31 | Toasts | Messages slid in under the Ask Grange button, which covered their ends. | Raised above it on the screens that show it; full-width on phones. |
 | 32 | Dashboard | A returning user with a complete profile and tracked grants was told "Complete your profile and run grant discovery to get started." | Subtitle reflects what they're tracking / whether the profile is done. |
+| 33 | Readiness, nonprofit path, Pricing | Status buttons and plan changes ignored `.error`: a failed save looked saved, and "Start Free Trial" said "Plan updated to Pro!" even when the database rejected it. | Failures show "Couldn't save that" / "Couldn't change your plan"; the plan only changes locally after the database accepts it. Covered by `save-failures-are-visible`. |
 
 ## Needs Tim's decision
 
@@ -67,6 +68,8 @@ contact hand-off; Discovery save (grant + deadline + reminders) → Draft → st
 legacy-account type picker writes `tax_exempt_status`; deadlines done/reopen; readiness
 "Have it"; onboarding save failure handling. Static audit: all 96 inline-handler functions
 exist, no duplicate ids. Sweep: 0 console errors, no sideways scroll on any screen.
+
+- **Plans and billing (after Monday).** "Start Free Trial" sets `profiles.tier` straight from the browser with no payment ("Stripe to be wired later"), and row-level security lets any user update their own `tier`, so anyone could give themselves Pro once the column exists. Before charging: let only the Stripe webhook set `tier` (for example `revoke update (tier) on profiles from authenticated`), fix `stripe-webhook` (it needs `verify_jwt` off with Stripe signature checking, and it updates by `id` instead of `user_id`).
 
 ## Next up
 

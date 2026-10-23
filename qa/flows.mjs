@@ -152,6 +152,19 @@ flow('draft-limit-message', async (browser, check) => {
   return t;
 });
 
+flow('save-failures-are-visible', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np', failTables: ['readiness_items'] });
+  const p = t.page;
+  const toasts = [];
+  await p.exposeFunction('_qaToast', (m) => toasts.push(m));
+  await p.evaluate(() => { const o = window.toast; window.toast = (m) => { window._qaToast(m); return o(m); }; });
+  await p.evaluate(() => go('readiness')); await p.waitForTimeout(1500);
+  await p.click('#readiness .rdy-item button:has-text("Have it")'); await p.waitForTimeout(900);
+  check('failed readiness save tells the user', toasts.some((m) => /couldn.t save/i.test(m)));
+  t.errors = t.errors.filter((e) => !/503|Service Unavailable/.test(e));
+  return t;
+});
+
 flow('discovery-save-and-draft', async (browser, check) => {
   const t = await openApp(browser, { persona: 'np' });
   const p = t.page;
