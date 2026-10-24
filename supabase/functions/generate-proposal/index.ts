@@ -27,8 +27,14 @@ async function sendEmail(userId: string, emailType: string, data: Record<string,
 const GEMINI_MODEL = 'gemini-2.5-flash'; // current, free-tier eligible, strong prose
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
-// Monthly draft limits per tier (Pro = no cap)
-const TIER_LIMITS: Record<string, number> = { free: 2, starter: 15, pro: Infinity };
+// Monthly draft limits per tier, as the plan cards state them (Pro = no cap).
+const TIER_DRAFTS: Record<string, number> = { free: 2, starter: 15, pro: Infinity };
+// One "Generate" in the app makes up to 3 calls here (the Approach Plan, the draft, then the editing
+// pass), and each call adds 1 to proposal_usage. Allow 3 calls per draft so "2 drafts a month" means 2.
+const CALLS_PER_DRAFT = 3;
+const TIER_LIMITS: Record<string, number> = Object.fromEntries(
+  Object.entries(TIER_DRAFTS).map(([k, v]) => [k, v * CALLS_PER_DRAFT]),
+);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -78,8 +84,9 @@ Deno.serve(async (req: Request) => {
   const monthlyTotal: number = (monthlyRows ?? []).reduce((s: number, r: any) => s + ((r.count as number) ?? 0), 0);
 
   if (monthlyTotal >= monthlyLimit) {
-    const upgrade = tier === 'free' ? 'Upgrade to Starter for 15 drafts/month.' : tier === 'starter' ? 'Upgrade to Pro for unlimited drafts.' : '';
-    return json({ error: `Monthly limit reached (${monthlyLimit} drafts/month on ${tier} plan). ${upgrade}`.trim() }, 429);
+    const upgrade = tier === 'free' ? 'Upgrade to Starter for 15 drafts a month.' : tier === 'starter' ? 'Upgrade to Pro for unlimited drafts.' : '';
+    const drafts = TIER_DRAFTS[tier] ?? TIER_DRAFTS.free;
+    return json({ error: `Monthly limit reached (${drafts} drafts a month on the ${tier} plan). ${upgrade}`.trim() }, 429);
   }
 
   // Increment today's row up-front to avoid races; refunded below if BOTH providers fail

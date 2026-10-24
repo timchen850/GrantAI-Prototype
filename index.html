@@ -739,6 +739,9 @@ label.field-label, div.field-label {   /* div: a heading over a link, not a form
 .tier .pr { font-family: var(--display); font-weight: 800; font-size: 46px; color: var(--ink);
   letter-spacing: -0.04em; line-height: 1; }
 .tier .pr small { font-size: 15px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.tier .pr-alt { font-size: 13.5px; color: var(--muted); margin-top: 6px; }
+.tier .pr-alt b { color: var(--ok); font-weight: 700; }
+.pricing-note { text-align: center; max-width: 620px; margin: 26px auto 0; font-size: 14px; color: var(--ink-body); }
 .tier .desc { font-size: 14px; color: var(--ink-body); margin: 10px 0 22px; padding-bottom: 22px;
   border-bottom: 1px solid var(--line); min-height: 64px; }
 .tier ul { list-style: none; flex: 1; margin-bottom: 26px; }
@@ -3078,49 +3081,51 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
     <div class="wrap">
       <div class="section-head reveal">
         <h2>Honest pricing.<br>No enterprise contracts.</h2>
-        <p>A grant writer charges $3,000 to $15,000 per proposal. Grange AI starts free and grows with you from $19.99 a month.</p>
+        <p>A grant writer charges $3,000 to $15,000 per proposal. Grange AI starts free, and a full year of Pro costs $300.</p>
       </div>
       <div class="pricing reveal-group">
         <div class="tier">
-          <div class="nm">Starter</div>
-          <div class="pr">Free<small> forever</small></div>
-          <p class="desc">For organizations applying to their first few grants.</p>
+          <div class="nm">Free</div>
+          <div class="pr">$0<small> forever</small></div>
+          <div class="pr-alt">No credit card needed</div>
+          <p class="desc">Try Grange on your first grant.</p>
           <ul>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>5 proposals a month</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Up to 50 grant matches</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Deadline tracking</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>1 user, 2GB library</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Your top 5 grant matches</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>2 AI proposal drafts a month</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Readiness checklist and IRS check</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Deadline reminders</li>
+          </ul>
+          <button class="btn btn-outline btn-block" onclick="go('login')">Start free</button>
+        </div>
+        <div class="tier">
+          <div class="nm">Starter</div>
+          <div class="pr">$14.99<small>/month</small></div>
+          <div class="pr-alt">or $120 a year: <b>save $59.88</b></div>
+          <p class="desc">For groups applying to a few grants a year.</p>
+          <ul>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Everything in Free</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Every grant match, not just the top 5</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>15 AI proposal drafts a month</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Word, PDF and text export</li>
           </ul>
           <button class="btn btn-outline btn-block" onclick="go('login')">Start free</button>
         </div>
         <div class="tier hot">
-          <div class="badge-hot">Most chosen</div>
-          <div class="nm">Growth</div>
-          <div class="pr">$19.99<small>/mo</small></div>
-          <p class="desc">For nonprofits building a consistent grant portfolio.</p>
+          <div class="badge-hot">Best value</div>
+          <div class="nm">Pro</div>
+          <div class="pr">$35.99<small>/month</small></div>
+          <div class="pr-alt">or $300 a year: <b>save $131.88</b></div>
+          <p class="desc">For organizations that apply all year and want to keep every grant they win.</p>
           <ul>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Unlimited proposals</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Full grant database</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>LOIs and full narratives</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Eligibility screening</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>3 users, calendar sync</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Everything in Starter</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Unlimited AI proposal drafts</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Learns from your past proposals, so drafts sound like you</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Grant management after you win: compliance checklist and spending against the budget</li>
           </ul>
           <button class="btn btn-accent btn-block" onclick="go('login')">Start free</button>
         </div>
-        <div class="tier">
-          <div class="nm">Scale</div>
-          <div class="pr">$39.99<small>/mo</small></div>
-          <p class="desc">For multi-program organizations and federal applications.</p>
-          <ul>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Everything in Growth</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Unlimited users</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Federal grants (SAM.gov)</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Reporting automation</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Dedicated account manager</li>
-          </ul>
-          <button class="btn btn-outline btn-block" onclick="go('login')">Start free</button>
-        </div>
       </div>
+      <p class="pricing-note">Win one $5,000 grant and it pays for 16 years of Pro. Grant amounts are examples: funders decide every award.</p>
     </div>
   </section>
 
@@ -5606,8 +5611,13 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   .pc.featured .pc-tier{ color:var(--accent-ink); }
   .pc-price{ display:flex; align-items:baseline; gap:4px; margin-bottom:4px; }
   .pc-price .amt{ font-size:40px; font-weight:800; color:var(--ink); letter-spacing:-.03em; font-family:var(--display); }
-  .pc-price .per{ font-size:14px; color:var(--muted); }
-  .pc-billed{ font-size:11.5px; color:var(--muted); margin-bottom:6px; min-height:16px; }
+  .pc-price .per{ font-size:14px; color:var(--muted); white-space:nowrap; }
+  .pc-billed{ font-size:12px; color:var(--muted); margin-bottom:6px; min-height:16px; }
+  .pc-save{ min-height:22px; margin-bottom:10px; font-size:12px; font-weight:700; color:var(--ok); }
+  .pc-save:not(:empty){ align-self:flex-start; background:var(--ok-tint); padding:2px 9px; border-radius:999px; }
+  .pc-save .pc-save-link{ font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+  .pc-earn{ font-size:12.5px; line-height:1.45; color:var(--ink); background:var(--surface-2); border-radius:10px; padding:8px 11px; margin:-8px 0 16px; }
+  .pc.featured .pc-earn{ background:rgba(217,79,48,.08); }
   .pc-desc{ font-size:13px; color:var(--ink-body); line-height:1.5; margin-bottom:20px; min-height:48px; }
   .pc-cta{ display:block; width:100%; padding:11px; border-radius:999px; font:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:all .18s; margin-bottom:20px; text-align:center; }
   .pc-cta.current{ background:var(--surface-2); border:1px solid var(--line); color:var(--muted); display:flex; align-items:center; justify-content:center; gap:8px; cursor:default; }
@@ -5625,7 +5635,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   .pf-note{ font-size:11px; font-weight:600; color:var(--accent-ink); background:var(--accent-tint); padding:1px 7px; border-radius:999px; white-space:nowrap; }
   .pf-note.ok{ color:var(--ok); background:var(--ok-tint); }
   .pricing-foot{ text-align:center; margin-top:32px; font-size:13px; color:var(--muted); }
-  @media(max-width:768px){ .pricing-cards{ grid-template-columns:1fr; } .pc.featured{ order:-1; } }
+  @media(max-width:768px){ .pricing-cards{ grid-template-columns:1fr; } .pc.featured{ order:-1; } .pricing-cards .pc:first-child{ order:1; } }   /* phones: Pro, Starter, then Free */
 </style>
 <div id="plan" class="screen">
   <div class="app">
@@ -5645,8 +5655,8 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
       <div class="pricing-screen-inner">
         <div style="text-align:center">
           <div class="pricing-toggle" id="billing-toggle">
-            <button class="on" aria-pressed="true" onclick="setBilling('monthly')">Monthly</button>
-            <button aria-pressed="false" onclick="setBilling('annual')">Annual <span class="save-pill">−20%</span></button>
+            <button aria-pressed="false" onclick="setBilling('monthly')">Monthly</button>
+            <button class="on" aria-pressed="true" onclick="setBilling('annual')">Yearly <span class="save-pill">Save up to 33%</span></button>
           </div>
         </div>
 
@@ -5654,71 +5664,79 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
           <!-- Free -->
           <div class="pc">
             <div class="pc-tier">Free</div>
-            <div class="pc-price"><span class="amt">$0</span></div>
-            <div class="pc-billed"></div>
-            <p class="pc-desc">Get started with the basics — no credit card needed.</p>
+            <div class="pc-price"><span class="amt">$0</span><span class="per">forever</span></div>
+            <div class="pc-billed">No credit card needed</div>
+            <div class="pc-save"></div>
+            <p class="pc-desc">Try Grange on your first grant: find your top matches and write a draft.</p>
+            <p class="pc-earn">Upgrade any time. Your profile, saved grants and drafts come with you.</p>
             <div class="pc-cta current">Your current plan</div>
             <div class="pc-div"></div>
             <div class="pc-features">
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Readiness checker</span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Grant discovery <span class="pf-note ok">5 results</span></span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Funder AI policy warnings</span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">AI draft sections <span class="pf-note ok">2/mo</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Profile from a survey or Form 990</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Readiness checklist and IRS check</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Grant matches <span class="pf-note ok">Top 5</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">AI proposal drafts <span class="pf-note ok">2 a month</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Deadline reminders</span></div>
+              <div class="pf-row"><div class="pf-ic no"><svg width="8" height="8" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div><span class="pf-text dim">Word, PDF and text export</span></div>
               <div class="pf-row"><div class="pf-ic no"><svg width="8" height="8" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div><span class="pf-text dim">Learns from your past proposals</span></div>
-              <div class="pf-row"><div class="pf-ic no"><svg width="8" height="8" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div><span class="pf-text dim">Post-award compliance</span></div>
-              <div class="pf-row"><div class="pf-ic no"><svg width="8" height="8" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div><span class="pf-text dim">Export (submission-ready)</span></div>
+              <div class="pf-row"><div class="pf-ic no"><svg width="8" height="8" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div><span class="pf-text dim">Grant management after you win</span></div>
             </div>
           </div>
 
           <!-- Starter -->
-          <div class="pc featured">
-            <div class="pc-badge">Most Popular</div>
+          <div class="pc">
             <div class="pc-tier">Starter</div>
-            <div class="pc-price" id="starter-price"><span class="amt">$49</span><span class="per">/mo</span></div>
-            <div class="pc-billed" id="starter-billed"></div>
-            <p class="pc-desc">For growing nonprofits ready to scale their grant pipeline.</p>
+            <div class="pc-price" id="starter-price"><span class="amt">$120</span><span class="per">/year</span></div>
+            <div class="pc-billed" id="starter-billed">$10 a month, billed yearly</div>
+            <div class="pc-save" id="starter-save">You save $59.88 a year</div>
+            <p class="pc-desc">For groups applying to a few grants a year.</p>
+            <p class="pc-earn" id="starter-earn">One $1,000 grant pays for 8 years of Starter.</p>
             <button class="pc-cta primary" onclick="selectTier('starter')">Start Free Trial</button>
             <div class="pc-div"></div>
             <div class="pc-features">
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Readiness checker</span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Grant discovery <span class="pf-note">Unlimited</span></span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Funder AI policy warnings</span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">AI draft sections <span class="pf-note">15/mo</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Profile from a survey or Form 990</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Readiness checklist and IRS check</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Grant matches <span class="pf-note">All</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">AI proposal drafts <span class="pf-note">15 a month</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Deadline reminders</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Word, PDF and text export</span></div>
               <div class="pf-row"><div class="pf-ic no"><svg width="8" height="8" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div><span class="pf-text dim">Learns from your past proposals</span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Post-award compliance</span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Export (submission-ready)</span></div>
+              <div class="pf-row"><div class="pf-ic no"><svg width="8" height="8" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div><span class="pf-text dim">Grant management after you win</span></div>
             </div>
           </div>
 
           <!-- Pro -->
-          <div class="pc">
+          <div class="pc featured">
+            <div class="pc-badge">Best value</div>
             <div class="pc-tier">Pro</div>
-            <div class="pc-price" id="pro-price"><span class="amt">$149</span><span class="per">/mo</span></div>
-            <div class="pc-billed" id="pro-billed"></div>
-            <p class="pc-desc">Full platform access for serious grant-seeking organizations.</p>
+            <div class="pc-price" id="pro-price"><span class="amt">$300</span><span class="per">/year</span></div>
+            <div class="pc-billed" id="pro-billed">$25 a month, billed yearly</div>
+            <div class="pc-save" id="pro-save">You save $131.88 a year</div>
+            <p class="pc-desc">For organizations that apply all year and want to keep every grant they win.</p>
+            <p class="pc-earn" id="pro-earn">One $5,000 grant pays for 16 years of Pro.</p>
             <button class="pc-cta primary" onclick="selectTier('pro')">Start Free Trial</button>
             <div class="pc-div"></div>
             <div class="pc-features">
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Readiness checker</span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Grant discovery <span class="pf-note">Unlimited + federal</span></span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Funder AI policy warnings</span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">AI draft sections <span class="pf-note">Unlimited</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Profile from a survey or Form 990</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Readiness checklist and IRS check</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Grant matches <span class="pf-note">All</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">AI proposal drafts <span class="pf-note">Unlimited</span></span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Deadline reminders</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Word, PDF and text export</span></div>
               <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Learns from your past proposals</span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Post-award compliance</span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Export (submission-ready)</span></div>
-              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Team roles / multi-user</span></div>
+              <div class="pf-row"><div class="pf-ic yes"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/></svg></div><span class="pf-text">Grant management after you win</span></div>
             </div>
           </div>
         </div>
 
-        <p class="pricing-foot">All paid plans include a 14-day free trial. No credit card required to start.</p>
+        <p class="pricing-foot">All paid plans include a 14-day free trial. No credit card required to start.<br>Grant amounts are examples: funders decide every award.</p>
       </div>
     </main>
   </div>
 </div>
 <script>
 (function(){
-  var billing = 'monthly';
+  var billing = 'annual';
 
   // Update pricing cards to reflect real current tier
   window.renderPlanScreen = function() {
@@ -5778,24 +5796,37 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
     }
   };
 
+  // Prices (USD). Yearly is a flat price per year; the saving is against paying monthly for 12 months.
+  // Keep in step with supabase/functions/create-checkout (PRICES) and the landing page's pricing section.
+  var PLANS = {
+    starter: { name: 'Starter', monthly: 14.99, yearly: 120, example: 1000 },
+    pro:     { name: 'Pro',     monthly: 35.99, yearly: 300, example: 5000 },
+  };
+  function money(n) { n = Math.round(n * 100) / 100; return '$' + (n % 1 ? n.toFixed(2) : n.toLocaleString('en-US')); }
   window.setBilling = function(b){
     billing = b;
     document.querySelectorAll('#billing-toggle button').forEach(function(btn,i){
       var on = (i===0&&b==='monthly')||(i===1&&b==='annual');
       btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', String(on));
     });
-    var mult = b==='annual' ? 0.8 : 1;
-    var starterAmt = Math.round(49 * mult);
-    var proAmt = Math.round(149 * mult);
-    var starterP = document.getElementById('starter-price');
-    if(starterP) starterP.innerHTML = '<span class="amt">$'+starterAmt+'</span><span class="per">/mo</span>';
-    var proP = document.getElementById('pro-price');
-    if(proP) proP.innerHTML = '<span class="amt">$'+proAmt+'</span><span class="per">/mo</span>';
-    var starterB = document.getElementById('starter-billed');
-    if(starterB) starterB.textContent = b==='annual' ? 'Billed $'+(starterAmt*12)+'/year' : '';
-    var proB = document.getElementById('pro-billed');
-    if(proB) proB.textContent = b==='annual' ? 'Billed $'+(proAmt*12)+'/year' : '';
+    Object.keys(PLANS).forEach(function(id){
+      var p = PLANS[id], twelve = Math.round(p.monthly * 12 * 100) / 100, save = twelve - p.yearly;
+      var price = document.getElementById(id + '-price'), billed = document.getElementById(id + '-billed');
+      var saveEl = document.getElementById(id + '-save'), earn = document.getElementById(id + '-earn');
+      if (b === 'annual') {
+        if (price) price.innerHTML = '<span class="amt">' + money(p.yearly) + '</span><span class="per">/year</span>';
+        if (billed) billed.textContent = money(p.yearly / 12) + ' a month, billed yearly';
+        if (saveEl) saveEl.textContent = 'You save ' + money(save) + ' a year';
+      } else {
+        if (price) price.innerHTML = '<span class="amt">' + money(p.monthly) + '</span><span class="per">/month</span>';
+        if (billed) billed.textContent = money(twelve) + ' a year, billed monthly';
+        if (saveEl) saveEl.innerHTML = '<button type="button" class="pc-save-link" onclick="setBilling(\'annual\')">Pay yearly and save ' + money(save) + '</button>';
+      }
+      var years = Math.floor(p.example / (b === 'annual' ? p.yearly : twelve));
+      if (earn) earn.textContent = 'One ' + money(p.example) + ' grant pays for ' + years + ' years of ' + p.name + '.';
+    });
   };
+  window.setBilling('annual');
 })();
 </script>
 
@@ -5839,15 +5870,6 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
       </section>
       <div id="pa-content"><div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div></div>
 
-      <!-- Export paywall banner -->
-      <div class="paywall-banner" style="margin:0 0 32px">
-        <div class="pwb-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
-        <div class="pwb-body">
-          <div class="pwb-title">Export submission-ready package <span class="pwb-badge">Starter</span></div>
-          <div class="pwb-sub">Download a complete, formatted proposal package ready to submit — cover page, budget narrative, and all sections included.</div>
-        </div>
-        <button class="pwb-btn" onclick="go('plan')">View Plans →</button>
-      </div>
     </main>
   </div>
 </div>

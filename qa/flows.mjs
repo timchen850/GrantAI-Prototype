@@ -1186,6 +1186,33 @@ flow('nonprofit-setup-steps-saved', async (browser, check) => {
   return t;
 });
 
+// Prices (Oct 24): Starter $14.99/mo or $120/yr, Pro $35.99/mo or $300/yr, same on the landing page
+// and the Plans screen; yearly shows the yearly price and the saving; no features the app doesn't have.
+flow('pricing-and-savings', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('plan')); await p.waitForTimeout(900);
+  const cards = () => p.evaluate(() => [...document.querySelectorAll('#pricing-cards .pc')].map((c) => c.innerText.replace(/\s+/g, ' ')));
+  let [free, starter, pro] = await cards();
+  check('yearly is shown first: Starter $120/year, $10 a month, saves $59.88', /\$120 \/year/.test(starter) && /\$10 a month, billed yearly/.test(starter) && /You save \$59\.88 a year/.test(starter));
+  check('Pro $300/year, $25 a month, saves $131.88', /\$300 \/year/.test(pro) && /\$25 a month, billed yearly/.test(pro) && /You save \$131\.88 a year/.test(pro));
+  check('each paid plan shows what one grant pays for', /One \$1,000 grant pays for 8 years of Starter/.test(starter) && /One \$5,000 grant pays for 16 years of Pro/.test(pro));
+  await p.click('#billing-toggle button:has-text("Monthly")'); await p.waitForTimeout(300);
+  [free, starter, pro] = await cards();
+  check('monthly: Starter $14.99, Pro $35.99, each with its yearly saving', /\$14\.99 \/month/.test(starter) && /Pay yearly and save \$59\.88/.test(starter) && /\$35\.99 \/month/.test(pro) && /Pay yearly and save \$131\.88/.test(pro));
+  await p.click('#starter-save button'); await p.waitForTimeout(300);
+  check('"Pay yearly and save" switches to yearly', /\$120 \/year/.test((await cards())[1]) && await p.evaluate(() => document.querySelector('#billing-toggle button.on').textContent.includes('Yearly')));
+  const has = (c, f) => p.evaluate(([c, f]) => { const r = [...document.querySelectorAll('#pricing-cards .pc')][c].querySelectorAll('.pf-row'); const row = [...r].find((x) => x.textContent.includes(f)); return row ? !!row.querySelector('.pf-ic.yes') : null; }, [c, f]);
+  check('Pro is the featured plan ("Best value")', await p.evaluate(() => { const c = document.querySelectorAll('#pricing-cards .pc')[2]; return c.classList.contains('featured') && /Best value/.test(c.textContent); }));
+  check('Starter leaves out what makes Pro worth it (past proposals, grant management)', (await has(1, 'past proposals')) === false && (await has(1, 'Grant management')) === false && (await has(2, 'past proposals')) === true && (await has(2, 'Grant management')) === true);
+  check('Free leaves out export; Starter has it', (await has(0, 'export')) === false && (await has(1, 'export')) === true);
+  const all = await p.evaluate(() => document.getElementById('plan').innerText + document.getElementById('pricing').innerText);
+  check('no features the app does not have (team roles, account manager, calendar sync, unlimited users)', !/team roles|multi-user|account manager|calendar sync|unlimited users/i.test(all));
+  const landing = await p.evaluate(() => document.getElementById('pricing').innerText.replace(/\s+/g, ' '));
+  check('the landing page shows the same prices and savings', /\$14\.99/.test(landing) && /\$35\.99/.test(landing) && /\$120 a year: save \$59\.88/.test(landing) && /\$300 a year: save \$131\.88/.test(landing) && !/19\.99|39\.99/.test(landing));
+  return t;
+});
+
 // The tour is required for new accounts, so it must be possible to finish with Tab and Enter alone.
 flow('tour-by-keyboard', async (browser, check) => {
   const t = await openApp(browser, { persona: 'newuser', reducedMotion: true });

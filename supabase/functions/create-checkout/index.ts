@@ -16,12 +16,15 @@ const cors = {
 const json = (o: unknown, s = 200) =>
   new Response(JSON.stringify(o), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } });
 
-// Stripe price lookup keys → created on first use if missing
+// Stripe price lookup keys → created on first use if missing.
+// Prices changed 2026-10-24 (Starter $14.99/mo or $120/yr, Pro $35.99/mo or $300/yr). Stripe prices
+// can't change amount, so these use new lookup keys (_v2): the old $49/$149 prices stay unused.
+// Keep in step with PLANS in index.html (plan screen) and the landing page's pricing section.
 const PRICES: Record<string, { amount: number; interval: 'month' | 'year'; nickname: string }> = {
-  starter_monthly: { amount: 4900,   interval: 'month', nickname: 'Starter Monthly' },
-  starter_annual:  { amount: 47040,  interval: 'year',  nickname: 'Starter Annual'  }, // $49 * 12 * 0.8
-  pro_monthly:     { amount: 14900,  interval: 'month', nickname: 'Pro Monthly'      },
-  pro_annual:      { amount: 143040, interval: 'year',  nickname: 'Pro Annual'       }, // $149 * 12 * 0.8
+  starter_monthly_v2: { amount: 1499,  interval: 'month', nickname: 'Starter Monthly' },
+  starter_annual_v2:  { amount: 12000, interval: 'year',  nickname: 'Starter Yearly'  },
+  pro_monthly_v2:     { amount: 3599,  interval: 'month', nickname: 'Pro Monthly'     },
+  pro_annual_v2:      { amount: 30000, interval: 'year',  nickname: 'Pro Yearly'      },
 };
 
 async function stripe(path: string, body?: Record<string, unknown>, method = 'POST') {
@@ -77,7 +80,7 @@ Deno.serve(async (req) => {
     if (!['starter', 'pro'].includes(tier)) return json({ error: 'Invalid tier' }, 400);
     if (!['monthly', 'annual'].includes(billing)) return json({ error: 'Invalid billing' }, 400);
 
-    const lookupKey = `${tier}_${billing}`;
+    const lookupKey = `${tier}_${billing}_v2`;
     const priceId = await getOrCreatePrice(lookupKey);
 
     // App URL for redirects (works locally and in prod)
