@@ -291,6 +291,38 @@ flow('deadlines-done-and-reopen', async (browser, check) => {
   return t;
 });
 
+flow('deadlines-calendar-file', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page; const toasts = await toastSpy(p);
+  const uid = t.db.deadlines[0].user_id;
+  const dayStr = (n) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);   // same as the fixtures' day()
+  t.db.deadlines.push({ id: 'd9', user_id: uid, grant_id: null, kind: 'loi', title: 'Fondation Élan, Inc.; letter of inquiry for the after-school robotics and literacy expansion', due_date: dayStr(60), status: 'upcoming', created_at: new Date().toISOString() });
+  await p.evaluate(() => go('deadlines')); await p.waitForTimeout(1200);
+  const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#dl-cal-btn')]);
+  const fs = await import('fs');
+  const raw = fs.readFileSync(await dl.path(), 'utf8');
+  const lines = raw.split('\r\n');
+  const unfolded = raw.replace(/\r\n /g, '');
+  check('Add to calendar downloads grange-deadlines.ics', dl.suggestedFilename() === 'grange-deadlines.ics');
+  check('the file is a calendar with CRLF line endings', raw.startsWith('BEGIN:VCALENDAR\r\n') && raw.endsWith('END:VCALENDAR\r\n') && !/[^\r]\n/.test(raw));
+  check('no line is longer than 75 bytes (long titles wrap)', lines.every((l) => Buffer.byteLength(l, 'utf8') <= 75) && lines.some((l) => l.startsWith(' ')));
+  const events = unfolded.split('BEGIN:VEVENT').slice(1);
+  check('one event per upcoming deadline, none for the done one (4)', events.length === 4 && !/Weingart interim report/.test(unfolded));
+  check('commas and semicolons in a title are escaped', /SUMMARY:Fondation Élan\\, Inc\.\\; letter of inquiry/.test(unfolded));
+  const ev = (re) => events.find((e) => re.test(e)) || '';
+  const alarms = (e) => (e.match(/TRIGGER:[^\r]+/g) || []).map((x) => x.slice(8));
+  check('a deadline 18 days out gets 14, 7 and 1-day alerts at 9 am', JSON.stringify(alarms(ev(/Youth STEM/))) === JSON.stringify(['-P13DT15H', '-P6DT15H', '-PT15H']));
+  check('a deadline 60 days out gets all four alerts (30, 14, 7, 1)', alarms(ev(/Fondation/)).length === 4 && alarms(ev(/Fondation/))[0] === '-P29DT15H');
+  check('events are all-day on the due date', new RegExp('DTSTART;VALUE=DATE:' + dayStr(18).replace(/-/g, '')).test(ev(/Youth STEM/)));
+  check('the SAM.gov renewal is in the file', /SUMMARY:Renew SAM\.gov registration/.test(unfolded));
+  check('the download says what to do next', toasts.some((m) => /Open the file to add them/.test(m)));
+  t.db.deadlines.forEach((d) => { d.status = 'done'; });
+  await p.click('#dl-cal-btn'); await p.waitForTimeout(600);
+  check('with nothing upcoming, it says so instead of saving an empty file', toasts.some((m) => /No upcoming deadlines yet/.test(m)));
+  check('no row promises a reminder Grange cannot send', !/remind you/i.test(await p.evaluate(() => document.getElementById('deadlines').innerText)));
+  return t;
+});
+
 flow('readiness-mark-have', async (browser, check) => {
   const t = await openApp(browser, { persona: 'np' });
   const p = t.page;
@@ -957,11 +989,17 @@ flow('sam-dates-in-asia-mornings', async (browser, check) => {
   check('the SAM.gov fields are labelled (drawn after the screen opened)', await p.evaluate(() => document.getElementById('sam-uei').labels.length > 0 && document.getElementById('sam-active').labels.length > 0));
   await p.fill('#sam-uei', 'ABC123DEF456'); await p.fill('#sam-active', '2026-10-25');
   await p.click('#readiness button:has-text("Save & track renewal")'); await p.waitForTimeout(600);
-  check("today's local date is accepted as the registration date", toasts.some((m) => /Grange will track/.test(m)) && !toasts.some((m) => /future/.test(m)));
+  check("today's local date is accepted as the registration date", toasts.some((m) => /renewal date is on your Deadlines list/.test(m)) && !toasts.some((m) => /future/.test(m)));
   await p.waitForTimeout(600);
+  const renewals = () => t.db.deadlines.filter((d) => d.kind === 'registration_renewal' && d.status === 'upcoming');
+  check('the renewal lands on the Deadlines list, due the day it expires (Oct 25, 2027)', renewals().length === 1 && String(renewals()[0].due_date).slice(0, 10) === '2027-10-25');
   const regs = (t.db.registrations || []).filter((r) => r.registration_type === 'sam_gov');
   check('quick clicks through the steps save one SAM.gov record, not several', regs.length === 1 && regs[0].uei === 'ABC123DEF456');
   check('the renewal date reads like the rest of the app ("Oct 25, 2027")', /Expires Oct 25, 2027\./.test(await p.evaluate(() => document.getElementById('readiness').innerText)));
+  await p.click('#readiness .rdy-irs-recheck:has-text("Update my SAM.gov info")'); await p.waitForTimeout(1200);
+  check('clearing the SAM.gov dates takes the renewal off the Deadlines list', renewals().length === 0);
+  await p.fill('#sam-uei', 'ABC123DEF456'); await p.fill('#sam-active', '2026-10-20'); await p.click('#readiness button:has-text("Save & track renewal")'); await p.waitForTimeout(1200);
+  check('a new registration date replaces the renewal instead of adding a second', renewals().length === 1 && String(renewals()[0].due_date).slice(0, 10) === '2027-10-20');
   return t;
 });
 
@@ -1194,6 +1232,12 @@ flow('claims-match-the-app', async (browser, check) => {
   const text = await p.evaluate(() => ['landing', 'demo', 'tutorial'].map((id) => document.getElementById(id).textContent).join(' ') + TUT_STEPS.map((s) => s.render()).join(' '));
   const bad = ['Candid', 'Weingart', 'Joyce', 'Kresge', 'California Grants Portal', 'CA Grants', 'RFP feeds', 'state portals', 'hundreds of foundations', 'Every day we scan'].filter((w) => text.includes(w));
   check('no sources the app does not search' + (bad.length ? ' (found: ' + bad.join(', ') + ')' : ''), !bad.length);
+  // Features the landing page and demo used to promise but the app doesn't have (Oct 24): no email
+  // reminders, digest, auto-archive, USPS check, portal formatting, budget builder, report writer or daily crawl.
+  const contactText = await p.evaluate(() => document.getElementById('contact').textContent);
+  const missing = ['USPS', 'Weekly digest', 'Calendar sync', 'Auto-archive', "formatted for the funder's portal", 'refreshed daily', 'running daily', 'remind you', 'reminds you', 'verified against the RFP', 'Allowable costs', 'as a diagram', 'Build the budget once', 'reports written from', 'Monday – Friday']
+    .filter((w) => (text + ' ' + contactText).includes(w));
+  check('no features the app does not have' + (missing.length ? ' (found: ' + missing.join(', ') + ')' : ''), !missing.length);
   check('no made-up deadlines for real foundations (RWJF "Due Aug 1", CCF "Due Aug 30")', !/Due Aug 1(?!\d)|Due Aug 30(?!\d)|LOI Jul 1(?!\d)/.test(text));
   // Security and Privacy pages: no promises a two-person team on Supabase's free plan can't keep
   const legal = await p.evaluate(() => ['security', 'privacy', 'terms'].map((id) => document.getElementById(id).textContent).join(' '));

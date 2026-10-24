@@ -1,0 +1,74 @@
+name: Supabase nightly backup
+
+# Supabase's free plan has no automatic backups. Each night this dumps the database (roles, schema and
+# data) with the Supabase CLI, encrypts the dump with a passphrase, and keeps it for 14 days as a
+# workflow artifact. This repository is public, so anyone signed in to GitHub can download its
+# artifacts: the dump is always encrypted (AES-256) before upload, and only BACKUP_PASSPHRASE opens it.
+#
+# Needs two repository secrets (Settings > Secrets and variables > Actions):
+#   SUPABASE_DB_URL     the Session pooler connection string, with the database password filled in
+#   BACKUP_PASSPHRASE   a long random passphrase; keep a copy somewhere safe, restoring needs it
+# Until both exist, the job skips with a notice instead of failing every night.
+# Setup and restore steps: supabase/BACKUPS.md. Uploaded files in Storage are not included.
+
+on:
+  schedule:
+    - cron: '41 7 * * *'   # every night at 07:41 UTC (3:41 am Eastern)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Check the secrets are set
+        id: check
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::notice::Backup skipped: add the SUPABASE_DB_URL and BACKUP_PASSPHRASE repository secrets (see supabase/BACKUPS.md)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          elif [ "${#BACKUP_PASSPHRASE}" -lt 24 ]; then
+            echo "::error::BACKUP_PASSPHRASE is too short. Use at least 24 random characters: the encrypted backups are downloadable from this public repository."
+            exit 1
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: supabase/setup-cli@v1
+        if: steps.check.outputs.ready == 'true'
+        with:
+          version: latest
+
+      - name: Dump roles, schema and data
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          mkdir -p dump
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f dump/roles.sql --role-only
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f dump/schema.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f dump/data.sql --use-copy --data-only
+          ls -la dump
+          test -s dump/schema.sql && test -s dump/data.sql
+
+      - name: Encrypt
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          name="grange-db-$(date -u +%Y-%m-%d)"
+          tar -czf "$name.tar.gz" -C dump .
+          gpg --batch --yes --pinentry-mode loopback --passphrase-fd 3 \
+            --symmetric --cipher-algo AES256 -o "$name.tar.gz.gpg" "$name.tar.gz" 3<<<"$BACKUP_PASSPHRASE"
+          rm -rf dump "$name.tar.gz"
+          echo "BACKUP_NAME=$name" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        if: steps.check.outputs.ready == 'true'
+        with:
+          name: ${{ env.BACKUP_NAME }}
+          path: ${{ env.BACKUP_NAME }}.tar.gz.gpg
+          retention-days: 14
+          if-no-files-found: error

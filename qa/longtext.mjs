@@ -17,7 +17,7 @@ for (const width of widths) {
   t.db.profiles.forEach((x) => { if (x.user_id === uid) x.org_name = ORG; });
   t.db.onboarding_answers.forEach((r) => { if (r.user_id === uid && r.question_key === 'org_name') r.answer = ORG; });
   t.db.grants.forEach((g, i) => { if (g.user_id === uid) { g.title = (i % 2 ? WORD : LONG); g.funder = 'The Robert Wood Johnson and Bill & Melinda Gates Joint Philanthropic Initiative'; } });
-  t.db.deadlines.forEach((d, i) => { if (d.user_id === uid) d.title = (i % 2 ? WORD : LONG) + ' — application due'; });
+  t.db.deadlines.forEach((d, i) => { if (d.user_id === uid) d.title = (i % 2 ? WORD : LONG) + ': proposal due'; });
   await p.reload(); await p.waitForTimeout(2000);
   for (const s of ['dashboard', 'discovery', 'readiness', 'nonprofit-setup', 'generator', 'manage', 'deadlines', 'profile', 'plan']) {
     await p.evaluate((id) => { scrollTo(0, 0); go(id); }, s); await p.waitForTimeout(1600);

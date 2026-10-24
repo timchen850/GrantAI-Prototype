@@ -41,8 +41,8 @@ export function buildDb(persona) {
       g('g4', 'After-School Literacy Award', 'California Endowment', 30000, day(-60), 'awarded'),
     );
     db.deadlines.push(
-      { id: 'd1', user_id: uid, grant_id: 'g1', kind: 'proposal', title: 'Youth STEM Pathways Fund — application due', due_date: day(18), status: 'upcoming', created_at: iso(-10) },
-      { id: 'd2', user_id: uid, grant_id: 'g2', kind: 'proposal', title: '21st CCLC — application due', due_date: day(45), status: 'upcoming', created_at: iso(-9) },
+      { id: 'd1', user_id: uid, grant_id: 'g1', kind: 'proposal', title: 'Youth STEM Pathways Fund: proposal due', due_date: day(18), status: 'upcoming', created_at: iso(-10) },
+      { id: 'd2', user_id: uid, grant_id: 'g2', kind: 'proposal', title: '21st CCLC: proposal due', due_date: day(45), status: 'upcoming', created_at: iso(-9) },
       { id: 'd3', user_id: uid, grant_id: null, kind: 'registration_renewal', title: 'Renew SAM.gov registration', due_date: day(4), status: 'upcoming', created_at: iso(-9) },
       { id: 'd4', user_id: uid, grant_id: 'g3', kind: 'report', title: 'Weingart interim report', due_date: day(-3), status: 'done', completed_at: iso(-3), created_at: iso(-30) },
     );
