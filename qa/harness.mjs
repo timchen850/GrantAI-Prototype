@@ -13,7 +13,7 @@ import { chromium } from 'playwright';
 import { buildDb, PERSONAS } from './fixtures.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-export const ROOT = path.resolve(HERE, '..');
+export const ROOT = process.env.QA_ROOT ? path.resolve(process.env.QA_ROOT) : path.resolve(HERE, '..');   // QA_ROOT: test another copy of the site
 const NM = path.join(HERE, 'node_modules');
 const SUPA = 'https://xewrvmqyzeiziimcmenj.supabase.co';
 const STORAGE_KEY = 'sb-xewrvmqyzeiziimcmenj-auth-token';
@@ -22,7 +22,7 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/jav
   '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json', '.ico': 'image/x-icon',
   '.woff2': 'font/woff2', '.woff': 'font/woff', '.txt': 'text/plain' };
 
-export function startServer(port = 3456) {
+export function startServer(port = +process.env.QA_PORT || 3456) {   // QA_PORT: run two suites at once
   const srv = http.createServer((req, res) => {
     let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
     if (p.endsWith('/')) p += 'index.html';
@@ -173,12 +173,12 @@ function sse(text) {
 function govHits() {
   const t = (d) => { const x = new Date(Date.now() + d * 864e5); return `${String(x.getMonth() + 1).padStart(2, '0')}/${String(x.getDate()).padStart(2, '0')}/${x.getFullYear()}`; };
   return [
-    { id: 351001, number: 'ED-GRANTS-2026-01', title: '21st Century Community Learning Centers: Out-of-School Time STEM Expansion', agency: 'Department of Education', agencyCode: 'ED', closeDate: t(45), oppStatus: 'posted', cfdaList: ['84.287'], grangeFocus: ['Education', 'Youth'], eligTags: ['nonprofit'] },
-    { id: 351002, number: 'HHS-2026-ACF', title: 'Community Health Workers for Youth Mental Health Prevention', agency: 'Department of Health and Human Services', agencyCode: 'HHS', closeDate: t(20), oppStatus: 'posted', cfdaList: ['93.243'], grangeFocus: ['Health', 'Youth'], eligTags: ['nonprofit', 'government'] },
-    { id: 351003, number: 'USDA-NIFA-2026', title: 'Community Food Projects Competitive Grant Program', agency: 'Department of Agriculture', agencyCode: 'USDA', closeDate: t(70), oppStatus: 'posted', cfdaList: ['10.225'], grangeFocus: ['Food Security'], eligTags: ['nonprofit', 'small_business'] },
-    { id: 351004, number: 'NEA-2027-ART', title: 'Grants for Arts Projects: Arts Education', agency: 'National Endowment for the Arts', agencyCode: 'NEA', closeDate: '', oppStatus: 'forecasted', cfdaList: ['45.024'], grangeFocus: ['Arts', 'Education'], eligTags: ['nonprofit'] },
-    { id: 351005, number: 'DOL-ETA-2026', title: 'YouthBuild Workforce Training Grants', agency: 'Department of Labor', agencyCode: 'DOL', closeDate: t(9), oppStatus: 'posted', cfdaList: ['17.274'], grangeFocus: ['Workforce', 'Youth'], eligTags: ['nonprofit', 'everyone'] },
-    { id: 351006, number: 'EPA-OEJ-2026', title: 'Environmental Justice Collaborative Problem-Solving Cooperative Agreement Program', agency: 'Environmental Protection Agency', agencyCode: 'EPA', closeDate: t(33), oppStatus: 'posted', cfdaList: ['66.306'], grangeFocus: ['Environment', 'Community Development'], eligTags: ['nonprofit', 'tribal'] },
+    { id: 351001, number: 'ED-GRANTS-2026-01', title: '21st Century Community Learning Centers: Out-of-School Time STEM Expansion', agency: 'Department of Education', agencyCode: 'ED', closeDate: t(45), oppStatus: 'posted', cfdaList: ['84.287'], grangeFocus: ['Education', 'Youth'], eligTags: ['501(c)(3) eligible'] },
+    { id: 351002, number: 'HHS-2026-ACF', title: 'Community Health Workers for Youth Mental Health Prevention', agency: 'Department of Health and Human Services', agencyCode: 'HHS', closeDate: t(20), oppStatus: 'posted', cfdaList: ['93.243'], grangeFocus: ['Health', 'Youth'], eligTags: ['501(c)(3) eligible'] },
+    { id: 351003, number: 'USDA-NIFA-2026', title: 'Community Food Projects Competitive Grant Program', agency: 'Department of Agriculture', agencyCode: 'USDA', closeDate: t(70), oppStatus: 'posted', cfdaList: ['10.225'], grangeFocus: ['Food Security'], eligTags: ['501(c)(3) eligible', 'Open to small business'] },
+    { id: 351004, number: 'NEA-2027-ART', title: 'Grants for Arts Projects: Arts Education', agency: 'National Endowment for the Arts', agencyCode: 'NEA', closeDate: '', oppStatus: 'forecasted', cfdaList: ['45.024'], grangeFocus: ['Arts', 'Education'], eligTags: ['501(c)(3) eligible'] },
+    { id: 351005, number: 'DOL-ETA-2026', title: 'YouthBuild Workforce Training Grants', agency: 'Department of Labor', agencyCode: 'DOL', closeDate: t(9), oppStatus: 'posted', cfdaList: ['17.274'], grangeFocus: ['Workforce', 'Youth'], eligTags: ['501(c)(3) eligible', 'Open to any applicant'] },
+    { id: 351006, number: 'EPA-OEJ-2026', title: 'Environmental Justice Collaborative Problem-Solving Cooperative Agreement Program', agency: 'Environmental Protection Agency', agencyCode: 'EPA', closeDate: t(33), oppStatus: 'posted', cfdaList: ['66.306'], grangeFocus: ['Environment', 'Community Development'], eligTags: ['501(c)(3) eligible'] },
   ];
 }
 function fnHandler(fnLog, opts) {
@@ -196,7 +196,7 @@ function fnHandler(fnLog, opts) {
       case 'generate-proposal': {
         const prompt = JSON.stringify(body.contents || '');
         const isPlan = /PLAN of how you will approach/.test(prompt);
-        const text = isPlan ? JSON.stringify(SAMPLE_PLAN) : SAMPLE_DRAFT;
+        const text = isPlan ? JSON.stringify(SAMPLE_PLAN) : (opts.draftText || SAMPLE_DRAFT);
         return route.fulfill({ status: 200, headers: { 'Content-Type': 'text/event-stream', 'Access-Control-Allow-Origin': '*' }, body: sse(text) });
       }
       case 'ai-chat': return json({ reply: 'Lead with your outcomes: 180 students served, 38% math proficiency baseline. Ask for $25,000 and tie each budget line to an activity.' });
@@ -212,7 +212,7 @@ function fnHandler(fnLog, opts) {
 }
 
 /* ───────── page factory ───────── */
-export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], fnOverride = {}, signedOut = false, revokedSession = false, backendDown = false, reducedMotion = false, base = 'http://127.0.0.1:3456/' } = {}) {
+export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], fnOverride = {}, draftText = null, signedOut = false, revokedSession = false, backendDown = false, reducedMotion = false, base = 'http://127.0.0.1:' + (+process.env.QA_PORT || 3456) + '/' } = {}) {
   const P = PERSONAS[persona];
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, isMobile: width < 600, hasTouch: width < 600, reducedMotion: reducedMotion ? 'reduce' : 'no-preference' });
   const db = buildDb(persona);
@@ -226,7 +226,7 @@ export async function openApp(browser, { persona = 'np', width = 1440, height = 
   await ctx.route('https://fonts.googleapis.com/**', (r) => r.fulfill({ body: fontCss(), contentType: 'text/css' }));
   await ctx.route('https://fonts.gstatic.com/qa/**', (r) => { const [pkg, file] = new URL(r.request().url()).pathname.split('/').slice(-2); r.fulfill({ path: path.join(NM, '@fontsource', pkg, 'files', file), contentType: 'font/woff2' }); });
   await ctx.route(SUPA + '/rest/v1/**', restHandler(db, restLog, failTables));
-  await ctx.route(SUPA + '/functions/v1/**', fnHandler(fnLog, { failFunctions, fnOverride }));
+  await ctx.route(SUPA + '/functions/v1/**', fnHandler(fnLog, { failFunctions, fnOverride, draftText }));
   await ctx.route(SUPA + '/storage/v1/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ Key: 'documents/qa', signedURL: '/qa-signed' }) }));
   await ctx.route(SUPA + '/auth/v1/**', async (r) => {
     const u = new URL(r.request().url()); const p = u.pathname.replace('/auth/v1', '');

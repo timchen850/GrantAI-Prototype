@@ -61,7 +61,10 @@ cd qa && npm install
 node flows.mjs    # sign-up → tour → survey → dashboard, save a grant, draft a proposal, deadlines, readiness …
 node sweep.mjs    # every screen at desktop and phone widths: console errors, sideways scroll, screenshots
 node audit.mjs    # every inline handler calls a defined function; no duplicate or missing element ids
+node a11y.mjs     # axe-core WCAG 2 A/AA audit of every screen
 ```
+
+[`qa/QA_LOG.md`](qa/QA_LOG.md) lists every bug found this way and the test that now covers it.
 
 ## Use of AI in building this project
 

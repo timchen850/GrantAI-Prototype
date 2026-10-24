@@ -301,6 +301,7 @@ label.field-label {
 .sec-stats { max-width: 1100px; display: grid; grid-template-columns: repeat(4, 1fr); }
 .sec-stat { padding: 0 32px; text-align: center; border-left: 1px solid var(--line); }
 .sec-stat:first-child { border-left: none; }
+.legal-doc h2 { scroll-margin-top: 90px; }   /* clear the sticky header when jumping to a section */
 /* legal pages: links must not rely on color alone */
 .legal-doc p a, .legal-doc li a { text-decoration: underline !important; text-underline-offset: 2px; }
 .legal-doc [style*="accent-tint"] a { color: var(--accent-ink) !important; }
@@ -2446,7 +2447,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <!-- Supabase backend: config.js (gitignored) holds the project URL + anon key -->
 <script src="config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>   <!-- pinned: the version the qa/ tests run -->
 <script>
 /* Synchronous session check: if localStorage holds a Supabase token, hide the
    body immediately so logged-in users never see the landing page flash. The body
@@ -3128,7 +3129,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
 
   <footer class="footer">
     <div class="wrap footer-inner">
-      <a class="brand" href="#" onclick="go('landing')"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+      <a class="brand" href="#" onclick="go('landing');return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
       <div class="small">Built for nonprofits that don't have a grant writer on staff.</div>
       <div class="footer-links">
         <a href="#" onclick="go('privacy');return false;">Privacy</a><a href="#" onclick="go('terms');return false;">Terms</a><a href="#" onclick="go('security');return false;">Security</a><a href="#" onclick="go('contact');return false;">Contact</a>
@@ -3700,21 +3701,21 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
       <div style="display:flex;flex-direction:column;gap:20px;">
         <div style="display:flex;gap:16px;flex-wrap:wrap;">
           <div style="flex:1;min-width:140px;">
-            <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">First name <span style="color:var(--accent);">*</span></label>
-            <input id="contact-fname" type="text" placeholder="Maria" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
+            <label for="contact-fname" style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">First name <span style="color:var(--accent);">*</span></label>
+            <input id="contact-fname" autocomplete="given-name" type="text" placeholder="Maria" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
           </div>
           <div style="flex:1;min-width:140px;">
-            <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Last name <span style="color:var(--accent);">*</span></label>
-            <input id="contact-lname" type="text" placeholder="Reyes" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
+            <label for="contact-lname" style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Last name <span style="color:var(--accent);">*</span></label>
+            <input id="contact-lname" autocomplete="family-name" type="text" placeholder="Reyes" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
           </div>
         </div>
         <div>
-          <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Work email <span style="color:var(--accent);">*</span></label>
-          <input id="contact-email" type="email" placeholder="maria@hopeharbor.org" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
+          <label for="contact-email" style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Work email <span style="color:var(--accent);">*</span></label>
+          <input id="contact-email" autocomplete="email" type="email" placeholder="maria@hopeharbor.org" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
         </div>
         <div>
-          <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Organization name</label>
-          <input id="contact-org" type="text" placeholder="Hope Harbor Foundation" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
+          <label for="contact-org" style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Organization name</label>
+          <input id="contact-org" autocomplete="organization" type="text" placeholder="Hope Harbor Foundation" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color 140ms;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
         </div>
         <div>
           <label for="contact-topic" style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Topic <span style="color:var(--accent);">*</span></label>
@@ -3730,7 +3731,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
           </select>
         </div>
         <div>
-          <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Message <span style="color:var(--accent);">*</span></label>
+          <label for="contact-msg" style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;">Message <span style="color:var(--accent);">*</span></label>
           <textarea id="contact-msg" placeholder="Tell us how we can help…" rows="6" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;resize:vertical;transition:border-color 140ms;min-height:140px;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'"></textarea>
         </div>
         <div>
@@ -3798,7 +3799,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
     <div class="login-left">
       <div class="aurora"><i></i></div>
       <div class="ll-content">
-        <a class="brand" href="#" onclick="go('landing')" style="margin-bottom:auto;position:relative;z-index:1"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+        <a class="brand" href="#" onclick="go('landing');return false;" style="margin-bottom:auto;position:relative;z-index:1"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
         <h2>Stop leaving grants on the table.</h2>
         <p>Your mission qualifies for more funding than you're applying for. Grange AI helps you find it and write for it.</p>
         <div class="ll-list">
@@ -3809,13 +3810,13 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
       </div>
     </div>
     <div class="login-right">
-      <a class="back-link" href="#" onclick="go('landing')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
+      <a class="back-link" href="#" onclick="go('landing');return false;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
       <h3>Create your account</h3>
       <p class="lr-sub">Start your 14-day trial. No card required.</p>
-      <div class="fieldset"><label class="field-label">Organization name</label><input id="reg-org" type="text" placeholder="Eastside Youth Foundation"></div>
-      <div class="fieldset"><label class="field-label">Work email</label><input id="reg-email" type="email" placeholder="you@yourorg.org"></div>
-      <div class="fieldset"><label class="field-label">Password</label><input id="reg-pw" type="password" placeholder="At least 8 characters"></div>
-      <div class="fieldset"><label class="field-label">Confirm password</label><input id="reg-pw2" type="password" placeholder="Re-enter your password"></div>
+      <div class="fieldset"><label class="field-label" for="reg-org">Organization name</label><input id="reg-org" type="text" autocomplete="organization" placeholder="Eastside Youth Foundation" onkeydown="if(event.key==='Enter')submitSignup()"></div>
+      <div class="fieldset"><label class="field-label" for="reg-email">Work email</label><input id="reg-email" type="email" autocomplete="email" inputmode="email" placeholder="you@yourorg.org" onkeydown="if(event.key==='Enter')submitSignup()"></div>
+      <div class="fieldset"><label class="field-label" for="reg-pw">Password</label><input id="reg-pw" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" onkeydown="if(event.key==='Enter')submitSignup()"></div>
+      <div class="fieldset"><label class="field-label" for="reg-pw2">Confirm password</label><input id="reg-pw2" type="password" autocomplete="new-password" placeholder="Re-enter your password" onkeydown="if(event.key==='Enter')submitSignup()"></div>
       <button class="btn btn-accent btn-block" style="padding:13px" onclick="submitSignup()">Create account</button>
       <div class="lr-divider">or</div>
       <button class="btn btn-google btn-block" style="padding:12px" onclick="signInWithGoogle()" id="btn-google-signin">
@@ -3827,7 +3828,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
         </svg>
         Continue with Google
       </button>
-      <p class="lr-foot">Already have an account? <a href="#" onclick="go('signin')">Sign in</a></p>
+      <p class="lr-foot">Already have an account? <a href="#" onclick="go('signin');return false;">Sign in</a></p>
     </div>
   </div>
 </div>
@@ -4040,7 +4041,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
   <div class="si-overlay si-ov-top"></div>
 
   <nav class="si-nav">
-    <span class="si-brand" onclick="go('landing')">
+    <span class="si-brand" role="link" tabindex="0" onclick="go('landing')">
       <img src="logo.png" alt="Grange AI logo">Grange AI
     </span>
     <div class="si-nav-sep"></div>
@@ -4076,14 +4077,14 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
 
         <div class="si-email-row">
           <input type="email" id="si-email-input" class="si-email-input"
-            placeholder="you@yourorg.org"
+            placeholder="you@yourorg.org" aria-label="Email address" autocomplete="username" inputmode="email"
             oninput="siEmailInput(this)"
             onkeydown="if(event.key==='Enter')siGoCode()">
-          <button class="si-email-arr" id="si-email-btn" disabled onclick="siGoCode()">→</button>
+          <button class="si-email-arr" id="si-email-btn" aria-label="Continue" disabled onclick="siGoCode()">→</button>
         </div>
 
         <p class="si-terms">
-          By continuing, you agree to our <a href="#">Terms</a>, <a href="#">Privacy Notice</a> and <a href="#">Cookie Policy</a>.
+          By continuing, you agree to our <a href="#" onclick="go('terms');return false;">Terms</a>, <a href="#" onclick="go('privacy');return false;">Privacy Notice</a> and <a href="#" onclick="legalGoto('privacy', 5);return false;">Cookie Policy</a>.
         </p>
       </div>
 
@@ -4094,13 +4095,13 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
 
         <div class="si-email-row" style="margin-top:18px">
           <input type="password" id="si-pw-input" class="si-email-input"
-            placeholder="Your password" autocomplete="current-password"
+            placeholder="Your password" aria-label="Password" autocomplete="current-password"
             oninput="siPwInput(this)"
             onkeydown="if(event.key==='Enter')siSubmitCode()">
-          <button class="si-email-arr" id="si-pw-btn" disabled onclick="siSubmitCode()">→</button>
+          <button class="si-email-arr" id="si-pw-btn" aria-label="Sign in" disabled onclick="siSubmitCode()">→</button>
         </div>
 
-        <div><span class="si-resend" onclick="siMagicLink()">Email me a sign-in link instead</span></div>
+        <div><span class="si-resend" role="button" tabindex="0" onclick="siMagicLink()">Email me a sign-in link instead</span></div>
 
         <div class="si-btn-row">
           <button class="si-btn-back" onclick="siBack()">Back</button>
@@ -4108,7 +4109,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
         </div>
 
         <p class="si-terms" style="margin-top:44px">
-          By continuing, you agree to our <a href="#">Terms</a>, <a href="#">Privacy Notice</a> and <a href="#">Cookie Policy</a>.
+          By continuing, you agree to our <a href="#" onclick="go('terms');return false;">Terms</a>, <a href="#" onclick="go('privacy');return false;">Privacy Notice</a> and <a href="#" onclick="legalGoto('privacy', 5);return false;">Cookie Policy</a>.
         </p>
       </div>
 
@@ -4150,6 +4151,8 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
   .ob-nav .btn-ghost[disabled] { opacity: 0; pointer-events: none; }
   .ob-upload { border: 1.5px dashed rgba(0,0,0,0.18); border-radius: 12px; padding: 22px; text-align: center; font-size: 13.5px; color: var(--ink-body,#6b665e); cursor: pointer; }
   .ob-upload.has { border-style: solid; border-color: var(--ok, #2a9d6e); color: var(--ink); }
+  .ob-upload.drag { border-color: var(--accent); background: rgba(195,68,38,.05); }
+  .ob-upload:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* required-field affordances + inline validation */
   .ob-req { color: var(--accent); font-weight: 700; }
   /* coaching help — plain-language explainers for grant jargon */
@@ -4187,7 +4190,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
 <div id="onboarding" class="screen">
   <div class="ob-wrap">
     <div class="ob-top">
-      <a class="brand" href="#"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+      <span class="brand"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</span>
       <span class="ob-need"><span class="ob-req">*</span> Required to match you with grants</span>
     </div>
     <div class="ob-progress"><div class="ob-progress-fill" id="ob-progress-fill"></div></div>
@@ -4674,7 +4677,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
   <!-- PLANE 2: the persistent glass slab (the one piece of chrome) -->
   <div class="tut-slab tut-slab--intro" id="tut-slab">
     <header class="tut-slab-top">
-      <a class="brand brand--light" href="#" onclick="return false"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+      <span class="brand brand--light"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</span>
       <div class="tut-rail" id="tut-rail"></div>
       <span class="tut-badge tut-badge--glass"><span class="pip"></span><span id="tut-badge-label">Guided tour</span></span>
       <button class="tut-exit" id="tut-exit" onclick="tutExit()" hidden aria-label="Exit tour and return to portal">Exit tour ✕</button>
@@ -4896,7 +4899,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
         </div>
       </section>
       <div class="filters" id="disc-filters" style="display:none">
-        <input class="search" type="text" placeholder="Search grants…" id="disc-search" oninput="filterDiscGrants(this.value)">
+        <input class="search" type="text" placeholder="Search grants…" id="disc-search" aria-label="Search grants" oninput="filterDiscGrants(this.value)">
         <button class="chip on" onclick="setDiscFilter(this,'all')">All</button>
         <button class="chip" onclick="setDiscFilter(this,'Federal')">Federal</button>
         <button class="chip" onclick="setDiscFilter(this,'Foundation')">Foundation</button>
@@ -4926,7 +4929,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
       </section>
 
       <div class="steps" id="gen-steps">
-        <div class="stp done" id="gen-step-1" onclick="genShowSelect()" title="Pick a different grant"><span class="sn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span>Select grant</div>
+        <div class="stp done" id="gen-step-1" role="button" tabindex="0" onclick="genShowSelect()" title="Pick a different grant"><span class="sn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span>Select grant</div>
         <div class="stp now" id="gen-step-2"><span class="sn">2</span>Configure</div>
         <div class="stp" id="gen-step-3"><span class="sn">3</span>Generate</div>
         <div class="stp" id="gen-step-4"><span class="sn">4</span>Review &amp; export</div>
@@ -5084,7 +5087,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
           <div class="panel" id="gen-req-panel" style="margin-bottom:18px">
             <div class="panel-head"><h3>Funder requirements</h3></div>
             <p class="req-intro">New to this? Paste the funder's call, RFP, or "who can apply" page below. Grange reads it like a grant expert and tells you, in plain English, whether it's worth your time, exactly what you'll need to write, and which documents to attach.</p>
-            <textarea id="gen-rfp-text" class="req-ta" placeholder="Paste the funder's call for proposals, RFP, NOFO, or eligibility page here…" oninput="reqOnInput()"></textarea>
+            <textarea id="gen-rfp-text" aria-label="Funder’s call for proposals" class="req-ta" placeholder="Paste the funder's call for proposals, RFP, NOFO, or eligibility page here…" oninput="reqOnInput()"></textarea>
             <div class="req-bar">
               <span class="req-hint" id="gen-rfp-hint">Optional, and it makes your draft match the funder's required sections exactly. <button type="button" class="req-sample" onclick="reqLoadSample()">See a sample →</button></span>
               <button class="req-analyze" id="gen-rfp-btn" type="button" onclick="analyzeRfp()">
@@ -5116,7 +5119,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
           </div>
 
           <div class="pbox" id="gen-pbox" style="margin-top:4px">
-            <textarea id="gen-prompt-text" class="pbox-ta" rows="1" placeholder="Anything else Grange should know or emphasize? Optional, the details above are enough to generate." oninput="pboxAutosize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();genPromptSend();}"></textarea>
+            <textarea id="gen-prompt-text" aria-label="Anything else Grange should know" class="pbox-ta" rows="1" placeholder="Anything else Grange should know or emphasize? Optional, the details above are enough to generate." oninput="pboxAutosize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();genPromptSend();}"></textarea>
             <div class="pbox-bar">
               <div class="pbox-hint">✦ Fill in the details above, add anything extra here, then generate. Tap the mic to dictate.</div>
               <div class="pbox-acts">
@@ -5257,9 +5260,9 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
         <div class="divider">Your voice &amp; past proposals</div>
         <div class="fieldset full" id="rag-form-section">
           <div class="rag-lead">Add a past proposal, letter, or any writing that sounds like your organization. Grange studies it so your drafts come out in <b>your real voice</b>, not generic AI. Private to you, and never used to train AI.</div>
-          <textarea id="rag-paste" class="rag-ta" placeholder="Paste a past proposal, letter of inquiry, or your About-us text here…"></textarea>
+          <textarea id="rag-paste" aria-label="Past proposal or About-us text" class="rag-ta" placeholder="Paste a past proposal, letter of inquiry, or your About-us text here…"></textarea>
           <div class="rag-add-bar">
-            <input type="text" id="rag-label" class="rag-label" placeholder="Label (e.g. 2025 Youth Fund LOI)">
+            <input type="text" id="rag-label" aria-label="Label for this text" class="rag-label" placeholder="Label (e.g. 2025 Youth Fund LOI)">
             <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('rag-file').click()">Upload PDF, Word, or .txt</button>
             <input type="file" id="rag-file" accept=".txt,.md,.pdf,.docx,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onchange="ragFilePick(event)">
             <button type="button" class="btn btn-accent btn-sm" id="rag-add-btn" onclick="ragAdd()">Add to Grange's memory</button>
@@ -5277,7 +5280,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
         <div class="fieldset"><label class="field-label" for="pf-file-doc_financials">Audited financials</label>
           <div class="upl" id="pf-upl-doc_financials" role="button" tabindex="0" onclick="pfPickDoc('doc_financials')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pfPickDoc('doc_financials')}">Drop a PDF here or click to upload</div>
           <input type="file" id="pf-file-doc_financials" accept="application/pdf,.pdf" hidden onchange="pfUploadDoc('doc_financials', this.files[0]); this.value=''"></div>
-        <div class="fieldset"><label class="field-label">SAM.gov registration</label>
+        <div class="fieldset"><div class="field-label">SAM.gov registration</div>
           <div class="upl" role="button" tabindex="0" onclick="go('readiness')" onkeydown="if(event.key==='Enter'){go('readiness')}">Needed for federal grants. <b style="color:var(--accent-ink)">Set it up in Readiness →</b></div></div>
 
         <div class="divider">Logic model</div>
@@ -5593,8 +5596,8 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
       <div class="pricing-screen-inner">
         <div style="text-align:center">
           <div class="pricing-toggle" id="billing-toggle">
-            <button class="on" onclick="setBilling('monthly')">Monthly</button>
-            <button onclick="setBilling('annual')">Annual <span class="save-pill">−20%</span></button>
+            <button class="on" aria-pressed="true" onclick="setBilling('monthly')">Monthly</button>
+            <button aria-pressed="false" onclick="setBilling('annual')">Annual <span class="save-pill">−20%</span></button>
           </div>
         </div>
 
@@ -5723,7 +5726,8 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
   window.setBilling = function(b){
     billing = b;
     document.querySelectorAll('#billing-toggle button').forEach(function(btn,i){
-      btn.classList.toggle('on', (i===0&&b==='monthly')||(i===1&&b==='annual'));
+      var on = (i===0&&b==='monthly')||(i===1&&b==='annual');
+      btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', String(on));
     });
     var mult = b==='annual' ? 0.8 : 1;
     var starterAmt = Math.round(49 * mult);
@@ -5818,7 +5822,7 @@ body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[da
   <div class="modal">
     <div class="modal-head">
       <div><div class="mf">Weingart Foundation</div><div class="mt">Youth Development, Expanded Opportunity</div></div>
-      <button class="x" onclick="closeGrant()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      <button class="x" aria-label="Close" onclick="closeGrant()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:20px">
       <span class="pill pill-ink">Foundation</span><span class="pill pill-ink">Youth development</span>
@@ -5881,25 +5885,25 @@ function SIDE(active) {
   return `
   <div class="side-brand"><a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a></div>
   <nav class="side-nav">
-    <a href="#" onclick="go('dashboard')" class="${active==='dashboard'?'on':''}">
+    <a href="#" onclick="go('dashboard');return false;" class="${active==='dashboard'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
-    <a href="#" onclick="go('discovery')" class="${active==='discovery'?'on':''}">
+    <a href="#" onclick="go('discovery');return false;" class="${active==='discovery'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Grant discovery</a>
-    <a href="#" onclick="go('readiness')" class="${active==='readiness'?'on':''}">
+    <a href="#" onclick="go('readiness');return false;" class="${active==='readiness'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l1.8 1.8L15 12"/></svg>Readiness</a>
-    ${npPathVisible() ? `<a href="#" onclick="go('nonprofit-setup')" class="${active==='nonprofit-setup'?'on':''}">
+    ${npPathVisible() ? `<a href="#" onclick="go('nonprofit-setup');return false;" class="${active==='nonprofit-setup'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V10M19 21V10"/><path d="M9 21v-5h6v5"/><path d="M2 10l10-6 10 6"/></svg>Nonprofit setup</a>` : ''}
-    <a href="#" onclick="go('generator')" class="${active==='generator'?'on':''}">
+    <a href="#" onclick="go('generator');return false;" class="${active==='generator'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Proposal generator</a>
-    <a href="#" onclick="go('manage')" class="${active==='manage'?'on':''}">
+    <a href="#" onclick="go('manage');return false;" class="${active==='manage'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>Grant management</a>
-    <a href="#" onclick="go('deadlines')" class="${active==='deadlines'?'on':''}">
+    <a href="#" onclick="go('deadlines');return false;" class="${active==='deadlines'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Deadlines</a>
-    <a href="#" onclick="go('profile')" class="${active==='profile'?'on':''}">
+    <a href="#" onclick="go('profile');return false;" class="${active==='profile'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Org profile</a>
     <a href="#" onclick="tutReplay();return false;" class="side-tour">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z"/></svg>Take the tour</a>
-    <a href="#" onclick="go('plan')" class="${active==='plan'?'on':''}">
+    <a href="#" onclick="go('plan');return false;" class="${active==='plan'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Pricing</a>
   </nav>
   <div class="side-foot">
@@ -5911,7 +5915,7 @@ function SIDE(active) {
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
       Complete your profile →</button>` : ''}
     <div class="org-card"><div class="oc-ava" data-org-avatar></div><div class="oc-text"><div class="nm" data-org-name>Your organization</div><div class="pl">Grange AI</div></div></div>
-    <div class="links"><a href="#" onclick="go('profile')">Settings</a><a href="#" onclick="signOut();return false;">Sign out</a></div>
+    <div class="links"><a href="#" onclick="go('profile');return false;">Settings</a><a href="#" onclick="signOut();return false;">Sign out</a></div>
   </div>`;
 }
 function rebuildSidebars() {
@@ -5953,7 +5957,7 @@ function mNavMarkup() {
   const s = window._currentScreen || 'landing';
   const app = ['dashboard','discovery','readiness','nonprofit-setup','generator','manage','deadlines','profile','plan'];
   // Signed-in users always get the app menu (matches the desktop sidebar), on every screen.
-  if ((window._grange && window._grange.user) || app.indexOf(s) >= 0) {
+  if ((window._grange && window._grange.user && window._grange.profile) || app.indexOf(s) >= 0) {
     const item = (id, label) => `<a href="#" onclick="mNavGo('${id}');return false;" class="${s===id?'on':''}">${label}</a>`;
     return `
       ${item('dashboard', 'Dashboard')}
@@ -5985,8 +5989,10 @@ function mNavToggle() {
   document.getElementById('m-nav-links').innerHTML = mNavMarkup();
   n.classList.add('open');
   n.setAttribute('aria-hidden', 'false');
+  const byKeyboard = document.activeElement && document.activeElement.matches && document.activeElement.matches('.m-burger:focus-visible');
   document.querySelectorAll('.m-burger').forEach(b => b.setAttribute('aria-expanded', 'true'));
   document.body.style.overflow = 'hidden';
+  if (byKeyboard) setTimeout(() => n.querySelector('#m-nav-links a, #m-nav-links button')?.focus(), 60);
 }
 function mNavClose() {
   const n = document.getElementById('m-nav');
@@ -5997,9 +6003,52 @@ function mNavClose() {
   if ((window._currentScreen || '') !== 'demo') document.body.style.overflow = '';
 }
 function mNavGo(id) { mNavClose(); go(id); }
-function go(id) {
+document.addEventListener('keydown', (e) => {
+  if (e.defaultPrevented || (e.key !== 'Enter' && e.key !== ' ')) return;
+  const el = e.target;
+  if (!el || !el.matches || el.onkeydown) return;
+  const isBtn = el.matches('[role="button"]:not(button):not(a):not(input), [role="checkbox"]:not(input)');
+  const isLink = e.key === 'Enter' && el.matches('[role="link"]:not(a)');
+  if (!isBtn && !isLink) return;
+  e.preventDefault(); el.click();
+});
+/* Most form labels sit just before their field without a for= link, so clicking the
+   label did nothing. Link each one to the first field that follows it. */
+function linkFormLabels() {
+  document.querySelectorAll('label:not([for])').forEach((l) => {
+    if (l.control) return;
+    let f = null;
+    for (let n = l.nextElementSibling; n && !f; n = n.nextElementSibling) {
+      if (n.tagName === 'LABEL') break;
+      f = n.matches('input, select, textarea') ? n : n.querySelector('input:not([type=hidden]), select, textarea');
+    }
+    if (f && f.id && !(f.labels && f.labels.length)) l.htmlFor = f.id;
+  });
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const nav = document.getElementById('m-nav');
+  if (nav && nav.classList.contains('open')) {
+    mNavClose();
+    [...document.querySelectorAll('.m-burger')].find(b => b.offsetParent)?.focus();
+    return;
+  }
+  const chat = document.getElementById('ai-chat-panel');
+  if (chat && chat.classList.contains('open') && chat.contains(document.activeElement)) {
+    window.acpToggle?.();
+    document.getElementById('ai-chat-fab')?.focus();
+  }
+});
+function go(id, opts) {
+  const prevScreen = window._currentScreen;
+  // Each screen change is a browser-history entry, so Back/Forward move between
+  // screens instead of leaving the app (see the popstate handler below).
+  if (!(opts && opts.fromHistory) && prevScreen !== id && SCREENS.includes(id)) {
+    try { history[prevScreen ? 'pushState' : 'replaceState']({ grangeScreen: id }, ''); } catch (_) {}
+  }
   // track active screen (drives the mobile hamburger nav visibility)
   window._currentScreen = id;
+  linkFormLabels();
   document.body.dataset.screen = id;
   // close the mobile drawer whenever we navigate
   document.getElementById('m-nav')?.classList.remove('open');
@@ -6029,6 +6078,49 @@ function go(id) {
   if (id === 'plan')      requestAnimationFrame(() => { if (typeof renderPlanScreen === 'function') renderPlanScreen(); });
   window._acpOnScreen?.(id);
 }
+
+try { if (!history.state) history.replaceState({ grangeScreen: window._currentScreen || 'landing' }, ''); } catch (_) {}
+window.addEventListener('popstate', (e) => {
+  const target = e.state && e.state.grangeScreen;
+  if (!target || !SCREENS.includes(target)) return;
+  // Back with the phone menu, a dialog or the phone-size assistant open just closes it (as phone apps do)
+  const nav = document.getElementById('m-nav'), oi = document.getElementById('orginfo-modal'), chat = document.getElementById('ai-chat-panel');
+  const navOpen = nav && nav.classList.contains('open'), oiOpen = oi && oi.classList.contains('open');
+  const chatOpen = chat && chat.classList.contains('open') && window.innerWidth < 640;
+  if (navOpen || oiOpen || chatOpen) {
+    if (navOpen) mNavClose();
+    if (oiOpen) window._orgInfoClose?.(false);
+    if (chatOpen) window.acpToggle?.();
+    try { history.pushState({ grangeScreen: window._currentScreen }, ''); } catch (_) {}
+    return;
+  }
+  window.closeGrant?.();
+  const ctx = window._grange, signedIn = !!(ctx && ctx.user && ctx.profile);
+  let dest = target;
+  if (signedIn && ['landing', 'login', 'signin', 'tutorial', 'onboarding'].includes(target)) {
+    // never walk a signed-in user back into sign-in or finished setup steps
+    dest = !tutorialDone(ctx) ? 'tutorial' : (!ctx.profile.onboarding_complete ? 'onboarding' : 'dashboard');
+  } else if (!signedIn && !PUBLIC_SCREENS.includes(target)) {
+    dest = 'landing';
+  }
+  if (dest !== window._currentScreen) go(dest, { fromHistory: true });
+});
+
+/* Legal pages: the contents list jumps to its section (link n -> the n-th numbered heading). */
+function legalGoto(page, n) {
+  if (window._currentScreen !== page) go(page);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const h = document.querySelectorAll('#' + page + ' .legal-doc h2')[n - 1];
+    if (h) h.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  }));
+}
+document.addEventListener('click', (e) => {
+  const a = e.target.closest && e.target.closest('#privacy .legal-doc a[href="#"][onclick="return false;"], #terms .legal-doc a[href="#"][onclick="return false;"]');
+  if (!a) return;
+  const page = a.closest('#privacy') ? 'privacy' : 'terms';
+  const links = [...document.querySelectorAll('#' + page + ' .legal-doc a[href="#"][onclick="return false;"]')];
+  legalGoto(page, links.indexOf(a) + 1);
+});
 
 /* ── Profile: render the signed-in org's REAL data (no placeholder identity) ── */
 /* ── Organization photo: stored client-side as a downscaled data URL, keyed per user ── */
@@ -6218,7 +6310,8 @@ async function ragDeleteDoc(id) {
   if (!window.sb || !uid) return;
   try {
     await sb.from('document_chunks').delete().eq('user_id', uid).eq('document_id', id);
-    await sb.from('documents').delete().eq('user_id', uid).eq('id', id);
+    const { error } = await sb.from('documents').delete().eq('user_id', uid).eq('id', id);
+    if (error) throw error;
     toast('Removed from Grange’s memory.');
     loadRagDocs();
   } catch (e) { toast('Could not remove. Please try again.'); }
@@ -6300,7 +6393,7 @@ async function pfUploadDoc(kind, file) {
   if (file.size > 15 * 1024 * 1024) { toast('That file is over 15 MB. Please upload a smaller PDF.'); return; }
   const box = document.getElementById('pf-upl-' + kind);
   if (box) box.textContent = 'Uploading ' + file.name + '…';
-  const path = uid + '/' + kind + '-' + file.name;
+  const path = uid + '/' + kind + '-' + file.name.replace(/[^\w.\-]+/g, '_');   // '#', '?', spaces etc. break storage keys
   try {
     const up = await sb.storage.from('documents').upload(path, file, { upsert: true });
     if (up.error) throw up.error;
@@ -6433,6 +6526,7 @@ async function submitSignup() {
   });
   if (!valid) { toast('Please fill in all fields.'); return; }
 
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) { email.style.borderColor = 'var(--accent)'; toast('Enter a valid email address.'); email.focus(); return; }
   if (pw.value.length < 8) { pw.style.borderColor = 'var(--accent)'; toast('Password must be at least 8 characters.'); return; }
   if (pw.value !== pw2.value) { pw2.style.borderColor = 'var(--accent)'; toast('Passwords do not match.'); return; }
 
@@ -7179,7 +7273,7 @@ async function renderGrantPicker() {
     ? drafts.map((d, i) => {
         const g = d.grant || {}; const title = g.title || g.funder || 'Untitled draft';
         const sub = (g.funder && g.funder !== title ? esc(g.funder) + ' · ' : '') + (d.doc ? 'Draft started' : 'In progress');
-        return '<div class="gsel-row" onclick="pickDraft(' + i + ')"><span class="gsel-ic">' + fileIc + '</span><div class="gsel-main"><div class="gsel-t">' + esc(title) + '</div><div class="gsel-m">' + sub + '</div></div><span class="gsel-badge">Draft</span></div>';
+        return '<div class="gsel-row" role="button" tabindex="0" onclick="pickDraft(' + i + ')"><span class="gsel-ic">' + fileIc + '</span><div class="gsel-main"><div class="gsel-t">' + esc(title) + '</div><div class="gsel-m">' + sub + '</div></div><span class="gsel-badge">Draft</span></div>';
       }).join('')
     : '<div class="gsel-empty">No drafts yet. Pick a saved grant below to start one.</div>');
 
@@ -7196,7 +7290,7 @@ async function renderGrantPicker() {
   window._genPipeline = pipeline;
   const sEl = document.getElementById('gsel-saved');
   sEl.innerHTML = '<div class="gsel-h">Saved grants</div>' + (pipeline.length
-    ? pipeline.map(p => '<div class="gsel-row" onclick="pickSaved(this.dataset.id)" data-id="' + esc(p.id) + '"><span class="gsel-ic">' + fileIc + '</span><div class="gsel-main"><div class="gsel-t">' + esc(p.title) + '</div><div class="gsel-m">' + (p.funder ? esc(p.funder) : 'Saved grant') + '</div></div><span class="gsel-badge alt">Start</span></div>').join('')
+    ? pipeline.map(p => '<div class="gsel-row" role="button" tabindex="0" onclick="pickSaved(this.dataset.id)" data-id="' + esc(p.id) + '"><span class="gsel-ic">' + fileIc + '</span><div class="gsel-main"><div class="gsel-t">' + esc(p.title) + '</div><div class="gsel-m">' + (p.funder ? esc(p.funder) : 'Saved grant') + '</div></div><span class="gsel-badge alt">Start</span></div>').join('')
     : '<div class="gsel-empty">No saved grants yet. Save grants from discovery and they show up here.</div>');
 }
 function loadGrantIntoGenerator(g) {
@@ -7283,7 +7377,7 @@ function restoreGenDraft() {
   window._parsedReq = d.req || null;
   reqShowStored();
   if (d.doc) {
-    const content = document.getElementById('doc-content'); if (content) content.innerHTML = d.doc;
+    const content = document.getElementById('doc-content'); if (content) content.innerHTML = safeDraftHtml(d.doc);
     const ot = document.getElementById('gen-out-type'); if (ot && d.outType) ot.textContent = d.outType;
     const of = document.getElementById('gen-out-funder'); if (of && d.outFunder) of.textContent = d.outFunder;
     document.getElementById('out-empty').style.display = 'none';
@@ -7349,7 +7443,32 @@ async function callGenerateOnce(prompt, signal) {
   return out.replace(/```html?\n?/gi, '').replace(/```\n?/g, '').trim();
 }
 function _countHeadings(html) { const m = String(html).match(/<h4/gi); return m ? m.length : 0; }
-function _plainLen(html) { const d = document.createElement('div'); d.innerHTML = html; return (d.innerText || d.textContent || '').trim().length; }
+function _plainLen(html) { const t = document.createElement('template'); t.innerHTML = String(html || ''); return (t.content.textContent || '').trim().length; }
+
+/* The writer returns HTML. Before it goes on the page, keep only plain formatting
+   tags with no attributes (except our own "double-check" highlights), so a grant
+   listing that smuggles instructions to the AI can't get markup that runs code.
+   A <template> parses without loading images or running handlers. */
+const DRAFT_TAGS = new Set(['H1','H2','H3','H4','H5','H6','P','B','STRONG','I','EM','U','BR','UL','OL','LI','BLOCKQUOTE','SPAN','MARK','TABLE','THEAD','TBODY','TR','TH','TD','SUB','SUP','HR']);
+const DRAFT_DROP = new Set(['SCRIPT','STYLE','IFRAME','FRAME','FRAMESET','OBJECT','EMBED','SVG','MATH','TEMPLATE','NOSCRIPT','FORM','INPUT','BUTTON','SELECT','TEXTAREA','LINK','META','BASE','IMG','PICTURE','VIDEO','AUDIO','SOURCE','TRACK','CANVAS']);
+function safeDraftHtml(html) {
+  const t = document.createElement('template');
+  t.innerHTML = String(html || '');
+  const clean = (node) => {
+    [...node.childNodes].forEach((n) => {
+      if (n.nodeType === 8) { n.remove(); return; }            // comments
+      if (n.nodeType !== 1) return;                              // text stays
+      const tag = n.tagName.toUpperCase();
+      if (DRAFT_DROP.has(tag)) { n.remove(); return; }
+      clean(n);
+      if (!DRAFT_TAGS.has(tag)) { n.replaceWith(...n.childNodes); return; }   // unknown tag: keep its words
+      const flag = tag === 'MARK' && n.classList.contains('verify-flag');
+      [...n.attributes].forEach((at) => { if (!(flag && (at.name === 'class' || at.name === 'title'))) n.removeAttribute(at.name); });
+    });
+  };
+  clean(t.content);
+  return t.innerHTML;
+}
 
 async function humanizeDraft(contentEl, fields, grant, signal) {
   try {
@@ -7384,7 +7503,7 @@ async function humanizeDraft(contentEl, fields, grant, signal) {
     const newLen = _plainLen(rewritten);
     if (newLen < baseLen * 0.8 || newLen > baseLen * 1.3) return;
     if (/<\s*(script|style|iframe|object|embed|link)/i.test(rewritten)) return;
-    contentEl.innerHTML = rewritten;
+    contentEl.innerHTML = safeDraftHtml(rewritten);
   } catch (e) { if (e && e.name === 'AbortError') throw e; /* keep the pre-humanize draft */ }
 }
 
@@ -7728,7 +7847,7 @@ function renderPlanPanel(el, plan) {
     if (s.options && s.options.length) {
       h += '<div style="margin-top:9px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-muted,#999);margin-bottom:5px">Choose an angle</div><div style="display:flex;flex-wrap:wrap;gap:7px" data-opts="' + i + '">';
       s.options.forEach((o, j) => {
-        h += '<button type="button" class="plan-opt' + (j === 0 ? ' sel' : '') + '" data-si="' + i + '" data-oi="' + j + '" onclick="planPickOption(' + i + ',' + j + ')" title="' + escHtml(o.desc) + '" style="border:1px solid var(--border,#d8d2c6);border-radius:999px;padding:6px 12px;font-size:12px;background:transparent">' + escHtml(o.label) + '</button>';
+        h += '<button type="button" class="plan-opt' + (j === 0 ? ' sel' : '') + '" aria-pressed="' + (j === 0) + '" data-si="' + i + '" data-oi="' + j + '" onclick="planPickOption(' + i + ',' + j + ')" title="' + escHtml(o.desc) + '" style="border:1px solid var(--border,#d8d2c6);border-radius:999px;padding:6px 12px;font-size:12px;background:transparent">' + escHtml(o.label) + '</button>';
       });
       h += '<button type="button" class="plan-opt" data-si="' + i + '" data-oi="-1" onclick="planPickOption(' + i + ',-1)" style="border:1px dashed var(--border,#d8d2c6);border-radius:999px;padding:6px 12px;font-size:12px;background:transparent;color:var(--ink-muted,#888)">Let Grange choose</button>';
       h += '</div></div>';
@@ -7754,7 +7873,7 @@ function renderPlanPanel(el, plan) {
 
 function planPickOption(si, oi) {
   const wrap = document.querySelector('[data-opts="' + si + '"]'); if (!wrap) return;
-  wrap.querySelectorAll('.plan-opt').forEach((b) => { b.classList.toggle('sel', Number(b.getAttribute('data-oi')) === oi); });
+  wrap.querySelectorAll('.plan-opt').forEach((b) => { const on = Number(b.getAttribute('data-oi')) === oi; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', String(on)); });
 }
 
 function _collectPlanChoices(plan) {
@@ -8089,7 +8208,7 @@ async function generate() {
               .replace(/```html?\n?/gi, '')
               .replace(/```\n?/g, '')
               .trim();
-            content.innerHTML = clean;
+            content.innerHTML = safeDraftHtml(clean);
             // Auto-scroll to bottom of output
             content.scrollIntoView({ block: 'end', behavior: 'smooth' });
             if (window._apCtl && window._apCtl.draftTick) window._apCtl.draftTick(Math.min(0.92, rawText.length / 3500));
@@ -8189,7 +8308,8 @@ function flagVerifyMarkers(contentEl) {
   let count = 0;
   contentEl.innerHTML = contentEl.innerHTML.replace(/\[VERIFY:\s*([^\]]+)\]/gi, function (_, what) {
     count++;
-    const w = escHtml(what.trim());
+    const tt = document.createElement('template'); tt.innerHTML = what;   // decode entities / drop tags, then escape once
+    const w = escHtml(tt.content.textContent.trim());
     return '<mark class="verify-flag" title="Double-check before you submit: ' + w + '">' + w + '</mark>';
   });
   let note = document.getElementById('gen-verify-note');
@@ -8332,15 +8452,16 @@ async function judgeAndImprove(contentEl, fields, grant) {
         const rv = await runAiJob('revise_proposal', {
           draft_html: (contentEl.innerHTML || '').slice(0, 16000), fixes, proposal_type: ptype });
         if (rv && rv.ok && rv.output && rv.output.revised_html) {
-          const tmp = document.createElement('div');
-          tmp.innerHTML = rv.output.revised_html;
-          const newText = (tmp.innerText || tmp.textContent || '').trim();
+          const revisedHtml = safeDraftHtml(rv.output.revised_html);
+          const tmp = document.createElement('template');
+          tmp.innerHTML = revisedHtml;
+          const newText = (tmp.content.textContent || '').trim();
           if (newText.length >= 140) {
             const rj = await runAiJob('judge_proposal', {
               draft_text: newText.slice(0, 14000), rubric, proposal_type: ptype, funder_type: ftype });
             // Accept the revision ONLY if it genuinely lifted the score.
             if (rj && rj.ok && rj.output && (rj.output.scores || []).length && rj.output.weighted_total >= before) {
-              contentEl.innerHTML = rv.output.revised_html;
+              contentEl.innerHTML = revisedHtml;
               improved = { from: before, to: rj.output.weighted_total, changes: rv.output.changes || [] };
               judge = rj.output;
             }
@@ -10130,6 +10251,7 @@ function obRender() {
           const i = arr.indexOf(v);
           if (i >= 0) { arr.splice(i, 1); chip.classList.remove('on'); }
           else { arr.push(v); chip.classList.add('on'); }
+          chip.setAttribute('aria-pressed', String(i < 0));
           obState.answers[f.key] = arr;
           obClearInvalid(f.key);
         };
@@ -10137,8 +10259,8 @@ function obRender() {
     } else if (f.type === 'radio') {
       wrap.querySelectorAll('[data-radio="'+f.key+'"] .ob-chip').forEach(chip => {
         chip.onclick = () => {
-          wrap.querySelectorAll('[data-radio="'+f.key+'"] .ob-chip').forEach(c => c.classList.remove('on'));
-          chip.classList.add('on');
+          wrap.querySelectorAll('[data-radio="'+f.key+'"] .ob-chip').forEach(c => { c.classList.remove('on'); c.setAttribute('aria-pressed', 'false'); });
+          chip.classList.add('on'); chip.setAttribute('aria-pressed', 'true');
           obState.answers[f.key] = chip.dataset.val;
           obClearInvalid(f.key);
           if (f.rerender) obRender();   // conditional fields may appear/disappear
@@ -10147,14 +10269,19 @@ function obRender() {
     } else if (f.type === 'file') {
       const inp = wrap.querySelector('#ob-file-'+f.key);
       const box = wrap.querySelector('#ob-filebox-'+f.key);
-      box.onclick = () => inp.click();
-      inp.onchange = () => {
-        if (inp.files[0]) {
-          obState.files[f.key] = inp.files[0];
-          box.classList.add('has');
-          box.textContent = inp.files[0].name;
-        }
+      const take = (file) => {
+        if (!file) return;
+        if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') { toast('Please choose a PDF.'); return; }
+        obState.files[f.key] = file;
+        box.classList.add('has');
+        box.textContent = file.name;
       };
+      box.onclick = () => inp.click();
+      box.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inp.click(); } };
+      box.ondragover = (e) => { e.preventDefault(); box.classList.add('drag'); };
+      box.ondragleave = () => box.classList.remove('drag');
+      box.ondrop = (e) => { e.preventDefault(); box.classList.remove('drag'); take(e.dataTransfer && e.dataTransfer.files[0]); };
+      inp.onchange = () => take(inp.files[0]);
     } else {
       const inp = wrap.querySelector('#ob-'+f.key);
       inp.oninput = () => { obState.answers[f.key] = inp.value; obClearInvalid(f.key); };
@@ -10173,17 +10300,18 @@ function obFieldHTML(f) {
   const open = `<div class="fieldset" id="ob-wrap-${f.key}" style="margin:0">`;
   const helpBtn = f.help ? ` <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="toggleTip(this)">?</button>` : '';
   const helpText = f.help ? `<div class="ob-help-text" id="ob-help-${f.key}" hidden>${escHtml(f.help)}</div>` : '';
-  const lab = `<label class="field-label">${f.label}${obFieldRequired(f) ? ' <span class="ob-req" title="Required">*</span>' : ''}${helpBtn}</label>${helpText}`;
+  const ctl = ['multi', 'radio', 'file'].includes(f.type) ? '' : ` for="ob-${f.key}"`;
+  const lab = `<label class="field-label" id="ob-lab-${f.key}"${ctl}>${f.label}${obFieldRequired(f) ? ' <span class="ob-req" title="Required">*</span>' : ''}${helpBtn}</label>${helpText}`;
   if (f.type === 'textarea')
     return `${open}${lab}<textarea id="ob-${f.key}" placeholder="${escHtml(f.placeholder||'')}">${escHtml(v||'')}</textarea></div>`;
   if (f.type === 'select')
     return `${open}${lab}<select id="ob-${f.key}"><option value="">Select…</option>${f.options.map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')}</select></div>`;
   if (f.type === 'multi')
-    return `${open}${lab}<div class="ob-chips" data-multi="${f.key}">${f.options.map(o=>`<button type="button" class="ob-chip ${(v||[]).includes(o)?'on':''}" data-val="${o}">${o}</button>`).join('')}</div></div>`;
+    return `${open}${lab}<div class="ob-chips" data-multi="${f.key}" role="group" aria-labelledby="ob-lab-${f.key}">${f.options.map(o=>`<button type="button" class="ob-chip ${(v||[]).includes(o)?'on':''}" aria-pressed="${(v||[]).includes(o)}" data-val="${o}">${o}</button>`).join('')}</div></div>`;
   if (f.type === 'radio')
-    return `${open}${lab}<div class="ob-chips" data-radio="${f.key}">${f.options.map(o=>`<button type="button" class="ob-chip ${v===o?'on':''}" data-val="${o}">${o}</button>`).join('')}</div></div>`;
+    return `${open}${lab}<div class="ob-chips" data-radio="${f.key}" role="group" aria-labelledby="ob-lab-${f.key}">${f.options.map(o=>`<button type="button" class="ob-chip ${v===o?'on':''}" aria-pressed="${v===o}" data-val="${o}">${o}</button>`).join('')}</div></div>`;
   if (f.type === 'file')
-    return `${open}${lab}<div class="ob-upload" id="ob-filebox-${f.key}">Drop a file or click to upload</div><input type="file" id="ob-file-${f.key}" accept="application/pdf" style="display:none"></div>`;
+    return `${open}${lab}<div class="ob-upload" id="ob-filebox-${f.key}" role="button" tabindex="0" aria-labelledby="ob-lab-${f.key} ob-filebox-${f.key}">Drop a PDF here or click to upload</div><input type="file" id="ob-file-${f.key}" accept="application/pdf" style="display:none"></div>`;
   return `${open}${lab}<input type="${f.type}" id="ob-${f.key}" placeholder="${escHtml(f.placeholder||'')}" value="${escHtml(v||'')}"></div>`;
 }
 
@@ -11750,7 +11878,7 @@ function ensureUsaCard(answers) {
     list.parentNode.insertBefore(card, list);
   }
   card.innerHTML =
-    '<div class="usa-top" onclick="this.parentNode.classList.toggle(\'open\')">' +
+    '<div class="usa-top" role="button" tabindex="0" onclick="this.parentNode.classList.toggle(\'open\')">' +
       '<div class="usa-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10M9 21V10M15 21V10M19 21V10M4 10l8-6 8 6"/></svg></div>' +
       '<div><div class="usa-tt">Federal funding for your work</div><div class="usa-ts">The landscape: how much similar nonprofits typically win, and who’s won recently.</div></div>' +
       '<svg class="usa-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>' +
@@ -12074,13 +12202,16 @@ async function saveGrantToPipeline(grant, status) {
   const uid = window._grange && window._grange.user && window._grange.user.id;
   if (!window.sb || !uid) { toast('Sign in to save grants to your pipeline.'); return null; }
   try {
-    const { data: existing } = await sb.from('grants').select('id,status').eq('user_id', uid).eq('title', grant.title).maybeSingle();
+    const found = await sb.from('grants').select('id,status').eq('user_id', uid).eq('title', grant.title).limit(1);
+    if (found.error) throw found.error;
+    const existing = (found.data || [])[0];
     let gid;
     if (existing) {
       gid = existing.id;
       // don't downgrade a further-along status back to "saved"
       if (!(status === 'saved' && existing.status && existing.status !== 'saved')) {
-        await sb.from('grants').update({ status }).eq('id', gid);
+        const up = await sb.from('grants').update({ status }).eq('id', gid);
+        if (up.error) throw up.error;
       }
     } else {
       const { data: ins, error } = await sb.from('grants').insert({
@@ -12757,7 +12888,7 @@ function applyDiscFilters(query, type) {
         '<div class="aplan-head"><span class="ap-dot"></span><h4>Grange is writing your proposal</h4><span class="ap-sub" id="ap-sub">working…</span></div>' +
         PLAN.map((task, ti) =>
           '<div class="aplan-task" id="ap-task-' + ti + '">' +
-            '<div class="aplan-trow" onclick="apToggle(' + ti + ')">' +
+            '<div class="aplan-trow" role="button" tabindex="0" onclick="apToggle(' + ti + ')">' +
               '<span class="aplan-ico" id="ap-tico-' + ti + '">' + icon('pending') + '</span>' +
               '<span class="aplan-title">' + task.t + '</span>' +
               '<span class="aplan-badge" id="ap-tbadge-' + ti + '" style="display:none"></span></div>' +
@@ -12968,11 +13099,11 @@ function applyDiscFilters(query, type) {
 
   function irsResultHTML(o) {
     const src = '<a class="rdy-irs-src" href="' + escHtml(o.source_url || '#') + '" target="_blank" rel="noopener noreferrer">View the IRS record ↗</a>';
-    const recheck = '<span class="rdy-irs-recheck" onclick="verifyNonprofitIRS()">Re-check</span>';
+    const recheck = '<span class="rdy-irs-recheck" role="button" tabindex="0" onclick="verifyNonprofitIRS()">Re-check</span>';
     if (!o.found) {
       return '<div class="rdy-irs-result warn"><div class="r-h">' + irsWarnIcon() + 'Not found in the IRS file</div>' +
         '<div class="r-meta">We could not find EIN ' + escHtml(fmtEin(o.ein)) + ' in the IRS Exempt Organizations file. Double-check the number. Newly recognized organizations can take a few months to appear, and if a fiscal sponsor holds your tax status, enter their EIN instead.</div>' +
-        '<span class="rdy-irs-recheck" onclick="verifyNonprofitIRS()" style="margin-left:0">Check again</span></div>';
+        '<span class="rdy-irs-recheck" role="button" tabindex="0" onclick="verifyNonprofitIRS()" style="margin-left:0">Check again</span></div>';
     }
     if (o.is_501c3) {
       const bits = [];
@@ -13054,7 +13185,7 @@ function applyDiscFilters(query, type) {
     return '<div class="rdy-irs" id="rdy-irs"><div class="rdy-irs-head"><div class="rdy-irs-ic">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 4.4-3.1 7.8-8 9-4.9-1.2-8-4.6-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div>' +
       '<div><div class="rdy-irs-t">' + title + '</div><div class="rdy-irs-sub">' + body +
-      ' <span onclick="go(\'nonprofit-setup\')" style="color:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px">Thinking of becoming a nonprofit? Start the guided path →</span></div></div></div></div>';
+      ' <span role="button" tabindex="0" onclick="go(\'nonprofit-setup\')" style="color:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px">Thinking of becoming a nonprofit? Start the guided path →</span></div></div></div></div>';
   }
 
   window.loadReadiness = async function () {
@@ -13085,11 +13216,11 @@ function applyDiscFilters(query, type) {
         '<span class="rdy-ic" id="rdy-ic-' + r.key + '">' + rdyIcon(s) + '</span><div class="rdy-body">' +
         '<div class="rdy-label">' + r.label + '</div><div class="rdy-why">' + r.why + '</div>' +
         '<div class="rdy-seg">' +
-          '<button class="' + (s === 'have' ? 'on-have' : '') + '" onclick="rdySet(\'' + r.key + '\',\'have\')">Have it</button>' +
-          '<button class="' + (s === 'in_progress' ? 'on-prog' : '') + '" onclick="rdySet(\'' + r.key + '\',\'in_progress\')">Working on it</button>' +
-          '<button class="' + (s === 'missing' ? 'on-need' : '') + '" onclick="rdySet(\'' + r.key + '\',\'missing\')">Need it</button>' +
+          '<button class="' + (s === 'have' ? 'on-have' : '') + '" aria-pressed="' + (s === 'have') + '" onclick="rdySet(\'' + r.key + '\',\'have\')">Have it</button>' +
+          '<button class="' + (s === 'in_progress' ? 'on-prog' : '') + '" aria-pressed="' + (s === 'in_progress') + '" onclick="rdySet(\'' + r.key + '\',\'in_progress\')">Working on it</button>' +
+          '<button class="' + (s === 'missing' ? 'on-need' : '') + '" aria-pressed="' + (s === 'missing') + '" onclick="rdySet(\'' + r.key + '\',\'missing\')">Need it</button>' +
         '</div>' +
-        '<div class="rdy-how-t" onclick="document.getElementById(\'rdy-' + r.key + '\').classList.toggle(\'open\')">How to get it ›</div>' +
+        '<div class="rdy-how-t" role="button" tabindex="0" aria-expanded="false" onclick="this.setAttribute(\'aria-expanded\', document.getElementById(\'rdy-' + r.key + '\').classList.toggle(\'open\'))">How to get it ›</div>' +
         '<div class="rdy-how">' + r.how +
           (r.link ? '<div class="rdy-how-foot">' + (r.link.internal
             ? '<button class="rdy-how-link" onclick="go(\'' + r.link.internal + '\')">' + r.link.label + ' →</button>'
@@ -13103,7 +13234,7 @@ function applyDiscFilters(query, type) {
       '<div class="rdy-reqcard">' +
         '<div class="rdy-reqcard-head"><div class="rqc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg></div>' +
         '<div><div class="rqc-title">Check a specific funder’s call</div><div class="rqc-sub">Paste an RFP or NOFO and Grange reads it against your profile: can you apply, what you’ll write, what to attach, and the deadline.</div></div></div>' +
-        '<textarea id="rdy-req-ta" class="gcf-ta" placeholder="Paste the funder’s call / NOFO / RFP text here…"></textarea>' +
+        '<textarea id="rdy-req-ta" aria-label="Funder’s call text" class="gcf-ta" placeholder="Paste the funder’s call / NOFO / RFP text here…"></textarea>' +
         '<div class="gcf-actions"><button class="btn btn-primary btn-sm" id="rdy-req-btn" onclick="analyzeReadinessReq()"><span style="color:#fff">✦</span>&nbsp;Analyze this call</button></div>' +
         '<div class="gcf-result" id="rdy-req-result" style="display:none"></div>' +
       '</div>' +
@@ -13112,7 +13243,7 @@ function applyDiscFilters(query, type) {
       (isNp ? irsCardHTML(p, a) : rdyNonprofitStatusCard(p)) +
       elig.map(e => '<div class="rdy-elig"><span class="ic">' + (e.ok ? rdyIcon('have') : rdyIcon('missing')) + '</span>' +
         '<span class="lbl">' + e.label + '<small>' + e.detail + '</small></span>' +
-        (e.ok ? '<span style="font-size:12px;color:var(--ok);font-weight:600">Confirmed</span>' : '<span class="act" onclick="go(\'profile\')">' + e.fix + ' →</span>') + '</div>').join('') +
+        (e.ok ? '<span style="font-size:12px;color:var(--ok);font-weight:600">Confirmed</span>' : '<span class="act" role="button" tabindex="0" onclick="go(\'profile\')">' + e.fix + ' →</span>') + '</div>').join('') +
       '<div class="rdy-section-title">Documents every grant needs</div>' +
       '<div class="rdy-section-sub">The recurring attachment kit funders request. Mark what you have so Grange can flag gaps before a deadline.</div>' +
       both.map(item).join('') +
@@ -13135,10 +13266,10 @@ function applyDiscFilters(query, type) {
     const itemEl = document.getElementById('rdy-' + key);
     if (itemEl) {
       const btns = itemEl.querySelectorAll('.rdy-seg button');
-      btns.forEach(b => b.className = '');
+      btns.forEach(b => { b.className = ''; b.setAttribute('aria-pressed', 'false'); });
       const cls = { have: 'on-have', in_progress: 'on-prog', missing: 'on-need' }[status];
       const idx = { have: 0, in_progress: 1, missing: 2 }[status];
-      if (btns[idx]) btns[idx].className = cls;
+      if (btns[idx]) { btns[idx].className = cls; btns[idx].setAttribute('aria-pressed', 'true'); }
     }
     // recompute ring
     const ctx = window._grange || {};
@@ -13212,11 +13343,11 @@ function applyDiscFilters(query, type) {
         '<span class="rdy-ic" id="inc-ic-' + r.key + '">' + rdyIcon(s) + '</span><div class="rdy-body">' +
         '<div class="rdy-label">' + r.label + '</div><div class="rdy-why">' + r.why + '</div>' +
         '<div class="rdy-seg">' +
-          '<button class="' + (s === 'have' ? 'on-have' : '') + '" onclick="incSet(\'' + r.key + '\',\'have\')">Done</button>' +
-          '<button class="' + (s === 'in_progress' ? 'on-prog' : '') + '" onclick="incSet(\'' + r.key + '\',\'in_progress\')">Working on it</button>' +
-          '<button class="' + (s === 'missing' ? 'on-need' : '') + '" onclick="incSet(\'' + r.key + '\',\'missing\')">Not started</button>' +
+          '<button class="' + (s === 'have' ? 'on-have' : '') + '" aria-pressed="' + (s === 'have') + '" onclick="incSet(\'' + r.key + '\',\'have\')">Done</button>' +
+          '<button class="' + (s === 'in_progress' ? 'on-prog' : '') + '" aria-pressed="' + (s === 'in_progress') + '" onclick="incSet(\'' + r.key + '\',\'in_progress\')">Working on it</button>' +
+          '<button class="' + (s === 'missing' ? 'on-need' : '') + '" aria-pressed="' + (s === 'missing') + '" onclick="incSet(\'' + r.key + '\',\'missing\')">Not started</button>' +
         '</div>' +
-        '<div class="rdy-how-t" onclick="document.getElementById(\'inc-' + r.key + '\').classList.toggle(\'open\')">How to do it ›</div>' +
+        '<div class="rdy-how-t" role="button" tabindex="0" aria-expanded="false" onclick="this.setAttribute(\'aria-expanded\', document.getElementById(\'inc-' + r.key + '\').classList.toggle(\'open\'))">How to do it ›</div>' +
         '<div class="rdy-how">' + r.how +
           (r.link ? '<div class="rdy-how-foot">' + (r.link.internal
             ? '<button class="rdy-how-link" onclick="go(\'' + r.link.internal + '\')">' + r.link.label + ' →</button>'
@@ -13262,10 +13393,10 @@ function applyDiscFilters(query, type) {
     const itemEl = document.getElementById('inc-' + key);
     if (itemEl) {
       const btns = itemEl.querySelectorAll('.rdy-seg button');
-      btns.forEach(b => b.className = '');
+      btns.forEach(b => { b.className = ''; b.setAttribute('aria-pressed', 'false'); });
       const cls = { have: 'on-have', in_progress: 'on-prog', missing: 'on-need' }[status];
       const idx = { have: 0, in_progress: 1, missing: 2 }[status];
-      if (btns[idx]) btns[idx].className = cls;
+      if (btns[idx]) { btns[idx].className = cls; btns[idx].setAttribute('aria-pressed', 'true'); }
     }
     const pct = incScore();
     const ring = document.querySelector('#np-setup-content .ring');
@@ -13358,7 +13489,7 @@ function applyDiscFilters(query, type) {
         '<button class="btn btn-primary btn-sm" onclick="go(\'discovery\')">Find foundation &amp; local grants →</button>' +
         '<button class="btn btn-outline btn-sm" onclick="samSetNeed(\'yes\')">Actually, I do need federal</button></div></div>';
     }
-    let h = '<div class="sam-back" onclick="samSetNeed(null)">‹ Not pursuing federal grants?</div>';
+    let h = '<div class="sam-back" role="button" tabindex="0" onclick="samSetNeed(null)">‹ Not pursuing federal grants?</div>';
     if (st.path == null) {
       return h + '<div class="sam-q">Which registration do you need?</div>' +
         '<div class="sam-choices">' +
@@ -13370,10 +13501,10 @@ function applyDiscFilters(query, type) {
     const hasReg = !!(st.uei && st.activated_at);
     const stepN = hasReg ? 3 : (st.pf ? 2 : 1);
     h += '<div class="sam-steps"><div class="dot ' + (stepN >= 1 ? 'on' : '') + '"></div><div class="dot ' + (stepN >= 2 ? 'on' : '') + '"></div><div class="dot ' + (stepN >= 3 ? 'on' : '') + '"></div></div>';
-    h += '<div class="sam-back" onclick="samSetPath(null)">‹ ' + (st.path === 'full' ? 'Full registration' : 'Grants-only registration') + ' · change</div>';
+    h += '<div class="sam-back" role="button" tabindex="0" onclick="samSetPath(null)">‹ ' + (st.path === 'full' ? 'Full registration' : 'Grants-only registration') + ' · change</div>';
     if (hasReg) {
       h += samRenewHTML();
-      h += '<div class="sam-note">Need to re-check your details or re-register? <span class="rdy-irs-recheck" style="margin-left:0" onclick="samClearReg()">Update my SAM.gov info</span></div>';
+      h += '<div class="sam-note">Need to re-check your details or re-register? <span class="rdy-irs-recheck" role="button" tabindex="0" style="margin-left:0" onclick="samClearReg()">Update my SAM.gov info</span></div>';
       return h;
     }
     h += samPreflightHTML(p, a);
@@ -13679,7 +13810,7 @@ function applyDiscFilters(query, type) {
         (candidates.length
           ? '<div class="pa-addform"><select id="pa-award-grant" aria-label="Grant you won"><option value="">Choose a grant you won…</option>' +
             candidates.map(g => '<option value="' + g.id + '">' + escHtml(g.title) + (g.funder ? ' — ' + escHtml(g.funder) : '') + '</option>').join('') + '</select>' +
-            '<input class="num" id="pa-award-amt" type="text" placeholder="$ awarded"><button class="btn btn-accent btn-sm" onclick="markAwarded()">Mark as awarded</button></div>' +
+            '<input class="num" id="pa-award-amt" type="text" inputmode="decimal" aria-label="Amount awarded" placeholder="$ awarded"><button class="btn btn-accent btn-sm" onclick="markAwarded()">Mark as awarded</button></div>' +
             '<p style="font-size:12px;color:var(--muted);margin-top:8px">Marking a grant awarded sets up its compliance checklist and spending tracker automatically.</p>'
           : '<p style="font-size:13px;color:var(--muted)">Save grants in Discovery first, then mark them awarded here when you win.</p>') +
         '</div></div>';
@@ -13707,7 +13838,7 @@ function applyDiscFilters(query, type) {
       '<div><div class="pa-t">' + escHtml((a.grants && a.grants.title) || 'Awarded grant') + '</div><div class="pa-f">' + escHtml((a.grants && a.grants.funder) || '') + (a.period_start ? ' · ' + a.period_start + ' → ' + (a.period_end || 'ongoing') : '') + '</div></div>' +
       '<div class="pa-money"><div class="v">' + _paFmt(awarded) + '</div><div class="l">awarded</div></div></div>' +
       '<div class="pa-body"><div class="pa-sub">Compliance — keep the money</div>' +
-        (reqs || []).map(r => '<div class="pa-cmp ' + (r.status === 'satisfied' ? 'done' : '') + '" id="pacmp-' + r.id + '"><span class="ic" onclick="toggleCompliance(\'' + r.id + '\')">' + _paIcon(r.status === 'satisfied') + '</span><div class="bd"><b>' + escHtml(r.label) + '</b><p>' + escHtml(r.detail || '') + '</p></div></div>').join('') +
+        (reqs || []).map(r => '<div class="pa-cmp ' + (r.status === 'satisfied' ? 'done' : '') + '" id="pacmp-' + r.id + '"><span class="ic" role="checkbox" tabindex="0" aria-checked="' + (r.status === 'satisfied') + '" aria-label="' + escHtml(r.label) + '" onclick="toggleCompliance(\'' + r.id + '\')">' + _paIcon(r.status === 'satisfied') + '</span><div class="bd"><b>' + escHtml(r.label) + '</b><p>' + escHtml(r.detail || '') + '</p></div></div>').join('') +
         '<div class="pa-spend"><div class="pa-sub">Spending vs budget — the clawback guardrail</div>' +
           '<div class="pa-bars"><div class="pa-stat"><div class="l">Spent</div><div class="v">' + _paFmt(spent) + '</div></div>' +
             (hasBudget
@@ -13719,7 +13850,7 @@ function applyDiscFilters(query, type) {
           (!hasBudget ? '<p style="font-size:12.5px;color:var(--muted);margin:-4px 0 12px">No award amount on file, so spend can\'t be tracked against a budget yet.</p>' : '') +
           (exps || []).map(e => '<div class="pa-exp-row"><span class="cat">' + escHtml(catLabel(e.category_key)) + '</span>' + escHtml(e.description || '') + '<span class="amt">' + _paFmt(Number(e.amount || 0)) + '</span></div>').join('') +
           '<div class="pa-addform"><select id="paexp-cat-' + a.id + '" aria-label="Spending category">' + (_paCats || []).map(c => '<option value="' + c.key + '">' + escHtml(c.label) + '</option>').join('') + '</select>' +
-            '<input class="desc" id="paexp-desc-' + a.id + '" type="text" placeholder="What was it for?"><input class="num" id="paexp-amt-' + a.id + '" type="text" placeholder="$ amount"><button class="btn btn-outline btn-sm" onclick="addExpense(\'' + a.id + '\')">Add</button></div>' +
+            '<input class="desc" id="paexp-desc-' + a.id + '" type="text" aria-label="What the spending was for" placeholder="What was it for?"><input class="num" id="paexp-amt-' + a.id + '" type="text" inputmode="decimal" aria-label="Amount spent" placeholder="$ amount"><button class="btn btn-outline btn-sm" onclick="addExpense(\'' + a.id + '\')">Add</button></div>' +
         '</div></div></div>';
   }
 
@@ -13730,8 +13861,10 @@ function applyDiscFilters(query, type) {
     if (!gid) { toast('Pick a grant first.'); return; }
     if (!amt || amt <= 0) { toast('Enter the award amount so Grange can track spend against it.'); return; }
     try {
-      await sb.from('grants').update({ status: 'awarded', decided_at: new Date().toISOString() }).eq('id', gid);
-      await sb.from('awards').insert({ user_id: uid, grant_id: gid, amount_awarded: amt });
+      const up = await sb.from('grants').update({ status: 'awarded', decided_at: new Date().toISOString() }).eq('id', gid);
+      if (up.error) throw up.error;
+      const ins = await sb.from('awards').insert({ user_id: uid, grant_id: gid, amount_awarded: amt });
+      if (ins.error) throw ins.error;
       toast('Recorded — compliance checklist created.');
       loadPostAward();
     } catch (e) { console.error('markAwarded', e); toast('Could not record — try again.'); }
@@ -13740,8 +13873,9 @@ function applyDiscFilters(query, type) {
     const el = document.getElementById('pacmp-' + id);
     const next = (el && el.classList.contains('done')) ? 'open' : 'satisfied';
     try {
-      await sb.from('compliance_requirements').update({ status: next }).eq('id', id);
-      if (el) { el.classList.toggle('done', next === 'satisfied'); const ic = el.querySelector('.ic'); if (ic) ic.innerHTML = _paIcon(next === 'satisfied'); }
+      const { error } = await sb.from('compliance_requirements').update({ status: next }).eq('id', id);
+      if (error) { toast('Couldn’t save that. Please try again.'); return; }
+      if (el) { el.classList.toggle('done', next === 'satisfied'); const ic = el.querySelector('.ic'); if (ic) { ic.innerHTML = _paIcon(next === 'satisfied'); ic.setAttribute('aria-checked', String(next === 'satisfied')); } }
     } catch (e) { console.error('toggleCompliance', e); }
   };
   window.addExpense = async function (awardId) {
@@ -13750,7 +13884,12 @@ function applyDiscFilters(query, type) {
     const desc = (((document.getElementById('paexp-desc-' + awardId) || {}).value) || '').trim();
     const amt = parseFloat((((document.getElementById('paexp-amt-' + awardId) || {}).value) || '').replace(/[^0-9.]/g, '')) || 0;
     if (!desc || !amt) { toast('Add a description and an amount.'); return; }
-    try { await sb.from('expenditures').insert({ user_id: uid, award_id: awardId, category_key: cat, description: desc, amount: amt }); loadPostAward(); }
+    try {
+      const { error } = await sb.from('expenditures').insert({ user_id: uid, award_id: awardId, category_key: cat, description: desc, amount: amt });
+      if (error) throw error;
+      toast('Spending logged.');
+      loadPostAward();
+    }
     catch (e) { console.error('addExpense', e); toast('Could not add expense.'); }
   };
 </script>

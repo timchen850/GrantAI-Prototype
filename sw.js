@@ -6,7 +6,7 @@
      - API / Supabase / auth: never cached (always live network).
 */
 
-const VERSION = 'grange-v1';
+const VERSION = 'grange-v2';   // bump to clear old caches
 const SHELL_CACHE = `${VERSION}-shell`;
 const ASSET_CACHE = `${VERSION}-assets`;
 
@@ -65,11 +65,24 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(SHELL_CACHE).then((c) => c.put('/index.html', copy));
+          if (res.ok) { const copy = res.clone(); caches.open(SHELL_CACHE).then((c) => c.put('/index.html', copy)); }
           return res;
         })
         .catch(() => caches.match('/index.html').then((r) => r || caches.match('/')))
+    );
+    return;
+  }
+
+  // Our own scripts and manifest (config.js holds the Supabase settings): network-first,
+  // so a change reaches returning visitors on their next load; the cache is only for offline.
+  if (url.origin === self.location.origin && /\.(js|json|webmanifest)$/.test(url.pathname)) {
+    event.respondWith(
+      fetch(request)
+        .then((res) => {
+          if (res.ok) { const copy = res.clone(); caches.open(ASSET_CACHE).then((c) => c.put(request, copy)); }
+          return res;
+        })
+        .catch(() => caches.match(request))
     );
     return;
   }
@@ -85,8 +98,7 @@ self.addEventListener('fetch', (event) => {
       caches.match(request).then((cached) =>
         cached ||
         fetch(request).then((res) => {
-          const copy = res.clone();
-          caches.open(ASSET_CACHE).then((c) => c.put(request, copy));
+          if (res.ok) { const copy = res.clone(); caches.open(ASSET_CACHE).then((c) => c.put(request, copy)); }   // never keep an error page
           return res;
         }).catch(() => cached)
       )

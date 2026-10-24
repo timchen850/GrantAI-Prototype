@@ -401,6 +401,196 @@ flow('profile-document-upload', async (browser, check) => {
   return t;
 });
 
+flow('browser-back-forward', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.waitForTimeout(800);
+  await p.click('#dashboard .side a:has-text("Grant discovery"), #dashboard .side [onclick*="discovery"]'); await p.waitForTimeout(800);
+  await p.evaluate(() => go('readiness')); await p.waitForTimeout(800);
+  await p.goBack(); await p.waitForTimeout(800);
+  check('Back returns to the previous screen', (await screen(p)) === 'discovery');
+  await p.goBack(); await p.waitForTimeout(800);
+  check('Back again reaches the dashboard', (await screen(p)) === 'dashboard');
+  await p.goForward(); await p.waitForTimeout(800);
+  check('Forward works', (await screen(p)) === 'discovery');
+  check('URL unchanged (no stray #)', !p.url().includes('#'));
+  // a signed-in user can't walk back into the public site
+  await p.goBack(); await p.goBack(); await p.waitForTimeout(1000);
+  check('signed-in user is never sent back to the landing page', (await screen(p)) === 'dashboard');
+  // Back with the phone menu open closes the menu and stays put
+  const m = await openApp(browser, { persona: 'np', width: 390, height: 844 });
+  await m.page.waitForTimeout(800);
+  await m.page.evaluate(() => go('discovery')); await m.page.waitForTimeout(700);
+  await m.page.click('.m-burger >> visible=true'); await m.page.waitForTimeout(500);
+  await m.page.goBack(); await m.page.waitForTimeout(700);
+  check('Back with the phone menu open closes it and stays on the screen', (await screen(m.page)) === 'discovery' && !(await m.page.evaluate(() => document.getElementById('m-nav').classList.contains('open'))));
+  await m.page.goBack(); await m.page.waitForTimeout(700);
+  check('the next Back goes to the previous screen', (await screen(m.page)) === 'dashboard');
+  t.errors.push(...m.errors); await m.ctx.close();
+  // visitor: demo -> back -> landing
+  const v = await openApp(browser, { persona: 'visitor' });
+  await v.page.evaluate(() => go('demo')); await v.page.waitForTimeout(800);
+  await v.page.goBack(); await v.page.waitForTimeout(800);
+  check('visitor Back from the demo returns to the landing page', (await screen(v.page)) === 'landing');
+  check('page scroll unlocked after leaving the demo', await v.page.evaluate(() => document.body.style.overflow === ''));
+  t.errors.push(...v.errors); await v.ctx.close();
+  return t;
+});
+
+// A grant listing could smuggle instructions to the AI; whatever HTML comes back,
+// only plain formatting may reach the page (live draft and a restored draft).
+flow('draft-html-filtered', async (browser, check) => {
+  const evil = ('<h4 onclick="window.__xss=1">Need statement</h4><p>We serve <b>180 students</b> after school in East Los Angeles.<img src="x" onerror="window.__xss=2"></p>'
+    + '<script>window.__xss=3</script><p style="color:red" onmouseover="window.__xss=4">Our approach pairs tutors with families [VERIFY: enrollment count] within our [VERIFY: R&D budget].</p>'
+    + '<svg><image href="x" onerror="window.__xss=5"></image></svg><a href="javascript:window.__xss=6">see our report</a><iframe src="javascript:parent.__xss=7"></iframe>').repeat(3);
+  const t = await openApp(browser, { persona: 'np', draftText: evil });
+  const p = t.page;
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
+  await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
+  await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(7000);
+  const live = await p.evaluate(() => ({ xss: window.__xss || 0, html: document.getElementById('doc-content').innerHTML }));
+  check('no injected code ran', !live.xss);
+  check('no handlers, scripts, images or links kept', !/onerror|onclick|onmouseover|<script|<img|<svg|<iframe|<a |javascript:|style=/i.test(live.html));
+  check('headings, bold text and words kept', /<h4>Need statement<\/h4>/.test(live.html) && /<b>180 students<\/b>/.test(live.html) && live.html.includes('see our report'));
+  check('double-check highlight still added', /<mark class="verify-flag"/.test(live.html));
+  check('highlight text shown once-escaped (R&D, not R&amp;D)', await p.evaluate(() => [...document.querySelectorAll('#doc-content mark.verify-flag')].some((m) => m.textContent === 'R&D budget')));
+  const restored = await p.evaluate((h) => {
+    const k = genDraftKey(); const d = JSON.parse(localStorage.getItem(k) || '{}'); d.doc = h; localStorage.setItem(k, JSON.stringify(d));
+    restoreGenDraft(); return document.getElementById('doc-content').innerHTML;
+  }, evil);
+  await p.waitForTimeout(500);
+  check('a restored draft is filtered too', !/onerror|onclick|<img|<svg|<script/i.test(restored) && !(await p.evaluate(() => window.__xss || 0)));
+  return t;
+});
+
+flow('keyboard-and-legal-links', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np', width: 390, height: 844 });
+  const p = t.page;
+  await p.waitForTimeout(900);
+  await p.focus('.m-burger >> visible=true'); await p.keyboard.press('Enter'); await p.waitForTimeout(500);
+  check('phone menu opens from the keyboard and takes focus', await p.evaluate(() => document.getElementById('m-nav').classList.contains('open') && document.getElementById('m-nav').contains(document.activeElement)));
+  await p.keyboard.press('Escape'); await p.waitForTimeout(400);
+  check('Esc closes the phone menu and returns focus', await p.evaluate(() => !document.getElementById('m-nav').classList.contains('open') && document.activeElement.classList.contains('m-burger')));
+  await p.click('#ai-chat-fab'); await p.waitForTimeout(600);
+  await p.keyboard.press('Escape'); await p.waitForTimeout(500);
+  check('Esc closes the assistant', await p.evaluate(() => !document.getElementById('ai-chat-panel').classList.contains('open')));
+  const v = await openApp(browser, { persona: 'visitor' });
+  const q = v.page;
+  await q.evaluate(() => go('signin')); await q.waitForTimeout(800);
+  await q.click('#signin a:has-text("Terms") >> visible=true'); await q.waitForTimeout(800);
+  check('sign-in Terms link opens the Terms', (await screen(q)) === 'terms');
+  for (const page of ['privacy', 'terms']) {
+    await q.evaluate((pg) => go(pg), page); await q.waitForTimeout(800);
+    const n = await q.evaluate((pg) => document.querySelectorAll('#' + pg + ' .legal-doc a[href="#"][onclick="return false;"]').length, page);
+    const hs = await q.evaluate((pg) => document.querySelectorAll('#' + pg + ' .legal-doc h2').length, page);
+    check(page + ': one contents link per section (' + n + ' links, ' + hs + ' sections)', n > 5 && n <= hs);
+    await q.click('#' + page + ' .legal-doc a[href="#"][onclick="return false;"] >> nth=3'); await q.waitForTimeout(1200);
+    const top = await q.evaluate((pg) => document.querySelectorAll('#' + pg + ' .legal-doc h2')[3].getBoundingClientRect().top, page);
+    check(page + ': contents link jumps to its section', top > 40 && top < 200);
+  }
+  check('no stray # in the URL', !q.url().includes('#'));
+  t.errors.push(...v.errors); await v.ctx.close();
+  return t;
+});
+
+flow('forms-labels-and-keyboard', async (browser, check) => {
+  const v = await openApp(browser, { persona: 'visitor' });
+  const q = v.page;
+  await q.evaluate(() => go('login')); await q.waitForTimeout(700);
+  await q.click('label[for="reg-org"]');
+  check('clicking a sign-up label focuses its field', await q.evaluate(() => document.activeElement.id === 'reg-org'));
+  await q.fill('#reg-org', 'Hope Harbor'); await q.fill('#reg-email', 'maria@hopeharbor'); await q.fill('#reg-pw', 'longenough1'); await q.fill('#reg-pw2', 'longenough1');
+  await q.press('#reg-pw2', 'Enter'); await q.waitForTimeout(400);
+  check('Enter submits sign-up, and a mistyped email is caught first', /valid email/.test(await q.textContent('#toast-text')) && (await screen(q)) === 'login');
+  check('password managers get the right hints', await q.evaluate(() => document.getElementById('reg-pw').autocomplete === 'new-password' && document.getElementById('si-pw-input').autocomplete === 'current-password'));
+  await q.evaluate(() => go('contact')); await q.waitForTimeout(600);
+  await q.click('label[for="contact-msg"]');
+  check('contact labels focus their fields', await q.evaluate(() => document.activeElement.id === 'contact-msg'));
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('profile')); await p.waitForTimeout(900);
+  await p.click('#profile label:has-text("Mission statement")');
+  check('profile labels focus their fields', await p.evaluate(() => document.activeElement.id === 'pf-mission'));
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
+  await p.evaluate(() => { const g = (window._genPipeline || [])[0]; if (g) pickSaved(g.id); }); await p.waitForTimeout(800);
+  await p.click('#generator label:has-text("Requested amount")');
+  check('generator labels focus their fields', await p.evaluate(() => document.activeElement.id === 'gen-amount'));
+  const o = await openApp(browser, { persona: 'onboarding' });
+  const r = o.page;
+  let chipOk = null, uploadOk = null;
+  for (let i = 0; i < 6 && (chipOk === null || uploadOk === null); i++) {
+    await r.evaluate((n) => { obState.idx = n; obRender(); }, i); await r.waitForTimeout(300);
+    if (chipOk === null && await r.$('#ob-fields .ob-chip')) {
+      const before = await r.getAttribute('#ob-fields .ob-chip >> nth=0', 'aria-pressed');
+      await r.click('#ob-fields .ob-chip >> nth=0'); await r.waitForTimeout(150);
+      const after = await r.getAttribute('#ob-fields .ob-chip >> nth=0', 'aria-pressed');
+      chipOk = before !== after && ['true', 'false'].includes(after) && !!(await r.$('#ob-fields [role=group][aria-labelledby]'));
+    }
+    if (uploadOk === null && await r.$('#ob-fields .ob-upload')) {
+      uploadOk = await r.evaluate(() => { const b = document.querySelector('#ob-fields .ob-upload'); return b.tabIndex === 0 && b.getAttribute('role') === 'button' && typeof b.ondrop === 'function'; });
+    }
+  }
+  check('survey chips announce whether they are selected', chipOk === true);
+  check('survey upload box works by keyboard and drag-and-drop', uploadOk !== false);
+  t.errors.push(...v.errors, ...o.errors); await v.ctx.close(); await o.ctx.close();
+  return t;
+});
+
+flow('manage-save-failures', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np', failTables: ['awards', 'expenditures', 'compliance_requirements'] });
+  const p = t.page;
+  const toasts = [];
+  await p.exposeFunction('_qaToast', (m) => toasts.push(m));
+  await p.evaluate(() => { const o = window.toast; window.toast = (m) => { window._qaToast(m); return o(m); }; });
+  await p.evaluate(() => go('manage')); await p.waitForTimeout(1500);
+  await p.selectOption('#pa-award-grant', { index: 1 });
+  await p.fill('#pa-award-amt', '$40,000'); await p.click('#manage button:has-text("Mark as awarded")'); await p.waitForTimeout(1200);
+  check('a failed award save says so (not "Recorded")', toasts.some((m) => /could not record/i.test(m)) && !toasts.some((m) => /^Recorded/.test(m)));
+  await p.fill('#paexp-desc-aw1', 'Robotics kits'); await p.fill('#paexp-amt-aw1', '1250');
+  await p.click('#manage .pa-addform:has(#paexp-desc-aw1) button'); await p.waitForTimeout(1000);
+  check('a failed spending save says so', toasts.some((m) => /could not add expense/i.test(m)));
+  const was = await p.evaluate(() => document.querySelector('#manage [onclick*="toggleCompliance"]')?.classList.contains('done'));
+  await p.click('#manage [onclick*="toggleCompliance"]'); await p.waitForTimeout(900);
+  check('a failed compliance toggle says so and stays as it was', toasts.some((m) => /couldn.t save/i.test(m)) && (await p.evaluate(() => document.querySelector('#manage [onclick*="toggleCompliance"]')?.classList.contains('done'))) === was);
+  t.errors = t.errors.filter((e) => !/503|Service Unavailable|qa: forced outage/.test(e));
+  return t;
+});
+
+flow('save-grant-twice-no-duplicates', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('discovery')); await p.waitForTimeout(2500);
+  const title = await p.evaluate(() => { const g = Object.values(window._grantsById || {})[0]; return g && g.title; });
+  // the same title already saved twice (older app versions could do this)
+  t.db.grants.push({ id: 'dup-1', user_id: UID.np, title, status: 'saved' }, { id: 'dup-2', user_id: UID.np, title, status: 'saved' });
+  const before = t.db.grants.length;
+  await p.evaluate(() => saveGrantToPipeline(Object.values(window._grantsById)[0], 'saved')); await p.waitForTimeout(800);
+  check('saving a grant already in the pipeline twice adds no third copy', t.db.grants.length === before);
+  return t;
+});
+
+flow('keyboard-reachable-rows', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(900);
+  await p.focus('#generator .gsel-row[onclick*="pickSaved"] >> nth=0'); await p.keyboard.press('Enter'); await p.waitForTimeout(900);
+  check('Enter on a saved grant picks it for drafting', await p.evaluate(() => !!window._selectedGrant));
+  await p.evaluate(() => go('readiness')); await p.waitForTimeout(1500);
+  await p.focus('#readiness .rdy-how-t >> nth=0'); await p.keyboard.press('Enter'); await p.waitForTimeout(300);
+  check('"How to get it" opens from the keyboard', await p.evaluate(() => { const b = document.querySelector('#readiness .rdy-how-t'); return b.getAttribute('aria-expanded') === 'true' && b.closest('.rdy-item').classList.contains('open'); }));
+  await p.click('#readiness .rdy-item button:has-text("Have it") >> nth=0'); await p.waitForTimeout(600);
+  check('status buttons say which one is selected', await p.evaluate(() => { const seg = document.querySelector('#readiness .rdy-item .rdy-seg'); return [...seg.querySelectorAll('button')].map((b) => b.getAttribute('aria-pressed')).join() === 'true,false,false'; }));
+  await p.evaluate(() => go('manage')); await p.waitForTimeout(1500);
+  const before = t.db.compliance_requirements[0].status;
+  await p.focus('#manage .pa-cmp .ic >> nth=0'); await p.keyboard.press(' '); await p.waitForTimeout(900);
+  check('Space checks off a compliance item', t.db.compliance_requirements[0].status !== before && (await p.getAttribute('#manage .pa-cmp .ic >> nth=0', 'aria-checked')) === String(t.db.compliance_requirements[0].status === 'satisfied'));
+  const v = await openApp(browser, { persona: 'visitor' });
+  await v.page.evaluate(() => go('signin')); await v.page.waitForTimeout(800);
+  check('"Email me a sign-in link" is reachable by keyboard', await v.page.evaluate(() => { const e = document.querySelector('.si-resend'); return e.tabIndex === 0 && e.getAttribute('role') === 'button'; }));
+  t.errors.push(...v.errors); await v.ctx.close();
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;
