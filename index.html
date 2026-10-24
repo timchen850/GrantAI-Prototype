@@ -2446,7 +2446,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   .ap-preview-btn{ margin-top:16px; font-size:13px; font-weight:600; color:var(--accent); background:none; border:1px solid var(--accent-tint); border-radius:999px; padding:9px 17px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:background .15s; }
   .ap-preview-btn:hover{ background:var(--accent-tint); }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>   <!-- only the sign-in visual uses it: don't hold up the first paint -->
 <!-- Supabase backend: config.js (gitignored) holds the project URL + anon key -->
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>   <!-- pinned: the version the qa/ tests run -->
