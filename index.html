@@ -11236,7 +11236,7 @@ async function updateDashboard() {
           const pillCls = days <= 30 ? 'pill-acc' : days <= 75 ? 'pill-warn' : 'pill-ok';
           pillHtml = `<span class="pill ${pillCls}">${dueInLabel(days)}</span>`;
         } else if (g.deadlineLabel) {
-          pillHtml = `<span class="pill pill-ok">${g.deadlineLabel}</span>`;
+          pillHtml = `<span class="pill pill-ok">${escHtml(g.deadlineLabel)}</span>`;
         }
         const meta = [g.type, g.amount].filter(Boolean).join(' · ');
         return `<div class="grow">
@@ -11267,7 +11267,7 @@ async function updateDashboard() {
       deadlinesEl.innerHTML = upcoming.map(g => {
         const cls = g.daysLeft <= 30 ? 'red' : g.daysLeft <= 75 ? 'amber' : 'green';
         return `<div class="dl">
-          <div><div class="dn">${g.funder || g.title}</div><div class="dt">${g.title || ''}</div></div>
+          <div><div class="dn">${escHtml(g.funder || g.title)}</div><div class="dt">${escHtml(g.title || '')}</div></div>
           <div class="dd ${cls}">${g.daysLeft}d</div>
         </div>`;
       }).join('');

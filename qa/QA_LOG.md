@@ -18,6 +18,7 @@ node clipped-states.mjs               # the same for a finished draft, plan, exp
 node headings.mjs                     # one main heading per screen
 node fieldsize.mjs                    # phone fields under 16px (iPhone zooms into them)
 node targets.mjs                      # controls under 24x24 px on phones
+node xss.mjs [width]                  # stored-XSS sweep: markup in every data field must not run
 QA_TZ=America/Los_Angeles node flows.mjs   # any script in a US time zone (dates are calendar days)
 ```
 
@@ -117,6 +118,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 85 | Profile: unsaved edits | The profile only saves on "Save changes", but leaving it (sidebar, phone menu, Back) silently threw away anything typed. | Leaving with unsaved edits asks "Leave without saving them?"; staying keeps the edits; closing or reloading the tab gets the browser's own warning. No question after saving or if nothing changed. Covered by `unsaved-profile-edits`. |
 | 86 | Screen readers: messages | Toasts (every "saved", "couldn't save", "draft ready", error and limit message) and the assistant's replies weren't announced: neither was a live region. | The toast is a polite status region and the assistant's message list a log, so both are read out as they appear. |
 | 87 | Phones in dark mode | The light-only design didn't declare a color scheme, so browsers that auto-darken pages (Chrome on Android with "darken websites") could recolor it unevenly. | `<meta name="color-scheme" content="light only">`. Checked under dark mode: page and form fields keep their colors. |
+| 88 | Dashboard (security) | After Discovery ran, the dashboard's grant list and deadline widget inserted Grants.gov titles and agency names as raw HTML, so a listing containing markup would run code in the user's session. Found by the new `xss.mjs` sweep. | Escaped like the rest of the app. `xss.mjs` puts code-running markup into every user- and data-controlled field (profile, answers, grants, deadlines, awards, documents, Grants.gov and IRS results), visits every screen and opens the main panels: 0 run at desktop and phone widths (the old code ran it). |
 
 ## Needs Tim's decision
 
