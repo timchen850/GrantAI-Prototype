@@ -6354,7 +6354,7 @@ async function loadRagDocs() {
       const when = d.created_at ? new Date(d.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
       return '<div class="rag-row"><span class="rag-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>' +
         '<div class="rag-main"><div class="rag-t">' + escHtml(d.label || d.file_name || 'Past proposal') + '</div><div class="rag-m">In Grange’s memory' + (when ? ' · ' + when : '') + '</div></div>' +
-        '<button type="button" class="rag-del" title="Remove" onclick="ragDeleteDoc(\'' + escHtml(d.id) + '\')">✕</button></div>';
+        '<button type="button" class="rag-del" title="Remove" aria-label="Remove ' + escHtml(d.label || d.file_name || 'this document') + ' from Grange’s memory" onclick="ragDeleteDoc(\'' + escHtml(d.id) + '\')">✕</button></div>';
     }).join('');
   } catch (e) { list.innerHTML = '<div class="rag-empty">Could not load your documents.</div>'; }
 }
@@ -6362,6 +6362,7 @@ async function loadRagDocs() {
 async function ragDeleteDoc(id) {
   const uid = window._grange?.user?.id;
   if (!window.sb || !uid) return;
+  if (!confirm('Remove this document from Grange’s memory? New drafts won’t use it.')) return;   // one tap shouldn't delete it
   try {
     await sb.from('document_chunks').delete().eq('user_id', uid).eq('document_id', id);
     const { error } = await sb.from('documents').delete().eq('user_id', uid).eq('id', id);

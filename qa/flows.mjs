@@ -823,6 +823,22 @@ flow('due-dates-in-us-time-zones', async (browser, check) => {
   return t;
 });
 
+flow('remove-remembered-document', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  t.db.documents.push({ id: 'rag-1', user_id: UID.np, kind: 'past_proposal', label: '2025 Youth Fund LOI', file_name: 'loi.txt', created_at: new Date().toISOString() });
+  await p.evaluate(() => go('profile')); await p.waitForTimeout(1200);
+  await p.evaluate(() => { window._grange.profile.tier = 'pro'; applyRagGate(); loadRagDocs(); }); await p.waitForTimeout(800);   // the library is a Pro feature
+  const btn = await p.$('#profile .rag-del');
+  if (!btn) { check('a remembered document is listed', false); return t; }
+  check('the remove button is labelled with the document', /Remove 2025 Youth Fund LOI/.test(await btn.getAttribute('aria-label')));
+  p.once('dialog', (d) => d.dismiss()); await btn.click(); await p.waitForTimeout(600);
+  check('cancelling the confirmation keeps it', t.db.documents.some((d) => d.id === 'rag-1'));
+  p.once('dialog', (d) => d.accept()); await (await p.$('#profile .rag-del')).click(); await p.waitForTimeout(1000);
+  check('confirming removes it', !t.db.documents.some((d) => d.id === 'rag-1'));
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;
