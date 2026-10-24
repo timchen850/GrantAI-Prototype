@@ -162,6 +162,13 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 126 | Dashboard journey on tablets and phones | Below 920 px the five journey steps sit in two columns, so "Manage" was left alone on a third row with an empty space beside it. | The last step spans the row. |
 | 127 | Screen readers: logo | All nine logos sit right next to the words "Grange AI", so screen readers announced "Grange AI logo Grange AI" in every header and menu. | The logo is marked decorative there (`alt=""`); the name is read once. |
 | 128 | Test harness: accessibility timing | `a11y.mjs` sometimes reported color-contrast failures for text it caught mid fade-in (11 in one run, 0 in the next three on the same code). | When contrast fails, it looks again after the animations settle and reports only what still fails. |
+| 129 | Finished draft on small phones | At 320 px the "← Configure / Copy / Export ▾" row above a finished draft ran 4 px past the card, so the Export button was clipped at its edge. | Under 360 px the buttons are a little narrower and the row can wrap; all three fit on one line at 320 px. The whole finished-draft view (plan, scorecard, approach, checklist) checked at 320 and 390 px. |
+| 130 | Sign-up on phones and tablets | Below 860 px the sign-up page hides its brand panel, leaving no logo or name anywhere on the page; it kept 52 px side gutters on a 320 px phone (fields 215 px wide) and stretched the fields to about 660 px on a tablet. | The logo and name sit above "Create your account" at those widths, and the form is one centred column up to 440 px wide with at least 20 px either side. Checked at 320, 390, 768 and 1440 px. |
+| 131 | Guided tour on tablets | At 760–1000 px the guide's speech bubble is placed beside what it points at without checking that it fits, so on a 768 px iPad three stops ran off the right edge (bubbles ending at 799, 903 and 917 px), cutting off "Hi, I'm Grange…" and "Mark this open document…". | The bubble goes beside the target when at least 170 px of room is there (narrowing to fit, and kept inside the screen vertically); otherwise on the other side, or below/above. Walked the whole tour at 320×640, 390×844, 768×1024, 1024×768 and 1440×900, and the first stop on phones held sideways (844×390, 740×360): every stop on screen and off the headline. Covered by `tour-bubble-fits-on-tablets` (fails on the old code). |
+| 132 | Slow connections | With every backend call delayed 4 s, each screen showed a loading message except the generator's picker, which said "Pick a saved grant below" over an empty space until the list arrived; Grant management said only "Loading…". | The picker shows "Loading your saved grants…" until they arrive; Manage says "Loading your awards…". Every screen checked under a 4 s delay at 390 px. |
+| 133 | Pricing: jargon | The in-app plan comparison listed a feature as "RAG over past proposals", an engineering term. | "Learns from your past proposals". No other internal terms (exemplar, embeddings, LLM, model or vendor names) appear in visible text or messages. Prices unchanged (waiting on Tim). |
+| 134 | No navigation at 769–860 px | The sidebar hides at 860 px and below, but the phone top bar only appeared at 768 px and below, so between them (phones held sideways, small tablets, a narrow browser window) app screens had no menu and no sidebar. | The top bar and menu appear wherever the sidebar is hidden. `phone-menu-on-every-screen` now also checks 800 and 860 px (both fail on the old code). Landscape phone (844×390) and 1920×1080 checked on the main screens: no sideways scroll. |
+| 135 | Big screens | On a 1920 px monitor the app's content column (max 1,180 px) sat against the sidebar, leaving about 540 px of empty space on the right of every app screen (over 1,100 px at 2560). | The column is centred beside the sidebar: 246 px either side at 1920, 566 at 2560; unchanged at 1440 and below. |
 
 ## Needs Tim's decision
 
@@ -191,11 +198,17 @@ the generator form starting from the user's own details and asking for missing o
 exist, no duplicate ids. Sweep: 0 console errors, no sideways scroll on any screen at 13 widths
 (320–1440). Monkey test: 130 buttons clicked across all accounts, 0 JS errors. Accessibility: 0 axe violations
 (390 and 1440). labels.mjs and labels-states.mjs: 0 unlinked labels or unnamed fields. clipped.mjs / clipped-states.mjs: 0 clipped text.
-junktext.mjs: no "undefined"/"null"/"NaN" on any screen. 63 flows, all passing (last full run 2026-10-24 ~12:50 UTC, on the code committed
-with rows 114–128; sweep 175/175 at 320/390/768/1024/1440, longtext 0; flows also pass in Pacific time; fieldsize, headings and xss sweeps clean;
+junktext.mjs: no "undefined"/"null"/"NaN" on any screen. 64 flows, all passing (last full run 2026-10-24 ~15:30 UTC, on the code committed
+with rows 129–135; sweep 175/175 at 320/390/768/1024/1440, longtext 0; flows also pass in Pacific time; fieldsize, headings and xss sweeps clean;
 targets.mjs lists 22 small controls, all spaced text links or controls with an enlarged invisible tap area, which it measures by their visible box).
 
 ## Next up
 
 - Server-side (needs Supabase connector): apply `profiles.tier` migration, count one credit per draft in `generate-proposal`, revoke `match_exemplar_chunks` from anon, fix `stripe-webhook`.
 - Pricing decision from Tim, then make landing and in-app pricing match.
+- For the next QA pass (each check-in): run the whole suite (flows, smoke, audit, a11y at 1440 and 390, labels and
+  labels-states, clipped and clipped-states, longtext, junktext, xss, monkey, focus, sweep at five widths) and look at
+  screenshots of any screen changed since the last pass at 320, 390, 768 and 1440 px. Already looked at closely: every
+  app and public screen at 320/390/768/1024/1440, the tour at four sizes, the demo's steps on phones, loading states
+  under a 4 s delay, long names, sparse and business accounts, finished drafts. Not yet: landscape phones (e.g. 844×390)
+  and very large screens (1920+).

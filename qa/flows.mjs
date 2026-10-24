@@ -57,6 +57,13 @@ flow('phone-menu-on-every-screen', async (browser, check) => {
   await p.click('.m-appbar .m-burger'); await p.waitForTimeout(500);
   await p.click('#m-nav-links a:has-text("Grant management")'); await p.waitForTimeout(900);
   check('the menu leaves Deadlines for another screen', (await screen(p)) === 'manage');
+  for (const w of [800, 860]) {   // landscape phones and small tablets: no sidebar here either
+    const t2 = await openApp(browser, { persona: 'np', width: w, height: 390 });
+    await t2.page.evaluate(() => go('dashboard')); await t2.page.waitForTimeout(800);
+    const nav = await t2.page.evaluate(() => { const b = document.querySelector('.m-appbar .m-burger'); const side = document.querySelector('#side-dashboard'); return { burger: !!(b && b.getClientRects().length), side: !!(side && side.getClientRects().length) }; });
+    check('at ' + w + ' px there is a way to navigate (menu button or sidebar)', nav.burger || nav.side);
+    await t2.ctx.close();
+  }
   return t;
 });
 
@@ -1088,6 +1095,20 @@ flow('assistant-tip-once-per-session', async (browser, check) => {
   const t2 = await openApp(browser, { persona: 'np', width: 768 });
   await t2.page.evaluate(() => { try { sessionStorage.removeItem('acp_nudged'); } catch (_) {} go('discovery'); }); await t2.page.waitForTimeout(1600);
   check('on a tablet it does not cover the page at all', !(await shown(t2.page)));
+  await t2.ctx.close();
+  return t;
+});
+
+flow('tour-bubble-fits-on-tablets', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'newuser', width: 768, height: 1024, reducedMotion: true });
+  const p = t.page;
+  await p.waitForTimeout(2500);
+  const r = await p.evaluate(() => { const b = document.getElementById('tut-guide-bubble').getBoundingClientRect(); return { l: b.left, r: b.right, t: b.top, b: b.bottom, w: innerWidth, h: innerHeight, txt: document.getElementById('tut-guide-bubble').textContent }; });
+  check('the tour\'s first speech bubble fits on a 768 px iPad screen', /Hi, I'm Grange/.test(r.txt) && r.l >= 0 && r.r <= r.w && r.t >= 0 && r.b <= r.h);
+  const t2 = await openApp(browser, { persona: 'newuser', width: 844, height: 390, reducedMotion: true });   // a phone held sideways
+  await t2.page.waitForTimeout(2500);
+  const q = await t2.page.evaluate(() => { const b = document.getElementById('tut-guide-bubble').getBoundingClientRect(); const hs = [...document.querySelectorAll('.tut-intro .tut-h-big, .tut-intro h1, .tut-intro h2, .tut-intro p')].filter((e) => e.getClientRects().length).map((e) => e.getBoundingClientRect()); return { on: b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight, covers: hs.some((h) => !(h.right <= b.left || h.left >= b.right || h.bottom <= b.top || h.top >= b.bottom)) }; });
+  check('on a phone held sideways it stays on screen and off the headline', q.on && !q.covers);
   await t2.ctx.close();
   return t;
 });
