@@ -713,6 +713,42 @@ flow('signed-out-in-another-tab', async (browser, check) => {
   return t;
 });
 
+flow('replay-tour-returns-to-app', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.waitForTimeout(800);
+  await p.click('#dashboard button:has-text("Replay tour")'); await p.waitForTimeout(900);
+  check('Replay tour opens the tour', (await screen(p)) === 'tutorial');
+  await walkTutorial(p); await p.waitForTimeout(1200);
+  check('finishing the replay returns to the dashboard, not the survey', (await screen(p)) === 'dashboard');
+  check('their profile is untouched', t.db.profiles.find((r) => r.user_id === UID.np)?.onboarding_complete === true);
+  return t;
+});
+
+flow('discovery-search-and-filters', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('discovery')); await p.waitForTimeout(2500);
+  const shown = () => p.evaluate(() => [...document.querySelectorAll('#disc-grants-list .gcard')].filter((c) => c.style.display !== 'none').length);
+  const total = await shown();
+  const sub0 = await p.textContent('#disc-subtitle');
+  const chips = await p.evaluate(() => [...document.querySelectorAll('#disc-filters .chip')].filter((c) => !c.hidden).map((c) => c.dataset.filter));
+  check('only categories that have grants get a chip (no empty "State & local")', !chips.includes('State') && chips.includes('all'));
+  for (const f of chips.filter((x) => x !== 'all')) {
+    await p.click(`#disc-filters .chip[data-filter="${f}"]`); await p.waitForTimeout(200);
+    const n = await shown();
+    check(`"${f}" shows some grants, and only that kind`, n > 0 && n <= total && await p.evaluate((ff) => [...document.querySelectorAll('#disc-grants-list .gcard')].filter((c) => c.style.display !== 'none').every((c) => discTypeOf(c) === ff), f));
+    check(`"${f}" chip says it is selected`, (await p.getAttribute(`#disc-filters .chip[data-filter="${f}"]`, 'aria-pressed')) === 'true');
+  }
+  await p.click('#disc-filters .chip[data-filter="all"]'); await p.waitForTimeout(200);
+  await p.fill('#disc-search', 'zzzz no such grant'); await p.waitForTimeout(300);
+  check('a search with no results says so', (await shown()) === 0 && await p.isVisible('#disc-nomatch') && /No grants match/.test(await p.textContent('#disc-nomatch')));
+  await p.click('#disc-nomatch button'); await p.waitForTimeout(300);
+  check('"Show all grants" clears the search', (await shown()) === total && (await p.inputValue('#disc-search')) === '' && !(await p.isVisible('#disc-nomatch')));
+  check('the original subtitle comes back', (await p.textContent('#disc-subtitle')) === sub0);
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;

@@ -4168,6 +4168,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   .ob-help-text { margin: 8px 0 0; padding: 11px 13px; background: var(--accent-tint, #fbe9e2); border-radius: 10px;
     font-size: 13px; line-height: 1.55; color: var(--accent-ink, #8a2c16); }
   .ob-help-text[hidden] { display: none; }
+  #disc-filters .chip[hidden] { display: none; }
   /* 990 autofill (reduce data-entry pain) */
   .ob-990 { border: 1px dashed var(--line, rgba(26,25,22,0.12)); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; background: var(--surface-2, #faf9f7); }
   .ob-990-row { display: flex; align-items: center; gap: 13px; }
@@ -4905,10 +4906,10 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
       </section>
       <div class="filters" id="disc-filters" style="display:none">
         <input class="search" type="text" placeholder="Search grants…" id="disc-search" aria-label="Search grants" oninput="filterDiscGrants(this.value)">
-        <button class="chip on" onclick="setDiscFilter(this,'all')">All</button>
-        <button class="chip" onclick="setDiscFilter(this,'Federal')">Federal</button>
-        <button class="chip" onclick="setDiscFilter(this,'Foundation')">Foundation</button>
-        <button class="chip" onclick="setDiscFilter(this,'State')">State &amp; local</button>
+        <button class="chip on" data-filter="all" aria-pressed="true" onclick="setDiscFilter(this,'all')">All</button>
+        <button class="chip" data-filter="Federal" aria-pressed="false" onclick="setDiscFilter(this,'Federal')">Federal</button>
+        <button class="chip" data-filter="Foundation" aria-pressed="false" onclick="setDiscFilter(this,'Foundation')">Foundation</button>
+        <button class="chip" data-filter="State" aria-pressed="false" onclick="setDiscFilter(this,'State')">State &amp; local</button>
       </div>
       <div id="disc-grants-list">
         <div class="disc-loading"><div class="disc-spinner"></div><div>Loading your matches…</div></div>
@@ -11793,6 +11794,10 @@ function renderDiscovery(grants, answers) {
 
   list.innerHTML = visible.map(g => renderGrantCard(g)).join('') + upgradeBar;
   enrichTopGrants(visible);   // progressively fill real award size + description into the top cards
+  window._discSubtitle = document.getElementById('disc-subtitle').textContent;
+  syncDiscFilterChips();
+  const q = (document.getElementById('disc-search')?.value || '').toLowerCase().trim();
+  if (q || (window._discFilter && window._discFilter !== 'all')) applyDiscFilters(q, window._discFilter || 'all');   // keep the user's filters on a refresh
 }
 
 /* ─── Enrich the top discovery cards with real detail (award size + description) ───
@@ -12449,24 +12454,51 @@ function filterDiscGrants(query) {
 }
 
 function setDiscFilter(btn, type) {
-  document.querySelectorAll('#disc-filters .chip').forEach(c => c.classList.remove('on'));
-  btn.classList.add('on');
+  document.querySelectorAll('#disc-filters .chip').forEach(c => { c.classList.remove('on'); c.setAttribute('aria-pressed', 'false'); });
+  btn.classList.add('on'); btn.setAttribute('aria-pressed', 'true');
   window._discFilter = type;
-  applyDiscFilters(document.getElementById('disc-search')?.value || '', type);
+  applyDiscFilters((document.getElementById('disc-search')?.value || '').toLowerCase().trim(), type);
+}
+
+// Filter group for a card: corporate funders sit with foundations; USASpending prospects are federal.
+function discTypeOf(card) {
+  if (card.classList.contains('gc-prospect')) return 'Federal';
+  const t = card.dataset.type || '';
+  return t === 'Corporate' ? 'Foundation' : /^(State|Local|Government|County|City)/i.test(t) ? 'State' : t;
+}
+// Hide filter chips with nothing behind them (there are no state or local grants in the data yet).
+function syncDiscFilterChips() {
+  const types = new Set([...document.querySelectorAll('#disc-grants-list .gcard')].map(discTypeOf));
+  document.querySelectorAll('#disc-filters .chip').forEach(c => { const f = c.dataset.filter; if (f && f !== 'all') c.hidden = !types.has(f); });
+  if (window._discFilter && window._discFilter !== 'all' && !types.has(window._discFilter)) {
+    const all = document.querySelector('#disc-filters .chip[data-filter="all"]'); if (all) setDiscFilter(all, 'all');
+  }
+}
+function clearDiscFilters() {
+  const s = document.getElementById('disc-search'); if (s) s.value = '';
+  const all = document.querySelector('#disc-filters .chip[data-filter="all"]'); if (all) setDiscFilter(all, 'all');
+  s?.focus();
 }
 
 function applyDiscFilters(query, type) {
   const cards = document.querySelectorAll('#disc-grants-list .gcard');
   let visible = 0;
   cards.forEach(card => {
-    const typeMatch = type === 'all' || card.dataset.type === type;
+    const typeMatch = type === 'all' || discTypeOf(card) === type;
     const textMatch = !query || card.textContent.toLowerCase().includes(query);
     card.style.display = (typeMatch && textMatch) ? '' : 'none';
     if (typeMatch && textMatch) visible++;
   });
-  const all = window._discAllGrants || [];
-  document.getElementById('disc-subtitle').textContent =
-    `${visible} of ${all.length} opportunities shown.`;
+  const sub = document.getElementById('disc-subtitle');
+  if (sub) sub.textContent = (type === 'all' && !query && window._discSubtitle) ? window._discSubtitle : `${visible} of ${cards.length} opportunities shown.`;
+  const list = document.getElementById('disc-grants-list');
+  let none = document.getElementById('disc-nomatch');
+  if (!none && list) { none = document.createElement('div'); none.id = 'disc-nomatch'; none.className = 'disc-loading'; none.setAttribute('role', 'status'); list.parentNode.insertBefore(none, list.nextSibling); }
+  if (none) {
+    const show = cards.length > 0 && visible === 0;
+    none.style.display = show ? '' : 'none';
+    none.innerHTML = show ? '<p style="color:var(--muted)">No grants match' + (query ? ' “' + escHtml(query) + '”' : '') + (type !== 'all' ? ' in this category' : '') + '.</p><button class="btn btn-outline btn-sm" onclick="clearDiscFilters()">Show all grants</button>' : '';
+  }
 }
 </script>
 
