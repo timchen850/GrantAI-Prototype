@@ -98,11 +98,12 @@ const CHECKS = {
 };
 const checkViolation = (table, row) => Object.entries(CHECKS[table] || {}).find(([col, ok]) => col in row && row[col] != null && !ok.includes(row[col]));
 const checkFail = (route, table, col) => route.fulfill({ status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ code: '23514', message: `new row for relation "${table}" violates check constraint "${table}_${col}_check"`, details: null, hint: null }) });
+// failTables: 'documents' fails every write to that table; 'documents:POST' fails only its inserts.
 function restHandler(db, log, failTables = []) {
   return async (route) => {
     await new Promise((ok) => setTimeout(ok, 40 + Math.random() * 60));   // real network latency, so races show up
     { const tb = new URL(route.request().url()).pathname.split('/').pop();
-      if (failTables.includes(tb) && route.request().method() !== 'GET') { log.push(`${route.request().method()} ${tb} -> 503 (forced)`); return route.fulfill({ status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ code: 'PGRST000', message: 'qa: forced outage', details: null, hint: null }) }); } }
+      if ((failTables.includes(tb) && route.request().method() !== 'GET') || failTables.includes(tb + ':' + route.request().method())) { log.push(`${route.request().method()} ${tb} -> 503 (forced)`); return route.fulfill({ status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ code: 'PGRST000', message: 'qa: forced outage', details: null, hint: null }) }); } }
     const req = route.request(); const url = new URL(req.url()); const table = url.pathname.split('/').pop();
     const sp = [...url.searchParams.entries()]; const method = req.method(); const h = req.headers();
     const prefer = h['prefer'] || ''; const wantObj = (h['accept'] || '').includes('vnd.pgrst.object');

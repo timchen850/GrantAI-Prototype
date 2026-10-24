@@ -293,7 +293,8 @@ label.field-label {
 .stat-cell { padding: 36px 28px; border-left: 1px solid var(--line); }
 .stat-cell:first-child { border-left: none; padding-left: 0; }
 .stat-cell .fig { font-family: var(--display); font-weight: 800; font-size: 40px;
-  color: var(--ink); letter-spacing: -0.04em; line-height: 1; }
+  color: var(--ink); letter-spacing: -0.04em; line-height: 1; white-space: nowrap; }   /* "80–200" never splits at the dash */
+@media (max-width: 380px) { .stat-cell .fig { font-size: 32px; } }
 .stat-cell .cap { font-size: 13.5px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
 /* The hero's 3D tablet and the stacked deadline cards are wider than the screen at
    laptop/tablet widths; clip them to the page (clip, unlike hidden, keeps sticky working). */
@@ -933,6 +934,14 @@ label.field-label {
 /* Dedicated Deadlines screen */
 .dlx-group { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 8px 22px 14px; margin-bottom: 18px; }
 .dlx-head { font-family: var(--display); font-weight: 750; font-size: 15px; color: var(--ink); padding: 12px 0 4px; display: flex; align-items: center; gap: 9px; }
+.dlx-act { display: flex; align-items: center; gap: 12px; flex: none; }
+/* Phones: the title gets the full width; the due date and button sit on the line below */
+@media (max-width: 520px) {
+  #deadlines .dl { flex-wrap: wrap; row-gap: 4px; }
+  #deadlines .dl > div:first-child { flex-basis: 100%; }
+  #deadlines .dlx-act { width: 100%; justify-content: space-between; }
+  #deadlines .dlx-act .btn { margin-right: -10px; }   /* line the button's text up with the card edge */
+}
 .dlx-count { font-size: 12px; font-weight: 700; color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
 .dl.dlx-done .dn, .dl.dlx-done .dt { color: var(--muted); }   /* done: struck through and muted, still readable */
 .dl.dlx-done .dn { text-decoration: line-through; text-decoration-color: var(--line); }
@@ -2315,17 +2324,27 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   .nav .m-burger { display: flex; }
   .nav .tl-wrap  { display: none; }
   .nav-right     { display: none; }
-  /* app screens get a fixed top bar with the hamburger */
+  /* every app screen gets a fixed top bar with the hamburger (the sidebar is hidden on phones) */
   body[data-screen="dashboard"] .m-appbar,
   body[data-screen="discovery"] .m-appbar,
+  body[data-screen="readiness"] .m-appbar,
+  body[data-screen="nonprofit-setup"] .m-appbar,
   body[data-screen="generator"] .m-appbar,
-  body[data-screen="profile"]  .m-appbar { display: flex; }
+  body[data-screen="manage"] .m-appbar,
+  body[data-screen="deadlines"] .m-appbar,
+  body[data-screen="profile"] .m-appbar,
+  body[data-screen="plan"] .m-appbar { display: flex; }
   .m-appbar .m-burger { display: flex; }
   /* reserve room below the fixed app bar */
   body[data-screen="dashboard"] .app-main,
   body[data-screen="discovery"] .app-main,
+  body[data-screen="readiness"] .app-main,
+  body[data-screen="nonprofit-setup"] .app-main,
   body[data-screen="generator"] .app-main,
-  body[data-screen="profile"]  .app-main { padding-top: 74px; }
+  body[data-screen="manage"] .app-main,
+  body[data-screen="deadlines"] .app-main,
+  body[data-screen="profile"] .app-main,
+  body[data-screen="plan"] .app-main { padding-top: 74px; }
 }
 
 /* ── 5. Legal / contact pages: stack the two-column layout ── */
@@ -2615,8 +2634,8 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
     <div class="wrap reveal-group">
       <div class="stat-cell"><div class="fig" data-count="143" data-suffix=":1">143:1</div><div class="cap">Nonprofits per working grant writer in the US</div></div>
       <div class="stat-cell"><div class="fig" data-count="88" data-suffix="%">88%</div><div class="cap">Of nonprofits run on under $500K, most with no grant staff</div></div>
-      <div class="stat-cell"><div class="fig">80-200</div><div class="cap">Hours one federal application takes to write by hand</div></div>
-      <div class="stat-cell"><div class="fig">$3K-$15K</div><div class="cap">What a grant writer charges per proposal</div></div>
+      <div class="stat-cell"><div class="fig">80–200</div><div class="cap">Hours one federal application takes to write by hand</div></div>
+      <div class="stat-cell"><div class="fig">$3K–$15K</div><div class="cap">What a grant writer charges per proposal</div></div>
     </div>
   </section>
 
@@ -4184,7 +4203,8 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   .ob-990-result.ok { background: var(--ok-tint, #e6f1ea); color: #1c7a43; }
   .ob-990-result.warn { background: #fef9c3; color: #854d0e; }
   @media (max-width: 560px){ .ob-990-row { flex-wrap: wrap; } .ob-990-row .btn { width: 100%; } }
-  .ob-need { font-size: 12.5px; color: var(--ink-soft, #8a857c); }
+  .ob-need { font-size: 12.5px; color: var(--ink-soft, #8a857c); text-align: right; }
+  .ob-top { gap: 14px; } .ob-top .brand { white-space: nowrap; flex: none; }   /* small phones: the note wraps, not the logo */
   .ob-error { color: #c0392b; font-size: 13px; font-weight: 500; min-height: 0; margin-top: 14px; transition: opacity .2s; }
   .ob-error:empty { margin-top: 0; }
   /* a flagged field: tint inputs and chip group, gentle attention shake */
@@ -4512,6 +4532,10 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 .tut-guide[data-side="top"] .tut-guide-bubble.in{ transform:translateX(calc(-50% + var(--bx, 0px))) translateY(0); }
 /* --bx nudges the bubble back on screen; the arrow moves the other way so it still points at the orb */
 .tut-guide[data-side="top"] .tut-guide-bubble::after{ bottom:-7px; left:calc(50% - var(--bx, 0px)); margin-left:-7px; border:7px solid transparent; border-top-color:rgba(255,255,255,.93); border-bottom:0; }
+/* park BELOW the target (narrow screens, when the space above holds the headline) */
+.tut-guide[data-side="bottom"] .tut-guide-bubble{ top:60px; left:50%; transform:translateX(calc(-50% + var(--bx, 0px))) translateY(-7px); max-width:64vw; }
+.tut-guide[data-side="bottom"] .tut-guide-bubble.in{ transform:translateX(calc(-50% + var(--bx, 0px))) translateY(0); }
+.tut-guide[data-side="bottom"] .tut-guide-bubble::after{ top:-7px; left:calc(50% - var(--bx, 0px)); margin-left:-7px; border:7px solid transparent; border-bottom-color:rgba(255,255,255,.93); border-top:0; }
 /* the soft ring that says "click here" on the pointed element */
 .tut-target-glow{ animation:tutTargetGlow 1.8s var(--ease-soft) infinite; }
 @keyframes tutTargetGlow{ 0%,100%{ box-shadow:0 12px 30px -10px rgba(217,79,48,.55), 0 0 0 0 rgba(217,79,48,.5);} 60%{ box-shadow:0 12px 30px -10px rgba(217,79,48,.55), 0 0 0 9px rgba(217,79,48,0);} }
@@ -4542,6 +4566,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 .tut-2col.dir-r .tut-rail-copy{ order:2; } .tut-2col.dir-r .tut-bay{ order:1; }
 .tut-rail-copy{ display:flex; flex-direction:column; align-items:flex-start; gap:18px; min-width:0; }
 .tut-rail-copy .tut-h-big{ font-size:clamp(34px,4.6vw,62px); }
+@media (max-width: 360px){ .tut-eyebrow-chip{ letter-spacing:.03em; font-size:10.5px; padding:6px 10px; } }   /* one line on 320 px phones */
 .tut-eyebrow-chip{ display:inline-flex; align-items:center; gap:7px; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#fff; padding:6px 12px; border-radius:var(--r-pill); background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.42); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
 .tut-copy-sub{ font-size:clamp(14px,1.4vw,17px); line-height:1.55; color:rgba(255,255,255,.86); max-width:40ch; margin:0; text-shadow:0 1px 8px rgba(40,12,8,.22); }
 .tut-role-chip{ font-style:italic; font-size:13px; color:rgba(255,255,255,.72); }
@@ -6376,7 +6401,8 @@ async function ragDeleteDoc(id) {
   if (!window.sb || !uid) return;
   if (!confirm('Remove this document from Grange’s memory? New drafts won’t use it.')) return;   // one tap shouldn't delete it
   try {
-    await sb.from('document_chunks').delete().eq('user_id', uid).eq('document_id', id);
+    const chunks = await sb.from('document_chunks').delete().eq('user_id', uid).eq('document_id', id);
+    if (chunks.error) throw chunks.error;   // otherwise drafts could still quote a document the list no longer shows
     const { error } = await sb.from('documents').delete().eq('user_id', uid).eq('id', id);
     if (error) throw error;
     toast('Removed from Grange’s memory.');
@@ -6464,9 +6490,10 @@ async function pfUploadDoc(kind, file) {
   try {
     const up = await sb.storage.from('documents').upload(path, file, { upsert: true });
     if (up.error) throw up.error;
-    await sb.from('documents').delete().eq('user_id', uid).eq('kind', kind);   // one current file per kind
-    const ins = await sb.from('documents').insert({ user_id: uid, kind, file_path: path, file_name: file.name });
+    // Record the new file first, then drop the older ones of this kind: a failed save keeps the old file.
+    const ins = await sb.from('documents').insert({ user_id: uid, kind, file_path: path, file_name: file.name }).select('id').single();
     if (ins.error) throw ins.error;
+    if (ins.data && ins.data.id) await sb.from('documents').delete().eq('user_id', uid).eq('kind', kind).neq('id', ins.data.id);   // one current file per kind
     pfShowDoc(kind, file.name);
     if (PF_DOCS[kind] && window.rdySet) window.rdySet(PF_DOCS[kind], 'have');   // the readiness checklist now knows you have it
     toast('Saved ' + file.name + '.');
@@ -6507,10 +6534,10 @@ async function saveProfile() {
     }).eq('user_id', uid);
     if (pErr) throw pErr;
     const ups = [], prev = window._grange?._cachedAnswers || {}, saved = {};
-    const put = (k, v) => { if (v) { ups.push({ user_id: uid, question_key: k, answer: v }); saved[k] = v; } };
-    // Free-text fields that can be cleared: save whenever they changed, empty included.
+    // Save each field whenever it changed, empty included.
     const putChanged = (k, v) => { if (JSON.stringify(v) !== JSON.stringify(prev[k] ?? (Array.isArray(v) ? [] : ''))) { ups.push({ user_id: uid, question_key: k, answer: v }); saved[k] = v; } };
-    put('org_name', orgName); put('mission', mission); put('ein', ein); put('annual_budget', budget);
+    // Cleared fields save as empty too, or the old answer comes back on the next visit.
+    putChanged('org_name', orgName); putChanged('mission', mission); putChanged('ein', ein); putChanged('annual_budget', budget);
     putChanged('beneficiaries', get('pf-program-desc'));
     PF_LOGIC_MODEL.forEach(([id, key]) => putChanged(key, get(id)));
     const tagsEl = document.getElementById('pf-programs-tags');
@@ -6591,6 +6618,8 @@ function toast(msg){
 }
 
 async function submitSignup() {
+  const btn = document.querySelector('#login .btn-accent');
+  if (btn && btn.disabled) return;   // already creating the account (a second Enter press)
   const org  = document.getElementById('reg-org');
   const email = document.getElementById('reg-email');
   const pw   = document.getElementById('reg-pw');
@@ -6610,7 +6639,6 @@ async function submitSignup() {
   if (pw.value !== pw2.value) { pw2.style.borderColor = 'var(--accent)'; toast('Passwords do not match.'); return; }
 
   window._manualAuthFlow = true;
-  const btn = document.querySelector('#login .btn-accent');
   if (btn) { btn.disabled = true; btn.textContent = 'Creating account…'; }
   const { data, error } = await sb.auth.signUp({
     email: email.value.trim(),
@@ -7379,7 +7407,7 @@ async function renderGrantPicker() {
   window._genPipeline = pipeline;
   const sEl = document.getElementById('gsel-saved');
   sEl.innerHTML = '<div class="gsel-h">Saved grants</div>' + (pipeline.length
-    ? pipeline.map(p => '<div class="gsel-row" role="button" tabindex="0" onclick="pickSaved(this.dataset.id)" data-id="' + esc(p.id) + '"><span class="gsel-ic">' + fileIc + '</span><div class="gsel-main"><div class="gsel-t">' + esc(p.title) + '</div><div class="gsel-m">' + (p.funder ? esc(p.funder) : 'Saved grant') + '</div></div><span class="gsel-badge alt">Start</span></div>').join('')
+    ? pipeline.map(p => '<div class="gsel-row" role="button" tabindex="0" onclick="pickSaved(this.dataset.id)" data-id="' + escHtml(p.id) + '"><span class="gsel-ic">' + fileIc + '</span><div class="gsel-main"><div class="gsel-t">' + esc(p.title) + '</div><div class="gsel-m">' + (p.funder ? esc(p.funder) : 'Saved grant') + '</div></div><span class="gsel-badge alt">Start</span></div>').join('')
     : '<div class="gsel-empty">No saved grants yet. Save grants from discovery and they show up here.</div>');
 }
 function loadGrantIntoGenerator(g) {
@@ -7416,7 +7444,8 @@ function setGrantCard(g, restored) {
   const parts = [];
   if (g.type)          parts.push(g.type);
   if (g.amount)        parts.push(g.amount);
-  if (g.deadlineLabel) parts.push('Due ' + g.deadlineLabel);
+  const dueLbl = g.deadlineLabel || (/^\d{4}-\d{2}-\d{2}/.test(String(g.deadline || '')) ? fmtDeadlineDate(g.deadline) : '');   // saved grants carry only the date
+  if (dueLbl) parts.push('Due ' + dueLbl);
   if (g.matchScore)    parts.push(g.matchScore + '% match');
   if (metaEl) metaEl.textContent = parts.join(' · ') || (g.funder || '');
   if (!restored && amtEl && g.amountMax) amtEl.value = '$' + Number(g.amountMax).toLocaleString();
@@ -7707,7 +7736,7 @@ async function setDraftOutcome(status) {
     draft_text: meta.draft_text || null,
   };
   const { error } = await window.sb.from('draft_outcomes').upsert(row, { onConflict: 'user_id,draft_uid' });
-  if (error) { toast('Could not save outcome: ' + error.message); return; }
+  if (error) { console.error('setDraftOutcome', error); toast('Couldn’t save that. Please try again.'); return; }
   window._outcomeStatus = status;
   toast(status === 'won' ? 'Marked as won. Congratulations!' : status === 'lost' ? 'Marked as not funded. Noted.' : 'Marked as submitted.');
   await refreshOutcomeTracker();
@@ -7716,8 +7745,9 @@ async function setDraftOutcome(status) {
 async function setOutcomeConsent(checked) {
   const meta = window._lastDraftMeta; if (!meta) return;
   const { data: { session } } = await window.sb.auth.getSession(); if (!session) return;
-  await window.sb.from('draft_outcomes').update({ share_consent: !!checked })
+  const { error } = await window.sb.from('draft_outcomes').update({ share_consent: !!checked })
     .eq('user_id', session.user.id).eq('draft_uid', meta.draft_uid);
+  if (error) { console.error('setOutcomeConsent', error); toast('Couldn’t save that. Please try again.'); await refreshOutcomeTracker(); return; }
   toast(checked ? 'Thanks — marked OK to use as an example.' : 'Consent removed.');
   await refreshOutcomeTracker();
 }
@@ -9620,6 +9650,13 @@ function authErrorText(error, fallback) {
       fragColor.rgb *= fragColor.a;
     }`;
 
+  // Full-screen WebGL every frame: run it only while the sign-in screen is showing,
+  // or it keeps drawing (and draining phone batteries) behind the rest of the app.
+  function siLoop() {
+    if (window._currentScreen !== 'signin') { animId = null; return; }
+    animId = requestAnimationFrame(siLoop);
+    mat.uniforms.u_time.value = clock.getElapsedTime(); renderer.render(scene, camera);
+  }
   function buildCanvas() {
     if (!window.THREE) return;
     const canvas = document.getElementById('si-canvas');
@@ -9652,7 +9689,7 @@ function authErrorText(error, fallback) {
     });
     scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat));
     clock = new THREE.Clock();
-    (function loop(){ animId = requestAnimationFrame(loop); mat.uniforms.u_time.value = clock.getElapsedTime(); renderer.render(scene, camera); })();
+    siLoop();
     window.addEventListener('resize', () => {
       if (!renderer) return;
       const W = window.innerWidth, H = window.innerHeight;
@@ -9676,6 +9713,7 @@ function authErrorText(error, fallback) {
 
   window._siInit = function() {
     buildCanvas();
+    if (siReady && !animId) siLoop();   // coming back to sign-in: start drawing again
     // Reset to email step
     siCurrentStep = 'email';
     ['email','code','success'].forEach(s => {
@@ -10513,6 +10551,7 @@ async function obFinish(skipped) {
   if (!ctx) { go('landing'); return; }
   const uid = ctx.user.id;
   const a = obState.answers;
+  const docsFailed = [];
 
   try {
     // 1) persist every answered question (jsonb)
@@ -10527,11 +10566,12 @@ async function obFinish(skipped) {
     // 2) upload any documents to private Storage + record metadata
     for (const key of Object.keys(obState.files)) {
       const file = obState.files[key];
-      const path = `${uid}/${key}-${file.name}`;
-      const up = await sb.storage.from('documents').upload(path, file, { upsert: true });
-      if (!up.error) {
-        await sb.from('documents').insert({ user_id: uid, kind: key, file_path: path, file_name: file.name });
-      }
+      const path = `${uid}/${key}-${file.name.replace(/[^\w.\-]+/g, '_')}`;   // '#', '?', spaces etc. break storage keys
+      try {
+        const up = await sb.storage.from('documents').upload(path, file, { upsert: true });
+        const rec = up.error ? null : await sb.from('documents').insert({ user_id: uid, kind: key, file_path: path, file_name: file.name });
+        if (up.error || (rec && rec.error)) throw (up.error || rec.error);
+      } catch (e) { console.warn('onboarding upload', key, e); docsFailed.push(file.name); }   // the answers still save; say which files didn't
     }
 
     // 3) patch the profile + mark onboarding complete
@@ -10559,7 +10599,9 @@ async function obFinish(skipped) {
   const hasAnswers = a.mission && a.focus_areas && a.focus_areas.length > 0;
   if (window._grange) window._grange.surveySkipped = skipped || !hasAnswers;
   applyOrgIdentity(window._grange);
-  toast(skipped ? 'You can finish your profile any time.' : 'Profile saved! Welcome to Grange AI.');
+  toast(docsFailed.length
+    ? 'Profile saved, but ' + docsFailed.join(', ') + ' didn’t upload. Add ' + (docsFailed.length > 1 ? 'them' : 'it') + ' again from your profile.'
+    : skipped ? 'You can finish your profile any time.' : 'Profile saved! Welcome to Grange AI.');
   // pre-load grants in background
   if (!skipped && hasAnswers) loadDiscoveryGrants(a);
   go('dashboard');
@@ -10659,7 +10701,7 @@ const TUT_STEPS = [
   { focus: 0, render: () => `
       <div class="tut-step tut-intro">
         <div class="tut-intro-col">
-          <span class="tut-eyebrow-chip rev" data-delay="0">A guided walkthrough · 5 phases</span>
+          <span class="tut-eyebrow-chip rev" data-delay="0">Guided walkthrough · 5 phases</span>
           <h1 class="tut-h-big" aria-label="Winning a grant is a journey.">${tutWords('Winning a grant is a journey.')}</h1>
           <p class="tut-intro-sub rev" data-delay="560">Five moves, start to finish: profile, discovery, fit, the writing, and the money after. We'll walk all five, and you'll try each one.</p>
           <button class="tut-gate-btn tut-intro-cta rev" data-delay="720" id="tut-go">Show me the process <span class="arr">→</span></button>
@@ -10669,7 +10711,8 @@ const TUT_STEPS = [
       tutRevealStep(document.querySelector('.tut-intro'));
       const go = document.getElementById('tut-go');
       setTimeout(() => go && go.focus(), 820);
-      setTimeout(() => tutGuide.point('#tut-go', "Hi, I'm Grange. Tap here and I'll walk you through all five steps."), 760);
+      // On phones the space above the button holds the headline, so the guide waits below it.
+      setTimeout(() => tutGuide.point('#tut-go', "Hi, I'm Grange. Tap here and I'll walk you through all five steps.", window.innerWidth < 760 ? { side: 'bottom' } : {}), 760);
       go.onclick = () => {
         go.style.transform = 'scale(.96)';
         const col = document.querySelector('.tut-intro-col');
@@ -10901,8 +10944,10 @@ const tutGuide = {
       let side = opts.side;
       if (!side) side = vw < 760 ? 'top' : ((r.left + r.right) / 2 > vw * 0.5 ? 'left' : 'right');
       let gx, gy;
+      if (side === 'bottom' && vh - r.bottom < gap + 60 + 98) side = 'top';   // no room below for the orb and a 3-line bubble
       if (side === 'right') { gx = r.right + gap; gy = (r.top + r.bottom) / 2 - ORB / 2; }
       else if (side === 'left') { gx = r.left - gap - ORB; gy = (r.top + r.bottom) / 2 - ORB / 2; }
+      else if (side === 'bottom') { gx = (r.left + r.right) / 2 - ORB / 2; gy = r.bottom + gap; }
       else { side = 'top'; gx = (r.left + r.right) / 2 - ORB / 2; gy = r.top - gap - ORB; }
       gx = Math.max(12, Math.min(gx, vw - ORB - 12));
       // keep clear of the top bar, but allow the orb down to the footer so it can
@@ -10917,7 +10962,7 @@ const tutGuide = {
         b.textContent = msg || ''; b.classList.remove('in');
         // Above the orb on narrow screens, the bubble is centred on it; keep it inside the screen.
         let dx = 0;
-        if (side === 'top') {
+        if (side === 'top' || side === 'bottom') {
           const w = b.offsetWidth, cx = gx + ORB / 2, left = cx - w / 2;
           if (left + w > vw - 12) dx = vw - 12 - (left + w);
           if (left + dx < 12) dx = 12 - left;
@@ -11110,8 +11155,8 @@ function updateDashGreeting() {
       if (local) {
         // Capitalise first segment, strip numbers/punctuation
         const clean = local.replace(/[^a-zA-Z]/g,' ').trim().split(/\s+/)[0];
-        // shared role inboxes are common at nonprofits: "Good morning, Info" reads oddly, so skip the name
-        const ROLE = /^(info|admin|administrator|contact|office|hello|hi|team|grants?|director|executive|ed|support|mail|email|development|programs?|staff|board|finance|accounts?|operations|ops|general|inquiries|enquiries|newsletter|noreply|no|new|test|user)$/i;
+        // shared role inboxes are common at nonprofits and small businesses: "Good morning, Info" reads oddly, so skip the name
+        const ROLE = /^(info|admin|administrator|contact|office|hello|hi|team|grants?|director|executive|ed|support|mail|email|development|programs?|staff|board|finance|accounts?|operations|ops|general|inquiries|enquiries|newsletter|noreply|no|new|test|user|owner|founder|ceo|president|manager|sales|billing|orders|shop|store|hr|jobs|careers|marketing)$/i;
         if (clean.length > 1 && !ROLE.test(clean)) {
           firstName = clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
         }
@@ -11425,7 +11470,7 @@ function activationSteps(s) {
   return [
     { key: 'profile',  title: isNp ? 'Complete your nonprofit profile' : 'Complete your organization profile', desc: isNp ? 'Mission, EIN, focus areas and location — this powers matching, eligibility and drafting.' : 'Mission, focus areas, location and budget — this powers matching, eligibility and drafting.', cta: 'Complete profile', screen: 'profile',   done: (window._dashProfilePct || 0) >= 80 },
     ...(statusStep ? [statusStep] : []),
-    { key: 'sam',      title: 'Sort out federal registration, or skip it', desc: "Most small nonprofits don't need SAM.gov. Answer one question to find out.", cta: 'Check SAM.gov', screen: 'readiness', done: samDone },
+    { key: 'sam',      title: 'Sort out federal registration, or skip it', desc: "You only need SAM.gov to apply for federal money directly. Answer one question to find out.", cta: 'Check SAM.gov', screen: 'readiness', done: samDone },
     { key: 'discover', title: 'See grants and funders matched to you', desc: 'Open opportunities plus the agencies that fund work like yours.', cta: 'Discover grants', screen: 'discovery', done: s.discovered > 0 },
     { key: 'fit',      title: 'Check your fit on a grant', desc: 'Run an AI assessment to see your match, eligibility and watch-outs.', cta: 'Assess a grant', screen: 'discovery', done: assessed || s.saved > 0 },
     { key: 'draft',    title: 'Draft your first proposal', desc: 'The AI writes your strongest grant in your voice. You stay the author.', cta: 'Start drafting', screen: 'generator', done: s.drafted > 0 },
@@ -12241,7 +12286,7 @@ function analyzeFullCall(id) {
   try { cached = JSON.parse(localStorage.getItem(ck) || 'null'); } catch (_) {}
   panel.innerHTML = '<div class="gc-assess-inner">' +
     '<div class="gcf-intro">Paste the funder’s full call, NOFO or RFP and Grange will give you the complete picture: eligibility, the exact sections you’ll write, attachments and the deadline.</div>' +
-    '<textarea id="gcf-ta-' + escHtml(id) + '" class="gcf-ta" placeholder="Paste the full funding call for “' + escHtml(g.title || 'this grant') + '” here…">' + escHtml(g.desc || '') + '</textarea>' +
+    '<textarea id="gcf-ta-' + escHtml(id) + '" class="gcf-ta" aria-label="The funder’s full call, NOFO or RFP" placeholder="Paste the full funding call for “' + escHtml(g.title || 'this grant') + '” here…">' + escHtml(g.desc || '') + '</textarea>' +
     '<div class="gcf-actions"><button class="btn btn-primary btn-sm gcf-run" onclick="runFullCall(\'' + jsAttr(id) + '\')"><span style="color:#fff">✦</span>&nbsp;Analyze full call</button>' +
     '<button class="btn btn-outline btn-sm" onclick="draftFromFullCall(\'' + jsAttr(id) + '\')">Draft with these requirements →</button></div>' +
     '<div class="gcf-result" id="gcf-res-' + escHtml(id) + '" style="display:none"></div>' +
@@ -12330,7 +12375,7 @@ function dueUrgency(deadline) {
    decodes HTML entities first, so escHtml alone lets a ' close the string. Escape for JS, then HTML. */
 function jsAttr(v) { return escHtml(String(v == null ? '' : v).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n|\r/g, ' ')); }
 function escHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 /* ─── Save a discovery grant into the user's real pipeline ───
@@ -12492,7 +12537,7 @@ function deadlineRowHTML(d, today) {
     : '<button class="btn btn-ghost btn-sm" onclick="markDeadlineDone(\'' + jsAttr(d.id) + '\')">Mark done</button>';
   return '<div class="dl' + (isDone ? ' dlx-done' : '') + '">'
     + '<div><div class="dn">' + escHtml(d.title || 'Deadline') + '</div><div class="dt">' + escHtml(sub) + '</div></div>'
-    + '<div style="display:flex;align-items:center;gap:12px"><div class="dd ' + ddCls + '">' + ddTxt + '</div>' + action + '</div></div>';
+    + '<div class="dlx-act"><div class="dd ' + ddCls + '">' + ddTxt + '</div>' + action + '</div></div>';
 }
 function deadlineGroupHTML(label, list, today) {
   if (!list.length) return '';
@@ -12706,7 +12751,7 @@ function applyDiscFilters(query, type) {
   <div class="acp-log" id="acp-log" role="log" aria-live="polite" aria-label="Conversation with Grange"></div>
   <div class="acp-chips" id="acp-chips"></div>
   <div class="acp-input">
-    <textarea id="acp-text" rows="1" placeholder="Ask anything about grants…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();acpSend();}"></textarea>
+    <textarea id="acp-text" rows="1" aria-label="Message the Grange assistant" placeholder="Ask anything about grants…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();acpSend();}"></textarea>
     <button id="acp-mic" type="button" onclick="toggleDictation('acp-text','acp-mic',null)" aria-label="Dictate" title="Dictate" style="background:var(--surface-2);color:var(--ink-soft);border:none;width:40px;border-radius:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
     </button>
@@ -12981,7 +13026,7 @@ function applyDiscFilters(query, type) {
             const res = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/ai-chat', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
-              body: JSON.stringify({ message: msg, history: history.slice(0, -1), grant_context: (typeof chatGrantContext === 'function' ? chatGrantContext() : '') }),
+              body: JSON.stringify({ message: msg, history: history.slice(0, -1).slice(-8), grant_context: (typeof chatGrantContext === 'function' ? chatGrantContext() : '') }),
             });
             const d = await res.json().catch(() => ({}));
             typing.classList.remove('typing');
@@ -13824,7 +13869,7 @@ function applyDiscFilters(query, type) {
     return '<div class="sam-renew ' + cls + '">' +
       '<div style="text-align:center;min-width:60px"><div class="sam-renew-num">' + num + '</div><div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">days left</div></div>' +
       '<div><div style="font-weight:700;color:var(--ink);font-size:14px">SAM.gov ' + (days != null && days < 0 ? 'has expired' : 'is active') + (st.uei ? ' · UEI ' + escHtml(st.uei) : '') + '</div>' +
-      '<div class="sam-renew-lbl">' + escHtml(lbl) + (ex ? ' Expires ' + escHtml(ex) + '.' : '') + '</div></div></div>';
+      '<div class="sam-renew-lbl">' + escHtml(lbl) + (ex ? ' Expires ' + escHtml(fmtDeadlineDate(ex)) + '.' : '') + '</div></div></div>';
   }
 
   window.samSetNeed = function (v) { window._samState.need = v; samPersist(); samRender(); };
@@ -13943,7 +13988,13 @@ function applyDiscFilters(query, type) {
       target.value = (finalText + (interim ? ' ' + interim : '')).trim();
       target.dispatchEvent(new Event('input'));
     };
-    rec.onerror = endDict;
+    rec.onerror = (e) => {
+      const why = e && e.error;
+      if (why === 'not-allowed' || why === 'service-not-allowed') toast('Allow microphone access in your browser to use voice input.');
+      else if (why === 'audio-capture') toast('No microphone found.');
+      else if (why === 'network') toast('Voice input needs an internet connection.');
+      endDict();
+    };
     rec.onend = endDict;
     try { rec.start(); } catch (_) { endDict(); return; }
     if (_dictBtn) { _dictBtn.classList.add('rec'); const pb = _dictBtn.closest('.pbox'); if (pb) pb.classList.add('rec'); }

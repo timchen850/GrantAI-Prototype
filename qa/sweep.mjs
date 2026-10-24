@@ -26,10 +26,12 @@ async function captureTiles(page, prefix) {
   return n;
 }
 
-const srv = await startServer(); const browser = await launch();
+const srv = await startServer();
 const results = [];
 for (const persona of personas) {
   for (const width of widths) {
+    // A fresh browser per pass: after many WebGL-heavy screenshots, headless Chromium can stop starting new pages.
+    const browser = await launch();
     const t = await openApp(browser, { persona, width, height: width < 600 ? 844 : 900 });
     const screens = (persona === 'visitor' ? PUBLIC : APP).filter((s) => !only || only.includes(s));
     for (const screen of screens) {
@@ -46,8 +48,8 @@ for (const persona of personas) {
       for (const e of r.errors) console.log('     ' + e.slice(0, 220));
     }
     if (t.external.length) console.log('  external requests:', [...new Set(t.external)].slice(0, 5));
-    await t.ctx.close();
+    await t.ctx.close(); await browser.close();
   }
 }
 fs.writeFileSync('out/sweep.json', JSON.stringify(results, null, 2));
-await browser.close(); srv.close();
+srv.close();

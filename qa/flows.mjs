@@ -29,6 +29,65 @@ flow('profile-save-roundtrip', async (browser, check) => {
   return t;
 });
 
+flow('profile-cleared-field-stays-cleared', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('profile')); await p.waitForTimeout(1000);
+  check('the profile starts with a mission', (await p.inputValue('#pf-mission')).length > 20);
+  await p.fill('#pf-mission', ''); await p.fill('#pf-ein', '');
+  await p.click('#profile button:has-text("Save changes")'); await p.waitForTimeout(900);
+  await p.reload(); await p.waitForTimeout(1800);
+  await p.evaluate(() => go('profile')); await p.waitForTimeout(1000);
+  check('a cleared mission is still empty after a reload', (await p.inputValue('#pf-mission')) === '');
+  check('a cleared EIN is still empty after a reload', (await p.inputValue('#pf-ein')) === '');
+  return t;
+});
+
+flow('phone-menu-on-every-screen', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np', width: 390, height: 844 });
+  const p = t.page;
+  const missing = [];
+  for (const s of ['dashboard', 'discovery', 'readiness', 'nonprofit-setup', 'generator', 'manage', 'deadlines', 'profile', 'plan']) {
+    await p.evaluate((id) => go(id), s); await p.waitForTimeout(900);
+    const ok = await p.evaluate(() => { const b = document.querySelector('.m-appbar .m-burger'); if (!b || !b.getClientRects().length) return false; const r = b.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight && document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest('.m-burger') === b; });
+    if (!ok) missing.push(s);
+  }
+  check('every app screen has a menu button on a phone' + (missing.length ? ' (missing: ' + missing.join(', ') + ')' : ''), !missing.length);
+  await p.evaluate(() => go('deadlines')); await p.waitForTimeout(900);
+  await p.click('.m-appbar .m-burger'); await p.waitForTimeout(500);
+  await p.click('#m-nav-links a:has-text("Grant management")'); await p.waitForTimeout(900);
+  check('the menu leaves Deadlines for another screen', (await screen(p)) === 'manage');
+  return t;
+});
+
+flow('signin-animation-stops-off-screen', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'visitor', width: 1280, signedOut: true });
+  const p = t.page;
+  await p.evaluate(() => { window._draws = 0; for (const C of [WebGLRenderingContext, WebGL2RenderingContext]) for (const m of ['drawArrays', 'drawElements']) { const o = C.prototype[m]; C.prototype[m] = function (...a) { window._draws++; return o.apply(this, a); }; } });
+  const count = async () => { const a = await p.evaluate(() => window._draws); await p.waitForTimeout(1500); return (await p.evaluate(() => window._draws)) - a; };
+  await p.evaluate(() => go('signin')); await p.waitForTimeout(3000);
+  if (!(await p.evaluate(() => !!window.THREE))) { check('the sign-in animation loaded', false); return t; }
+  check('the sign-in background animates on the sign-in screen', (await count()) > 0);
+  await p.evaluate(() => go('landing')); await p.waitForTimeout(500);
+  check('it stops drawing once the screen is left', (await count()) === 0);
+  await p.evaluate(() => go('signin')); await p.waitForTimeout(800);
+  check('and starts again on return', (await count()) > 0);
+  return t;
+});
+
+flow('signup-enter-twice', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'visitor' });
+  const p = t.page;
+  let signups = 0; p.on('request', (q) => { if (q.url().includes('/auth/v1/signup')) signups++; });
+  await p.evaluate(() => go('login')); await p.waitForTimeout(500);
+  await p.fill('#reg-org', 'Riverside Reading Project'); await p.fill('#reg-email', 'lead@riverside.example.org');
+  await p.fill('#reg-pw', 'correct-horse-9'); await p.fill('#reg-pw2', 'correct-horse-9');
+  await p.evaluate(() => { submitSignup(); submitSignup(); }); await p.waitForTimeout(2500);
+  check('pressing Enter twice sends one sign-up', signups === 1);
+  check('and still lands on the tour', (await screen(p)) === 'tutorial');
+  return t;
+});
+
 flow('contact-form', async (browser, check) => {
   const t = await openApp(browser, { persona: 'visitor' });
   const p = t.page;
@@ -435,6 +494,20 @@ flow('profile-document-upload', async (browser, check) => {
   await p.evaluate(() => { const o = window.toast; window.toast = (m) => { window._qaToast2(m); return o(m); }; });   // reload dropped the spy
   await p.setInputFiles('#pf-file-doc_financials', { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hello') }); await p.waitForTimeout(600);
   check('non-PDF rejected with a message', toasts.some((m) => /upload a PDF/.test(m)) && !t.db.documents.some((d) => d.kind === 'doc_financials'));
+  await p.setInputFiles('#pf-file-doc_990', { name: 'form-990-2026.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n% v2\n') }); await p.waitForTimeout(1500);
+  const n990 = t.db.documents.filter((d) => d.kind === 'doc_990' && d.user_id === UID.np);
+  check('replacing a file leaves one record, the new one', n990.length === 1 && n990[0].file_name === 'form-990-2026.pdf');
+  return t;
+});
+
+flow('failed-replacement-keeps-old-document', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np', failTables: ['documents:POST'] });   // the new record fails; deleting would still work
+  const p = t.page;
+  t.db.documents.push({ id: 'doc-old', user_id: UID.np, kind: 'doc_990', file_path: UID.np + '/doc_990-old.pdf', file_name: 'form-990-2024.pdf', created_at: new Date().toISOString() });
+  await p.evaluate(() => go('profile')); await p.waitForTimeout(1200);
+  await p.setInputFiles('#pf-file-doc_990', { name: 'form-990-2025.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n') }); await p.waitForTimeout(1500);
+  check('a failed replacement keeps the old document', t.db.documents.some((d) => d.id === 'doc-old'));
+  t.errors = t.errors.filter((e) => !/503|Failed to load resource/.test(e));
   return t;
 });
 
@@ -869,6 +942,7 @@ flow('sam-dates-in-asia-mornings', async (browser, check) => {
   await p.waitForTimeout(600);
   const regs = (t.db.registrations || []).filter((r) => r.registration_type === 'sam_gov');
   check('quick clicks through the steps save one SAM.gov record, not several', regs.length === 1 && regs[0].uei === 'ABC123DEF456');
+  check('the renewal date reads like the rest of the app ("Oct 25, 2027")', /Expires Oct 25, 2027\./.test(await p.evaluate(() => document.getElementById('readiness').innerText)));
   return t;
 });
 
@@ -883,6 +957,68 @@ flow('award-amounts-with-k-and-m', async (browser, check) => {
   await p.evaluate(() => loadGrantIntoGenerator(CURATED_GRANTS.find((g) => g.amount === '$100K–$750K'))); await p.waitForTimeout(800);
   await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(5000);
   check('example proposals are looked up for a $100K+ grant, not an under-$50K one', bodies.length > 0 && bodies[0].filter_award_band === '50-150k');
+  return t;
+});
+
+flow('voice-input-blocked-mic', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page; const toasts = await toastSpy(p);
+  await p.evaluate(() => { window.webkitSpeechRecognition = window.SpeechRecognition = class { start() { setTimeout(() => { this.onerror && this.onerror({ error: 'not-allowed' }); this.onend && this.onend(); }, 50); } stop() {} }; });
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(1200);
+  await p.evaluate(() => toggleDictation('gen-prompt-text', 'gen-pbox-mic', 'gen-pbox-viz')); await p.waitForTimeout(400);
+  check('a blocked microphone says how to allow it', toasts.some((m) => /Allow microphone access/.test(m)));
+  check('the mic button stops showing "recording"', !(await p.evaluate(() => document.getElementById('gen-pbox-mic').classList.contains('rec'))));
+  return t;
+});
+
+flow('saved-grant-shows-due-date', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(1200);
+  const g = await p.evaluate(() => { const s = (window._genPipeline || []).find((x) => x.deadline); if (s) pickSaved(s.id); return s ? { deadline: s.deadline } : null; });
+  await p.waitForTimeout(600);
+  if (!g) { check('a saved grant with a deadline is listed', false); return t; }
+  const meta = await p.textContent('#gen-grant-meta');
+  const want = await p.evaluate((d) => fmtDeadlineDate(d), g.deadline);
+  check('a saved grant opened in the generator shows its due date (' + want + ')', meta.includes('Due ' + want));
+  return t;
+});
+
+flow('draft-outcome-save-fails', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np', failTables: ['draft_outcomes'] });
+  const p = t.page; const toasts = await toastSpy(p);
+  t.errors.length = 0;
+  await p.evaluate(() => { go('generator'); window._lastDraftMeta = { draft_uid: 'qa-draft-1', program: 'STEM', funder_name: 'Youth Fund', draft_text: 'x' }; });
+  await p.waitForTimeout(800);
+  await p.evaluate(() => setDraftOutcome('won')); await p.waitForTimeout(600);
+  check('a failed outcome save says so in plain words (no database message)', toasts.some((m) => /Couldn’t save that/.test(m)) && !toasts.some((m) => /forced outage|PGRST|Marked as won/.test(m)));
+  await p.evaluate(() => setOutcomeConsent(true)); await p.waitForTimeout(600);
+  check('a failed consent save does not say "Thanks"', !toasts.some((m) => /Thanks/.test(m)));
+  t.errors = t.errors.filter((e) => !/503|setDraftOutcome|setOutcomeConsent|Failed to load resource/.test(e));   // the forced outage itself
+  return t;
+});
+
+flow('survey-upload-failure-is-reported', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'onboarding', failTables: ['documents'] });
+  const p = t.page; const toasts = await toastSpy(p);
+  await p.evaluate(() => { if (window._currentScreen !== 'onboarding') go('onboarding'); }); await p.waitForTimeout(800);
+  await p.evaluate(() => { obState.files = { doc_990: new File(['%PDF-1.4 qa'], 'form990-2025.pdf', { type: 'application/pdf' }) }; return obFinish(false); });
+  await p.waitForTimeout(1500);
+  check('finishing the survey still saves and opens the dashboard', (await screen(p)) === 'dashboard');
+  check('a file that failed to upload is named in the message', toasts.some((m) => /form990-2025\.pdf didn’t upload/.test(m)));
+  t.errors = t.errors.filter((e) => !/503|Failed to load resource/.test(e));
+  return t;
+});
+
+flow('remove-document-chunks-first', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np', failTables: ['document_chunks'] });
+  const p = t.page; const toasts = await toastSpy(p);
+  t.db.documents.push({ id: 'rag-2', user_id: UID.np, kind: 'past_proposal', label: '2024 Arts LOI', file_name: 'arts.txt', created_at: new Date().toISOString() });
+  await p.evaluate(() => go('profile')); await p.waitForTimeout(1200);
+  await p.evaluate(() => { window._grange.profile.tier = 'pro'; applyRagGate(); loadRagDocs(); }); await p.waitForTimeout(800);
+  p.once('dialog', (d) => d.accept()); await p.click('#profile .rag-del'); await p.waitForTimeout(900);
+  check('if its stored text can’t be removed, the document stays listed and the user is told', t.db.documents.some((d) => d.id === 'rag-2') && toasts.some((m) => /Could not remove/.test(m)));
+  t.errors = t.errors.filter((e) => !/503|Failed to load resource/.test(e));
   return t;
 });
 
@@ -948,9 +1084,11 @@ flow('nonprofit-setup-steps-saved', async (browser, check) => {
 });
 
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
-const srv = await startServer(); const browser = await launch();
+const srv = await startServer();
 let fails = 0;
 for (const name of only) {
+  // A fresh browser per flow: one long-lived headless Chromium slows down over a long run (see sweep.mjs).
+  const browser = await launch();
   const results = [];
   const check = (label, ok) => results.push([label, !!ok]);
   let t;
@@ -959,8 +1097,9 @@ for (const name of only) {
   if (errs.length) results.push([`console errors: ${errs.slice(0, 3).join(' | ')}`, false]);
   console.log(`\n## ${name}`);
   for (const [label, ok] of results) { console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${label}`); if (!ok) fails++; }
-  if (t) await t.ctx.close();
+  if (t) await t.ctx.close().catch(() => {});
+  await browser.close();
 }
 console.log(`\n${fails ? fails + ' FAILED' : 'all passed'}`);
-await browser.close(); srv.close();
+srv.close();
 process.exit(fails ? 1 : 0);
