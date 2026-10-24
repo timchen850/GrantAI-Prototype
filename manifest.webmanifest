@@ -1,7 +1,7 @@
 {
   "name": "Grange AI — Grant Writing for Nonprofits",
   "short_name": "Grange AI",
-  "description": "Grange AI scans millions of grants daily, scores each against your mission, and drafts the full proposal. Built for nonprofits without a grant writer on staff.",
+  "description": "Grange AI finds the grants your organization qualifies for, checks you're ready, and drafts the proposal in your own voice. Built for nonprofits without a grant writer on staff.",
   "id": "/",
   "start_url": "/?source=pwa",
   "scope": "/",
