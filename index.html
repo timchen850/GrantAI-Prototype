@@ -745,62 +745,6 @@ label.field-label, div.field-label {   /* div: a heading over a link, not a form
 .tier li { display: flex; gap: 9px; font-size: 14px; color: var(--ink-body); padding: 6px 0; }
 .tier li svg { flex-shrink: 0; margin-top: 3px; color: var(--ok); }
 
-/* ─── GET THE APP ───────────────────────────────────────── */
-.get-app { position: relative; border-radius: var(--r-lg); overflow: hidden;
-  background: var(--surface); border: 1px solid var(--line);
-  padding: 64px 56px; }
-.get-app-head { max-width: 640px; margin: 0 auto 44px; text-align: center; }
-.get-app-eyebrow { display: inline-flex; align-items: center; gap: 8px;
-  background: var(--accent-tint); color: var(--accent); font-size: 12px;
-  font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
-  padding: 5px 12px; border-radius: 99px; margin-bottom: 18px; }
-.get-app-title { font-size: clamp(1.9rem, 3.4vw, 2.8rem); line-height: 1.08;
-  letter-spacing: -.02em; margin-bottom: 16px; }
-.get-app-sub { font-size: 16.5px; color: var(--ink-body); line-height: 1.6; }
-.dl-hero { display: flex; align-items: center; gap: 20px; max-width: 920px;
-  margin: 0 auto 18px; padding: 22px 26px; background: var(--ink); border-radius: var(--r);
-  color: #fff; flex-wrap: wrap; }
-.dl-hero-ico { width: 60px; height: 60px; border-radius: 16px; flex-shrink: 0;
-  background: rgba(255,255,255,0.12); color: #fff; display: flex;
-  align-items: center; justify-content: center; }
-.dl-hero-body { flex: 1; min-width: 180px; }
-.dl-hero-body h3 { color: #fff; font-size: 19px; font-weight: 700; margin-bottom: 3px; }
-.dl-hero-body p { color: rgba(255,255,255,0.66); font-size: 14px; }
-.dl-hero .btn { flex-shrink: 0; }
-.get-app-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
-  max-width: 920px; margin: 0 auto; }
-.app-card { background: var(--surface-2); border: 1px solid var(--line);
-  border-radius: var(--r); padding: 28px 24px; display: flex; flex-direction: column;
-  align-items: flex-start; transition: border-color .2s var(--ease), transform .2s var(--ease); }
-.app-card:hover { border-color: rgba(26,25,22,0.18); transform: translateY(-2px); }
-.app-card-primary { background: var(--ink); border-color: var(--ink); }
-.app-card-primary h3, .app-card-primary p { color: #fff; }
-.app-card-primary p { color: rgba(255,255,255,0.72); }
-.app-card-primary .app-card-ico { background: rgba(255,255,255,0.12); color: #fff; }
-.app-card-ico { width: 52px; height: 52px; border-radius: 14px;
-  background: var(--accent-tint); color: var(--accent);
-  display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
-.app-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-.app-card p { font-size: 14px; color: var(--ink-body); line-height: 1.55;
-  margin-bottom: 20px; flex: 1; }
-.app-card .btn-block { width: 100%; margin-top: auto; }
-.app-card-note { display: block; margin-top: 12px; font-size: 13px;
-  color: #8fe3ad; font-weight: 600; }
-.ios-share { display: inline-block; }
-.ios-steps { max-width: 680px; margin: 36px auto 0; padding: 28px 32px;
-  background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r);
-  display: flex; flex-direction: column; gap: 16px; }
-.ios-step { display: flex; align-items: flex-start; gap: 14px; font-size: 15px;
-  color: var(--ink-body); line-height: 1.5; }
-.ios-step-n { flex-shrink: 0; width: 26px; height: 26px; border-radius: 99px;
-  background: var(--accent); color: #fff; font-size: 13px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; }
-@media (max-width: 860px) {
-  .get-app { padding: 48px 24px; }
-  .get-app-grid { grid-template-columns: 1fr; }
-  .ios-steps { padding: 22px 20px; }
-}
-
 /* ─── CTA BAND ──────────────────────────────────────────── */
 .cta-band { position: relative; border-radius: var(--r-lg); overflow: hidden;
   padding: 72px 64px; color: #fff; }
@@ -2453,6 +2397,32 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 
   /* Trust cards stack on small screens */
   .trust-grid { grid-template-columns: 1fr; gap: 14px; margin-top: 36px; }
+}
+
+/* ─── PRINT ─────────────────────────────────────────────────
+   Paper gets the page, not the app around it (menu, assistant, messages). A finished draft
+   prints as the proposal alone, like Export → PDF: title, funder and sections, with each
+   "double-check" highlight spelled out as [VERIFY: …] because paper may drop the yellow. */
+@page { margin: 0.75in; }
+@media print {
+  .side, .m-appbar, #m-nav, #ai-chat-fab, #ai-chat-panel, .toast { display: none !important; }
+  .app { display: block; min-height: 0; }
+  .app-main { padding: 0 !important; max-width: none; }   /* paper is under 860 px wide: drop the phone top bar's room too */
+  body:has(#out-doc[style*="block"]) #generator .app-main > :not(#gen-grid),
+  body:has(#out-doc[style*="block"]) #gen-grid > :not(.out),
+  body:has(#out-doc[style*="block"]) #generator .out > :not(#out-doc),
+  #out-doc > :not(.out-head):not(.out-body),
+  #out-doc .oh-acts { display: none !important; }
+  #generator .out { position: static !important; overflow: visible !important; min-height: 0 !important;
+    max-width: none !important; border: 0; border-radius: 0; background: none; box-shadow: none; }
+  #out-doc .out-head { padding: 0 0 10pt; border-bottom: 1px solid #bbb; }
+  #out-doc .out-head .ol2 { font-size: 15pt; color: #000; }
+  #out-doc .out-body { padding: 14pt 0 0; }
+  .doc h4 { font-size: 12.5pt; color: #000; break-after: avoid; }
+  .doc p { font-size: 11pt; line-height: 1.55; color: #111; orphans: 3; widows: 3; }
+  mark.verify-flag { background: none; color: inherit; border: 0; padding: 0; }
+  mark.verify-flag::before { content: '[VERIFY: '; }
+  mark.verify-flag::after { content: ']'; }
 }
 
 </style>
@@ -4521,7 +4491,8 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 .tut-slab-top{ display:flex; align-items:center; gap:16px; padding:20px clamp(22px,5vw,64px); flex:none; }
 .tut-slab-top .brand{ color:#fff; font-weight:700; gap:9px; }
 .tut-slab-top .brand-mark{ width:26px; height:26px; }
-.tut-slab .tut-stage{ flex:1; min-height:0; }
+.tut-slab .tut-stage{ flex:1; min-height:0; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; }
+.tut-slab .tut-stage::-webkit-scrollbar{ display:none; }   /* scrolls (wheel, touch, keys) on short screens without a bar; the guide brings each target into view */
 .tut-badge--glass{ background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.42); color:#fff; -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
 .tut-badge--glass .pip{ background:#fff; }
 .glass-tile{ background:rgba(255,255,255,.18); -webkit-backdrop-filter:blur(16px) saturate(150%); backdrop-filter:blur(16px) saturate(150%); border:1px solid rgba(255,255,255,.6); box-shadow:inset 0 1px 0 rgba(255,255,255,.55); border-radius:16px; }
@@ -4581,9 +4552,11 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 .tut-step.leaving{ animation:tutPushOutFwd 460ms var(--ease-strong) both; }
 .tut-stage[data-dir="back"] .tut-step.leaving{ animation:tutPushOutBack 460ms var(--ease-strong) both; }
 
-/* per-step layout: 38/62 split, alternating anchor */
-.tut-step{ height:100%; }
-.tut-2col{ display:grid; grid-template-columns:40% 60%; height:100%; align-items:center; gap:clamp(32px,5vw,80px); padding:clamp(24px,4vh,56px) clamp(36px,6.5vw,120px) clamp(90px,12vh,130px); }
+/* per-step layout: 38/62 split, alternating anchor. min-height (not height): a step taller than a short
+   window (a 1366×640 laptop browser, a phone held sideways) grows and the stage scrolls, its bottom
+   padding included, so nothing stays stuck under the fixed footer. */
+.tut-step{ min-height:100%; }
+.tut-2col{ display:grid; grid-template-columns:40% 60%; min-height:100%; align-items:center; gap:clamp(32px,5vw,80px); padding:clamp(24px,4vh,56px) clamp(36px,6.5vw,120px) clamp(90px,12vh,130px); }
 .tut-2col.dir-r{ grid-template-columns:62% 38%; }
 .tut-2col.dir-r .tut-rail-copy{ order:2; } .tut-2col.dir-r .tut-bay{ order:1; }
 .tut-rail-copy{ display:flex; flex-direction:column; align-items:flex-start; gap:18px; min-width:0; }
@@ -4623,6 +4596,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 
 /* INTRO */
 .tut-intro{ display:grid; place-items:center; padding:48px 40px 44px; }
+@media (max-height:520px){ .tut-intro{ padding-bottom:100px; } }   /* short screens: the start button can scroll clear of the fixed footer */
 .tut-intro-col{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:20px; max-width:520px; }
 .tut-intro .tut-h-big{ font-size:clamp(34px,5.6vw,68px); }
 .tut-intro-sub{ font-size:clamp(15px,1.7vw,19px); line-height:1.55; color:rgba(255,255,255,.82); margin:0; text-shadow:0 1px 8px rgba(40,12,8,.22); }
@@ -5217,7 +5191,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
           <div id="out-doc" style="display:none">
             <div class="out-head">
               <div class="oh-l"><div class="ol1" id="gen-out-type">Draft, full grant narrative</div><div class="ol2" id="gen-out-funder">DHHS Healthy Communities</div></div>
-              <div class="oh-acts" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="genShowConfig()" title="Back to the configuration form">&larr; Configure</button><button class="btn btn-outline btn-sm" onclick="copyProposal()">Copy</button><div class="exp-wrap" id="exp-wrap" style="position:relative"><button class="btn btn-accent btn-sm" id="export-btn" onclick="toggleExportMenu(event)" aria-haspopup="true">Export &#9662;</button><div class="exp-menu" id="exp-menu" style="display:none" role="menu"><button type="button" role="menuitem" onclick="exportProposalDoc()">Word document (.doc)</button><button type="button" role="menuitem" onclick="exportProposalPdf()">PDF</button><button type="button" role="menuitem" onclick="exportProposalTxt()">Plain text (.txt)</button></div></div></div>
+              <div class="oh-acts" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="genShowConfig()" title="Back to the configuration form">&larr; Configure</button><button class="btn btn-outline btn-sm" onclick="copyProposal()">Copy</button><div class="exp-wrap" id="exp-wrap" style="position:relative"><button class="btn btn-accent btn-sm" id="export-btn" onclick="toggleExportMenu(event)" aria-expanded="false" aria-controls="exp-menu">Export &#9662;</button><div class="exp-menu" id="exp-menu" style="display:none"><button type="button" onclick="exportProposalDoc()">Word document (.doc)</button><button type="button" onclick="exportProposalPdf()">PDF</button><button type="button" onclick="exportProposalTxt()">Plain text (.txt)</button></div></div></div>
             </div>
             <div id="ai-policy-banner" style="display:none;padding:10px 28px 0"></div>
             <div class="out-body"><div class="doc" id="doc-content"></div></div>
@@ -5343,7 +5317,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
           <div class="upl" id="pf-upl-doc_financials" role="button" tabindex="0" onclick="pfPickDoc('doc_financials')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pfPickDoc('doc_financials')}">Drop a PDF here or click to upload</div>
           <input type="file" id="pf-file-doc_financials" accept="application/pdf,.pdf" hidden onchange="pfUploadDoc('doc_financials', this.files[0]); this.value=''"></div>
         <div class="fieldset"><div class="field-label">SAM.gov registration</div>
-          <div class="upl" role="button" tabindex="0" onclick="go('readiness')" onkeydown="if(event.key==='Enter'){go('readiness')}">Needed for federal grants. <b style="color:var(--accent-ink)">Set it up in Readiness →</b></div></div>
+          <div class="upl" role="button" tabindex="0" onclick="go('readiness')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();go('readiness')}">Needed for federal grants. <b style="color:var(--accent-ink)">Set it up in Readiness →</b></div></div>
 
         <div class="divider">Logic model</div>
         <div class="fieldset"><label class="field-label">Inputs</label><textarea id="pf-inputs" placeholder="Staff, volunteers, facilities, curriculum, budget…"></textarea></div>
@@ -5896,37 +5870,6 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   </div>
 </div>
 
-<!-- ════════════════════════ GRANT MODAL ════════════════════════ -->
-<div class="overlay" id="grant-modal">
-  <div class="modal">
-    <div class="modal-head">
-      <div><div class="mf">Weingart Foundation</div><div class="mt">Youth Development, Expanded Opportunity</div></div>
-      <button class="x" aria-label="Close" onclick="closeGrant()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:20px">
-      <span class="pill pill-ink">Foundation</span><span class="pill pill-ink">Youth development</span>
-      <span class="pill pill-ok" style="margin-left:auto">88% match</span>
-    </div>
-    <div class="mini-stats">
-      <div class="mini-stat"><div class="l">Award range</div><div class="v">$75K-$150K</div></div>
-      <div class="mini-stat"><div class="l">LOI deadline</div><div class="v" style="color:var(--warn-ink)">Jul 1</div></div>
-      <div class="mini-stat"><div class="l">Full proposal</div><div class="v">Aug 15</div></div>
-    </div>
-    <p style="font-size:14px;color:var(--ink-body);line-height:1.7;margin-bottom:18px">Weingart's Youth Development program supports nonprofits building pathways for low-income youth in Los Angeles. It favors organizations with deep community roots and real outcome data.</p>
-    <p style="font-size:14px;color:var(--ink);font-weight:600;margin-bottom:12px">Why you match</p>
-    <div class="check-list">
-      <div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>501(c)(3) status confirmed</div>
-      <div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>Los Angeles County, your service area</div>
-      <div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg>NTEE O50 youth-serving mission</div>
-      <div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--warn-ink)" stroke-width="2.4"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>LOI must come before the full proposal, 2-page limit</div>
-    </div>
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-accent" style="flex:1" onclick="closeGrant();orgInfoReminder('apply').then(function(ok){if(!ok)return;selectGrantForDraft(window._modalGrant||null);saveGrantToPipeline(window._modalGrant,'drafting');window._genDirectGrant=true;go('generator')})">Draft the LOI</button>
-      <button class="btn btn-outline" onclick="saveGrantToPipeline(window._modalGrant,'saved');closeGrant()">Save</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
   <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg>
   <span id="toast-text"></span>
@@ -6212,7 +6155,6 @@ window.addEventListener('popstate', (e) => {
     try { history.pushState({ grangeScreen: window._currentScreen }, ''); } catch (_) {}
     return;
   }
-  window.closeGrant?.();
   const ctx = window._grange, signedIn = !!(ctx && ctx.user && ctx.profile);
   let dest = target;
   if (signedIn && ['landing', 'login', 'signin', 'tutorial', 'onboarding'].includes(target)) {
@@ -6634,12 +6576,6 @@ function goHome() {
 }
 
 /* ─── modal ─────────────────────────────────────────────── */
-function openGrant(){ document.getElementById('grant-modal').classList.add('open'); }
-function closeGrant(){ document.getElementById('grant-modal').classList.remove('open'); }
-document.getElementById('grant-modal').addEventListener('click', e => {
-  if (e.target.id === 'grant-modal') closeGrant();
-});
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGrant(); });
 
 /* ─── toast ─────────────────────────────────────────────── */
 let toastTimer;
@@ -6648,7 +6584,8 @@ function toast(msg){
   document.getElementById('toast-text').textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  // Long messages stay up long enough to read (about 60 ms a character, 2.8 to 7 s).
+  toastTimer = setTimeout(() => t.classList.remove('show'), Math.min(7000, Math.max(2800, String(msg).length * 60)));
 }
 
 async function submitSignup() {
@@ -8855,16 +8792,18 @@ function copyDisclosure() {
 
 /* ─── Clean exports for portal forms ───────────────────────
    The proposal lives in #doc-content as <h4> section titles + <p> body, with
-   optional <mark class="verify-flag"> "double-check this" highlights. For a
-   clean, professional artifact those highlights are unwrapped to plain text
-   (the words stay — the in-app draft keeps the highlight + double-check banner).
+   optional <mark class="verify-flag"> "double-check this" highlights. Exports drop the
+   app's markup but keep each highlight visible as [VERIFY: …], since it names a detail
+   still to fill in rather than a finished fact.
    Word = a self-contained HTML doc (application/msword opens it in Word/Docs);
    PDF = a print view the browser saves as PDF; text = clean plain text. */
 function proposalCleanClone() {
   const src = document.getElementById('doc-content');
   if (!src || !src.innerText.trim()) return null;
   const clone = src.cloneNode(true);
-  clone.querySelectorAll('mark.verify-flag').forEach(m => m.replaceWith(document.createTextNode(m.textContent)));
+  // A highlight is a detail the writer couldn't confirm ("district data"), not a finished fact: keep it
+  // visibly marked in every export, or "meet state standards district data." reads as finished prose.
+  clone.querySelectorAll('mark.verify-flag').forEach(m => m.replaceWith(document.createTextNode('[VERIFY: ' + m.textContent.trim() + ']')));
   // defensive: the PDF path writes this HTML into a new window — never carry executable nodes/handlers/URIs
   clone.querySelectorAll('script,style,link,iframe,object,embed').forEach(e => e.remove());
   clone.querySelectorAll('*').forEach(el => {
@@ -8875,8 +8814,13 @@ function proposalCleanClone() {
   });
   return clone;
 }
+/* After an export or copy: say how many highlighted details still need the applicant's real facts. */
+function exportVerifyNote(done) {
+  const n = document.querySelectorAll('#doc-content mark.verify-flag').length;
+  toast(n ? done + '. ' + n + (n === 1 ? ' detail marked [VERIFY] still needs your real fact.' : ' details marked [VERIFY] still need your real facts.') : done);
+}
 function proposalPlainText() {
-  const clone = proposalCleanClone();   // same cleaned source as the doc export (scripts/handlers stripped, verify-flags unwrapped)
+  const clone = proposalCleanClone();   // same cleaned source as the doc export (scripts/handlers stripped, verify-flags as [VERIFY: …])
   if (!clone) return '';
   const out = [];
   clone.childNodes.forEach(node => {
@@ -8917,8 +8861,9 @@ function proposalDocHtml() {
 function copyProposal() {
   const text = proposalPlainText();
   if (!text.trim()) { toast('Nothing to copy yet.'); return; }
+  if (!navigator.clipboard || !navigator.clipboard.writeText) { toast('This browser blocks copying here. Use Export instead.'); return; }
   navigator.clipboard.writeText(text).then(
-    () => toast('Proposal copied — clean text, ready to paste'),
+    () => exportVerifyNote('Proposal copied as clean text'),
     () => toast('Copy failed — please select and copy manually')
   );
 }
@@ -8928,24 +8873,41 @@ function toggleExportMenu(e) {
   if (!m) return;
   const open = !m.style.display || m.style.display === 'none';
   m.style.display = open ? 'block' : 'none';
+  document.getElementById('export-btn')?.setAttribute('aria-expanded', open ? 'true' : 'false');
   if (open) setTimeout(() => document.addEventListener('click', closeExportMenuOnce), 0);
   else closeExportMenu();
 }
-function closeExportMenu() { const m = document.getElementById('exp-menu'); if (m) m.style.display = 'none'; document.removeEventListener('click', closeExportMenuOnce); }
+function closeExportMenu() {
+  const m = document.getElementById('exp-menu'); if (m) m.style.display = 'none';
+  document.getElementById('export-btn')?.setAttribute('aria-expanded', 'false');
+  document.removeEventListener('click', closeExportMenuOnce);
+}
+/* Keyboard: Escape closes the list and returns to Export; tabbing out of it closes it too, so it
+   doesn't sit open over the draft. A click elsewhere is handled by closeExportMenuOnce (focus can be
+   null there, e.g. Safari doesn't focus clicked buttons, so only a real focus move counts here). */
+(function () {
+  const w = document.getElementById('exp-wrap'); if (!w) return;
+  w.addEventListener('keydown', (e) => {
+    const m = document.getElementById('exp-menu');
+    if (e.key !== 'Escape' || !m || m.style.display === 'none') return;
+    e.stopPropagation(); closeExportMenu(); document.getElementById('export-btn')?.focus();
+  });
+  w.addEventListener('focusout', (e) => { if (e.relatedTarget && !w.contains(e.relatedTarget)) closeExportMenu(); });
+})();
 function closeExportMenuOnce(e) { const w = document.getElementById('exp-wrap'); if (w && w.contains(e.target)) return; closeExportMenu(); }
 function exportProposalTxt() {
   closeExportMenu();
   const text = proposalPlainText();
   if (!text.trim()) { toast('Nothing to export yet.'); return; }
   downloadBlob(new Blob([text], { type: 'text/plain' }), proposalFilename('txt'));
-  toast('Exported as plain text');
+  exportVerifyNote('Exported as plain text');
 }
 function exportProposalDoc() {
   closeExportMenu();
   const html = proposalDocHtml();
   if (!html) { toast('Nothing to export yet.'); return; }
   downloadBlob(new Blob(['﻿' + html], { type: 'application/msword' }), proposalFilename('doc'));
-  toast('Exported as a Word document');
+  exportVerifyNote('Exported as a Word document');
 }
 function exportProposalPdf() {
   closeExportMenu();
@@ -8955,7 +8917,7 @@ function exportProposalPdf() {
   if (!w) { toast('Allow pop-ups to save as PDF, or use Word / Plain text.'); return; }
   w.document.open(); w.document.write(html); w.document.close(); w.focus();
   setTimeout(() => { try { w.print(); } catch (_) {} }, 350);
-  toast('Opening your print dialog — choose “Save as PDF”.');
+  exportVerifyNote('Opening your print dialog: choose “Save as PDF”');
 }
 
 /* ─── Google Sign-In (via Supabase OAuth) ────────────────── */
@@ -9965,6 +9927,30 @@ if (window.SUPABASE_CONFIG && window.supabase) {
 /* screens a logged-out (or freshly-redirected) user can sit on */
 const PUBLIC_SCREENS = ['landing','login','signin','demo','privacy','terms','security','contact'];
 
+/* Deep link: ?go=<screen>, from the installed app's shortcuts (Discover, Draft, Dashboard) or a shared
+   link such as ?go=demo. Read once, before the auth listener below routes anyone: a signed-in user is
+   taken there once their account has loaded (routeAfterAuth; new users still get the tour and setup
+   first), a visitor to sign-in first for an app screen, or straight to a public page. Unknown names
+   are ignored, and it comes off the address so a later reload opens normally. */
+window._deepLink = null;
+try {
+  const u = new URL(location.href), g = u.searchParams.get('go');
+  if (g !== null) {
+    if (SCREENS.includes(g) && !['landing', 'login', 'signin', 'tutorial', 'onboarding'].includes(g)) window._deepLink = g;
+    u.searchParams.delete('go');
+    history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+  }
+} catch (_) {}
+function _visitorDeepLink() {
+  const dl = window._deepLink;
+  if (!dl || !PUBLIC_SCREENS.includes(window._currentScreen || 'landing')) return;
+  const run = () => {
+    if (PUBLIC_SCREENS.includes(dl)) { window._deepLink = null; go(dl); }   // a public page: open it
+    else go('signin');                                                        // an app screen: sign in, then routeAfterAuth goes there
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true }); else run();
+}
+
 /* manual flows (signup / password sign-in) route themselves; this flag stops
    the auth listener from racing their success animation. */
 window._manualAuthFlow = false;
@@ -10029,6 +10015,7 @@ async function _routeAfterAuth() {
   }
   applyOrgIdentity(ctx);
   if (!ctx.profile) { revealPage(); go('landing'); return; }
+  const deepLink = window._deepLink; window._deepLink = null;   // ?go=… (used only once setup is done)
   // New users must complete the interactive tutorial FIRST, then the survey.
   if (!tutorialDone(ctx)) {
     revealPage();
@@ -10040,7 +10027,7 @@ async function _routeAfterAuth() {
     obInit(ctx);
   } else {
     revealPage();
-    go('dashboard');
+    go(deepLink || 'dashboard');
   }
 }
 
@@ -10094,6 +10081,7 @@ if (window.sb) {
       // A saved token that no longer works (signed out on another device, revoked):
       // the page was hidden while we checked, so show the visitor site.
       revealPage();
+      if (event === 'INITIAL_SESSION') _visitorDeepLink();
     }
   });
 }
@@ -10608,11 +10596,6 @@ async function obNext() {
   await obFinish();
 }
 
-async function obSkip() {
-  // mark complete with whatever's been entered so far, then go to dashboard
-  await obFinish(true);
-}
-
 async function obFinish(skipped) {
   const btn = document.getElementById('ob-next');
   if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
@@ -10779,9 +10762,14 @@ const TUT_STEPS = [
     onShow: () => {
       tutRevealStep(document.querySelector('.tut-intro'));
       const go = document.getElementById('tut-go');
-      setTimeout(() => go && go.focus(), 820);
-      // On phones the space above the button holds the headline, so the guide waits below it.
-      setTimeout(() => tutGuide.point('#tut-go', "Hi, I'm Grange. Tap here and I'll walk you through all five steps.", window.innerWidth < 760 ? { side: 'bottom' } : {}), 760);
+      setTimeout(() => go && go.focus({ preventScroll: true }), 820);
+      // On phones the space above the button holds the headline, so the guide waits below it. On a short
+      // screen (a phone held sideways) the button starts below the fold: bring it into view first, so the
+      // guide is placed against where it ends up rather than where it was.
+      setTimeout(() => {
+        if (go) go.scrollIntoView({ block: 'nearest' });
+        tutGuide.point('#tut-go', "Hi, I'm Grange. Tap here and I'll walk you through all five steps.", window.innerWidth < 760 ? { side: 'bottom' } : {});
+      }, 760);
       go.onclick = () => {
         go.style.transform = 'scale(.96)';
         const col = document.querySelector('.tut-intro-col');
@@ -10993,6 +10981,20 @@ const TUT_STEPS = [
 /* ── The guide mascot: the Grange assistant orb flies next to the thing to click
    and explains it in a speech bubble. Lives outside #tut-stage so it survives the
    per-step innerHTML swaps; re-pointed by each step's onShow (and after each gate). ── */
+/* On a short screen the thing the guide points at can sit under the fixed footer (or above the fold):
+   scroll its tour panel so it's fully in view, clear of the footer, before the guide is placed. */
+function tutScrollClear(t) {
+  const foot = document.getElementById('tut-foot');
+  const footTop = foot && foot.getClientRects().length ? foot.getBoundingClientRect().top : innerHeight;
+  for (let sc = t.parentElement; sc && sc.id !== 'tutorial'; sc = sc.parentElement) {
+    if (!/(auto|scroll)/.test(getComputedStyle(sc).overflowY) || sc.scrollHeight <= sc.clientHeight + 1) continue;
+    const sr = sc.getBoundingClientRect(), tr = t.getBoundingClientRect();
+    const lo = Math.min(sr.bottom, footTop) - 12, hi = sr.top + 8;
+    if (tr.bottom > lo) sc.scrollTop += Math.max(0, Math.min(tr.bottom - lo, tr.top - hi));
+    else if (tr.top < hi) sc.scrollTop -= hi - tr.top;
+    return;
+  }
+}
 const tutGuide = {
   _last: null,
   _paintOrb() {
@@ -11004,10 +11006,15 @@ const tutGuide = {
     const g = document.getElementById('tut-guide');
     if (!g) return;
     this._paintOrb();
+    // The placement runs two frames later; a newer point() or hide() in between wins, so a stale
+    // re-placement (after a scroll or resize) can't bring back the previous step's message.
+    const req = this._want = { sel, msg, opts };
     const run = () => {
+      if (this._want !== req) return;
       const t = typeof sel === 'string' ? document.querySelector(sel) : sel;
       if (!t) { this.hide(); return; }
       document.querySelectorAll('.tut-target-glow').forEach(e => e.classList.remove('tut-target-glow'));
+      tutScrollClear(t);
       const r = t.getBoundingClientRect();
       const vw = window.innerWidth, vh = window.innerHeight, gap = 18, ORB = 46;
       let side = opts.side;
@@ -11043,8 +11050,10 @@ const tutGuide = {
       g.style.setProperty('--gy', gy + 'px');
       g.classList.add('show');
       const b = document.getElementById('tut-guide-bubble');
+      // Re-placing the same message (after a scroll or resize) moves it without replaying its pop-in.
+      const moving = !!(this._last && this._last.sel === sel && this._last.msg === msg && b && b.classList.contains('in'));
       if (b) {
-        b.textContent = msg || ''; b.classList.remove('in');
+        b.textContent = msg || ''; if (!moving) b.classList.remove('in');
         // Above the orb on narrow screens, the bubble is centred on it; keep it inside the screen.
         let dx = 0;
         if (side === 'top' || side === 'bottom') {
@@ -11054,10 +11063,10 @@ const tutGuide = {
           dx = Math.max(-(w / 2 - 18), Math.min(w / 2 - 18, dx));   // the arrow has to stay on the bubble
         }
         b.style.setProperty('--bx', Math.round(dx) + 'px');
-        void b.offsetWidth; b.classList.add('in');
+        if (!moving) { void b.offsetWidth; b.classList.add('in'); }
       }
       if (opts.glow !== false) t.classList.add('tut-target-glow');
-      this._last = { sel, msg, opts };
+      this._last = req;
     };
     requestAnimationFrame(() => requestAnimationFrame(run));
   },
@@ -11065,11 +11074,14 @@ const tutGuide = {
     const g = document.getElementById('tut-guide');
     if (g) g.classList.remove('show');
     document.querySelectorAll('.tut-target-glow').forEach(e => e.classList.remove('tut-target-glow'));
-    this._last = null;
+    this._last = null; this._want = null;
   },
+  // Re-place the guide against its latest target (the newest request, not one already superseded).
+  repin() { const l = this._last && (this._want || this._last); if (l) this.point(l.sel, l.msg, l.opts); },
 };
-// keep the guide pinned to its target as the viewport changes
-window.addEventListener('resize', () => { if (tutGuide._last) { const l = tutGuide._last; tutGuide.point(l.sel, l.msg, l.opts); } });
+// keep the guide pinned to its target as the viewport changes or the tour panel scrolls (short screens)
+window.addEventListener('resize', () => tutGuide.repin());
+document.addEventListener('scroll', (e) => { if (e.target instanceof Element && e.target.closest('#tutorial')) tutGuide.repin(); }, { capture: true, passive: true });
 
 /* Split a headline into per-word spans for the Apple-style staggered blur reveal.
    aria-label on the <h2> carries the full string for screen readers. */
@@ -12396,7 +12408,6 @@ function draftFromFullCall(id) {
 }
 function wrapAssess(inner) { return '<div class="gc-assess-inner">' + inner + '</div>'; }
 function assessMsgHTML(msg, signin) { return '<div class="gca-msg">' + escHtml(msg) + (signin ? ' <a onclick="go(\'signin\')">Sign in →</a>' : '') + '</div>'; }
-function assessVColor(v) { return v === 'strong' ? 'var(--ok)' : v === 'good' ? '#4f8a4f' : v === 'weak' ? 'var(--warn-ink)' : 'var(--accent)'; }
 function assessEligIcon(s) {
   if (s === 'likely') return '<svg class="ic" style="color:var(--ok)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>';
   if (s === 'unlikely') return '<svg class="ic" style="color:var(--accent)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
@@ -14219,103 +14230,12 @@ function applyDiscFilters(query, type) {
   };
 </script>
 
-<!-- ═══════════════════ Desktop download + PWA fallback ═══════════════════ -->
+<!-- Service worker: lets the site be added to a phone's home screen (manifest.webmanifest) and open offline. -->
 <script>
-(function () {
-  'use strict';
-
-  var REPO = 'timchen850/GrantAI-Prototype';
-  var BASE = 'https://github.com/' + REPO + '/releases/latest/download/';
-  var DL = {
-    mac:     BASE + 'Grange-AI-mac.dmg',
-    windows: BASE + 'Grange-AI-Setup.exe',
-    linux:   BASE + 'Grange-AI-linux.AppImage',
-    android: BASE + 'Grange-AI-android.apk'
-  };
-
-  // 1. Register the service worker (powers the mobile "add to home screen").
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function () {});
-    });
-  }
-
-  var ua = navigator.userAgent;
-  var platform = navigator.platform || '';
-  function isIOS()     { return /iphone|ipad|ipod/i.test(ua) && !window.MSStream; }
-  function isAndroid() { return /android/i.test(ua); }
-  function isMac()     { return /mac/i.test(platform) || /mac os x/i.test(ua); }
-  function isWindows() { return /win/i.test(platform) || /windows/i.test(ua); }
-  var isMobile = isIOS() || isAndroid() || /mobile/i.test(ua);
-
-  // 2. Tailor the primary download button to the visitor's OS.
-  var heroBtn   = document.getElementById('dl-hero-btn');
-  var heroTitle = document.getElementById('dl-hero-title');
-  var heroNote  = document.getElementById('dl-hero-note');
-
-  function setHero(href, title, label) {
-    if (heroBtn)   { heroBtn.setAttribute('href', href); heroBtn.textContent = label; }
-    if (heroTitle) heroTitle.textContent = title;
-  }
-
-  if (isAndroid()) {
-    // Real installable Android app.
-    setHero(DL.android, 'Download for Android', 'Download .apk');
-    if (heroNote) heroNote.textContent = 'Free • installs as a real Android app';
-  } else if (isIOS()) {
-    // iPhone has no free installable app → home-screen install.
-    if (heroBtn) {
-      heroBtn.textContent = 'Add to Home Screen';
-      heroBtn.setAttribute('href', '#');
-      heroBtn.addEventListener('click', function (e) { e.preventDefault(); installPwa(); });
-    }
-    if (heroTitle) heroTitle.textContent = 'Get Grange AI on your iPhone';
-    if (heroNote)  heroNote.textContent = 'App Store app coming soon • add to home screen now';
-  } else if (isMac()) {
-    setHero(DL.mac, 'Download for macOS', 'Download for Mac');
-  } else if (isWindows()) {
-    setHero(DL.windows, 'Download for Windows', 'Download for Windows');
-  } else {
-    setHero(DL.linux, 'Download for Linux', 'Download for Linux');
-  }
-
-  // 3. PWA install (used only as the mobile / "add to home screen" fallback).
-  var deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
-
-  function installPwa() {
-    if (isIOS()) {
-      var steps = document.getElementById('ios-steps');
-      if (steps) steps.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      if (typeof toast === 'function') toast('In Safari: tap Share, then "Add to Home Screen."');
-      return;
-    }
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
-    } else if (typeof toast === 'function') {
-      toast('Use your browser menu → "Install app" to add Grange AI.');
-    }
-  }
-
-  var fallbackLink = document.getElementById('pwa-fallback-link');
-  if (fallbackLink) {
-    fallbackLink.addEventListener('click', function (e) { e.preventDefault(); installPwa(); });
-  }
-  var iosBtn = document.getElementById('ios-install-btn');
-  if (iosBtn) {
-    iosBtn.addEventListener('click', function (e) { e.preventDefault(); installPwa(); });
-  }
-
-  // 4. If launched from the installed app with a deep-link, route to it.
-  try {
-    var target = new URLSearchParams(window.location.search).get('go');
-    if (target && typeof go === 'function') setTimeout(function () { go(target); }, 400);
-  } catch (e) {}
-})();
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+}
+// Deep links (?go=…) are routed with sign-in: see window._deepLink.
 </script>
 </body>
 </html>

@@ -20,7 +20,7 @@ anyone reads it. Grange AI walks a first-time applicant through the whole proces
 | **Profile** | A short survey (or a Form 990 upload) builds one organization profile that every later step reads from. Works for registered nonprofits, fiscal sponsees, businesses, governments and groups that haven't incorporated yet. |
 | **Discover** | Live federal opportunities from Grants.gov, filtered by the organization's type and focus areas, with a 0–100 match score; past federal awards to similar organizations from USASpending.gov; curated funders that don't require nonprofit status. |
 | **Prepare** | A readiness checklist (documents funders ask for), an IRS status check, a guided SAM.gov setup, and a step-by-step path for groups that want to become a nonprofit or use a fiscal sponsor. An AI read of a specific funder's call says whether to apply and what it requires. |
-| **Write** | A proposal generator that streams a full draft, grounded in the profile, a library of openly licensed winning proposals, and the user's own past proposals. Facts it couldn't confirm are highlighted for the user to check. An editing pass strips generic "AI voice". |
+| **Write** | A proposal generator that streams a full draft, grounded in the profile, a library of openly licensed winning proposals, and the user's own past proposals. Facts it couldn't confirm are highlighted for the user to check, and stay marked `[VERIFY: …]` in the Word, PDF and text exports. An editing pass strips generic "AI voice". |
 | **Manage** | Deadlines with staged reminders, and after an award: a compliance checklist and spending tracked against the budget. |
 
 An in-app assistant answers questions about the current screen, and a guided tour introduces each step.

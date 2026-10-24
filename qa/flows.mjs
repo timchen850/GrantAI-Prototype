@@ -753,6 +753,7 @@ flow('draft-export', async (browser, check) => {
   const [txtDl] = await Promise.all([p.waitForEvent('download'), p.click('#exp-menu button:has-text("Plain text")')]);
   const txt = await read(txtDl);
   check('plain-text export is clean text with the sections', /Statement of Need/.test(txt) && !/<[a-z]/i.test(txt));
+  check('a detail Grange could not confirm stays marked in the exports ("[VERIFY: district data]")', /\[VERIFY: district data\]/.test(txt) && /\[VERIFY: district data\]/.test(doc));
   await p.click('#export-btn');
   const [pop] = await Promise.all([p.waitForEvent('popup'), p.click('#exp-menu button:has-text("PDF")')]);
   await pop.waitForLoadState().catch(() => {});
@@ -761,6 +762,17 @@ flow('draft-export', async (browser, check) => {
   await p.click('button[onclick="copyProposal()"]'); await p.waitForTimeout(400);
   const clip = await p.evaluate(() => navigator.clipboard.readText().catch(() => ''));
   check('Copy puts clean text on the clipboard', /Statement of Need/.test(clip) && !/<[a-z]/i.test(clip));
+  // keyboard: open with Enter, Escape closes and returns to Export; tabbing past the list closes it
+  const menuOpen = () => p.evaluate(() => document.getElementById('exp-menu').style.display !== 'none');
+  const expanded = () => p.evaluate(() => document.getElementById('export-btn').getAttribute('aria-expanded'));
+  await p.focus('#export-btn'); await p.keyboard.press('Enter'); await p.waitForTimeout(150);
+  check('Export says it is open ("aria-expanded=true")', (await menuOpen()) && (await expanded()) === 'true');
+  await p.keyboard.press('Tab'); await p.keyboard.press('Escape'); await p.waitForTimeout(150);
+  check('Escape closes the export list and puts focus back on Export', !(await menuOpen()) && (await expanded()) === 'false' && await p.evaluate(() => document.activeElement && document.activeElement.id === 'export-btn'));
+  await p.keyboard.press('Enter'); await p.waitForTimeout(150);
+  for (let i = 0; i < 4; i++) await p.keyboard.press('Tab');
+  await p.waitForTimeout(150);
+  check('tabbing past the export list closes it', !(await menuOpen()) && (await expanded()) === 'false');
   return t;
 });
 
@@ -1107,8 +1119,8 @@ flow('tour-bubble-fits-on-tablets', async (browser, check) => {
   check('the tour\'s first speech bubble fits on a 768 px iPad screen', /Hi, I'm Grange/.test(r.txt) && r.l >= 0 && r.r <= r.w && r.t >= 0 && r.b <= r.h);
   const t2 = await openApp(browser, { persona: 'newuser', width: 844, height: 390, reducedMotion: true });   // a phone held sideways
   await t2.page.waitForTimeout(2500);
-  const q = await t2.page.evaluate(() => { const b = document.getElementById('tut-guide-bubble').getBoundingClientRect(); const hs = [...document.querySelectorAll('.tut-intro .tut-h-big, .tut-intro h1, .tut-intro h2, .tut-intro p')].filter((e) => e.getClientRects().length).map((e) => e.getBoundingClientRect()); return { on: b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight, covers: hs.some((h) => !(h.right <= b.left || h.left >= b.right || h.bottom <= b.top || h.top >= b.bottom)) }; });
-  check('on a phone held sideways it stays on screen and off the headline', q.on && !q.covers);
+  const q = await t2.page.evaluate(() => { const b = document.getElementById('tut-guide-bubble').getBoundingClientRect(); const hs = [...document.querySelectorAll('.tut-intro .tut-h-big, .tut-intro h1, .tut-intro h2, .tut-intro p')].filter((e) => e.getClientRects().length).map((e) => e.getBoundingClientRect()); const R = (x) => [x.left, x.top, x.right, x.bottom].map(Math.round).join(','); return { on: b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight, covers: hs.some((h) => !(h.right <= b.left || h.left >= b.right || h.bottom <= b.top || h.top >= b.bottom)), at: 'bubble ' + R(b) + ' text ' + hs.map(R).join(' / ') + ' fonts ' + document.fonts.status }; });
+  check('on a phone held sideways it stays on screen and off the headline' + (q.on && !q.covers ? '' : ' (' + q.at + ')'), q.on && !q.covers);
   await t2.ctx.close();
   return t;
 });
@@ -1171,6 +1183,106 @@ flow('nonprofit-setup-steps-saved', async (browser, check) => {
   await p.reload(); await p.waitForTimeout(2000);
   await p.evaluate(() => go('nonprofit-setup')); await p.waitForTimeout(1500);
   check('it is still done after a reload', (await p.getAttribute('#nonprofit-setup .rdy-item >> nth=0 >> button:has-text("Done")', 'aria-pressed')) === 'true');
+  return t;
+});
+
+// The tour is required for new accounts: on a short window every step's target must be reachable.
+flow('tour-finishes-on-short-screens', async (browser, check) => {
+  let t0 = null;
+  for (const [w, h, label] of [[1366, 640, 'a 1366×640 laptop window'], [844, 390, 'a phone held sideways']]) {
+    const t = await openApp(browser, { persona: 'newuser', width: w, height: h, reducedMotion: true });
+    const p = t.page;
+    const blocked = [];
+    let left = false;
+    for (let i = 0; i < 14 && !left; i++) {
+      await p.waitForTimeout(1600);
+      if ((await screen(p)) !== 'tutorial') { left = true; break; }
+      const r = await p.evaluate(() => {
+        const l = tutGuide._last; if (!l) return null;
+        const tgt = typeof l.sel === 'string' ? document.querySelector(l.sel) : l.sel;
+        const b = tgt.getBoundingClientRect(), f = document.getElementById('tut-foot').getBoundingClientRect();
+        const inFoot = !!tgt.closest('#tut-foot');
+        if (typeof l.sel !== 'string') tgt.dataset.qaTgt = '1';
+        return { sel: typeof l.sel === 'string' ? l.sel : '[data-qa-tgt="1"]', clear: inFoot || (b.top >= 0 && b.bottom <= f.top + 1), msg: l.msg.slice(0, 40) };
+      });
+      if (!r) break;
+      if (!r.clear) blocked.push(r.msg);
+      await p.click(r.sel);   // a real click: fails if the footer is on top of it
+      await p.evaluate(() => document.querySelectorAll('[data-qa-tgt]').forEach((e) => e.removeAttribute('data-qa-tgt')));
+    }
+    check('on ' + label + ' every tour target is in view above the footer' + (blocked.length ? ' (under it: ' + blocked.join(' | ') + ')' : ''), !blocked.length);
+    check('on ' + label + ' the tour can be finished', left && (await screen(p)) === 'onboarding');
+    errorsInto(t, t0); if (t0) await t.ctx.close(); else t0 = t;
+  }
+  return t0;
+});
+const errorsInto = (t, into) => { if (into && into !== t) into.errors.push(...t.errors); };
+
+// Ctrl+P on a finished draft: paper gets the proposal alone, every page of it, not the app around it.
+flow('print-draft', async (browser, check) => {
+  const para = 'Our mentors meet students four afternoons a week, and every session pairs a hands-on robotics or coding project with tutoring tied to what the class is covering that week, so families see progress in both. ';
+  const long = ['Executive Summary', 'Statement of Need', 'Program Design', 'Goals and Objectives', 'Evaluation Plan', 'Organizational Capacity', 'Budget Narrative', 'Sustainability']
+    .map((h, i) => '<h4>' + h + '</h4>' + [0, 1, 2].map((k) => '<p>' + (i === 1 && k === 0 ? 'Only 38% of eighth graders meet state math standards [VERIFY: district data]. ' : '') + para.repeat(3) + '</p>').join('')).join('') + '<h4>Closing</h4><p>LAST-LINE-MARKER thank you.</p>';
+  const t = await openApp(browser, { persona: 'np', draftText: long });
+  const p = t.page;
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
+  await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
+  await fillGenForm(p); await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(8000);
+  await p.emulateMedia({ media: 'print' });
+  const r = await p.evaluate(() => {
+    const shown = (q) => [...document.querySelectorAll(q)].some((e) => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden');
+    const out = document.querySelector('#generator .out');
+    const flag = document.querySelector('#doc-content mark.verify-flag');
+    return {
+      chrome: ['.side', '.m-appbar', '#ai-chat-fab', '#generator .page-hero', '#gen-steps', '#rag-paywall', '.scard', '#compliance-checklist', '#out-doc .oh-acts'].filter(shown),
+      draft: shown('#doc-content h4') && shown('#gen-out-funder'),
+      clipped: !out || getComputedStyle(out).overflow !== 'visible',
+      flag: flag ? getComputedStyle(flag, '::before').content : null,
+    };
+  });
+  check('printing a draft leaves out the menu, assistant, hero, steps, scorecard, checklist and buttons' + (r.chrome.length ? ' (still shown: ' + r.chrome.join(', ') + ')' : ''), !r.chrome.length);
+  check('the funder and every section title print', r.draft);
+  check('a long draft is not cut off at the panel edge (overflow visible)', !r.clipped);
+  check('a highlight prints as "[VERIFY: …]"', r.flag === '"[VERIFY: "');
+  const pdf = await p.pdf({ format: 'Letter' });
+  const pages = (pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
+  console.log('    printed pages:', pages);
+  check('the long draft prints on several pages, not one cut-off page', pages >= 3);
+  await p.emulateMedia({ media: 'screen' });
+  await p.evaluate(() => go('dashboard')); await p.waitForTimeout(1200);
+  await p.emulateMedia({ media: 'print' });
+  check('other screens print without the sidebar or assistant button', await p.evaluate(() => !['.side', '#ai-chat-fab'].some((q) => [...document.querySelectorAll(q)].some((e) => e.getClientRects().length))));
+  return t;
+});
+
+// ?go=<screen>: the installed app's shortcuts (Discover, Draft, Dashboard) and shared links like ?go=demo.
+flow('deep-links', async (browser, check) => {
+  const B = 'http://127.0.0.1:' + (+process.env.QA_PORT || 3456) + '/';
+  const errors = [];
+  const open = async (opts, q, wait = 2500) => { const x = await openApp(browser, { ...opts, base: B + q }); await x.page.waitForTimeout(wait); return x; };
+  const done = async (x) => { errors.push(...x.errors); await x.ctx.close().catch(() => {}); };
+  let x = await open({ persona: 'np' }, '?source=pwa&go=generator');
+  check('signed in: ?go=generator opens the generator with the account loaded', (await screen(x.page)) === 'generator' && await x.page.evaluate(() => !!(window._grange && window._grange.profile)));
+  check('the go= part comes off the address (a reload opens normally)', !/go=/.test(await x.page.evaluate(() => location.search)));
+  await done(x);
+  x = await open({ persona: 'np' }, '?go=bogus');
+  check('an unknown ?go= opens the dashboard, not a blank page', (await screen(x.page)) === 'dashboard' && await x.page.evaluate(() => !!document.querySelector('.screen.active')));
+  await done(x);
+  x = await open({ persona: 'newuser' }, '?source=pwa&go=generator');
+  check('a new account still starts with the tour', (await screen(x.page)) === 'tutorial');
+  await done(x);
+  x = await open({ persona: 'np', signedOut: true }, '?go=demo');
+  check('a visitor following ?go=demo gets the demo', (await screen(x.page)) === 'demo');
+  await done(x);
+  const t = await open({ persona: 'np', signedOut: true }, '?source=pwa&go=generator');
+  const p = t.page;
+  check('a visitor opening an app shortcut is asked to sign in, not shown an empty app screen', (await screen(p)) === 'signin');
+  if ((await screen(p)) !== 'signin') { await p.evaluate(() => go('signin')); await p.waitForTimeout(800); }
+  await p.fill('#si-email-input', 'director@eastsideyouth.example.org'); await p.keyboard.press('Enter'); await p.waitForTimeout(1200);
+  await p.fill('#si-pw-input', 'correct-horse-9'); await p.waitForTimeout(200);
+  await p.click('#si-cont-btn'); await p.waitForTimeout(4500);
+  check('…and after signing in lands on the screen the shortcut named', (await screen(p)) === 'generator');
+  t.errors.push(...errors);
   return t;
 });
 
