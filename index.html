@@ -11111,7 +11111,7 @@ async function updateDashboard() {
     }).length;
     if (discovered > 0) {
       subtitleEl.textContent = deadlineSoon > 0
-        ? `${deadlineSoon} deadline${deadlineSoon > 1 ? 's' : ''} in the next 30 days · ${discovered} grants matched.`
+        ? `${discovered} grants matched · ${deadlineSoon} close${deadlineSoon > 1 ? '' : 's'} in the next 30 days.`   // matched grants closing soon, not the user's own deadlines
         : `${discovered} grants matched to your organization.`;
     } else {
       const tracking = dbGrants.filter(g => !g.archived && ['saved', 'drafting', 'submitted'].includes(g.status)).length;
