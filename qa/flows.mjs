@@ -1195,6 +1195,13 @@ flow('claims-match-the-app', async (browser, check) => {
   const bad = ['Candid', 'Weingart', 'Joyce', 'Kresge', 'California Grants Portal', 'CA Grants', 'RFP feeds', 'state portals', 'hundreds of foundations', 'Every day we scan'].filter((w) => text.includes(w));
   check('no sources the app does not search' + (bad.length ? ' (found: ' + bad.join(', ') + ')' : ''), !bad.length);
   check('no made-up deadlines for real foundations (RWJF "Due Aug 1", CCF "Due Aug 30")', !/Due Aug 1(?!\d)|Due Aug 30(?!\d)|LOI Jul 1(?!\d)/.test(text));
+  // Security and Privacy pages: no promises a two-person team on Supabase's free plan can't keep
+  const legal = await p.evaluate(() => ['security', 'privacy', 'terms'].map((id) => document.getElementById(id).textContent).join(' '));
+  const promises = ['TLS 1.3', '99.9%', 'availability zones', 'staging', 'enetration test', 'firewall (WAF)', 'Audit logging', 'hardware keys', 'point-in-time recovery', 'rotated on a regular schedule', 'static analysis', 'session_id', 'csrf_token', '90 days', 'from your account settings', 'employees and contractors']
+    .filter((w) => legal.includes(w));
+  check('Security, Privacy and Terms make no claims the setup cannot back' + (promises.length ? ' (found: ' + promises.join(', ') + ')' : ''), !promises.length);
+  check('the Privacy page names the AI providers that receive draft data', /Gemini/.test(legal) && /Groq/.test(legal) && /Supabase/.test(legal) && /Cloudflare/.test(legal));
+  check('the Security page says backups are not automatic yet', /Backups:\s*Not automatic yet/.test(legal));
   check('the foundations named in the demo are ones Grange searches', await p.evaluate(() => ['Robert Wood Johnson Foundation', 'W.K. Kellogg Foundation', 'California Community Foundation'].every((f) => CURATED_GRANTS.some((g) => g.funder === f))));
   return t;
 });

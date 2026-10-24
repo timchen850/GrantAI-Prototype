@@ -3166,7 +3166,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
       <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">Privacy Policy</h1>
       <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:600px;margin-bottom:28px;">We believe privacy is a right, not a feature. This policy explains exactly what data we collect, why we collect it, and how you can control it.</p>
       <div style="display:flex;gap:24px;flex-wrap:wrap;">
-        <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Last updated June 5, 2026</span>
+        <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Last updated October 24, 2026</span>
         <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L2 4v4.5c0 3.5 2.5 6 6 7 3.5-1 6-3.5 6-7V4L8 1.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Effective immediately upon posting</span>
       </div>
     </div>
@@ -3194,7 +3194,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
     <div style="flex:1;min-width:0;font-size:16px;line-height:1.8;color:var(--ink-soft);display:flex;flex-direction:column;gap:0;">
 
       <div style="background:var(--accent-tint);border-left:3px solid var(--accent);padding:18px 20px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin-bottom:52px;">
-        <p style="font-size:14.5px;color:var(--accent-ink);line-height:1.65;margin:0;"><strong>Plain-language summary:</strong> We collect only what we need to run Grange AI. We never sell your data. You can delete your account and all associated data at any time. If you have questions, email <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);font-weight:600;">executivegrangeai@gmail.com</a>.</p>
+        <p style="font-size:14.5px;color:var(--accent-ink);line-height:1.65;margin:0;"><strong>Plain-language summary:</strong> We collect only what we need to run Grange AI. We never sell your data. You can ask us to delete your account and all its data at any time. If you have questions, email <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);font-weight:600;">executivegrangeai@gmail.com</a>.</p>
       </div>
 
       <section style="margin-bottom:52px;">
@@ -3207,14 +3207,14 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
           <li><strong>Uploaded documents:</strong> If you upload IRS Form 990s, program summaries, or prior grant applications, we store those files to power your profile and proposal drafts.</li>
           <li><strong>Grant content:</strong> Proposals you draft, edit, save, or submit through Grange AI are stored so you can access and revise them later.</li>
           <li><strong>Communications:</strong> If you contact us for support or send feedback, we retain those messages to respond and improve the product.</li>
-          <li><strong>Payment information:</strong> Billing is handled by our payment processor (Stripe). We never see or store your full card number. We receive only a billing token and basic billing address for our records.</li>
+          <li><strong>Payment information:</strong> Paid plans aren't open yet. When they open, Stripe handles billing: we never see or store your card number, and receive only a billing token and basic billing address.</li>
         </ul>
         <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:8px;margin-top:24px;">Information collected automatically</h3>
         <ul style="padding-left:20px;display:flex;flex-direction:column;gap:8px;">
-          <li><strong>Usage data:</strong> Pages visited, features used, buttons clicked, time on page, and search queries within the app. We use this to understand what's working and what to improve.</li>
-          <li><strong>Device &amp; browser:</strong> Browser type and version, operating system, screen resolution, and time zone. We do not fingerprint your device.</li>
-          <li><strong>Log data:</strong> IP address, request timestamps, HTTP status codes, and referrer URLs. Logs are retained for 90 days for security and debugging purposes.</li>
-          <li><strong>Cookies &amp; session tokens:</strong> We use a session cookie to keep you logged in and a CSRF token to protect form submissions. See Section 5 for full cookie details.</li>
+          <li><strong>Usage data:</strong> We count how many AI drafts each account makes, to apply plan limits. Grange doesn't run analytics or tracking scripts.</li>
+          <li><strong>Device &amp; browser:</strong> Like any website, our hosting providers see your browser type with each request. We don't fingerprint your device.</li>
+          <li><strong>Log data:</strong> IP address, request times and status codes, kept in our hosting providers' short-term logs for security and debugging.</li>
+          <li><strong>Cookies &amp; browser storage:</strong> Grange doesn't set cookies. Your browser's local storage keeps you signed in. See Section 5.</li>
         </ul>
       </section>
 
@@ -3225,14 +3225,14 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
           <li><strong>To operate the service:</strong> Your organization profile, uploaded documents, and grant history power the discovery engine and AI proposal drafts. Without this data, Grange AI cannot function.</li>
           <li><strong>To personalize your experience:</strong> We use your mission, program areas, and location to surface grants that match your organization, not a generic list.</li>
-          <li><strong>To improve the product:</strong> Aggregated, de-identified usage data helps us understand which features are valuable and where users get stuck.</li>
+          <li><strong>To improve the product:</strong> We read the feedback and support messages you send us.</li>
           <li><strong>To communicate with you:</strong> We send transactional emails (password resets, billing receipts, account notices). With your permission, we may send product updates. You can opt out of marketing emails at any time.</li>
           <li><strong>To process payments:</strong> We pass billing information to Stripe to charge your subscription. We do not use it for any other purpose.</li>
-          <li><strong>To ensure security:</strong> Log data and usage patterns help us detect fraud, abuse, and unauthorized access.</li>
+          <li><strong>To ensure security:</strong> Log data helps us spot abuse and unauthorized access.</li>
           <li><strong>To comply with law:</strong> We may process your data to comply with applicable legal obligations, such as responding to lawful requests from public authorities.</li>
         </ul>
         <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:18px 20px;margin-top:24px;">
-          <p style="font-size:14px;color:var(--ink-soft);margin:0;"><strong style="color:var(--ink);">We will never:</strong> sell your data to advertisers, share your grant content with other organizations, use your proposals to train AI models without your explicit consent, or use your data in ways not described in this policy.</p>
+          <p style="font-size:14px;color:var(--ink-soft);margin:0;"><strong style="color:var(--ink);">We will never:</strong> sell your data to advertisers, share your grant content with other organizations, train our own AI models on your proposals, or use your data in ways not described in this policy.</p>
         </div>
       </section>
 
@@ -3241,7 +3241,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
         <p style="margin-bottom:16px;">We do not sell, rent, or share your personal information with third parties for their own marketing purposes. We share data only in these limited circumstances:</p>
         <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
-          <li><strong>Service providers:</strong> We work with a small number of trusted vendors (cloud hosting, payment processing, transactional email) who process data on our behalf. All vendors are bound by data processing agreements that prohibit them from using your data for any purpose other than providing services to us.</li>
+          <li><strong>Service providers:</strong> A few companies process data so Grange can work: Supabase (database, sign-in, file storage and sign-in emails), Cloudflare (website hosting), Google's Gemini API and Groq (writing and scoring drafts, and the assistant), and Stripe (payments, once paid plans open). Drafting sends your organization profile and the grant's details to Gemini. Google's terms for its free API tier let it use that content to improve its products, and its reviewers may read it with your account details removed, so leave out anything you wouldn't want shared that way.</li>
           <li><strong>Legal requirements:</strong> We may disclose data if required by law, court order, or valid legal process. Where permitted, we will notify you before complying.</li>
           <li><strong>Safety:</strong> We may disclose information if we believe in good faith that disclosure is necessary to protect the rights, property, or safety of Grange AI, our users, or the public.</li>
           <li><strong>Business transfers:</strong> If Grange AI is acquired or merges with another company, your data may transfer as part of that transaction. We will notify you via email and give you the opportunity to delete your account before data transfers to a new entity.</li>
@@ -3256,8 +3256,8 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
           <li>Your profile and all grant content are deleted within 30 days of account closure.</li>
           <li>Billing records and transactional emails are retained for 7 years as required by financial regulations.</li>
-          <li>Server logs are deleted after 90 days on a rolling basis.</li>
-          <li>Anonymized, aggregated product analytics are retained indefinitely because they cannot be linked back to you.</li>
+          <li>Request logs last only as long as our hosting providers keep them.</li>
+          
         </ul>
         <p style="margin-top:16px;">You may request earlier deletion of specific data by emailing <a href="mailto:executivegrangeai@gmail.com" style="color:var(--accent);text-decoration:none;">executivegrangeai@gmail.com</a>. We will honor requests within 30 days except where retention is required by law.</p>
       </section>
@@ -3265,18 +3265,13 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
       <section style="margin-bottom:52px;">
         <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">5. Cookies &amp; Tracking</h2>
         <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
-        <p style="margin-bottom:20px;">We use a minimal set of cookies. We do not use third-party advertising or behavioral tracking cookies.</p>
-        <div style="border:1px solid var(--line);border-radius:var(--r-sm);overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;font-size:14px;">
-            <thead><tr style="background:var(--surface-2);"><th style="text-align:left;padding:12px 16px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);">Cookie</th><th style="text-align:left;padding:12px 16px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);">Purpose</th><th style="text-align:left;padding:12px 16px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);">Duration</th></tr></thead>
-            <tbody>
-              <tr style="border-bottom:1px solid var(--line);"><td style="padding:12px 16px;color:var(--ink);font-family:monospace;font-size:13px;">session_id</td><td style="padding:12px 16px;">Keeps you logged in across page loads</td><td style="padding:12px 16px;">Session</td></tr>
-              <tr style="border-bottom:1px solid var(--line);background:var(--surface-2);"><td style="padding:12px 16px;color:var(--ink);font-family:monospace;font-size:13px;">csrf_token</td><td style="padding:12px 16px;">Prevents cross-site request forgery</td><td style="padding:12px 16px;">Session</td></tr>
-              <tr><td style="padding:12px 16px;color:var(--ink);font-family:monospace;font-size:13px;">pref_*</td><td style="padding:12px 16px;">Stores UI preferences (theme, sidebar state)</td><td style="padding:12px 16px;">1 year</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p style="margin-top:16px;font-size:14.5px;">You can delete cookies at any time through your browser settings. Note that deleting <code style="background:var(--surface-2);padding:2px 6px;border-radius:4px;font-size:13px;">session_id</code> will log you out.</p>
+        <p style="margin-bottom:16px;">Grange doesn't set cookies, and there are no advertising or tracking scripts on the site. Instead, your browser's local storage, which stays on your device, keeps:</p>
+        <ul style="padding-left:20px;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+          <li>your sign-in token, so you stay signed in;</li>
+          <li>copies of some of your work, so pages load fast: your latest draft, recent grant results and your logo;</li>
+          <li>your progress on the tour, the SAM.gov guide and the IRS check.</li>
+        </ul>
+        <p style="font-size:14.5px;">Clearing this site's data in your browser removes all of it and signs you out. On a shared computer, sign out when you finish.</p>
       </section>
 
       <section style="margin-bottom:52px;">
@@ -3285,7 +3280,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         <p style="margin-bottom:16px;">Regardless of where you are located, you have the following rights with respect to your data:</p>
         <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
           <li><strong>Access:</strong> You may request a copy of all personal data we hold about you and your organization.</li>
-          <li><strong>Correction:</strong> You may ask us to correct any inaccurate or incomplete data. You can update most information directly from your account settings.</li>
+          <li><strong>Correction:</strong> You may ask us to correct any inaccurate or incomplete data. You can update most information yourself on the Profile page.</li>
           <li><strong>Deletion:</strong> You may request deletion of your account and all associated data. We will complete the deletion within 30 days.</li>
           <li><strong>Portability:</strong> You may request a machine-readable export of your grant content and organization profile in JSON format.</li>
           <li><strong>Restriction:</strong> You may ask us to restrict processing of your data while a correction or objection request is pending.</li>
@@ -3298,7 +3293,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
       <section style="margin-bottom:52px;">
         <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">7. Security</h2>
         <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
-        <p>We take the security of your data seriously. For full details on our technical and organizational security measures, see our <button onclick="go('security')" style="background:none;border:none;padding:0;color:var(--accent);font-size:inherit;font-family:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px;">Security page</button>. In summary: all data is encrypted in transit (TLS 1.3) and at rest (AES-256), access is restricted by role and requires MFA, and we conduct regular vulnerability assessments. No system is perfectly secure, but we work hard to protect yours. If we ever become aware of a breach that affects your data, we will notify you by email within 72 hours.</p>
+        <p>We take the security of your data seriously. For full details on our technical and organizational security measures, see our <button onclick="go('security')" style="background:none;border:none;padding:0;color:var(--accent);font-size:inherit;font-family:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px;">Security page</button>. In summary: all data is encrypted in transit (TLS) and at rest (AES-256), and row-level security keeps each organization's data separate. No system is perfectly secure, but we work hard to protect yours. If we ever become aware of a breach that affects your data, we will notify you by email within 72 hours.</p>
       </section>
 
       <section style="margin-bottom:52px;">
@@ -3344,7 +3339,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
       <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">Terms of Service</h1>
       <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:620px;margin-bottom:28px;">These terms govern your use of Grange AI. Please read them carefully. By creating an account, you agree to be bound by them.</p>
       <div style="display:flex;gap:24px;flex-wrap:wrap;">
-        <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Last updated June 5, 2026</span>
+        <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Last updated October 24, 2026</span>
         <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Governing law: United States</span>
       </div>
     </div>
@@ -3428,7 +3423,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
           <li><strong>Paid plans:</strong> Certain features require a paid subscription. Pricing is displayed at checkout and may be updated from time to time. We will notify you of price changes at least 30 days in advance.</li>
           <li><strong>Billing cycle:</strong> Subscriptions are billed monthly or annually, as selected at checkout. Your subscription renews automatically at the end of each billing period.</li>
-          <li><strong>Cancellation:</strong> You may cancel your subscription at any time from your account settings. Cancellation takes effect at the end of the current billing period. You will retain access to paid features until that date.</li>
+          <li><strong>Cancellation:</strong> You may cancel your subscription at any time by emailing executivegrangeai@gmail.com. Cancellation takes effect at the end of the current billing period. You will retain access to paid features until that date.</li>
           <li><strong>Refunds:</strong> We do not offer refunds for partial billing periods except where required by applicable law. If you believe you have been billed in error, contact us within 30 days of the charge.</li>
           <li><strong>Taxes:</strong> Prices are exclusive of applicable taxes. You are responsible for paying any taxes, levies, or duties imposed by applicable law.</li>
           <li><strong>Free trials:</strong> Where offered, free trials automatically convert to a paid subscription at the end of the trial period. You may cancel before the trial ends to avoid charges.</li>
@@ -3447,7 +3442,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
       <section style="margin-bottom:52px;">
         <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">7. Confidentiality</h2>
         <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
-        <p>We treat your organization's grant content, financial data, mission documents, and strategic information as confidential. We will not disclose your confidential information to third parties except as set out in our Privacy Policy or as required by law. Our employees and contractors who have access to customer data are bound by confidentiality obligations.</p>
+        <p>We treat your organization's grant content, financial data, mission documents, and strategic information as confidential. We will not disclose your confidential information to third parties except as set out in our Privacy Policy or as required by law. Everyone on the Grange team who can see customer data keeps it confidential.</p>
       </section>
 
       <section style="margin-bottom:52px;">
@@ -3469,7 +3464,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">10. Termination</h2>
         <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
         <ul style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
-          <li><strong>By you:</strong> You may close your account at any time from your account settings. Closure takes effect immediately for free accounts, and at the end of the billing period for paid accounts.</li>
+          <li><strong>By you:</strong> You may close your account at any time by emailing executivegrangeai@gmail.com. Closure takes effect immediately for free accounts, and at the end of the billing period for paid accounts.</li>
           <li><strong>By us:</strong> We may suspend or terminate your account immediately if you violate these Terms, engage in fraudulent activity, or if we are required to do so by law. We will make reasonable efforts to notify you before termination unless doing so would cause harm or is prohibited.</li>
           <li><strong>Effect of termination:</strong> Upon termination, your right to access the Service ends. Your data will be retained for 30 days following termination, during which you may request an export. After 30 days, your data will be permanently deleted except as required by applicable law.</li>
           <li><strong>Survival:</strong> Sections relating to intellectual property, limitation of liability, disclaimers, and governing law survive termination of these Terms.</li>
@@ -3508,16 +3503,16 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
       <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:32px;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--muted)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to home</button>
       <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent-ink);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:20px;">Trust &amp; Safety</div>
       <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;">Security at Grange AI</h1>
-      <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:640px;margin-bottom:0;">Your organization's grant data is sensitive. We build our security program around that reality, not as an afterthought.</p>
+      <p style="font-size:17px;color:var(--ink-soft);line-height:1.65;max-width:640px;margin-bottom:0;">Your grant data is sensitive. This page says exactly how Grange protects it today, and what we haven't built yet.</p>
     </div>
   </div>
 
   <!-- stats bar -->
   <div style="border-bottom:1px solid var(--line);padding:32px 0;">
     <div class="wrap sec-stats">
-      <div class="sec-stat"><div class="sec-stat-fig">TLS 1.3</div><div class="sec-stat-cap">Encryption in transit</div></div>
+      <div class="sec-stat"><div class="sec-stat-fig">HTTPS</div><div class="sec-stat-cap">On every connection</div></div>
       <div class="sec-stat"><div class="sec-stat-fig">AES-256</div><div class="sec-stat-cap">Encryption at rest</div></div>
-      <div class="sec-stat"><div class="sec-stat-fig">99.9%</div><div class="sec-stat-cap">Uptime target</div></div>
+      <div class="sec-stat"><div class="sec-stat-fig">38 of 38</div><div class="sec-stat-cap">Tables with row-level security</div></div>
       <div class="sec-stat"><div class="sec-stat-fig">72h</div><div class="sec-stat-cap">Breach notification</div></div>
     </div>
   </div>
@@ -3532,25 +3527,25 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         </div>
         <div>
           <h2 style="font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:2px;">Infrastructure &amp; Hosting</h2>
-          <p style="font-size:14px;color:var(--muted);">How we build and operate the platform</p>
+          <p style="font-size:14px;color:var(--muted);">Where Grange runs</p>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
         <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
-          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Cloud infrastructure</h3>
-          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Grange AI runs on cloud providers with SOC 2 Type II certification. Our infrastructure is isolated per environment (production, staging, development) with no shared secrets between environments.</p>
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Hosting</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Cloudflare Pages serves the website over HTTPS. Your account, data and uploaded files live in Supabase, a managed Postgres database that is audited for SOC 2 Type 2.</p>
         </div>
         <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
           <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Data isolation</h3>
-          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Each organization's grant data, profiles, and generated content are stored with logical isolation. We do not co-mingle data across organizations. Your data cannot be accessed by or exposed to other customers.</p>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Every table that holds your data has Postgres row-level security turned on: all 38 of them. The database checks each request against the signed-in account, so one organization can't read or change another's data.</p>
         </div>
         <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
-          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Network security</h3>
-          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">All traffic is routed through a web application firewall (WAF) that blocks common attack patterns. Internal services communicate over private network interfaces and are not exposed to the public internet.</p>
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Keys stay on the server</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Your browser only ever holds Supabase's public key. The keys for the AI providers and for payments live in server-side functions and never reach the browser. Cloudflare's network sits in front of the site and absorbs denial-of-service attacks.</p>
         </div>
         <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
-          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Uptime &amp; resilience</h3>
-          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">We target 99.9% monthly uptime. Critical services run across multiple availability zones. Automated failover and health checks minimize downtime during incidents.</p>
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Uptime</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Grange runs on Supabase's free plan, which has no uptime guarantee and pauses a project after 7 days without traffic. A scheduled job reads the database twice a week so it stays awake. Supabase's paid plans never pause.</p>
         </div>
       </div>
     </div>
@@ -3563,29 +3558,33 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         </div>
         <div>
           <h2 style="font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:2px;">Data Protection &amp; Encryption</h2>
-          <p style="font-size:14px;color:var(--muted);">How we protect your data at every layer</p>
+          <p style="font-size:14px;color:var(--muted);">What is encrypted, what is shared, and what is not backed up yet</p>
         </div>
       </div>
       <div style="font-size:15.5px;line-height:1.8;color:var(--ink-soft);display:flex;flex-direction:column;gap:20px;">
         <div style="display:flex;gap:16px;">
           <div style="width:28px;height:28px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg></div>
-          <div><strong style="color:var(--ink);">Encryption in transit:</strong> All communication between your browser and Grange AI is encrypted using TLS 1.3, the most current standard. We enforce HTTPS across all endpoints and reject insecure connections.</div>
+          <div><strong style="color:var(--ink);">Encryption in transit:</strong> Every connection to Grange, and from Grange to its database, is encrypted with TLS (HTTPS).</div>
         </div>
         <div style="display:flex;gap:16px;">
           <div style="width:28px;height:28px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg></div>
-          <div><strong style="color:var(--ink);">Encryption at rest:</strong> All database records and uploaded files are encrypted at rest using AES-256. Encryption keys are managed separately from the data they protect and are rotated on a regular schedule.</div>
+          <div><strong style="color:var(--ink);">Encryption at rest:</strong> Supabase encrypts everything it stores, including the database and uploaded files, with AES-256.</div>
         </div>
         <div style="display:flex;gap:16px;">
           <div style="width:28px;height:28px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg></div>
-          <div><strong style="color:var(--ink);">Password security:</strong> Passwords are hashed using bcrypt with a per-user salt. We never store passwords in plain text. Grange AI employees cannot retrieve your password. Only a reset is possible.</div>
+          <div><strong style="color:var(--ink);">Passwords:</strong> Supabase Auth stores only a bcrypt hash of your password, never the password itself. Nobody at Grange can see it; it can only be reset. You can also sign in with a one-time email link.</div>
         </div>
         <div style="display:flex;gap:16px;">
           <div style="width:28px;height:28px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg></div>
-          <div><strong style="color:var(--ink);">Backups:</strong> Your data is backed up daily with point-in-time recovery capability. Backups are encrypted and stored in a geographically separate region. Backup restoration is tested quarterly.</div>
+          <div><strong style="color:var(--ink);">Backups:</strong> Not automatic yet. Supabase's free plan doesn't include backups; its Pro plan adds daily backups kept for 7 days. Until Grange moves to it, keep your own copy of anything you can't lose: every draft exports to Word, PDF or plain text.</div>
         </div>
         <div style="display:flex;gap:16px;">
           <div style="width:28px;height:28px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg></div>
-          <div><strong style="color:var(--ink);">Payment data:</strong> We do not store credit card numbers or CVV codes. Payments are processed by Stripe, which is PCI DSS Level 1 certified. We store only a payment token and basic billing metadata.</div>
+          <div><strong style="color:var(--ink);">Payment data:</strong> Paid plans aren't open yet. When they open, Stripe Checkout collects card details on Stripe's own page, so card numbers never reach Grange. Stripe is a PCI DSS Level 1 service provider.</div>
+        </div>
+        <div style="display:flex;gap:16px;">
+          <div style="width:28px;height:28px;background:var(--accent-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg></div>
+          <div><strong style="color:var(--ink);">AI providers:</strong> To write and score drafts, Grange sends your organization profile and the grant's details to Google's Gemini API, with Groq as a backup. Google's terms for its free API tier let it use that content to improve its products, and its reviewers may read it with your account details removed. Leave out anything you wouldn't want shared that way.</div>
         </div>
       </div>
     </div>
@@ -3603,20 +3602,12 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
         <div style="border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
-          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Role-based access</h3>
-          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Internal access to customer data is restricted by role. Only a minimal number of engineers with a legitimate operational need can access production data, and only through a controlled access request process.</p>
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Who can see production data</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Only the Grange team can open the Supabase and Cloudflare dashboards where production data lives, and we open them only to run and fix the service.</p>
         </div>
         <div style="border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
-          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Multi-factor authentication</h3>
-          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">All internal access to production systems requires multi-factor authentication. We enforce phishing-resistant MFA (hardware keys or authenticator apps) for all team members with production access.</p>
-        </div>
-        <div style="border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
-          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Audit logging</h3>
-          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Every internal access to customer data is logged with a timestamp, user identity, and reason. Logs are stored separately from application data and reviewed for anomalies on a regular basis.</p>
-        </div>
-        <div style="border:1px solid var(--line);border-radius:var(--r-sm);padding:24px;">
-          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Principle of least privilege</h3>
-          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Team members are granted only the minimum access required for their role. Access is reviewed and revoked when no longer needed. Contractor access is time-limited and scoped to specific tasks.</p>
+          <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px;">Your sessions</h3>
+          <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.7;">Sign-in uses short-lived tokens that refresh on their own. Signing out clears your account's work from the page, so the next person on a shared computer doesn't see it.</p>
         </div>
       </div>
     </div>
@@ -3629,15 +3620,13 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         </div>
         <div>
           <h2 style="font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:2px;">Application Security</h2>
-          <p style="font-size:14px;color:var(--muted);">How we build and test for security</p>
+          <p style="font-size:14px;color:var(--muted);">How we test it</p>
         </div>
       </div>
       <div style="font-size:15.5px;line-height:1.8;color:var(--ink-soft);display:flex;flex-direction:column;gap:16px;">
-        <p><strong style="color:var(--ink);">Secure development lifecycle:</strong> Security is integrated into our development process from the start. Engineers follow secure coding guidelines, code changes are reviewed by peers before merging, and we run automated static analysis on every pull request.</p>
-        <p><strong style="color:var(--ink);">Dependency management:</strong> We use automated tooling to monitor our software dependencies for known vulnerabilities and apply updates on a regular schedule. Critical security patches are applied as soon as they are available.</p>
-        <p><strong style="color:var(--ink);">Vulnerability scanning:</strong> We run automated vulnerability scans against our infrastructure and application on a regular basis. Findings are triaged by severity and resolved according to a defined SLA.</p>
-        <p><strong style="color:var(--ink);">OWASP Top 10:</strong> Our application is designed and tested against the OWASP Top 10 most common web application security risks, including SQL injection, cross-site scripting (XSS), cross-site request forgery (CSRF), and broken authentication.</p>
-        <p><strong style="color:var(--ink);">Penetration testing:</strong> We conduct penetration tests against our application and infrastructure. Findings are tracked to resolution before the next test cycle.</p>
+        <p><strong style="color:var(--ink);">Automated tests:</strong> The test suite in our repository opens every screen in a real browser: 70 user flows, an accessibility audit, and a check at five screen widths. Every bug it found, and the test that now covers it, is listed in <code>qa/QA_LOG.md</code> on GitHub.</p>
+        <p><strong style="color:var(--ink);">Cross-site scripting:</strong> A test puts code-running markup into every field the app shows, from profiles to AI results and Grants.gov listings, and checks that none of it runs. Text from AI models and grant listings is filtered before it appears on the page.</p>
+        <p><strong style="color:var(--ink);">Open code:</strong> Grange's code is public on GitHub, so anyone can check how it handles data.</p>
       </div>
     </div>
 
@@ -3653,21 +3642,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         </div>
       </div>
       <div style="font-size:15.5px;line-height:1.8;color:var(--ink-soft);display:flex;flex-direction:column;gap:16px;">
-        <p>We maintain a documented incident response plan. When a potential security incident is detected — through monitoring alerts, user reports, or internal discovery — our response process activates immediately.</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:4px 0;">
-          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:20px;text-align:center;">
-            <div style="font-size:24px;font-weight:800;color:var(--accent);margin-bottom:6px;">1h</div>
-            <div style="font-size:13px;color:var(--muted);">Internal acknowledgment target</div>
-          </div>
-          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:20px;text-align:center;">
-            <div style="font-size:24px;font-weight:800;color:var(--accent);margin-bottom:6px;">24h</div>
-            <div style="font-size:13px;color:var(--muted);">Containment target for critical issues</div>
-          </div>
-          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:20px;text-align:center;">
-            <div style="font-size:24px;font-weight:800;color:var(--accent);margin-bottom:6px;">72h</div>
-            <div style="font-size:13px;color:var(--muted);">Customer notification if breach confirmed</div>
-          </div>
-        </div>
+        <p>If something goes wrong, we look into it as soon as we learn about it, shut off whatever could expose more data, and tell you what happened.</p>
         <p>If we confirm a breach that exposed your data, we will notify you by email within 72 hours. The notification will include the nature of the breach, what data was affected, what we have done to contain it, and what steps you can take to protect yourself.</p>
       </div>
     </div>
