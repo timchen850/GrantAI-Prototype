@@ -15,6 +15,7 @@ node monkey.mjs [screens] [account]   # clicks every visible button, reports JS 
 node labels.mjs [accounts] [width]    # labels not tied to a field, fields with no name
 node clipped.mjs [accounts] [widths]  # text cut off inside a card or box that hides overflow
 node clipped-states.mjs               # the same for a finished draft, plan, export menu, open assessment
+node headings.mjs                     # one main heading per screen
 ```
 
 The harness (`harness.mjs`, `fixtures.mjs`) runs `index.html` in Chromium with a fake
@@ -99,6 +100,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 71 | Tab title | Every screen had the same tab title, so the tab and the Back/Forward history list couldn't tell screens apart. | Each screen sets its own title ("Grant discovery · Grange AI"). Covered by `browser-back-forward`. |
 | 72 | Funder-call analysis (Readiness and Generator) | In "What you'll write", each section's description was meant to sit on its own line, but the row never wrapped, so descriptions squeezed into a narrow third column; at 320px they ran past the card ("Activitie…"). Hidden in tests because the fake AI returned an empty analysis. | The row wraps (title and word limit, then the description). The fake backend now returns a realistic analysis (verdict, eligibility, sections, attachments, formatting, AI policy, rubric), and `clipped-states.mjs` checks it. |
 | 73 | Reviewer scorecard (phones) | The "To improve:" label sat in its own narrow column beside each tip, wrapping to "To / improve:" on small phones. Never seen in tests because the fake AI returned no scores, so the scorecard stayed hidden. | Label runs inline with the tip. The fake backend now returns a realistic scoring (4 criteria, weights, fixes), so the scorecard shows in every draft test and in `clipped-states.mjs`. |
+| 74 | Landing, sign-up, sign-in (screen readers) | No main heading: the landing headline was a `div` with an `aria-label` (ignored on a plain `div`), sign-up's title was an `h3`, and sign-in had no headings at all. | Landing headline and sign-in titles are level-1 headings; sign-up's title is an `h1` (same look). `headings.mjs` confirms one main heading on every screen. |
 
 ## Needs Tim's decision
 

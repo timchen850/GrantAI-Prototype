@@ -830,7 +830,7 @@ label.field-label {
 .ll-list .it { display: flex; gap: 11px; align-items: flex-start; color: #fff; font-size: 14.5px; }
 .ll-list .it svg { flex-shrink: 0; margin-top: 3px; }
 .login-right { background: var(--surface); padding: 56px 52px; display: flex; flex-direction: column; justify-content: center; position: relative; }
-.login-right h3 { font-size: 26px; letter-spacing: -0.03em; margin-bottom: 7px; }
+.login-right h3, .login-right h1 { font-size: 26px; letter-spacing: -0.03em; margin-bottom: 7px; }
 .login-right .lr-sub { font-size: 14.5px; color: var(--muted); margin-bottom: 32px; }
 .fieldset { margin-bottom: 16px; }
 .lr-divider { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 13px; margin: 22px 0; }
@@ -2532,7 +2532,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
     </div>
     <div class="scroll-hero-inner">
       <div class="scroll-hero-title">
-        <div class="hero-headline rise d2" aria-label="The grants you qualify for, found for you.">
+        <div class="hero-headline rise d2" role="heading" aria-level="1" aria-label="The grants you qualify for, found for you.">
           <span class="hero-hl-static">The grants you qualify for,</span>
           <div class="gooey-line-wrap">
             <svg class="gooey-svg" aria-hidden="true"><defs><filter id="goo-threshold"><feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 255 -140"/></filter></defs></svg>
@@ -3813,7 +3813,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
     </div>
     <div class="login-right">
       <a class="back-link" href="#" onclick="go('landing');return false;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Back</a>
-      <h3>Create your account</h3>
+      <h1>Create your account</h1>
       <p class="lr-sub">Start your 14-day trial. No card required.</p>
       <div class="fieldset"><label class="field-label" for="reg-org">Organization name</label><input id="reg-org" type="text" autocomplete="organization" placeholder="Eastside Youth Foundation" onkeydown="if(event.key==='Enter')submitSignup()"></div>
       <div class="fieldset"><label class="field-label" for="reg-email">Work email</label><input id="reg-email" type="email" autocomplete="email" inputmode="email" placeholder="you@yourorg.org" onkeydown="if(event.key==='Enter')submitSignup()"></div>
@@ -4059,7 +4059,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 
       <!-- step 1: email -->
       <div class="si-step" id="si-email">
-        <div class="si-h1">Sign in to Grange AI</div>
+        <div class="si-h1" role="heading" aria-level="1">Sign in to Grange AI</div>
         <div class="si-sub">Enter your email to continue</div>
 
         <button class="si-btn-g" onclick="signInWithGoogle()">
@@ -4093,7 +4093,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 
       <!-- step 2: password -->
       <div class="si-step" id="si-code" style="display:none">
-        <div class="si-h1">Enter your password</div>
+        <div class="si-h1" role="heading" aria-level="1">Enter your password</div>
         <div class="si-sub">Signing in as <span id="si-pw-email">your account</span></div>
 
         <div class="si-email-row" style="margin-top:18px">
@@ -4118,7 +4118,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 
       <!-- step 3: success -->
       <div class="si-step" id="si-success" style="display:none">
-        <div class="si-h1">You're in!</div>
+        <div class="si-h1" role="heading" aria-level="1">You're in!</div>
         <div class="si-sub">Welcome back</div>
         <div class="si-succ-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 20 20" fill="black">
