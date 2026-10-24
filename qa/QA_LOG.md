@@ -13,6 +13,7 @@ node flows.mjs                # click-through flows; checks what reached the (fa
 node a11y.mjs                 # axe-core WCAG 2 A/AA audit of every screen
 node monkey.mjs [screens] [account]   # clicks every visible button, reports JS errors
 node labels.mjs [accounts] [width]    # labels not tied to a field, fields with no name
+node clipped.mjs [accounts] [widths]  # text cut off inside a card or box that hides overflow
 ```
 
 The harness (`harness.mjs`, `fixtures.mjs`) runs `index.html` in Chromium with a fake
@@ -85,6 +86,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 59 | Generator (test gap) | Export to Word, plain text, PDF and Copy had no test. | `draft-export` checks each one: file name, sections present, no highlight or script markup, clean text. All passed; no bug found. |
 | 60 | Readiness, Nonprofit setup, Security (320px phones) | On the smallest phones (320px, e.g. iPhone SE 1st gen) these pages scrolled sideways by up to 30px: the app column grew to fit its widest content, and the Security page's disclosure card had a 260px minimum plus 40px padding. Status buttons wrapped to two lines. | The app column can shrink (`min-width: 0`), the card's padding and minimum adapt, and status buttons stay on one line under 360px. Sweep clean at 320px on every screen and account. |
 | 61 | Guided tour (phones) | On step 2 at 320px the source grid ran off the right edge of its card (SAM.gov, Weingart, RFP feeds cut off), and on all phones the three match pills squeezed their names beside the score, breaking words ("Com / muni / ties") on the smallest screens. | Grid columns can shrink and spacing tightens under 380px; on phones each pill stacks the score above the name, at equal widths. Checked every tour step at 320, 360, 390 and 1440 for clipped content. |
+| 62 | Privacy (320px) | The cookie table's "Duration" column was cut off on the smallest phones (its box hid the overflow). Found by the new `clipped.mjs` check, which looks for text silently cut off inside cards and boxes on every screen. | Tighter cell padding under 420px (the table now fits at 320px), and the box scrolls instead of hiding anything if it ever doesn't. `clipped.mjs` reports 0 at 320, 390 and 1440. |
 
 ## Needs Tim's decision
 

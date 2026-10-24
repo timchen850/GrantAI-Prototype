@@ -301,7 +301,8 @@ label.field-label {
 .sec-stats { max-width: 1100px; display: grid; grid-template-columns: repeat(4, 1fr); }
 .sec-stat { padding: 0 32px; text-align: center; border-left: 1px solid var(--line); }
 .sec-stat:first-child { border-left: none; }
-.legal-doc h2 { scroll-margin-top: 90px; }   /* clear the sticky header when jumping to a section */
+.legal-doc h2 { scroll-margin-top: 90px; }
+@media (max-width: 420px) { .legal-doc table th, .legal-doc table td { padding: 10px 10px !important; } }   /* cookie table fits small phones */   /* clear the sticky header when jumping to a section */
 /* legal pages: links must not rely on color alone */
 .legal-doc p a, .legal-doc li a { text-decoration: underline !important; text-underline-offset: 2px; }
 .legal-doc [style*="accent-tint"] a { color: var(--accent-ink) !important; }
@@ -3249,7 +3250,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;">5. Cookies &amp; Tracking</h2>
         <div style="width:40px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:20px;"></div>
         <p style="margin-bottom:20px;">We use a minimal set of cookies. We do not use third-party advertising or behavioral tracking cookies.</p>
-        <div style="border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;">
+        <div style="border:1px solid var(--line);border-radius:var(--r-sm);overflow-x:auto;">
           <table style="width:100%;border-collapse:collapse;font-size:14px;">
             <thead><tr style="background:var(--surface-2);"><th style="text-align:left;padding:12px 16px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);">Cookie</th><th style="text-align:left;padding:12px 16px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);">Purpose</th><th style="text-align:left;padding:12px 16px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);">Duration</th></tr></thead>
             <tbody>
