@@ -11036,7 +11036,9 @@ function updateDashGreeting() {
       if (local) {
         // Capitalise first segment, strip numbers/punctuation
         const clean = local.replace(/[^a-zA-Z]/g,' ').trim().split(/\s+/)[0];
-        if (clean.length > 1) {
+        // shared role inboxes are common at nonprofits: "Good morning, Info" reads oddly, so skip the name
+        const ROLE = /^(info|admin|administrator|contact|office|hello|hi|team|grants?|director|executive|ed|support|mail|email|development|programs?|staff|board|finance|accounts?|operations|ops|general|inquiries|enquiries|newsletter|noreply|no|new|test|user)$/i;
+        if (clean.length > 1 && !ROLE.test(clean)) {
           firstName = clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
         }
       }
