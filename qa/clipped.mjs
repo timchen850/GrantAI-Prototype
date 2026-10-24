@@ -21,6 +21,7 @@ for (const persona of personas) for (const width of widths) {
         const el = n.parentElement; if (!el || !(el.offsetParent || el.getClientRects().length)) continue;
         const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || +cs.opacity === 0) continue;
         if (cs.textOverflow === 'ellipsis') continue;                   // truncation on purpose
+        if (el.closest('.fcar-rail')) continue;                          // landing's rotating feature wheel fades off its edges by design
         const r = document.createRange(); r.selectNodeContents(n); const tr = r.getBoundingClientRect();
         if (!tr.width) continue;
         for (let a = el; a && a !== root.parentElement; a = a.parentElement) {
@@ -28,7 +29,10 @@ for (const persona of personas) for (const width of widths) {
           if (ac.overflowX !== 'visible' || ac.overflowY !== 'visible') {
             const ar = a.getBoundingClientRect();
             if (a.scrollWidth > a.clientWidth + 1 && (ac.overflowX === 'auto' || ac.overflowX === 'scroll')) break;   // scrolls on purpose
-            if (tr.right > ar.right + 2 || tr.left < ar.left - 2) out.push(`"${n.textContent.trim().slice(0, 40)}" cut by ${a.tagName.toLowerCase()}${a.id ? '#' + a.id : ''}.${[...a.classList].slice(0, 2).join('.')} (${Math.round(tr.right - ar.right)}px)`);
+            const who = `${a.tagName.toLowerCase()}${a.id ? '#' + a.id : ''}.${[...a.classList].slice(0, 2).join('.')}`;
+            if (tr.right > ar.right + 2 || tr.left < ar.left - 2) out.push(`"${n.textContent.trim().slice(0, 40)}" cut by ${who} (${Math.round(tr.right - ar.right)}px)`);
+            // a line partly visible at the bottom edge (fully hidden = a collapsed panel, on purpose)
+            else if (ar.height > 4 && tr.top < ar.bottom - 2 && tr.bottom > ar.bottom + 2 && !(ac.overflowY === 'auto' || ac.overflowY === 'scroll')) out.push(`"${n.textContent.trim().slice(0, 40)}" cut off at the bottom of ${who} (${Math.round(tr.bottom - ar.bottom)}px)`);
             break;
           }
         }
