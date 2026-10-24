@@ -5480,6 +5480,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   .gca-msg a{ color:var(--accent); cursor:pointer; }
   .gca-result{ display:flex; gap:18px; align-items:flex-start; }
   .gca-score{ flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:7px; }
+  @media (max-width:480px){ .gca-result{ flex-direction:column; gap:12px; } .gca-score{ flex-direction:row; } .gca-comp{ grid-template-columns:minmax(76px,104px) minmax(0,1fr); } }   /* phones: score on top, rows get the full width */
   .gca-verdict{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:2px 9px; border-radius:999px; }
   .gca-main{ flex:1; min-width:0; }
   .gca-rationale{ font-size:13.5px; color:var(--ink); line-height:1.55; margin-bottom:12px; }
