@@ -5,6 +5,7 @@ const screens = (process.argv[2] || 'dashboard,discovery,readiness,nonprofit-set
 const persona = process.argv[3] || 'np';
 const srv = await startServer(); const browser = await launch();
 const t = await openApp(browser, { persona });
+t.page.on('dialog', (d) => d.accept().catch(() => {}));   // e.g. "leave without saving?": keep moving between screens
 const p = t.page;
 await t.ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://127.0.0.1:3456' });
 p.on('dialog', (d) => d.dismiss().catch(() => {}));

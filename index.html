@@ -6073,6 +6073,13 @@ document.addEventListener('keydown', (e) => {
   }
 });
 function go(id, opts) {
+  if (window._pfDirty && window._currentScreen === 'profile' && id !== 'profile') {
+    if (!confirm('You have unsaved changes to your profile. Leave without saving them?')) {
+      if (opts && opts.fromHistory) { try { history.pushState({ grangeScreen: 'profile' }, ''); } catch (_) {} }   // undo the Back
+      return;
+    }
+    window._pfDirty = false;
+  }
   const prevScreen = window._currentScreen;
   // Each screen change is a browser-history entry, so Back/Forward move between
   // screens instead of leaving the app (see the popstate handler below).
@@ -6513,9 +6520,20 @@ async function saveProfile() {
     }
     if (typeof applyOrgIdentity === 'function') applyOrgIdentity(window._grange);
     populateProfile();
+    window._pfDirty = false;
     toast('Profile saved.');
   } catch (e) { console.error('saveProfile failed', e); toast('Could not save — please try again.'); }
 }
+/* The profile only saves on "Save changes": ask before leaving edits behind. */
+window._pfDirty = false;
+(function () {
+  const pf = document.getElementById('profile');
+  if (!pf) return;
+  pf.addEventListener('input', (e) => { if (e.target.matches('input:not([type=file]), textarea')) window._pfDirty = true; });
+  pf.addEventListener('change', (e) => { if (e.target.matches('select')) window._pfDirty = true; });
+  pf.addEventListener('click', (e) => { if (e.target.closest('.tg button')) window._pfDirty = true; });   // removing a program tag
+  window.addEventListener('beforeunload', (e) => { if (window._pfDirty) { e.preventDefault(); e.returnValue = ''; } });
+})();
 function submitContact() {
   const fname = document.getElementById('contact-fname').value.trim();
   const lname = document.getElementById('contact-lname').value.trim();
@@ -9916,6 +9934,7 @@ function tutorialDone(ctx) {
 
 async function signOut() {
   window._signingOut = true;
+  window._pfDirty = false;   // signing out discards unsaved edits; don't also raise the browser's leave-page prompt
   try { if (window.sb) await sb.auth.signOut(); } catch (_) {}
   window._grange = null;
   window._manualAuthFlow = false;

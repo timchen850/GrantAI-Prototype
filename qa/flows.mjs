@@ -839,6 +839,25 @@ flow('remove-remembered-document', async (browser, check) => {
   return t;
 });
 
+flow('unsaved-profile-edits', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('profile')); await p.waitForTimeout(1200);
+  await p.fill('#pf-mission', 'A new mission I have not saved yet.');
+  let asked = false;
+  p.once('dialog', (d) => { asked = /unsaved changes/.test(d.message()); d.dismiss(); });
+  await p.click('#profile .side a:has-text("Grant discovery"), #profile .side [onclick*="discovery"]'); await p.waitForTimeout(700);
+  check('leaving with unsaved edits asks first', asked);
+  check('choosing to stay keeps the screen and the edit', (await screen(p)) === 'profile' && (await p.inputValue('#pf-mission')) === 'A new mission I have not saved yet.');
+  await p.click('#profile button:has-text("Save changes") >> nth=0'); await p.waitForTimeout(1200);
+  let askedAgain = false; p.once('dialog', (d) => { askedAgain = true; d.accept(); });
+  await p.click('#profile .side a:has-text("Grant discovery"), #profile .side [onclick*="discovery"]'); await p.waitForTimeout(800);
+  check('after saving, leaving does not ask', !askedAgain && (await screen(p)) === 'discovery');
+  await p.evaluate(() => go('profile')); await p.waitForTimeout(1000);
+  check('nothing typed: no question either', await p.evaluate(() => { let q = false; const c = window.confirm; window.confirm = () => { q = true; return true; }; go('deadlines'); window.confirm = c; return !q; }));
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;
