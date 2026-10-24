@@ -869,6 +869,21 @@ flow('long-call-text-note', async (browser, check) => {
   return t;
 });
 
+flow('nonprofit-setup-steps-saved', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'biz' });
+  const p = t.page;
+  await p.evaluate(() => go('nonprofit-setup')); await p.waitForTimeout(1500);
+  const first = await p.$('#nonprofit-setup .rdy-item');
+  const key = first ? (await first.getAttribute('id')).replace('inc-', '') : null;
+  await p.click('#nonprofit-setup .rdy-item button:has-text("Done") >> nth=0'); await p.waitForTimeout(900);
+  check('marking a step done saves it', t.db.readiness_items.some((r) => r.req_key === key && r.status === 'have'));
+  check('the ring moves off 0%', !/^0%/.test((await p.textContent('#np-setup-content .ring')).trim()));
+  await p.reload(); await p.waitForTimeout(2000);
+  await p.evaluate(() => go('nonprofit-setup')); await p.waitForTimeout(1500);
+  check('it is still done after a reload', (await p.getAttribute('#nonprofit-setup .rdy-item >> nth=0 >> button:has-text("Done")', 'aria-pressed')) === 'true');
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;
