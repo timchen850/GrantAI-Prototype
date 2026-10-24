@@ -657,6 +657,28 @@ flow('demo-keyboard', async (browser, check) => {
   return t;
 });
 
+flow('profile-photo-logo', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('profile')); await p.waitForTimeout(900);
+  // a transparent, wide wordmark-style PNG (what many nonprofits have as a logo)
+  const png = await p.evaluate(() => { const c = document.createElement('canvas'); c.width = 600; c.height = 200; const x = c.getContext('2d'); x.fillStyle = '#c34426'; x.fillRect(20, 60, 560, 80); return c.toDataURL('image/png').split(',')[1]; });
+  await p.setInputFiles('#pf-photo-input', { name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
+  await p.waitForTimeout(1200);
+  const r = await p.evaluate(async () => {
+    const url = localStorage.getItem(orgPhotoKey()); if (!url) return null;
+    const img = new Image(); img.src = url; await img.decode();
+    const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+    const px = (a, b) => [...x.getImageData(a, b, 1, 1).data].slice(0, 3);
+    return { corner: px(4, 4), leftEdge: px(30, 128), rightEdge: px(226, 128), aboveBand: px(128, 100) };
+  });
+  check('photo saved', !!r);
+  check('transparent areas come out white, not black', r && r.corner.every((v) => v > 240));
+  const red = (c) => c[0] > 150 && c[1] < 120;
+  check('a wide logo is shown whole, not cropped (both ends visible, space above it)', r && red(r.leftEdge) && red(r.rightEdge) && r.aboveBand.every((v) => v > 240));
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;

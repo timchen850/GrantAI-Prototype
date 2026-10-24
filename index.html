@@ -6166,8 +6166,15 @@ function pfPhotoPick(e) {
       const S = 256, c = document.createElement('canvas');
       c.width = c.height = S;
       const ctx2 = c.getContext('2d');
-      const side = Math.min(img.width, img.height);
-      ctx2.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S);
+      ctx2.fillStyle = '#fff'; ctx2.fillRect(0, 0, S, S);   // JPEG has no transparency: a transparent logo would turn black
+      const ratio = img.width / img.height;
+      if (ratio > 1.5 || ratio < 0.67) {                       // wide wordmark or tall logo: show it whole instead of cropping
+        const k = (S * 0.86) / Math.max(img.width, img.height), w = img.width * k, h = img.height * k;
+        ctx2.drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+      } else {
+        const side = Math.min(img.width, img.height);
+        ctx2.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S);
+      }
       const url = c.toDataURL('image/jpeg', 0.85);
       try { localStorage.setItem(orgPhotoKey(), url); } catch (_) { toast('Could not save the photo on this device.'); return; }
       setOrgAvatars();
