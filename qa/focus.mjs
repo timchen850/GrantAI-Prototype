@@ -1,7 +1,7 @@
 // Tab through a screen and report focusable elements with no visible focus indicator.
 import { startServer, launch, openApp } from './harness.mjs';
 const srv = await startServer(); const browser = await launch();
-for (const [persona, scr] of [['visitor', 'landing'], ['visitor', 'login'], ['np', 'discovery'], ['np', 'profile']]) {
+for (const [persona, scr] of (process.argv[2] ? process.argv[2].split(',').map((x) => x.split(':')) : [['visitor', 'landing'], ['visitor', 'login'], ['np', 'discovery'], ['np', 'profile']])) {
   const t = await openApp(browser, { persona });
   const p = t.page;
   await p.evaluate((s) => { go(s); window.scrollTo(0, 0); document.activeElement?.blur(); }, scr); await p.waitForTimeout(1200);

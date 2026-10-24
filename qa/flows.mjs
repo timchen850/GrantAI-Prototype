@@ -591,6 +591,30 @@ flow('keyboard-reachable-rows', async (browser, check) => {
   return t;
 });
 
+flow('dialog-focus', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'legacy' });
+  const p = t.page;
+  await p.evaluate(() => go('discovery')); await p.waitForTimeout(2500);
+  const btn = '#disc-grants-list .gcard button:has-text("Draft proposal") >> nth=0';
+  await p.focus(btn); await p.keyboard.press('Enter'); await p.waitForTimeout(700);
+  const inside = () => p.evaluate(() => { const m = document.getElementById('orginfo-modal'); return !!(m && m.classList.contains('open') && m.contains(document.activeElement)); });
+  check('the org-info dialog takes keyboard focus', await inside());
+  let stayed = true;
+  for (let i = 0; i < 14; i++) { await p.keyboard.press('Tab'); if (!(await inside())) { stayed = false; break; } }
+  for (let i = 0; i < 4 && stayed; i++) { await p.keyboard.press('Shift+Tab'); if (!(await inside())) stayed = false; }
+  check('Tab and Shift+Tab stay inside the dialog', stayed);
+  await p.keyboard.press('Escape'); await p.waitForTimeout(400);
+  check('closing returns focus to the button that opened it', await p.evaluate(() => /Draft proposal/.test(document.activeElement?.textContent || '')));
+  const m = await openApp(browser, { persona: 'np', width: 390, height: 844 });
+  await m.page.waitForTimeout(800);
+  await m.page.focus('.m-burger >> visible=true'); await m.page.keyboard.press('Enter'); await m.page.waitForTimeout(500);
+  let inMenu = true;
+  for (let i = 0; i < 25; i++) { await m.page.keyboard.press('Tab'); if (!(await m.page.evaluate(() => document.getElementById('m-nav').contains(document.activeElement)))) { inMenu = false; break; } }
+  check('Tab stays inside the open phone menu', inMenu);
+  t.errors.push(...m.errors); await m.ctx.close();
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;

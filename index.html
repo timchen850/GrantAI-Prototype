@@ -6004,6 +6004,10 @@ function mNavClose() {
 }
 function mNavGo(id) { mNavClose(); go(id); }
 document.addEventListener('keydown', (e) => {
+  const nav = document.getElementById('m-nav');
+  if (e.key === 'Tab' && nav && nav.classList.contains('open')) _trapTab(e, nav.querySelector('.m-nav-panel') || nav);
+});
+document.addEventListener('keydown', (e) => {
   if (e.defaultPrevented || (e.key !== 'Enter' && e.key !== ' ')) return;
   const el = e.target;
   if (!el || !el.matches || el.onkeydown) return;
@@ -9991,8 +9995,21 @@ function _orgInfoTypeSelectHTML(a, selId, onSave) {
 }
 
 let _orgInfoResolve = null;
+/* Keep Tab / Shift+Tab inside an open dialog or menu. */
+function _trapTab(e, box) {
+  if (e.key !== 'Tab' || !box) return;
+  const f = [...box.querySelectorAll('button, [href], select, input, textarea, [tabindex="0"]')].filter((x) => !x.disabled && x.offsetParent);
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && (document.activeElement === first || !box.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && (document.activeElement === last || !box.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
+}
+let _orgInfoReturnFocus = null;
 function _orgInfoClose(proceed) {
+  const wasOpen = document.getElementById('orginfo-modal')?.classList.contains('open');
   document.getElementById('orginfo-modal')?.classList.remove('open');
+  const rf = _orgInfoReturnFocus; _orgInfoReturnFocus = null;
+  if (wasOpen && rf && rf.isConnected) setTimeout(() => { try { rf.focus({ preventScroll: true }); } catch (_) {} }, 0);
   const r = _orgInfoResolve; _orgInfoResolve = null;
   if (r) r(!!proceed);
 }
@@ -10004,6 +10021,7 @@ function _orgInfoModalEl() {
   el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'oi-title');
   el.innerHTML = '<div class="modal oi-modal"></div>';
   el.addEventListener('click', (e) => { if (e.target === el) _orgInfoClose(false); });
+  el.addEventListener('keydown', (e) => _trapTab(e, el));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && el.classList.contains('open')) _orgInfoClose(false); });
   document.body.appendChild(el);
   return el;
@@ -10059,6 +10077,8 @@ function orgInfoReminder(moment) {
   _orgInfoRenderModal(moment);
   window.acpNudgeDismiss?.();   // don't leave the assistant tip floating beside the dialog
   el.classList.add('open');
+  _orgInfoReturnFocus = document.activeElement;
+  setTimeout(() => (el.querySelector('#oi-type-sel') || el.querySelector('.oi-actions .btn-accent') || el.querySelector('button'))?.focus({ preventScroll: true }), 60);
   return new Promise((resolve) => { _orgInfoResolve = resolve; });
 }
 
