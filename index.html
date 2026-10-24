@@ -4168,6 +4168,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   .ob-help-text { margin: 8px 0 0; padding: 11px 13px; background: var(--accent-tint, #fbe9e2); border-radius: 10px;
     font-size: 13px; line-height: 1.55; color: var(--accent-ink, #8a2c16); }
   .ob-help-text[hidden] { display: none; }
+  h1[tabindex="-1"]:focus, [role="heading"][tabindex="-1"]:focus { outline: none; }   /* focused on screen change for screen readers; no ring needed */
   #disc-filters .chip[hidden] { display: none; }
   /* 990 autofill (reduce data-entry pain) */
   .ob-990 { border: 1px dashed var(--line, rgba(26,25,22,0.12)); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; background: var(--surface-2, #faf9f7); }
@@ -6090,6 +6091,19 @@ function go(id, opts) {
   SCREENS.forEach(s => document.getElementById(s)?.classList.remove('active'));
   const t = document.getElementById(id);
   if (t) { t.classList.add('active'); requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0,0))); }
+  // Keyboard and screen-reader users: focus was left on the control that changed screens, now hidden.
+  // Move it to the new screen's main heading so the screen is announced and Tab starts there.
+  if (t && id !== 'demo' && id !== 'tutorial') {
+    const pf = document.activeElement;
+    requestAnimationFrame(() => {
+      if (window._currentScreen !== id) return;
+      const now = document.activeElement;
+      if (now && now !== document.body && now !== pf) return;                      // something else took focus (a dialog)
+      if (pf && pf !== document.body && pf.isConnected && (pf.offsetParent || pf.getClientRects().length)) return;   // still visible: leave it
+      const h = [...t.querySelectorAll('h1, [role="heading"][aria-level="1"]')].find((e) => e.offsetParent || e.getClientRects().length);
+      if (h) { if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+    });
+  }
   if (id === 'tutorial')  requestAnimationFrame(() => window._tutEnsure?.());
   if (id === 'landing')   requestAnimationFrame(() => { window._tlActivateHome?.(); window._scrollHeroReset?.(); });
   if (id === 'signin')    requestAnimationFrame(() => window._siInit?.());

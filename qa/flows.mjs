@@ -767,6 +767,23 @@ flow('plan-change-before-billing', async (browser, check) => {
   return t;
 });
 
+flow('screen-change-moves-focus', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.waitForTimeout(800);
+  await p.focus('#dashboard .side a:has-text("Grant discovery"), #dashboard .side [onclick*="discovery"]'); await p.keyboard.press('Enter'); await p.waitForTimeout(700);
+  check('after a sidebar link, focus is on the new screen\'s heading', await p.evaluate(() => document.activeElement.tagName === 'H1' && document.getElementById('discovery').contains(document.activeElement)));
+  await p.keyboard.press('Tab');
+  check('the next Tab stays on the new screen', await p.evaluate(() => !!document.activeElement.closest('#discovery')));
+  const m = await openApp(browser, { persona: 'np', width: 390, height: 844 });
+  await m.page.waitForTimeout(800);
+  await m.page.focus('.m-burger >> visible=true'); await m.page.keyboard.press('Enter'); await m.page.waitForTimeout(500);
+  await m.page.keyboard.press('Tab'); await m.page.keyboard.press('Enter'); await m.page.waitForTimeout(900);
+  check('after a phone-menu link, focus is on the new screen\'s heading', await m.page.evaluate(() => document.activeElement.tagName === 'H1' && document.getElementById(window._currentScreen).contains(document.activeElement)));
+  t.errors.push(...m.errors); await m.ctx.close();
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;
