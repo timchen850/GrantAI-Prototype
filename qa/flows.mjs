@@ -280,7 +280,7 @@ flow('magic-link', async (browser, check) => {
   const p = t.page; const toasts = await toastSpy(p);
   await p.evaluate(() => go('signin')); await p.waitForTimeout(800);
   await p.fill('#si-email-input', 'director@eastsideyouth.example.org'); await p.keyboard.press('Enter'); await p.waitForTimeout(1200);
-  await p.click('text=Email me a sign-in link instead'); await p.waitForTimeout(800);
+  await p.click('.si-resend'); await p.waitForTimeout(800);
   check('magic link requested for the typed email', t.otpSent.includes('director@eastsideyouth.example.org'));
   check('user told to check email', toasts.some((m) => /check your email/i.test(m)));
   return t;
@@ -301,6 +301,23 @@ flow('manage-award-and-spend', async (browser, check) => {
   const before = t.db.compliance_requirements[0].status;
   await p.click('#manage [onclick*="toggleCompliance"]'); await p.waitForTimeout(900);
   check('compliance item toggles', t.db.compliance_requirements[0].status !== before);
+  return t;
+});
+
+flow('award-double-click-and-50k', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('manage')); await p.waitForTimeout(1500);
+  const awardsBefore = t.db.awards.length;
+  await p.selectOption('#pa-award-grant', { index: 1 });
+  await p.fill('#pa-award-amt', '50k'); await p.dblclick('#manage button:has-text("Mark as awarded")'); await p.waitForTimeout(1800);
+  check('a double-click records the award once', t.db.awards.length === awardsBefore + 1);
+  check('"50k" is recorded as $50,000', t.db.awards.some((a) => Number(a.amount_awarded) === 50000));
+  const expBefore = t.db.expenditures.length;
+  await p.fill('#paexp-desc-aw1', 'Laptops'); await p.fill('#paexp-amt-aw1', '$1.2k');
+  await p.dblclick('#manage .pa-addform:has(#paexp-desc-aw1) button'); await p.waitForTimeout(1500);
+  check('a double-click logs the spending once', t.db.expenditures.length === expBefore + 1);
+  check('"$1.2k" is logged as $1,200', t.db.expenditures.some((e) => e.description === 'Laptops' && Number(e.amount) === 1200));
   return t;
 });
 
@@ -820,6 +837,52 @@ flow('due-dates-in-us-time-zones', async (browser, check) => {
   check('a grant due Dec 1 is due tomorrow on the evening of Nov 30', r.tomorrow === 1 && r.label === 'Due tomorrow');
   check('a deadline today says "Due today"', r.todayDue === 'Due today');
   check('a Grants.gov close date of 12/01/2026 shows as Dec 1, not Nov 30', r.gov === 'Dec 1, 2026');
+  return t;
+});
+
+// 6 p.m. Pacific: UTC is already tomorrow, but a grant due today is still open
+flow('discover-keeps-grants-due-today', async (browser, check) => {
+  const hit = (id, title, closeDate) => ({ id, number: 'ED-' + id, title, agency: 'Department of Education', agencyCode: 'ED', closeDate, oppStatus: 'posted', cfdaList: ['84.287'], grangeFocus: ['Education', 'Youth'], eligTags: ['501(c)(3) eligible'] });
+  const t = await openApp(browser, { persona: 'np', timezoneId: 'America/Los_Angeles', fnOverride: { 'discover-grants': { status: 200, body: { output: { hits: [hit(900001, 'Due Today Youth Education Grant', '11/30/2026'), hit(900002, 'Closed Yesterday Youth Education Grant', '11/29/2026')] } } } } });
+  const p = t.page;
+  await p.clock.setFixedTime(new Date('2026-12-01T02:00:00Z'));   // Nov 30, 6:00 p.m. PST
+  await p.evaluate(() => go('discovery')); await p.waitForTimeout(2500);
+  const txt = await p.evaluate(() => document.getElementById('discovery').innerText);
+  check('a grant due today (on the user\'s calendar) is still listed', /Due Today Youth Education Grant/.test(txt));
+  check('a grant that closed yesterday is not listed', !/Closed Yesterday Youth Education Grant/.test(txt));
+  return t;
+});
+
+// UTC+8 (Taiwan) at 7 a.m.: UTC is still the day before
+flow('sam-dates-in-asia-mornings', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np', timezoneId: 'Asia/Taipei' });
+  const p = t.page; const toasts = await toastSpy(p);
+  await p.clock.setFixedTime(new Date('2026-10-24T23:00:00Z'));   // Oct 25, 7:00 a.m. in Taipei
+  await p.evaluate(() => go('readiness')); await p.waitForTimeout(1500);
+  await p.evaluate(() => { samSetNeed('yes'); samSetPath('grants_only'); }); await p.waitForTimeout(500);
+  const has = await p.$('#sam-active');
+  if (!has) { check('the SAM.gov renewal step is shown', false); return t; }
+  check('the SAM.gov fields are labelled (drawn after the screen opened)', await p.evaluate(() => document.getElementById('sam-uei').labels.length > 0 && document.getElementById('sam-active').labels.length > 0));
+  await p.fill('#sam-uei', 'ABC123DEF456'); await p.fill('#sam-active', '2026-10-25');
+  await p.click('#readiness button:has-text("Save & track renewal")'); await p.waitForTimeout(600);
+  check("today's local date is accepted as the registration date", toasts.some((m) => /Grange will track/.test(m)) && !toasts.some((m) => /future/.test(m)));
+  await p.waitForTimeout(600);
+  const regs = (t.db.registrations || []).filter((r) => r.registration_type === 'sam_gov');
+  check('quick clicks through the steps save one SAM.gov record, not several', regs.length === 1 && regs[0].uei === 'ABC123DEF456');
+  return t;
+});
+
+flow('award-amounts-with-k-and-m', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  const r = await p.evaluate(() => ['$100K–$750K', '$1.5 million', '$25,000', 'Up to $500 (seed)', 'Varies by program', '$2M'].map((x) => _amountNum(x)));
+  check('"$100K–$750K", "$1.5 million", "$25,000", "$500", "Varies", "$2M" are read as 100,000 / 1,500,000 / 25,000 / 500 / none / 2,000,000', JSON.stringify(r) === JSON.stringify([100000, 1500000, 25000, 500, null, 2000000]));
+  const bodies = [];
+  p.on('request', (q) => { if (q.url().includes('/functions/v1/exemplar-search')) bodies.push(JSON.parse(q.postData() || '{}')); });
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(1200);
+  await p.evaluate(() => loadGrantIntoGenerator(CURATED_GRANTS.find((g) => g.amount === '$100K–$750K'))); await p.waitForTimeout(800);
+  await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(5000);
+  check('example proposals are looked up for a $100K+ grant, not an under-$50K one', bodies.length > 0 && bodies[0].filter_award_band === '50-150k');
   return t;
 });
 

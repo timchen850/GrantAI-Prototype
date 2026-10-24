@@ -4105,7 +4105,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
           <button class="si-email-arr" id="si-pw-btn" aria-label="Sign in" disabled onclick="siSubmitCode()">→</button>
         </div>
 
-        <div><span class="si-resend" role="button" tabindex="0" onclick="siMagicLink()">Email me a sign-in link instead</span></div>
+        <div><span class="si-resend" role="button" tabindex="0" onclick="siMagicLink()">Forgot your password? Email me a sign-in link</span></div>
 
         <div class="si-btn-row">
           <button class="si-btn-back" onclick="siBack()">Back</button>
@@ -6048,6 +6048,10 @@ document.addEventListener('keydown', (e) => {
 });
 /* Most form labels sit just before their field without a for= link, so clicking the
    label did nothing. Link each one to the first field that follows it. */
+// Forms drawn after a screen opens (SAM.gov steps, dialogs, survey steps) get linked too.
+let _linkQueued = false;
+new MutationObserver(() => { if (_linkQueued) return; _linkQueued = true; requestAnimationFrame(() => { _linkQueued = false; linkFormLabels(); }); })
+  .observe(document.documentElement, { childList: true, subtree: true });
 function linkFormLabels() {
   document.querySelectorAll('label:not([for])').forEach((l) => {
     if (l.control && l.control.tagName !== 'BUTTON') return;   // a "?" help button inside the label isn't its field
@@ -7599,7 +7603,13 @@ async function humanizeDraft(contentEl, fields, grant, signal) {
    user-scoped draft_outcomes table (RLS); no-ops when signed out. */
 const EXEMPLAR_ADMIN_EMAILS = ['tchen8108@gmail.com'];
 function _bandFromAmount(n) { n = Number(n); if (!Number.isFinite(n) || n <= 0) return null; return n < 50000 ? '<50k' : n < 150000 ? '50-150k' : n < 500000 ? '150-500k' : '500k+'; }
-function _amountNum(s) { const m = String(s == null ? '' : s).match(/[\d,]+(?:\.\d+)?/); return m ? parseFloat(m[0].replace(/,/g, '')) : null; }
+// "$100K–$750K" → 100000, "$1.5 million" → 1500000, "$25,000" → 25000 (the first amount given)
+function _amountNum(s) {
+  const m = String(s == null ? '' : s).match(/(\d[\d,]*(?:\.\d+)?)\s*(k|m|b|thousand|million|billion)?\b/i);
+  if (!m) return null;
+  const mult = { k: 1e3, thousand: 1e3, m: 1e6, million: 1e6, b: 1e9, billion: 1e9 }[(m[2] || '').toLowerCase()] || 1;
+  return parseFloat(m[1].replace(/,/g, '')) * mult;
+}
 
 function captureDraftMeta(fields, grant, contentEl) {
   const amt = _amountNum(grant && grant.amount != null ? grant.amount : (fields && fields.amount));
@@ -7825,9 +7835,7 @@ async function renderReferencePanel(grant, ctxText) {
     if (!session) { el.style.display = 'none'; el.innerHTML = ''; return; }
     const cols = 'funder_name,funder_type,sector,award_band,title,section,content,source_url,attribution,year_won';
     const ft = (grant && (grant.type || '').trim()) || null;
-    const amt = parseFloat((String((grant && grant.amount) || '').match(/[\d,]+(?:\.\d+)?/) || [''])[0].replace(/,/g, ''));
-    const band = Number.isFinite(amt) && amt > 0
-      ? (amt < 50000 ? '<50k' : amt < 150000 ? '50-150k' : amt < 500000 ? '150-500k' : '500k+') : null;
+    const band = _bandFromAmount(_amountNum(grant && grant.amount));
     // The reference set is small and curated, so rank all of it client-side.
     const { data } = await window.sb.from('exemplar_chunks').select(cols).eq('usage', 'reference').limit(200);
     const items = rankReferenceItems(data || [], ctxText || (grant && grant.title) || '', ft, band);
@@ -8168,11 +8176,7 @@ async function generate() {
       if (!exQuery.trim()) return '';
       // Map the grant's award size to a band so exemplars come from similar-sized wins.
       const amtStr = String(selectedGrant?.amount || fields.amount || '');
-      const amtNum = parseFloat((amtStr.match(/[\d,]+(?:\.\d+)?/) || [''])[0].replace(/,/g, ''));
-      let band = null;
-      if (Number.isFinite(amtNum) && amtNum > 0) {
-        band = amtNum < 50000 ? '<50k' : amtNum < 150000 ? '50-150k' : amtNum < 500000 ? '150-500k' : '500k+';
-      }
+      const band = _bandFromAmount(_amountNum(amtStr));
       const funderType = (selectedGrant?.type || '').trim() || null;
       const fetchExemplars = (bodyObj) => fetch(window.SUPABASE_CONFIG.url + '/functions/v1/exemplar-search', {
         method: 'POST',
@@ -8786,7 +8790,7 @@ function proposalFilename(ext) {
   const clean = s => (s || '').replace(/[^\w]+/g, '_').replace(/^_+|_+$/g, '');
   const org = clean(window._grange?.profile?.org_name) || 'org';
   const grant = clean(getVal('gen-program', 'proposal')) || 'proposal';
-  const date = new Date().toISOString().slice(0, 10);
+  const date = localToday();
   return `${org}_${grant}_${date}.${ext}`;
 }
 function downloadBlob(blob, filename) {
@@ -11790,7 +11794,7 @@ async function loadDiscoveryGrants(directAnswers) {
   let federalGrants = [], federalFailed = false;
   try {
     const raw = await fetchFederalGrants(answers);
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = localToday();   // grants due today (on the user's calendar) are still open
     // Federal hits now carry real focus tags from the query that found them, so
     // calcGrantMatch scores them honestly; +8 is a small live-federal recency boost.
     // Drop any opportunity whose deadline has already passed (never show expired).
@@ -12322,7 +12326,7 @@ function dueUrgency(deadline) {
   return 'pill-ok';
 }
 
-/* A value going inside a quoted JS string in an inline handler, onclick="f('VALUE')": the browser
+/* A value going inside a quoted JS string in an inline handler (onclick, onkeydown): the browser
    decodes HTML entities first, so escHtml alone lets a ' close the string. Escape for JS, then HTML. */
 function jsAttr(v) { return escHtml(String(v == null ? '' : v).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n|\r/g, ' ')); }
 function escHtml(s) {
@@ -13604,7 +13608,10 @@ function applyDiscFilters(query, type) {
     window._samState = st;
   }
 
-  async function samPersist() {
+  // Saves run one after another: two quick clicks must update one record, not insert two.
+  let _samSaving = Promise.resolve();
+  function samPersist() { _samSaving = _samSaving.then(samPersistNow, samPersistNow); return _samSaving; }
+  async function samPersistNow() {
     const ctx = window._grange || {}; const uid = ctx.user && ctx.user.id; const st = window._samState;
     try { if (uid) localStorage.setItem('grange_sam_' + uid, JSON.stringify(st)); } catch (_) {}
     if (!window.sb || !uid) return;
@@ -13827,7 +13834,7 @@ function applyDiscFilters(query, type) {
     const act = (document.getElementById('sam-active') || {}).value || '';
     if (uei && !/^[A-Z0-9]{12}$/.test(uei)) { toast('A UEI is exactly 12 letters and numbers.'); return; }
     if (!act) { toast('Add your registration date so we can track the renewal.'); return; }
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = localToday();   // the user's date: UTC is still "yesterday" in the morning in Asia
     if (act > todayStr) { toast('Your registration date can\'t be in the future.'); return; }
     if (act < '2002-01-01') { toast('Please enter a valid registration date.'); return; }
     window._samState.uei = uei; window._samState.activated_at = act;
@@ -13973,7 +13980,7 @@ function applyDiscFilters(query, type) {
       let html = '<div class="pa-card"><div class="pa-body"><div class="pa-sub">Record a win</div>' +
         (candidates.length
           ? '<div class="pa-addform"><select id="pa-award-grant" aria-label="Grant you won"><option value="">Choose a grant you won…</option>' +
-            candidates.map(g => '<option value="' + g.id + '">' + escHtml(g.title) + (g.funder ? ' — ' + escHtml(g.funder) : '') + '</option>').join('') + '</select>' +
+            candidates.map(g => '<option value="' + escHtml(g.id) + '">' + escHtml(g.title) + (g.funder ? ' — ' + escHtml(g.funder) : '') + '</option>').join('') + '</select>' +
             '<input class="num" id="pa-award-amt" type="text" inputmode="decimal" aria-label="Amount awarded" placeholder="$ awarded"><button class="btn btn-accent btn-sm" onclick="markAwarded()">Mark as awarded</button></div>' +
             '<p style="font-size:12px;color:var(--muted);margin-top:8px">Marking a grant awarded sets up its compliance checklist and spending tracker automatically.</p>'
           : '<p style="font-size:13px;color:var(--muted)">Save grants in Discovery first, then mark them awarded here when you win.</p>') +
@@ -14013,25 +14020,30 @@ function applyDiscFilters(query, type) {
           (over ? '<p style="font-size:12.5px;color:var(--accent-ink);margin:-4px 0 12px">⚠ You\'ve spent more than the award — exactly what triggers a clawback. Move costs to another funder or cut spend.</p>' : '') +
           (!hasBudget ? '<p style="font-size:12.5px;color:var(--muted);margin:-4px 0 12px">No award amount on file, so spend can\'t be tracked against a budget yet.</p>' : '') +
           (exps || []).map(e => '<div class="pa-exp-row"><span class="cat">' + escHtml(catLabel(e.category_key)) + '</span>' + escHtml(e.description || '') + '<span class="amt">' + _paFmt(Number(e.amount || 0)) + '</span></div>').join('') +
-          '<div class="pa-addform"><select id="paexp-cat-' + a.id + '" aria-label="Spending category">' + (_paCats || []).map(c => '<option value="' + c.key + '">' + escHtml(c.label) + '</option>').join('') + '</select>' +
+          '<div class="pa-addform"><select id="paexp-cat-' + a.id + '" aria-label="Spending category">' + (_paCats || []).map(c => '<option value="' + escHtml(c.key) + '">' + escHtml(c.label) + '</option>').join('') + '</select>' +
             '<input class="desc" id="paexp-desc-' + a.id + '" type="text" aria-label="What the spending was for" placeholder="What was it for?"><input class="num" id="paexp-amt-' + a.id + '" type="text" inputmode="decimal" aria-label="Amount spent" placeholder="$ amount"><button class="btn btn-outline btn-sm" onclick="addExpense(\'' + jsAttr(a.id) + '\')">Add</button></div>' +
         '</div></div></div>';
   }
 
+  // One save at a time: a double-click must not record the award or the spending twice.
+  let _paBusy = false;
   window.markAwarded = async function () {
+    if (_paBusy) return;
     const uid = window._grange && window._grange.user && window._grange.user.id;
     const gid = (document.getElementById('pa-award-grant') || {}).value;
-    const amt = parseFloat((((document.getElementById('pa-award-amt') || {}).value) || '').replace(/[^0-9.]/g, '')) || null;
+    const amt = _amountNum((document.getElementById('pa-award-amt') || {}).value);   // "50k" is $50,000
     if (!gid) { toast('Pick a grant first.'); return; }
     if (!amt || amt <= 0) { toast('Enter the award amount so Grange can track spend against it.'); return; }
+    _paBusy = true;
     try {
       const up = await sb.from('grants').update({ status: 'awarded', decided_at: new Date().toISOString() }).eq('id', gid);
       if (up.error) throw up.error;
       const ins = await sb.from('awards').insert({ user_id: uid, grant_id: gid, amount_awarded: amt });
       if (ins.error) throw ins.error;
       toast('Recorded — compliance checklist created.');
-      loadPostAward();
+      await loadPostAward();
     } catch (e) { console.error('markAwarded', e); toast('Could not record — try again.'); }
+    finally { _paBusy = false; }
   };
   window.toggleCompliance = async function (id) {
     const el = document.getElementById('pacmp-' + id);
@@ -14043,18 +14055,21 @@ function applyDiscFilters(query, type) {
     } catch (e) { console.error('toggleCompliance', e); }
   };
   window.addExpense = async function (awardId) {
+    if (_paBusy) return;
     const uid = window._grange && window._grange.user && window._grange.user.id;
     const cat = (document.getElementById('paexp-cat-' + awardId) || {}).value;
     const desc = (((document.getElementById('paexp-desc-' + awardId) || {}).value) || '').trim();
-    const amt = parseFloat((((document.getElementById('paexp-amt-' + awardId) || {}).value) || '').replace(/[^0-9.]/g, '')) || 0;
-    if (!desc || !amt) { toast('Add a description and an amount.'); return; }
+    const amt = _amountNum((document.getElementById('paexp-amt-' + awardId) || {}).value) || 0;
+    if (!desc || !(amt > 0)) { toast('Add a description and an amount.'); return; }
+    _paBusy = true;
     try {
       const { error } = await sb.from('expenditures').insert({ user_id: uid, award_id: awardId, category_key: cat, description: desc, amount: amt });
       if (error) throw error;
       toast('Spending logged.');
-      loadPostAward();
+      await loadPostAward();
     }
     catch (e) { console.error('addExpense', e); toast('Could not add expense.'); }
+    finally { _paBusy = false; }
   };
 </script>
 
