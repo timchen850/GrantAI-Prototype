@@ -116,6 +116,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 84 | Profile: past proposals | One tap on "✕" permanently removed a past proposal from Grange's memory with no confirmation, and the button's only name was "✕". | Asks first ("Remove this document from Grange's memory?"); labelled "Remove <document name> from Grange's memory". Covered by `remove-remembered-document`. |
 | 85 | Profile: unsaved edits | The profile only saves on "Save changes", but leaving it (sidebar, phone menu, Back) silently threw away anything typed. | Leaving with unsaved edits asks "Leave without saving them?"; staying keeps the edits; closing or reloading the tab gets the browser's own warning. No question after saving or if nothing changed. Covered by `unsaved-profile-edits`. |
 | 86 | Screen readers: messages | Toasts (every "saved", "couldn't save", "draft ready", error and limit message) and the assistant's replies weren't announced: neither was a live region. | The toast is a polite status region and the assistant's message list a log, so both are read out as they appear. |
+| 87 | Phones in dark mode | The light-only design didn't declare a color scheme, so browsers that auto-darken pages (Chrome on Android with "darken websites") could recolor it unevenly. | `<meta name="color-scheme" content="light only">`. Checked under dark mode: page and form fields keep their colors. |
 
 ## Needs Tim's decision
 
