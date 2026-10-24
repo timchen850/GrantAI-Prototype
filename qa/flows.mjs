@@ -697,7 +697,7 @@ flow('manage-save-failures', async (browser, check) => {
   await p.evaluate(() => go('manage')); await p.waitForTimeout(1500);
   await p.selectOption('#pa-award-grant', { index: 1 });
   await p.fill('#pa-award-amt', '$40,000'); await p.click('#manage button:has-text("Mark as awarded")'); await p.waitForTimeout(1200);
-  check('a failed award save says so (not "Recorded")', toasts.some((m) => /could not record/i.test(m)) && !toasts.some((m) => /^Recorded/.test(m)));
+  check('a failed award save says so (not "Recorded")', toasts.some((m) => /could(n.t| not) record/i.test(m)) && !toasts.some((m) => /^Recorded/.test(m)));
   await p.fill('#paexp-desc-aw1', 'Robotics kits'); await p.fill('#paexp-amt-aw1', '1250');
   await p.click('#manage .pa-addform:has(#paexp-desc-aw1) button'); await p.waitForTimeout(1000);
   check('a failed spending save says so', toasts.some((m) => /could not add expense/i.test(m)));
@@ -1234,8 +1234,9 @@ flow('claims-match-the-app', async (browser, check) => {
   check('no sources the app does not search' + (bad.length ? ' (found: ' + bad.join(', ') + ')' : ''), !bad.length);
   // Features the landing page and demo used to promise but the app doesn't have (Oct 24): no email
   // reminders, digest, auto-archive, USPS check, portal formatting, budget builder, report writer or daily crawl.
-  const contactText = await p.evaluate(() => document.getElementById('contact').textContent);
-  const missing = ['USPS', 'Weekly digest', 'Calendar sync', 'Auto-archive', "formatted for the funder's portal", 'refreshed daily', 'running daily', 'remind you', 'reminds you', 'verified against the RFP', 'Allowable costs', 'as a diagram', 'Build the budget once', 'reports written from', 'Monday – Friday']
+  // Sign-up starts on the Free plan, so the landing and sign-up pages don't offer a trial.
+  const contactText = await p.evaluate(() => ['contact', 'login'].map((id) => document.getElementById(id).textContent).join(' '));
+  const missing = ['USPS', 'Weekly digest', 'Calendar sync', 'Auto-archive', "formatted for the funder's portal", 'refreshed daily', 'running daily', 'remind you', 'reminds you', 'verified against the RFP', 'Allowable costs', 'as a diagram', 'Build the budget once', 'reports written from', 'Monday – Friday', '14-day trial', 'free trial']
     .filter((w) => (text + ' ' + contactText).includes(w));
   check('no features the app does not have' + (missing.length ? ' (found: ' + missing.join(', ') + ')' : ''), !missing.length);
   check('no made-up deadlines for real foundations (RWJF "Due Aug 1", CCF "Due Aug 30")', !/Due Aug 1(?!\d)|Due Aug 30(?!\d)|LOI Jul 1(?!\d)/.test(text));
