@@ -1186,6 +1186,43 @@ flow('nonprofit-setup-steps-saved', async (browser, check) => {
   return t;
 });
 
+// The tour is required for new accounts, so it must be possible to finish with Tab and Enter alone.
+flow('tour-by-keyboard', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'newuser', reducedMotion: true });
+  const p = t.page;
+  // The guide is a live region: re-placing it on a resize must not rewrite (and so re-announce) its text.
+  await p.waitForTimeout(2500);
+  await p.evaluate(() => { window._qaMut = 0; new MutationObserver((m) => { window._qaMut += m.length; }).observe(document.getElementById('tut-guide'), { childList: true, subtree: true, characterData: true }); });
+  for (const w of [1400, 1440]) { await p.setViewportSize({ width: w, height: 900 }); await p.waitForTimeout(300); }
+  check('resizing does not make screen readers repeat the guide', (await p.evaluate(() => window._qaMut)) === 0);
+  const unreachable = [];
+  let rowState = null;
+  for (let i = 0; i < 14; i++) {
+    await p.waitForTimeout(1700);
+    if ((await screen(p)) !== 'tutorial') break;
+    const info = await p.evaluate(() => {
+      document.querySelectorAll('[data-qa-tgt]').forEach((e) => e.removeAttribute('data-qa-tgt'));
+      const l = tutGuide._last; if (!l) return null;
+      const tgt = typeof l.sel === 'string' ? document.querySelector(l.sel) : l.sel;
+      tgt.dataset.qaTgt = '1';
+      return { name: tgt.textContent.trim().slice(0, 30), role: tgt.getAttribute('role'), checked: tgt.getAttribute('aria-checked') };
+    });
+    if (!info) break;
+    let reached = false;
+    for (let n = 0; n < 30 && !reached; n++) {
+      await p.keyboard.press('Tab');
+      reached = await p.evaluate(() => { const a = document.activeElement, x = document.querySelector('[data-qa-tgt]'); return !!(a && x && (a === x || x.contains(a))); });
+    }
+    if (!reached) { unreachable.push(info.name); break; }
+    await p.keyboard.press(info.role === 'checkbox' ? 'Space' : 'Enter');
+    if (info.role === 'checkbox' && !rowState) rowState = { before: info.checked, after: await p.evaluate(() => document.querySelector('[data-qa-tgt]').getAttribute('aria-checked')) };
+  }
+  check('every tour step can be reached with Tab' + (unreachable.length ? ' (not: ' + unreachable.join(', ') + ')' : ''), !unreachable.length);
+  check('the checklist rows say what they are to a screen reader (checkbox, unchecked then checked)', !!rowState && rowState.before === 'false' && rowState.after === 'true');
+  check('the tour can be finished by keyboard alone', (await screen(p)) === 'onboarding');
+  return t;
+});
+
 // The tour is required for new accounts: on a short window every step's target must be reachable.
 flow('tour-finishes-on-short-screens', async (browser, check) => {
   let t0 = null;
