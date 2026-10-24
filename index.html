@@ -7765,7 +7765,7 @@ function renderReferenceList(el, items) {
     if (meta) h += '<div style="font-size:11.5px;color:var(--ink-muted,#888);margin-bottom:5px">' + meta + '</div>';
     if (it.content) h += '<div style="font-size:12.5px;color:var(--ink-body,#444);line-height:1.5">' + escHtml(String(it.content)) + '</div>';
     if (it.section) h += '<div style="font-size:11.5px;color:var(--ink-muted,#999);margin-top:5px"><b>Sections:</b> ' + escHtml(String(it.section)) + '</div>';
-    if (url) h += '<div style="margin-top:7px"><a href="' + url + '" target="_blank" rel="noopener noreferrer" style="font-size:12.5px;color:var(--accent-ink);font-weight:500;text-decoration:none">Read the full winning application &rarr;</a></div>';
+    if (url) h += '<div style="margin-top:7px"><a href="' + escHtml(url) + '" target="_blank" rel="noopener noreferrer" style="font-size:12.5px;color:var(--accent-ink);font-weight:500;text-decoration:none">Read the full winning application &rarr;</a></div>';
     if (it.attribution) h += '<div style="font-size:10.5px;color:var(--ink-muted,#aaa);margin-top:6px">' + escHtml(String(it.attribution)) + '</div>';
     h += '</div>';
   });
@@ -13249,7 +13249,7 @@ function applyDiscFilters(query, type) {
   function irsWarnIcon() { return '<svg viewBox="0 0 24 24" fill="none" stroke="#b8860b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>'; }
 
   function irsResultHTML(o) {
-    const src = '<a class="rdy-irs-src" href="' + escHtml(o.source_url || '#') + '" target="_blank" rel="noopener noreferrer">View the IRS record ↗</a>';
+    const src = '<a class="rdy-irs-src" href="' + escHtml(_safeUrl(o.source_url) || '#') + '" target="_blank" rel="noopener noreferrer">View the IRS record ↗</a>';
     const recheck = '<span class="rdy-irs-recheck" role="button" tabindex="0" onclick="verifyNonprofitIRS()">Re-check</span>';
     if (!o.found) {
       return '<div class="rdy-irs-result warn"><div class="r-h">' + irsWarnIcon() + 'Not found in the IRS file</div>' +
