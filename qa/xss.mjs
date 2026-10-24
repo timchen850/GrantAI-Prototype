@@ -7,7 +7,7 @@ const width = +(process.argv[2] || 1440);
 const srv = await startServer(); const browser = await launch();
 const X = (tag) => `<img src=x onerror="window.__xss=(window.__xss||[]).concat('${tag}')">"'><svg onload="window.__xss=(window.__xss||[]).concat('${tag}-svg')">`;
 const t = await openApp(browser, { persona: 'np', width, fnOverride: {
-  'discover-grants': { status: 200, body: { output: { hits: [{ id: 999, number: X('gov-number'), title: 'Youth ' + X('gov-title'), agency: X('gov-agency'), agencyCode: 'ED', closeDate: '12/01/2026', oppStatus: 'posted', cfdaList: [X('cfda')], grangeFocus: [X('focus')], eligTags: [X('elig')] }] } } },
+  'discover-grants': { status: 200, body: { output: { hits: [{ id: "999');window.__xss=(window.__xss||[]).concat('gov-id');('", number: X('gov-number'), title: 'Youth ' + X('gov-title'), agency: X('gov-agency'), agencyCode: 'ED', closeDate: '12/01/2026', oppStatus: 'posted', cfdaList: [X('cfda')], grangeFocus: [X('focus')], eligTags: [X('elig')] }] } } },
   'irs-verify': { status: 200, body: { ok: true, output: { found: true, ein: '123456789', name: X('irs-name'), city: X('irs-city'), state: 'CA', status: 'active', deductibility: X('irs-ded'), subsection: '501(c)(3)', ruling_year: 2011, revoked: false, source_url: 'javascript:window.__xss=(window.__xss||[]).concat("irs-url")' } } },
   'usaspending-search': { status: 200, body: { output: { state: 'CA', sampled: 40, total_found: 312, award_low: 15000, award_median: 85000, award_high: 750000, keywords: [X('usa-kw')], agencies: [{ name: X('usa-agency'), amount: 4200000, count: 18 }], recipients: [{ name: X('usa-recipient'), amount: 250000, year: 2025, agency: X('usa-rec-agency') }] } } },
   'grant-detail': { status: 200, body: { output: { details: { 999: { awardCeiling: 50000, awardFloor: 10000, desc: X('detail-desc'), numberOfAwards: 12, eligibility: X('detail-elig') } } } } },
@@ -28,6 +28,10 @@ db.profiles.forEach((r) => { r.org_name = 'Org ' + X('org'); r.mission = 'Missio
 db.onboarding_answers.forEach((r) => { if (typeof r.answer === 'string') r.answer = r.answer + X('ans-' + r.question_key); if (Array.isArray(r.answer)) r.answer = r.answer.concat([X('ans-' + r.question_key)]); });
 db.grants.forEach((g, i) => { g.title = 'Grant ' + X('grant-title-' + i); g.funder = X('grant-funder-' + i); g.amount = X('grant-amount-' + i); });
 db.deadlines.forEach((d, i) => { d.title = 'Due ' + X('deadline-' + i); });
+const HID = (tag) => "x');window.__xss=(window.__xss||[]).concat('" + tag + "');('";
+db.deadlines.forEach((d, i) => { d.id = HID('deadline-id-' + i); });
+db.reminders.forEach((r) => { r.deadline_id = HID('deadline-id-0'); });
+db.compliance_requirements.forEach((c) => { c.id = HID('cmp-id'); });
 db.awards.forEach((a) => { a.name = X('award'); });
 db.compliance_requirements.forEach((c) => { c.label = X('cmp-label'); c.detail = X('cmp-detail'); });
 db.expenditures.forEach((e) => { e.description = X('exp'); });
@@ -53,6 +57,13 @@ for (const s of screens) {
   if (s === 'profile') { await p.evaluate(() => { window._grange.profile.tier = 'pro'; applyRagGate?.(); loadRagDocs?.(); }); await p.waitForTimeout(800); }
   if (s === 'discovery') { await p.click('#disc-grants-list .gcard button:has-text("AI assessment") >> nth=0').catch(() => {}); await p.waitForTimeout(1500); }
 }
+// inline handlers only run on click: press the buttons that carry ids
+await p.evaluate(() => go('deadlines')); await p.waitForTimeout(1500);
+await p.click('#deadlines button:has-text("Mark done") >> nth=0').catch(() => {}); await p.waitForTimeout(600);
+await p.evaluate(() => go('manage')); await p.waitForTimeout(1500);
+await p.click('#manage [onclick*="toggleCompliance"] >> nth=0').catch(() => {}); await p.waitForTimeout(600);
+await p.evaluate(() => go('discovery')); await p.waitForTimeout(2500);
+for (const label of ['AI assessment', 'Analyze full call', 'Save']) { await p.click(`#disc-grants-list .gcard:has-text("Youth") button:has-text("${label}") >> nth=0`).catch(() => {}); await p.waitForTimeout(900); }
 await p.click('#ai-chat-fab').catch(() => {}); await p.waitForTimeout(500);
 await p.fill('#acp-text', 'hello').catch(() => {}); await p.press('#acp-text', 'Enter').catch(() => {}); await p.waitForTimeout(1500);
 await p.evaluate(() => go('dashboard')); await p.waitForTimeout(1200);

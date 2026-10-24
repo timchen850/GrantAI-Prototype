@@ -6362,7 +6362,7 @@ async function loadRagDocs() {
       const when = d.created_at ? new Date(d.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
       return '<div class="rag-row"><span class="rag-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>' +
         '<div class="rag-main"><div class="rag-t">' + escHtml(d.label || d.file_name || 'Past proposal') + '</div><div class="rag-m">In Grange’s memory' + (when ? ' · ' + when : '') + '</div></div>' +
-        '<button type="button" class="rag-del" title="Remove" aria-label="Remove ' + escHtml(d.label || d.file_name || 'this document') + ' from Grange’s memory" onclick="ragDeleteDoc(\'' + escHtml(d.id) + '\')">✕</button></div>';
+        '<button type="button" class="rag-del" title="Remove" aria-label="Remove ' + escHtml(d.label || d.file_name || 'this document') + ' from Grange’s memory" onclick="ragDeleteDoc(\'' + jsAttr(d.id) + '\')">✕</button></div>';
     }).join('');
   } catch (e) { list.innerHTML = '<div class="rag-empty">Could not load your documents.</div>'; }
 }
@@ -12137,10 +12137,10 @@ function renderGrantCard(g) {
 
   const funderUrl = _safeUrl(g.url);
   const govLink = g.govId
-    ? `<a href="https://www.grants.gov/search-results-detail/${g.govId}" target="_blank" rel="noopener" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">View on Grants.gov</a>`
+    ? `<a href="https://www.grants.gov/search-results-detail/${encodeURIComponent(g.govId)}" target="_blank" rel="noopener" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">View on Grants.gov</a>`
     : funderUrl
       ? `<a href="${funderUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">Visit funder ↗</a>`
-      : `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();saveGrantToPipeline(window._grantsById&&window._grantsById['${escHtml(g.id)}'],'saved')">Save</button>`;
+      : `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();saveGrantToPipeline(window._grantsById&&window._grantsById['${jsAttr(g.id)}'],'saved')">Save</button>`;
 
   return `<div class="gcard" data-type="${escHtml(g.type)}" data-id="${escHtml(g.id)}">
     <div class="gc-ring">
@@ -12159,9 +12159,9 @@ function renderGrantCard(g) {
       <div class="amt">${escHtml(g.amount)}</div>
       <div class="due">${duePill}</div>
       <div class="acts">
-        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();draftGrant('${escHtml(g.id)}')">Draft proposal</button>
-        <button class="btn btn-outline btn-sm gc-assess-btn" onclick="event.stopPropagation();assessGrant('${escHtml(g.id)}')"><span style="color:var(--accent)">✦</span>&nbsp;AI assessment</button>
-        <button class="btn btn-outline btn-sm gc-full-btn" onclick="event.stopPropagation();analyzeFullCall('${escHtml(g.id)}')"><span style="color:var(--accent)">📄</span>&nbsp;Analyze full call</button>
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();draftGrant('${jsAttr(g.id)}')">Draft proposal</button>
+        <button class="btn btn-outline btn-sm gc-assess-btn" onclick="event.stopPropagation();assessGrant('${jsAttr(g.id)}')"><span style="color:var(--accent)">✦</span>&nbsp;AI assessment</button>
+        <button class="btn btn-outline btn-sm gc-full-btn" onclick="event.stopPropagation();analyzeFullCall('${jsAttr(g.id)}')"><span style="color:var(--accent)">📄</span>&nbsp;Analyze full call</button>
         ${govLink}
       </div>
     </div>
@@ -12228,8 +12228,8 @@ function analyzeFullCall(id) {
   panel.innerHTML = '<div class="gc-assess-inner">' +
     '<div class="gcf-intro">Paste the funder’s full call, NOFO or RFP and Grange will give you the complete picture: eligibility, the exact sections you’ll write, attachments and the deadline.</div>' +
     '<textarea id="gcf-ta-' + escHtml(id) + '" class="gcf-ta" placeholder="Paste the full funding call for “' + escHtml(g.title || 'this grant') + '” here…">' + escHtml(g.desc || '') + '</textarea>' +
-    '<div class="gcf-actions"><button class="btn btn-primary btn-sm gcf-run" onclick="runFullCall(\'' + escHtml(id) + '\')"><span style="color:#fff">✦</span>&nbsp;Analyze full call</button>' +
-    '<button class="btn btn-outline btn-sm" onclick="draftFromFullCall(\'' + escHtml(id) + '\')">Draft with these requirements →</button></div>' +
+    '<div class="gcf-actions"><button class="btn btn-primary btn-sm gcf-run" onclick="runFullCall(\'' + jsAttr(id) + '\')"><span style="color:#fff">✦</span>&nbsp;Analyze full call</button>' +
+    '<button class="btn btn-outline btn-sm" onclick="draftFromFullCall(\'' + jsAttr(id) + '\')">Draft with these requirements →</button></div>' +
     '<div class="gcf-result" id="gcf-res-' + escHtml(id) + '" style="display:none"></div>' +
     '</div>';
   if (cached) { const res = document.getElementById('gcf-res-' + id); renderReqResult(cached, false, res); }
@@ -12312,6 +12312,9 @@ function dueUrgency(deadline) {
   return 'pill-ok';
 }
 
+/* A value going inside a quoted JS string in an inline handler, onclick="f('VALUE')": the browser
+   decodes HTML entities first, so escHtml alone lets a ' close the string. Escape for JS, then HTML. */
+function jsAttr(v) { return escHtml(String(v == null ? '' : v).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n|\r/g, ' ')); }
 function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
@@ -12416,7 +12419,7 @@ async function loadDashboardDeadlines() {
       + '<div><div class="dn">' + escHtml(d.title || 'Deadline') + '</div><div class="dt">' + escHtml(sub) + '</div></div>'
       + '<div style="display:flex;align-items:center;gap:10px">'
       + '<div class="dd ' + cls + '">' + ddTxt + '</div>'
-      + '<button class="btn btn-ghost btn-sm" title="Mark as done" onclick="markDeadlineDone(\'' + escHtml(d.id) + '\')">Done</button>'
+      + '<button class="btn btn-ghost btn-sm" title="Mark as done" onclick="markDeadlineDone(\'' + jsAttr(d.id) + '\')">Done</button>'
       + '</div></div>';
   }).join('');
 }
@@ -12471,8 +12474,8 @@ function deadlineRowHTML(d, today) {
     ? dlKindLabel(d.kind) + ' · was due ' + fmtDeadlineDate(due)
     : [dlKindLabel(d.kind), fmtDeadlineDate(due), (daysLeft >= 0 ? nextReminderLabel(daysLeft) : '')].filter(Boolean).join(' · ');
   const action = isDone
-    ? '<button class="btn btn-ghost btn-sm" onclick="reopenDeadline(\'' + escHtml(d.id) + '\')">Reopen</button>'
-    : '<button class="btn btn-ghost btn-sm" onclick="markDeadlineDone(\'' + escHtml(d.id) + '\')">Mark done</button>';
+    ? '<button class="btn btn-ghost btn-sm" onclick="reopenDeadline(\'' + jsAttr(d.id) + '\')">Reopen</button>'
+    : '<button class="btn btn-ghost btn-sm" onclick="markDeadlineDone(\'' + jsAttr(d.id) + '\')">Mark done</button>';
   return '<div class="dl' + (isDone ? ' dlx-done' : '') + '">'
     + '<div><div class="dn">' + escHtml(d.title || 'Deadline') + '</div><div class="dt">' + escHtml(sub) + '</div></div>'
     + '<div style="display:flex;align-items:center;gap:12px"><div class="dd ' + ddCls + '">' + ddTxt + '</div>' + action + '</div></div>';
@@ -13989,7 +13992,7 @@ function applyDiscFilters(query, type) {
       '<div><div class="pa-t">' + escHtml((a.grants && a.grants.title) || 'Awarded grant') + '</div><div class="pa-f">' + escHtml((a.grants && a.grants.funder) || '') + (a.period_start ? ' · ' + a.period_start + ' → ' + (a.period_end || 'ongoing') : '') + '</div></div>' +
       '<div class="pa-money"><div class="v">' + _paFmt(awarded) + '</div><div class="l">awarded</div></div></div>' +
       '<div class="pa-body"><div class="pa-sub">Compliance — keep the money</div>' +
-        (reqs || []).map(r => '<div class="pa-cmp ' + (r.status === 'satisfied' ? 'done' : '') + '" id="pacmp-' + r.id + '"><span class="ic" role="checkbox" tabindex="0" aria-checked="' + (r.status === 'satisfied') + '" aria-label="' + escHtml(r.label) + '" onclick="toggleCompliance(\'' + r.id + '\')">' + _paIcon(r.status === 'satisfied') + '</span><div class="bd"><b>' + escHtml(r.label) + '</b><p>' + escHtml(r.detail || '') + '</p></div></div>').join('') +
+        (reqs || []).map(r => '<div class="pa-cmp ' + (r.status === 'satisfied' ? 'done' : '') + '" id="pacmp-' + r.id + '"><span class="ic" role="checkbox" tabindex="0" aria-checked="' + (r.status === 'satisfied') + '" aria-label="' + escHtml(r.label) + '" onclick="toggleCompliance(\'' + jsAttr(r.id) + '\')">' + _paIcon(r.status === 'satisfied') + '</span><div class="bd"><b>' + escHtml(r.label) + '</b><p>' + escHtml(r.detail || '') + '</p></div></div>').join('') +
         '<div class="pa-spend"><div class="pa-sub">Spending vs budget — the clawback guardrail</div>' +
           '<div class="pa-bars"><div class="pa-stat"><div class="l">Spent</div><div class="v">' + _paFmt(spent) + '</div></div>' +
             (hasBudget
@@ -14001,7 +14004,7 @@ function applyDiscFilters(query, type) {
           (!hasBudget ? '<p style="font-size:12.5px;color:var(--muted);margin:-4px 0 12px">No award amount on file, so spend can\'t be tracked against a budget yet.</p>' : '') +
           (exps || []).map(e => '<div class="pa-exp-row"><span class="cat">' + escHtml(catLabel(e.category_key)) + '</span>' + escHtml(e.description || '') + '<span class="amt">' + _paFmt(Number(e.amount || 0)) + '</span></div>').join('') +
           '<div class="pa-addform"><select id="paexp-cat-' + a.id + '" aria-label="Spending category">' + (_paCats || []).map(c => '<option value="' + c.key + '">' + escHtml(c.label) + '</option>').join('') + '</select>' +
-            '<input class="desc" id="paexp-desc-' + a.id + '" type="text" aria-label="What the spending was for" placeholder="What was it for?"><input class="num" id="paexp-amt-' + a.id + '" type="text" inputmode="decimal" aria-label="Amount spent" placeholder="$ amount"><button class="btn btn-outline btn-sm" onclick="addExpense(\'' + a.id + '\')">Add</button></div>' +
+            '<input class="desc" id="paexp-desc-' + a.id + '" type="text" aria-label="What the spending was for" placeholder="What was it for?"><input class="num" id="paexp-amt-' + a.id + '" type="text" inputmode="decimal" aria-label="Amount spent" placeholder="$ amount"><button class="btn btn-outline btn-sm" onclick="addExpense(\'' + jsAttr(a.id) + '\')">Add</button></div>' +
         '</div></div></div>';
   }
 
