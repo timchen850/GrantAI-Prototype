@@ -83,6 +83,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 57 | Phone menu, toasts | The "Ask Grange" button floated on top of the open phone menu, and on desktop the assistant's tip bubble covered confirmation toasts ("Added to your pipeline"). | The button hides while the menu is open; toasts move above the tip while it shows. |
 | 58 | Demo | The arrow and Page Down keys did nothing in the walkthrough until you clicked or tabbed into it (focus stayed on the hidden landing-page button). | The demo takes focus when it opens. Covered by `demo-keyboard` (fails on the old code). |
 | 59 | Generator (test gap) | Export to Word, plain text, PDF and Copy had no test. | `draft-export` checks each one: file name, sections present, no highlight or script markup, clean text. All passed; no bug found. |
+| 60 | Readiness, Nonprofit setup, Security (320px phones) | On the smallest phones (320px, e.g. iPhone SE 1st gen) these pages scrolled sideways by up to 30px: the app column grew to fit its widest content, and the Security page's disclosure card had a 260px minimum plus 40px padding. Status buttons wrapped to two lines. | The app column can shrink (`min-width: 0`), the card's padding and minimum adapt, and status buttons stay on one line under 360px. Sweep clean at 320px on every screen and account. |
 
 ## Needs Tim's decision
 
@@ -105,8 +106,8 @@ monthly draft limit, revoked session, full backend outage); Approach Plan approv
 profile document upload; browser Back/Forward; AI draft HTML filtered (live and restored); Esc closes
 the phone menu and assistant; sign-in and Privacy/Terms contents links; labels and Enter on forms; keyboard use of rows,
 checklists and toggles; failed Grant management saves are reported. Static audit: all 96 inline-handler functions
-exist, no duplicate ids. Sweep: 0 console errors, no sideways scroll on any screen at 12 widths
-(360–1440). Monkey test: 350 buttons clicked across all accounts, 0 JS errors. Accessibility: 0 axe violations.
+exist, no duplicate ids. Sweep: 0 console errors, no sideways scroll on any screen at 13 widths
+(320–1440). Monkey test: 350 buttons clicked across all accounts, 0 JS errors. Accessibility: 0 axe violations.
 
 ## Next up
 
