@@ -1075,6 +1075,23 @@ flow('generator-uses-your-own-details', async (browser, check) => {
   return t;
 });
 
+flow('assistant-tip-once-per-session', async (browser, check) => {
+  const shown = (p) => p.evaluate(() => document.getElementById('acp-nudge').classList.contains('show'));
+  const t = await openApp(browser, { persona: 'np', width: 1440 });
+  const p = t.page;
+  await p.evaluate(() => { try { sessionStorage.removeItem('acp_nudged'); } catch (_) {} go('discovery'); }); await p.waitForTimeout(1600);
+  const first = await shown(p);
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(1600);
+  const second = await shown(p);
+  check('on a desktop the assistant tip appears once', first);
+  check('and not again on the next screen (it covers buttons there)', !second);
+  const t2 = await openApp(browser, { persona: 'np', width: 768 });
+  await t2.page.evaluate(() => { try { sessionStorage.removeItem('acp_nudged'); } catch (_) {} go('discovery'); }); await t2.page.waitForTimeout(1600);
+  check('on a tablet it does not cover the page at all', !(await shown(t2.page)));
+  await t2.ctx.close();
+  return t;
+});
+
 flow('remove-remembered-document', async (browser, check) => {
   const t = await openApp(browser, { persona: 'np' });
   const p = t.page;

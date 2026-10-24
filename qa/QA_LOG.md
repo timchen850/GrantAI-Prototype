@@ -21,6 +21,7 @@ node fieldsize.mjs                    # phone fields under 16px (iPhone zooms in
 node targets.mjs                      # controls under 24x24 px on phones
 node xss.mjs [width]                  # stored-XSS sweep: markup in every data field must not run
 node junktext.mjs [accounts] [width]  # "undefined", "null", "NaN", "[object Object]" shown on any screen
+node longtext.mjs [widths]            # very long names on every screen: no sideways scroll, nothing cut off
 QA_TZ=America/Los_Angeles node flows.mjs   # any script in a US time zone (dates are calendar days)
 ```
 
@@ -155,6 +156,12 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 120 | Generator form on phones | At 320 px the hint beside the Generate button was squeezed into a one-word column and the button ran past the card's edge; the two Tone menus were cut ("Commur…", "Need & e…"); "Project period" was cut ("Jan-Dec 20"); the long "Anything else…" placeholder was cut off. | Under 480 px the hint sits on its own line above the mic and Generate; under 420 px amount/period and the two Tone menus stack; shorter placeholder. Checked at 320 px. |
 | 121 | Tour: sample organization | The tour's sample organization ("Eastside Youth Foundation", serving Boyle Heights and East Los Angeles) was listed as being in "Alameda County, CA", which is in the Bay Area. | Los Angeles County, matching the rest of the tour and demo. |
 | 122 | Readiness: eligibility rows on phones | Each "Eligibility basics" row kept "Confirmed" or its fix link ("Add your budget →") beside the text, squeezing the explanation into a narrow column at 320 px. | Under 400 px the status sits under the text, lined up with it. Checked for a complete account and one with missing details. |
+| 123 | Long names | A grant, funder or deadline name with one very long word (or a long unbroken name from Grants.gov) widened its whole panel: at 320 px the dashboard became 597 px wide and scrolled sideways, as did Deadlines and Discover, and Manage cut the award's name and funder off. | Those names wrap inside the word when they have to. New `longtext.mjs` puts a 110-character organization name, long grant/funder/deadline names and a 65-letter word on every app screen: 0 problems at 320, 390 and 1440 px (5 at 320 px on the old code). |
+| 124 | Discover filters on phones | Between about 380 and 600 px the search box left room for just the "All" chip beside it, so "Federal" and "Foundation" dropped to a line of their own. | Under 600 px the search box takes the full width and the chips sit together below it. |
+| 125 | Assistant tip covering buttons | The assistant's tip bubble popped up on the first visit to every screen and sat over the bottom-right of the page for up to 9 seconds: a Discover card's Draft button, "Analyze this call", "View Plans". On tablets (641–1024 px) it covered the main column. | It shows once per session, on desktops only; the assistant's suggestions still change per screen when it's opened. Covered by `assistant-tip-once-per-session` (fails on the old code). |
+| 126 | Dashboard journey on tablets and phones | Below 920 px the five journey steps sit in two columns, so "Manage" was left alone on a third row with an empty space beside it. | The last step spans the row. |
+| 127 | Screen readers: logo | All nine logos sit right next to the words "Grange AI", so screen readers announced "Grange AI logo Grange AI" in every header and menu. | The logo is marked decorative there (`alt=""`); the name is read once. |
+| 128 | Test harness: accessibility timing | `a11y.mjs` sometimes reported color-contrast failures for text it caught mid fade-in (11 in one run, 0 in the next three on the same code). | When contrast fails, it looks again after the animations settle and reports only what still fails. |
 
 ## Needs Tim's decision
 
@@ -184,8 +191,8 @@ the generator form starting from the user's own details and asking for missing o
 exist, no duplicate ids. Sweep: 0 console errors, no sideways scroll on any screen at 13 widths
 (320–1440). Monkey test: 130 buttons clicked across all accounts, 0 JS errors. Accessibility: 0 axe violations
 (390 and 1440). labels.mjs and labels-states.mjs: 0 unlinked labels or unnamed fields. clipped.mjs / clipped-states.mjs: 0 clipped text.
-junktext.mjs: no "undefined"/"null"/"NaN" on any screen. 62 flows, all passing (last full run 2026-10-24 ~11:00 UTC, on the code committed
-with rows 114–122; sweep at 320/390/1440 clean, 175/175 at five widths on the previous commit; flows also pass in Pacific time; fieldsize, headings and xss sweeps clean;
+junktext.mjs: no "undefined"/"null"/"NaN" on any screen. 63 flows, all passing (last full run 2026-10-24 ~12:50 UTC, on the code committed
+with rows 114–128; sweep 175/175 at 320/390/768/1024/1440, longtext 0; flows also pass in Pacific time; fieldsize, headings and xss sweeps clean;
 targets.mjs lists 22 small controls, all spaced text links or controls with an enlarged invisible tap area, which it measures by their visible box).
 
 ## Next up

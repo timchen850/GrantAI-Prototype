@@ -909,6 +909,10 @@ label.field-label, div.field-label {   /* div: a heading over a link, not a form
 .grow:first-of-type { border-top: none; }
 .grow .gi { flex: 1; min-width: 0; }
 .grow .gi .gn { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+/* Names come from users and funders: a very long one (or one long word) wraps instead of widening its panel */
+.grow .gi .gn, .dl .dn, .dl .dt, .pa-head .pa-t, .pa-head .pa-f, .gc-body .funder, .gc-body .ttl { overflow-wrap: anywhere; }
+.gc-body { min-width: 0; }
+.pa-head > div:first-child { min-width: 0; flex: 1 1 12rem; }
 .grow .gi .gm { font-size: 12.5px; color: var(--muted); margin-top: 3px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 
 /* match ring */
@@ -965,6 +969,7 @@ label.field-label, div.field-label {   /* div: a heading over a link, not a form
 /* ─── DISCOVERY ─────────────────────────────────────────── */
 .filters { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; margin-bottom: 24px; }
 .filters .search { max-width: 260px; }
+@media (max-width: 600px) { .filters .search { max-width: none; flex: 1 1 100%; } }   /* phones: search on its own line, the filter chips together below it */
 .chip { font-size: 13px; font-weight: 500; padding: 8px 15px; border-radius: var(--r-pill);
   border: 1px solid var(--line); color: var(--ink-soft); background: var(--surface);
   transition: all 140ms var(--ease); }
@@ -2511,7 +2516,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 
   <header class="nav">
     <div class="nav-inner">
-      <a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+      <a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="">Grange AI</a>
       <div class="tl-wrap" id="tl-wrap">
         <div class="tl-bg"   id="tl-bg"></div>
         <div class="tl-glow" id="tl-glow"></div>
@@ -3158,7 +3163,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 
   <footer class="footer">
     <div class="wrap footer-inner">
-      <a class="brand" href="#" onclick="go('landing');return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+      <a class="brand" href="#" onclick="go('landing');return false;"><img src="logo.png" class="brand-mark" alt="">Grange AI</a>
       <div class="small">Built for nonprofits that don't have a grant writer on staff.</div>
       <div class="footer-links">
         <a href="#" onclick="go('privacy');return false;">Privacy</a><a href="#" onclick="go('terms');return false;">Terms</a><a href="#" onclick="go('security');return false;">Security</a><a href="#" onclick="go('contact');return false;">Contact</a>
@@ -3828,7 +3833,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
     <div class="login-left">
       <div class="aurora"><i></i></div>
       <div class="ll-content">
-        <a class="brand" href="#" onclick="go('landing');return false;" style="margin-bottom:auto;position:relative;z-index:1"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+        <a class="brand" href="#" onclick="go('landing');return false;" style="margin-bottom:auto;position:relative;z-index:1"><img src="logo.png" class="brand-mark" alt="">Grange AI</a>
         <h2>Stop leaving grants on the table.</h2>
         <p>Your mission qualifies for more funding than you're applying for. Grange AI helps you find it and write for it.</p>
         <div class="ll-list">
@@ -3867,7 +3872,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 <div id="demo" class="screen">
 
   <nav class="dp-nav">
-    <a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+    <a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="">Grange AI</a>
     <button class="dp-back" onclick="goHome()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
       Back
@@ -4225,7 +4230,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 <div id="onboarding" class="screen">
   <div class="ob-wrap">
     <div class="ob-top">
-      <span class="brand"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</span>
+      <span class="brand"><img src="logo.png" class="brand-mark" alt="">Grange AI</span>
       <span class="ob-need"><span class="ob-req">*</span> Required to match you with grants</span>
     </div>
     <div class="ob-progress"><div class="ob-progress-fill" id="ob-progress-fill"></div></div>
@@ -4719,7 +4724,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   <!-- PLANE 2: the persistent glass slab (the one piece of chrome) -->
   <div class="tut-slab tut-slab--intro" id="tut-slab">
     <header class="tut-slab-top">
-      <span class="brand brand--light"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</span>
+      <span class="brand brand--light"><img src="logo.png" class="brand-mark" alt="">Grange AI</span>
       <div class="tut-rail" id="tut-rail"></div>
       <span class="tut-badge tut-badge--glass"><span class="pip"></span><span id="tut-badge-label">Guided tour</span></span>
       <button class="tut-exit" id="tut-exit" onclick="tutExit()" hidden aria-label="Exit tour and return to portal">Exit tour ✕</button>
@@ -4846,7 +4851,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 .journey .jx.active .jic svg { color: var(--accent); }
 .journey .jx.active .jstat { color: var(--accent-ink); font-weight: 600; }
 .journey .jx.active .jstat .dot { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
-@media (max-width: 920px) { .journey { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 920px) { .journey { grid-template-columns: repeat(2, 1fr); } .journey .jx:last-child:nth-child(odd) { grid-column: 1 / -1; } }   /* five steps in two columns: the last one spans the row instead of sitting alone */
 @media (max-width: 560px) {
   .journey { grid-template-columns: 1fr 1fr; gap: 10px; }
   .journey .jx { padding: 13px 14px; }
@@ -5920,7 +5925,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 <!-- ═══════════ MOBILE NAV (phones only; hidden ≥769px via CSS) ═══════════ -->
 <!-- app-screen top bar: brand + hamburger -->
 <header class="m-appbar">
-  <a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+  <a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="">Grange AI</a>
   <button class="m-burger" aria-label="Open menu" aria-expanded="false" onclick="mNavToggle()"><span></span><span></span><span></span></button>
 </header>
 <!-- slide-in drawer (shared by marketing + app contexts) -->
@@ -5928,7 +5933,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   <div class="m-nav-scrim" onclick="mNavClose()"></div>
   <aside class="m-nav-panel" role="dialog" aria-label="Menu" aria-modal="true">
     <div class="m-nav-head">
-      <a class="brand" href="#" onclick="mNavClose();goHome();return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a>
+      <a class="brand" href="#" onclick="mNavClose();goHome();return false;"><img src="logo.png" class="brand-mark" alt="">Grange AI</a>
       <button class="m-nav-x" aria-label="Close menu" onclick="mNavClose()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <nav class="m-nav-links" id="m-nav-links"></nav>
@@ -5947,7 +5952,7 @@ function npPathVisible() {
 function SIDE(active) {
   const showSurveyBtn = window._grange && window._grange.surveySkipped;
   return `
-  <div class="side-brand"><a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="Grange AI logo">Grange AI</a></div>
+  <div class="side-brand"><a class="brand" href="#" onclick="goHome();return false;"><img src="logo.png" class="brand-mark" alt="">Grange AI</a></div>
   <nav class="side-nav">
     <a href="#" onclick="go('dashboard');return false;" class="${active==='dashboard'?'on':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
@@ -13019,14 +13024,17 @@ function applyDiscFilters(query, type) {
       nudge.classList.remove('show');
       if (panel.classList.contains('open')) { renderChips(); return; }
       const ctx = CTX[id];
-      let off = false; try { off = sessionStorage.getItem('acp_nudge_off') === '1'; } catch (_) {}
-      // On phones the bubble covers half the screen; the Ask Grange button is enough there.
-      if (!ctx || nudgedThisSession[id] || off || window.matchMedia('(max-width: 640px)').matches) return;
+      let off = false; try { off = sessionStorage.getItem('acp_nudge_off') === '1' || sessionStorage.getItem('acp_nudged') === '1'; } catch (_) {}
+      // One tip per session: it sits over the bottom-right of the page (a card's buttons, a form's
+      // submit), so showing it again on every screen kept covering things. Below 1025 px (phones and
+      // tablets) it would cover the main column, and the Ask Grange button is enough there.
+      if (!ctx || nudgedThisSession[id] || off || window.matchMedia('(max-width: 1024px)').matches) return;
       nudgeTimer = setTimeout(() => {
         if (document.getElementById('ai-chat-panel').classList.contains('open')) return;
         document.getElementById('acp-nudge-text').textContent = ctx.tip;
         nudge.classList.add('show');
         nudgedThisSession[id] = true;
+        try { sessionStorage.setItem('acp_nudged', '1'); } catch (_) {}
         // It sits over the right-hand column, so get out of the way once the user
         // starts reading (scrolls) or after a few seconds.
         const hide = () => { nudge.classList.remove('show'); window.removeEventListener('scroll', hide); };
