@@ -504,7 +504,9 @@ flow('keyboard-and-legal-links', async (browser, check) => {
     const n = await q.evaluate((pg) => document.querySelectorAll('#' + pg + ' .legal-doc a[href="#"][onclick="return false;"]').length, page);
     const hs = await q.evaluate((pg) => document.querySelectorAll('#' + pg + ' .legal-doc h2').length, page);
     check(page + ': one contents link per section (' + n + ' links, ' + hs + ' sections)', n > 5 && n <= hs);
-    await q.click('#' + page + ' .legal-doc a[href="#"][onclick="return false;"] >> nth=3'); await q.waitForTimeout(1200);
+    await q.click('#' + page + ' .legal-doc a[href="#"][onclick="return false;"] >> nth=3');
+    // wait for the smooth scroll to settle (slower when the machine is busy) rather than a fixed time
+    await q.waitForFunction((pg) => { const t = document.querySelectorAll('#' + pg + ' .legal-doc h2')[3].getBoundingClientRect().top; const ok = window.__lastTop === t; window.__lastTop = t; return ok; }, page, { polling: 250, timeout: 6000 }).catch(() => {});
     const top = await q.evaluate((pg) => document.querySelectorAll('#' + pg + ' .legal-doc h2')[3].getBoundingClientRect().top, page);
     check(page + ': contents link jumps to its section', top > 40 && top < 200);
   }
