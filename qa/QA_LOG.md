@@ -17,6 +17,7 @@ node clipped.mjs [accounts] [widths]  # text cut off inside a card or box that h
 node clipped-states.mjs               # the same for a finished draft, plan, export menu, open assessment
 node headings.mjs                     # one main heading per screen
 node fieldsize.mjs                    # phone fields under 16px (iPhone zooms into them)
+node targets.mjs                      # controls under 24x24 px on phones
 QA_TZ=America/Los_Angeles node flows.mjs   # any script in a US time zone (dates are calendar days)
 ```
 
@@ -111,6 +112,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 80 | Every form (iPhone) | 42 fields were 13–15px, and iPhone Safari zooms the page into any field under 16px when you tap it (and stays zoomed), including sign-in, sign-up, the survey, profile, generator and the assistant. | Form fields are 16px on phone widths. Sweep and clipped-text checks clean at 320 and 390. `fieldsize.mjs` reports 0. |
 | 81 | Assistant panel (iPhone) | Its height was `100vh` minus a margin, and on iOS Safari `100vh` is the height with the toolbars hidden; on a small iPhone with them showing, the panel's header and close button could sit above the top of the screen. Chromium can't reproduce this, so it came from review. | `100dvh` (the visible height) where supported, `100vh` otherwise; same for the docked panel and the desktop sidebar. |
 | 82 | Page load (slow connections) | three.js (about 600 KB, used only for the sign-in background) loaded as a blocking script, so on a slow connection the whole site stayed blank until it arrived. | Loaded with `defer`; the sign-in visual already waits for it. With three.js slowed to 1.5 s, the landing headline now reaches the page after 96 ms instead of 1,641 ms. Sign-in visual still draws. |
+| 83 | Small tap targets (phones) | The "×" that removes a program tag was 7×13 px (and had no label: screen readers said "times"), the "?" help buttons 17×17, compliance check circles 18×18, and "How to get it" / "Add your EIN →" links about 20 px tall. Found by the new `targets.mjs` check (WCAG 2.5.8 asks for 24×24). | Each gets a larger invisible tap area (they look the same), checked by tapping just outside each one; the tag button is labelled "Remove <tag>" and its tap area doesn't reach the next tag. The rest of the list is text links with enough space around them, which the guideline allows. |
 
 ## Needs Tim's decision
 

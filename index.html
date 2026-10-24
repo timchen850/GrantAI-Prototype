@@ -5333,6 +5333,10 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   .rdy-elig .lbl{ font-size:14px; color:var(--ink); flex:1; }
   .rdy-elig .lbl small{ display:block; font-size:12px; color:var(--muted); font-weight:400; margin-top:1px; }
   .rdy-elig .act{ font-size:12px; color:var(--accent); cursor:pointer; white-space:nowrap; }
+  /* small controls get a bigger invisible tap area (WCAG 2.5.8 target size); they look the same */
+  .tg button, .ob-help-btn, .pa-cmp .ic, .rdy-how-t, .rdy-elig .act { position: relative; }
+  .tg button::after, .ob-help-btn::after, .pa-cmp .ic::after { content: ''; position: absolute; inset: -8px; }
+  .rdy-how-t::after, .rdy-elig .act::after { content: ''; position: absolute; inset: -6px -4px; }
   .rdy-fed-pill{ display:inline-block; font-size:10px; font-weight:600; color:var(--accent-ink); background:var(--accent-tint); border-radius:999px; padding:2px 8px; margin-left:8px; vertical-align:middle; }
   /* readiness: authoritative IRS 501(c)(3) verification (report rec #4) */
   .rdy-irs{ border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:14px; background:var(--surface); }
@@ -6392,7 +6396,7 @@ function populateProfile() {
   if (tagsEl) {
     const progs = arr(a.primary_programs);
     tagsEl.innerHTML = progs.length
-      ? progs.map(t => `<span class="tg">${esc(t)} <button onclick="this.parentElement.remove()">&times;</button></span>`).join('')
+      ? progs.map(t => `<span class="tg">${esc(t)} <button type="button" aria-label="Remove ${esc(t)}" onclick="this.parentElement.remove()">&times;</button></span>`).join('')
       : '<span style="font-size:13px;color:var(--muted)">No programs added yet — add them in onboarding or save here.</span>';
   }
 
