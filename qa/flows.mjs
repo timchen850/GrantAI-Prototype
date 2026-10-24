@@ -615,6 +615,35 @@ flow('dialog-focus', async (browser, check) => {
   return t;
 });
 
+flow('draft-export', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await t.ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(p.url()).origin });
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
+  await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
+  await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(7000);
+  const read = async (d) => { const fs = await import('fs'); return fs.readFileSync(await d.path(), 'utf8'); };
+  await p.click('#export-btn');
+  const [docDl] = await Promise.all([p.waitForEvent('download'), p.click('#exp-menu button:has-text("Word")')]);
+  const doc = await read(docDl);
+  console.log('    export file name:', docDl.suggestedFilename());
+  check('Word export downloads a .doc named after the org', /^Eastside_Youth_Collective_.+\.doc$/.test(docDl.suggestedFilename()));
+  check('Word export has the sections and no highlight markup', /<h2>Statement of Need<\/h2>/i.test(doc) && !/verify-flag|<mark/i.test(doc) && !/onerror|<script/i.test(doc));
+  await p.click('#export-btn');
+  const [txtDl] = await Promise.all([p.waitForEvent('download'), p.click('#exp-menu button:has-text("Plain text")')]);
+  const txt = await read(txtDl);
+  check('plain-text export is clean text with the sections', /Statement of Need/.test(txt) && !/<[a-z]/i.test(txt));
+  await p.click('#export-btn');
+  const [pop] = await Promise.all([p.waitForEvent('popup'), p.click('#exp-menu button:has-text("PDF")')]);
+  await pop.waitForLoadState().catch(() => {});
+  check('PDF opens a print view of the proposal', /Statement of Need/.test(await pop.content()));
+  await pop.close().catch(() => {});
+  await p.click('button[onclick="copyProposal()"]'); await p.waitForTimeout(400);
+  const clip = await p.evaluate(() => navigator.clipboard.readText().catch(() => ''));
+  check('Copy puts clean text on the clipboard', /Statement of Need/.test(clip) && !/<[a-z]/i.test(clip));
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;
