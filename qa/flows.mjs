@@ -1186,6 +1186,19 @@ flow('nonprofit-setup-steps-saved', async (browser, check) => {
   return t;
 });
 
+// The landing page, demo and tour only name sources the app searches (Grants.gov, USASpending.gov and its
+// curated foundations), and don't invent deadlines for real funders.
+flow('claims-match-the-app', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'visitor' });
+  const p = t.page;
+  const text = await p.evaluate(() => ['landing', 'demo', 'tutorial'].map((id) => document.getElementById(id).textContent).join(' ') + TUT_STEPS.map((s) => s.render()).join(' '));
+  const bad = ['Candid', 'Weingart', 'Joyce', 'Kresge', 'California Grants Portal', 'CA Grants', 'RFP feeds', 'state portals', 'hundreds of foundations', 'Every day we scan'].filter((w) => text.includes(w));
+  check('no sources the app does not search' + (bad.length ? ' (found: ' + bad.join(', ') + ')' : ''), !bad.length);
+  check('no made-up deadlines for real foundations (RWJF "Due Aug 1", CCF "Due Aug 30")', !/Due Aug 1(?!\d)|Due Aug 30(?!\d)|LOI Jul 1(?!\d)/.test(text));
+  check('the foundations named in the demo are ones Grange searches', await p.evaluate(() => ['Robert Wood Johnson Foundation', 'W.K. Kellogg Foundation', 'California Community Foundation'].every((f) => CURATED_GRANTS.some((g) => g.funder === f))));
+  return t;
+});
+
 // Prices (Oct 24): Starter $14.99/mo or $120/yr, Pro $35.99/mo or $300/yr, same on the landing page
 // and the Plans screen; yearly shows the yearly price and the saving; no features the app doesn't have.
 flow('pricing-and-savings', async (browser, check) => {
