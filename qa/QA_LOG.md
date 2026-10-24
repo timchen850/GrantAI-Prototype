@@ -97,6 +97,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 69 | Dashboard subtitle | A new account read "2 deadlines in the next 30 days" while Deadlines said "No deadlines yet": the count was matched grants closing soon, not the user's deadlines. | Now "14 grants matched · 2 close in the next 30 days." |
 | 70 | Pricing | On the live database (no `tier` column yet) "Start Free Trial" could only fail, with "Couldn't change your plan right now. Please try again." | When the database reports the missing column, it says "Paid plans aren't open yet. You're on the Free plan for now." Other errors still say try again. Covered by `plan-change-before-billing`. |
 | 71 | Tab title | Every screen had the same tab title, so the tab and the Back/Forward history list couldn't tell screens apart. | Each screen sets its own title ("Grant discovery · Grange AI"). Covered by `browser-back-forward`. |
+| 72 | Funder-call analysis (Readiness and Generator) | In "What you'll write", each section's description was meant to sit on its own line, but the row never wrapped, so descriptions squeezed into a narrow third column; at 320px they ran past the card ("Activitie…"). Hidden in tests because the fake AI returned an empty analysis. | The row wraps (title and word limit, then the description). The fake backend now returns a realistic analysis (verdict, eligibility, sections, attachments, formatting, AI policy, rubric), and `clipped-states.mjs` checks it. |
 
 ## Needs Tim's decision
 

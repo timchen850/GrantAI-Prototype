@@ -1,5 +1,5 @@
 // clipped.mjs for states a plain screen visit never reaches: approach plan, finished draft,
-// export menu, Grant management, an open AI assessment. Usage: node clipped-states.mjs
+// export menu, Grant management, an open AI assessment, a funder-call analysis. Usage: node clipped-states.mjs
 import { startServer, launch, openApp } from './harness.mjs';
 const srv = await startServer(); const browser = await launch();
 const check = (p) => p.evaluate(() => {
@@ -41,7 +41,11 @@ for (const w of [320, 390, 768]) {
   await p.evaluate(() => go('discovery')); await p.waitForTimeout(2500);
   await p.click('#disc-grants-list .gcard button:has-text("AI assessment") >> nth=0').catch(() => {}); await p.waitForTimeout(2500);
   const assess = await check(p);
-  console.log(w, JSON.stringify({ cfg, plan, done, menu, manage, assess }));
+  await p.evaluate(() => go('readiness')); await p.waitForTimeout(1500);
+  await p.fill('#rdy-req-ta', 'The Ahmanson Foundation invites proposals from 501(c)(3) organizations in Los Angeles County. A 1:1 cash match is required. Deadline: December 1.');
+  await p.click('#rdy-req-btn'); await p.waitForTimeout(2500);
+  const callRead = await check(p);
+  console.log(w, JSON.stringify({ cfg, plan, done, menu, manage, assess, callRead }));
   await t.ctx.close();
 }
 await browser.close(); srv.close();
