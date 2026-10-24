@@ -1,6 +1,6 @@
 // End-to-end flows against the fake backend: click through real tasks and check
 // what reached the database. Usage: node flows.mjs [flowName,...]
-import { startServer, launch, openApp } from './harness.mjs';
+import { startServer, launch, openApp, fillGenForm } from './harness.mjs';
 
 const FLOWS = {};
 const flow = (name, fn) => { FLOWS[name] = fn; };
@@ -211,7 +211,7 @@ flow('draft-limit-message', async (browser, check) => {
   await p.evaluate(() => { const o = window.toast; window.toast = (m) => { window._qaToast(m); return o(m); }; });
   await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
   await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
-  await p.click('#gen-btn'); await p.waitForTimeout(2500);
+  await fillGenForm(p); await p.click('#gen-btn'); await p.waitForTimeout(2500);
   check('monthly-limit message from the server reaches the user', toasts.includes(LIMIT));
   check('no "API error 429" jargon', !toasts.some((m) => /API error/.test(m)));
   t.errors = t.errors.filter((e) => !/429|Too Many/.test(e));
@@ -248,7 +248,7 @@ flow('discovery-save-and-draft', async (browser, check) => {
   await p.click('#disc-grants-list .gcard button:has-text("Draft proposal")'); await p.waitForTimeout(1500);
   check('Draft proposal opens the generator', (await screen(p)) === 'generator');
   check('drafted grant marked drafting in the pipeline', t.db.grants.some((r) => r.status === 'drafting' && r.user_id === UID.np));
-  await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(6000);
+  await fillGenForm(p); await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(6000);
   const out = await p.evaluate(() => (document.getElementById('out-doc')?.innerText || '').slice(0, 400));
   check('generator streams a draft with section headings', /Statement of Need/.test(out));
   check('generate-proposal edge function was called', t.fnLog.includes('generate-proposal'));
@@ -321,7 +321,7 @@ flow('signout-clears-the-page', async (browser, check) => {
   const p = t.page;
   await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
   await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
-  await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(7000);
+  await fillGenForm(p); await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(7000);
   await p.click('#ai-chat-fab'); await p.waitForTimeout(500);
   await p.fill('#acp-text', 'Our budget is $410,000'); await p.press('#acp-text', 'Enter'); await p.waitForTimeout(1500);
   check('setup: a draft and a chat are on the page', /Statement of Need/.test(await p.textContent('#doc-content')) && /410,000/.test(await p.textContent('#acp-log')));
@@ -385,7 +385,7 @@ flow('draft-outcome-and-assistant', async (browser, check) => {
   const p = t.page;
   await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
   await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
-  await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(7000);
+  await fillGenForm(p); await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(7000);
   const won = await p.$('button:has-text("Won")');
   check('outcome tracker offered after a draft', !!won);
   if (won) { await won.click(); await p.waitForTimeout(1200); }
@@ -417,7 +417,7 @@ flow('approach-plan', async (browser, check) => {
   const p = t.page;
   await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
   await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
-  await p.click('#gen-btn'); await p.waitForTimeout(3000);
+  await fillGenForm(p); await p.click('#gen-btn'); await p.waitForTimeout(3000);
   const btn = await p.$('button:has-text("Generate with this plan")');
   check('approach plan shown for approval before writing', !!btn);
   await p.screenshot({ path: 'out/plan-1440.png' });
@@ -430,7 +430,7 @@ flow('approach-plan', async (browser, check) => {
   check('approved plan leads to a draft', /Statement of Need/.test(out) && /Program Description/.test(out));
   // cancel path
   await p.evaluate(() => genShowConfig()); await p.waitForTimeout(500);
-  await p.click('#gen-btn'); await p.waitForTimeout(3000);
+  await fillGenForm(p); await p.click('#gen-btn'); await p.waitForTimeout(3000);
   await p.click('button:has-text("Cancel")'); await p.waitForTimeout(800);
   check('cancel returns to the setup form', await p.evaluate(() => getComputedStyle(document.querySelector('.gen-config')).display !== 'none'));
   return t;
@@ -558,7 +558,7 @@ flow('draft-html-filtered', async (browser, check) => {
   const p = t.page;
   await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
   await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
-  await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(7000);
+  await fillGenForm(p); await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(7000);
   const live = await p.evaluate(() => ({ xss: window.__xss || 0, html: document.getElementById('doc-content').innerHTML }));
   check('no injected code ran', !live.xss);
   check('no handlers, scripts, images or links kept', !/onerror|onclick|onmouseover|<script|<img|<svg|<iframe|<a |javascript:|style=/i.test(live.html));
@@ -734,7 +734,7 @@ flow('draft-export', async (browser, check) => {
   await t.ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(p.url()).origin });
   await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
   await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
-  await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(7000);
+  await fillGenForm(p); await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(7000);
   const read = async (d) => { const fs = await import('fs'); return fs.readFileSync(await d.path(), 'utf8'); };
   await p.click('#export-btn');
   const [docDl] = await Promise.all([p.waitForEvent('download'), p.click('#exp-menu button:has-text("Word")')]);
@@ -955,7 +955,7 @@ flow('award-amounts-with-k-and-m', async (browser, check) => {
   p.on('request', (q) => { if (q.url().includes('/functions/v1/exemplar-search')) bodies.push(JSON.parse(q.postData() || '{}')); });
   await p.evaluate(() => go('generator')); await p.waitForTimeout(1200);
   await p.evaluate(() => loadGrantIntoGenerator(CURATED_GRANTS.find((g) => g.amount === '$100K–$750K'))); await p.waitForTimeout(800);
-  await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(5000);
+  await fillGenForm(p); await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(5000);
   check('example proposals are looked up for a $100K+ grant, not an under-$50K one', bodies.length > 0 && bodies[0].filter_award_band === '50-150k');
   return t;
 });
@@ -1019,6 +1019,59 @@ flow('remove-document-chunks-first', async (browser, check) => {
   p.once('dialog', (d) => d.accept()); await p.click('#profile .rag-del'); await p.waitForTimeout(900);
   check('if its stored text can’t be removed, the document stays listed and the user is told', t.db.documents.some((d) => d.id === 'rag-2') && toasts.some((m) => /Could not remove/.test(m)));
   t.errors = t.errors.filter((e) => !/503|Failed to load resource/.test(e));
+  return t;
+});
+
+flow('dashboard-shows-overdue', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  const past = (n) => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
+  t.db.deadlines.push({ id: 'dl-late-1', user_id: UID.np, title: 'Spring LOI', kind: 'loi', due_date: past(5), status: 'upcoming' },
+                      { id: 'dl-late-2', user_id: UID.np, title: 'Q3 report', kind: 'report', due_date: past(20), status: 'upcoming' });
+  await p.evaluate(() => go('deadlines')); await p.waitForTimeout(500);
+  await p.evaluate(() => go('dashboard')); await p.waitForTimeout(2500);
+  check('the dashboard says 2 deadlines are overdue', /2 overdue/.test(await p.textContent('#dash-deadlines')));
+  await p.click('#dash-deadlines .dl-late button'); await p.waitForTimeout(1000);
+  check('Review opens the Deadlines screen', (await screen(p)) === 'deadlines');
+  return t;
+});
+
+flow('profile-past-proposals-plan', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });   // a free account, profile opened straight away
+  const p = t.page;
+  await p.evaluate(() => go('profile')); await p.waitForTimeout(1200);
+  const st = await p.evaluate(() => ({ form: getComputedStyle(document.getElementById('rag-form-section')).display, note: document.getElementById('rag-locked') ? getComputedStyle(document.getElementById('rag-locked')).display : 'missing' }));
+  check('a free account is not offered the Pro-only past-proposals form', st.form === 'none');
+  check('and the section explains it instead of sitting empty', st.note !== 'none' && st.note !== 'missing');
+  return t;
+});
+
+flow('award-period-dates', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  const aw = t.db.awards.find((a) => a.id === 'aw1');
+  await p.evaluate(() => go('manage')); await p.waitForTimeout(1500);
+  const want = await p.evaluate(([a, b]) => fmtDeadlineDate(a) + ' → ' + fmtDeadlineDate(b), [aw.period_start, aw.period_end]);
+  const txt = await p.textContent('#manage');
+  check('the award period reads "' + want + '", not raw dates', txt.includes(want) && !txt.includes(aw.period_start));
+  return t;
+});
+
+flow('generator-uses-your-own-details', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'legacy' });   // Harbor Food Share: not a youth program
+  const p = t.page; const toasts = await toastSpy(p);
+  t.db.grants.push({ id: 'g-food', user_id: UID.legacy, title: 'Community Food Access Grant', funder: 'County Fund', amount: 25000, deadline: null, status: 'saved', archived: false, created_at: new Date().toISOString() });
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(1200);
+  await p.evaluate(() => { const s = (window._genPipeline || []).find((x) => x.id === 'g-food'); if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
+  const f = await p.evaluate(() => ({ amt: document.getElementById('gen-amount').value, prog: document.getElementById('gen-program').value, pop: document.getElementById('gen-population').value, desc: document.getElementById('gen-description').value, meta: document.getElementById('gen-grant-meta').textContent }));
+  check('no sample text about East LA youth tutoring in the form', !/Boyle Heights|tutoring|175,000/i.test(f.prog + f.pop + f.desc + f.amt));
+  check('the requested amount comes from the grant ($25,000)', f.amt === '$25,000');
+  check('the grant card shows the amount as $25,000, not 25000', /\$25,000/.test(f.meta));
+  await p.evaluate(() => { document.getElementById('gen-population').value = ''; document.getElementById('gen-description').value = ''; document.getElementById('gen-period').value = ''; });
+  const before = t.fnLog.length;
+  await p.click('#gen-btn'); await p.waitForTimeout(1500);
+  if (process.env.QA_DEBUG) console.log('    toasts:', JSON.stringify(toasts), 'modal:', await p.evaluate(() => document.getElementById('orginfo-modal')?.classList.contains('open')));
+  check('drafting asks for the missing details first instead of spending a draft', toasts.some((m) => /Before drafting, add who the program serves, what this grant would fund and the project period/.test(m)) && !t.fnLog.slice(before).includes('generate-proposal'));
   return t;
 });
 

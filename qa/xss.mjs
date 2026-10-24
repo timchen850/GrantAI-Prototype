@@ -2,7 +2,7 @@
 // field the fake backend returns (profile, answers, grants, deadlines, awards, documents,
 // Grants.gov results), visit every screen and open the main panels, and check nothing ran.
 // Usage: node xss.mjs [width]
-import { startServer, launch, openApp } from './harness.mjs';
+import { startServer, launch, openApp, fillGenForm } from './harness.mjs';
 const width = +(process.argv[2] || 1440);
 const srv = await startServer(); const browser = await launch();
 const X = (tag) => `<img src=x onerror="window.__xss=(window.__xss||[]).concat('${tag}')">"'><svg onload="window.__xss=(window.__xss||[]).concat('${tag}-svg')">`;
@@ -50,7 +50,7 @@ for (const s of screens) {
   if (s === 'generator') {
     await p.fill('#gen-rfp-text', 'Grant call text long enough to analyze for the sweep. Deadline December 1.').catch(() => {});
     await p.click('#generator button:has-text("Analyze this call")').catch(() => {}); await p.waitForTimeout(1800);
-    await p.click('#gen-btn').catch(() => {}); await p.waitForTimeout(3000);
+    await fillGenForm(p); await p.click('#gen-btn').catch(() => {}); await p.waitForTimeout(3000);
     const ap = await p.$('button:has-text("Generate with this plan")'); if (ap) await ap.click().catch(() => {});
     await p.waitForTimeout(8000);   // draft + scorecard
   }

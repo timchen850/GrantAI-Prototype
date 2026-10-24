@@ -1,4 +1,4 @@
-import { startServer, launch, openApp } from './harness.mjs';
+import { startServer, launch, openApp, fillGenForm } from './harness.mjs';
 const srv = await startServer(); const browser = await launch();
 const t = await openApp(browser, { persona: 'np', failFunctions: true });
 const p = t.page;
@@ -8,7 +8,7 @@ await p.evaluate(() => { const o = window.toast; window.toast = (m) => { window.
 await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
 await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
 const T0 = Date.now();
-await p.click('#gen-btn');
+await fillGenForm(p); await p.click('#gen-btn');
 for (let i = 0; i < 25; i++) { await p.waitForTimeout(1000); }
 console.log('fn calls:', t.fnLog.join(', '));
 console.log('state:', JSON.stringify(await p.evaluate(() => ({ generating: typeof generating !== 'undefined' ? generating : '?', plan: document.getElementById('ap-sub')?.textContent, planShown: document.getElementById('agent-plan')?.classList.contains('show') }))));

@@ -1,6 +1,6 @@
 // clipped.mjs for states a plain screen visit never reaches: approach plan, finished draft,
 // export menu, Grant management, an open AI assessment, a funder-call analysis. Usage: node clipped-states.mjs
-import { startServer, launch, openApp } from './harness.mjs';
+import { startServer, launch, openApp, fillGenForm } from './harness.mjs';
 const srv = await startServer(); const browser = await launch();
 const check = (p) => p.evaluate(() => {
   const root = document.getElementById(window._currentScreen); const out = [];
@@ -8,7 +8,7 @@ const check = (p) => p.evaluate(() => {
   for (let n = walker.nextNode(); n; n = walker.nextNode()) {
     if (!n.textContent.trim()) continue;
     const el = n.parentElement; if (!el || !(el.offsetParent || el.getClientRects().length)) continue;
-    const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || +cs.opacity === 0 || cs.textOverflow === 'ellipsis') continue;
+    const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || +cs.opacity === 0 || cs.textOverflow === 'ellipsis' || (cs.webkitLineClamp && cs.webkitLineClamp !== 'none')) continue;
     const r = document.createRange(); r.selectNodeContents(n); const tr = r.getBoundingClientRect(); if (!tr.width) continue;
     if (tr.right > innerWidth + 1) { out.push('"' + n.textContent.trim().slice(0, 30) + '" past the screen edge'); continue; }
     for (let a = el; a && a !== root.parentElement; a = a.parentElement) {
@@ -29,7 +29,7 @@ for (const w of [320, 390, 768]) {
   await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
   await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
   const cfg = await check(p);
-  await p.click('#gen-btn'); await p.waitForTimeout(3000);
+  await fillGenForm(p); await p.click('#gen-btn'); await p.waitForTimeout(3000);
   const plan = await check(p);
   const ap = await p.$('button:has-text("Generate with this plan")'); if (ap) await ap.click();
   await p.waitForTimeout(8000);

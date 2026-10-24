@@ -1,7 +1,7 @@
 // Screenshot the states a demo walks through that a plain screen sweep never reaches:
 // each tour step, each survey step, sign-in steps, the phone menu, dialogs and a
 // finished draft. Usage: node states.mjs [width] [group,...]  -> out/state-<w>-<name>.png
-import { startServer, launch, openApp } from './harness.mjs';
+import { startServer, launch, openApp, fillGenForm } from './harness.mjs';
 
 const width = +(process.argv[2] || 1440);
 const groups = process.argv[3] ? process.argv[3].split(',') : ['tour', 'survey', 'signin', 'menu', 'dialogs', 'draft'];
@@ -84,7 +84,7 @@ if (groups.includes('draft')) {
   await p.evaluate(() => go('discovery')); await p.waitForTimeout(2500);
   await p.click('#disc-grants-list .gcard button:has-text("Draft proposal")'); await p.waitForTimeout(1500);
   await shot(p, 'draft-config');
-  await p.click('#gen-btn'); await p.waitForTimeout(3000); await shot(p, 'draft-plan');
+  await fillGenForm(p); await p.click('#gen-btn'); await p.waitForTimeout(3000); await shot(p, 'draft-plan');
   const ap = await p.$('button:has-text("Generate with this plan")'); if (ap) await ap.click();
   await p.waitForTimeout(9000);
   await shot(p, 'draft-done');

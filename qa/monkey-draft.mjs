@@ -1,5 +1,5 @@
 // After a finished draft: click every visible button in the generator output and record JS errors.
-import { startServer, launch, openApp } from './harness.mjs';
+import { startServer, launch, openApp, fillGenForm } from './harness.mjs';
 const srv = await startServer(); const browser = await launch();
 const t = await openApp(browser, { persona: 'np' });
 const p = t.page;
@@ -10,7 +10,7 @@ const popups = []; p.on('popup', (pp) => popups.push(pp.url()));
 const toasts = []; await p.exposeFunction('_qt', (m) => toasts.push(m)); await p.evaluate(() => { const o = window.toast; window.toast = (m) => { window._qt(m); return o(m); }; });
 await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
 await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
-await p.click('#gen-btn'); await p.waitForTimeout(3000);
+await fillGenForm(p); await p.click('#gen-btn'); await p.waitForTimeout(3000);
 const ap = await p.$('button:has-text("Generate with this plan")'); if (ap) await ap.click();
 await p.waitForTimeout(8000);
 const labels = await p.evaluate(() => [...document.querySelectorAll('#out-doc button, #out-doc [onclick], #compliance-checklist button, #ai-disclosure button, #ai-disclosure [onclick]')].filter((b) => { const r = b.getBoundingClientRect(); return r.width > 0; }).map((b, i) => ({ i, oc: b.getAttribute('onclick') || '(js)', text: (b.innerText || '').trim().slice(0, 30) })));

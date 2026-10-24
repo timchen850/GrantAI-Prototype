@@ -20,7 +20,7 @@ for (const persona of personas) for (const width of widths) {
         if (!n.textContent.trim()) continue;
         const el = n.parentElement; if (!el || !(el.offsetParent || el.getClientRects().length)) continue;
         const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || +cs.opacity === 0) continue;
-        if (cs.textOverflow === 'ellipsis') continue;                   // truncation on purpose
+        if (cs.textOverflow === 'ellipsis' || (cs.webkitLineClamp && cs.webkitLineClamp !== 'none')) continue;   // truncation on purpose (one line or a line clamp)
         if (el.closest('.fcar-rail')) continue;                          // landing's rotating feature wheel fades off its edges by design
         const r = document.createRange(); r.selectNodeContents(n); const tr = r.getBoundingClientRect();
         if (!tr.width) continue;

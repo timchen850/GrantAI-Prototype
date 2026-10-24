@@ -300,3 +300,12 @@ export async function revealAll(page) {
     window.scrollTo(0, 0); await new Promise((r) => setTimeout(r, 300));
   });
 }
+
+// The generator asks for who it serves, what it funds and the project period before it
+// drafts (they're required before export); fill whichever a script left empty.
+export async function fillGenForm(p) {
+  await p.evaluate(() => {
+    const set = (id, v) => { const el = document.getElementById(id); if (el && !el.value.trim()) el.value = v; };
+    set('gen-population', 'Middle schoolers in Boyle Heights'); set('gen-description', 'Expand the robotics program to a second school.'); set('gen-period', 'Jan–Dec 2027');
+  });
+}

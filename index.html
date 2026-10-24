@@ -121,7 +121,7 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 0 3px var(--accent-tint);
 }
 textarea { resize: vertical; min-height: 92px; line-height: 1.55; }
-label.field-label {
+label.field-label, div.field-label {   /* div: a heading over a link, not a form field */
   display: block; font-size: 13px; font-weight: 600; color: var(--ink-soft);
   margin-bottom: 7px;
 }
@@ -942,6 +942,12 @@ label.field-label {
   #deadlines .dlx-act { width: 100%; justify-content: space-between; }
   #deadlines .dlx-act .btn { margin-right: -10px; }   /* line the button's text up with the card edge */
 }
+@media (max-width: 360px) {   /* the dashboard card is narrower still: same treatment on the smallest phones */
+  #dash-deadlines .dl:not(.dl-late) { flex-wrap: wrap; row-gap: 2px; }   /* the short "N overdue" row stays on one line */
+  #dash-deadlines .dl:not(.dl-late) > div:first-child { flex-basis: 100%; }
+  #dash-deadlines .dl:not(.dl-late) > div:last-child { width: 100%; justify-content: space-between; }
+  #dash-deadlines .dl > div:last-child .btn { margin-right: -10px; }
+}
 .dlx-count { font-size: 12px; font-weight: 700; color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
 .dl.dlx-done .dn, .dl.dlx-done .dt { color: var(--muted); }   /* done: struck through and muted, still readable */
 .dl.dlx-done .dn { text-decoration: line-through; text-decoration-color: var(--line); }
@@ -1060,6 +1066,7 @@ label.field-label {
 .complete { display: flex; align-items: center; gap: 22px; background: var(--surface);
   border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px 26px; margin-bottom: 28px; }
 .complete .cring { width: 64px; height: 64px; flex-shrink: 0; }
+@media (max-width: 400px) { .complete { flex-direction: column; align-items: flex-start; gap: 14px; padding: 20px; } }   /* phones: the ring sits above the text, which gets the full width */
 .complete .msg { font-size: 14.5px; color: var(--ink-body); }
 .complete .msg strong { color: var(--ink); }
 .pform { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
@@ -4979,6 +4986,8 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         .pbox-bar{ display:flex; align-items:center; gap:10px; margin-top:8px; }
         .pbox-hint{ font-size:11.5px; color:var(--muted); flex:1; }
         .pbox-acts{ display:flex; align-items:center; gap:8px; }
+        @media (max-width: 480px){ .pbox-bar{ flex-wrap:wrap; } .pbox-hint{ flex-basis:100%; } .pbox-acts{ margin-left:auto; } }   /* the hint gets its own line above the buttons */
+        @media (max-width: 420px){ .gen-2col{ grid-template-columns:1fr !important; } }   /* amount / period and the two tone menus stack on phones */
         .pbox-viz{ display:none; align-items:flex-end; gap:2px; height:18px; }
         .pbox-viz.on{ display:flex; }
         .pbox-viz i{ width:3px; background:var(--accent); border-radius:2px; height:6px; animation:pviz .7s ease-in-out infinite; }
@@ -5015,7 +5024,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
         .gsel-row:hover{ border-color:var(--accent); transform:translateY(-1px); box-shadow:0 6px 20px rgba(26,25,22,.07); }
         .gsel-ic{ width:38px; height:38px; border-radius:10px; background:var(--accent-tint); color:var(--accent-ink); display:grid; place-items:center; flex-shrink:0; }
         .gsel-main{ flex:1; min-width:0; }
-        .gsel-t{ font-size:15px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .gsel-t{ font-size:15px; font-weight:700; color:var(--ink); line-height:1.3; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; overflow-wrap:anywhere; }   /* two lines, so grants with similar names can be told apart on a phone */
         .gsel-m{ font-size:13px; color:var(--muted); margin-top:2px; }
         .gsel-badge{ font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:var(--accent-tint); color:var(--accent-ink); flex-shrink:0; }
         .gsel-badge.alt{ background:var(--surface-2); color:var(--ink-soft); }
@@ -5066,9 +5075,9 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
             </div>
             <div class="fieldset"><label class="field-label">Proposal type <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="toggleTip(this)">?</button></label><div class="ob-help-text" hidden>Pick the document the funder asked for. A <b>Letter of inquiry (LOI)</b> is a short 1 to 2 page pitch you send first. A <b>Concept paper</b> is a brief outline of your idea. A <b>Full grant narrative</b> is the complete application. A <b>Progress report</b> updates a funder on a grant you already won.</div>
               <select id="gen-proposal-type"><option>Full grant narrative</option><option>Letter of inquiry</option><option>Concept paper</option><option>Progress report</option></select></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div class="fieldset" style="margin:0"><label class="field-label">Requested amount</label><input id="gen-amount" type="text" value="$175,000"></div>
-              <div class="fieldset" style="margin:0"><label class="field-label">Project period</label><input id="gen-period" type="text" value="Jan-Dec 2027"></div>
+            <div class="gen-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="fieldset" style="margin:0"><label class="field-label">Requested amount</label><input id="gen-amount" type="text" inputmode="decimal" placeholder="e.g. $50,000"></div>
+              <div class="fieldset" style="margin:0"><label class="field-label">Project period</label><input id="gen-period" type="text" placeholder="e.g. Jan–Dec 2027"></div>
             </div>
           </div>
 
@@ -5137,15 +5146,15 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
           <div class="panel" style="margin-bottom:18px">
             <div class="panel-head"><h3>Program focus</h3></div>
             <div class="fieldset"><label class="field-label">Program to fund</label>
-              <select id="gen-program"><option>After-school tutoring</option><option>College prep track</option><option>Mentorship program</option><option>Summer academy</option></select></div>
-            <div class="fieldset"><label class="field-label">Population served</label><input id="gen-population" type="text" value="Youth ages 8 to 18 in Boyle Heights and East LA"></div>
+              <input id="gen-program" type="text" list="gen-program-list" autocomplete="off" placeholder="The program this grant would pay for"><datalist id="gen-program-list"></datalist></div>
+            <div class="fieldset"><label class="field-label">Population served</label><input id="gen-population" type="text" placeholder="Who it serves, e.g. families in your county"></div>
             <div class="fieldset" style="margin:0"><label class="field-label">What this funds</label>
-              <textarea id="gen-description">Year three of our after-school tutoring and mentorship program, expanding capacity by 60 youth and adding workforce readiness for the 16 to 18 cohort.</textarea></div>
+              <textarea id="gen-description" placeholder="What the money would do: serve more people, open a site, hire staff…"></textarea></div>
           </div>
 
           <div class="panel" style="margin-bottom:18px">
             <div class="panel-head"><h3>Tone</h3></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="gen-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
               <div class="fieldset" style="margin:0"><label class="field-label">Voice <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="toggleTip(this)">?</button></label><div class="ob-help-text" hidden>The writing style Grange uses. <b>Community-centered</b> leads with story and people. <b>Data-driven</b> leads with numbers and evidence. <b>Formal federal</b> is the precise, policy-aligned tone government reviewers expect.</div>
                 <select id="gen-voice"><option>Data-driven</option><option selected>Community-centered</option><option>Formal federal</option></select></div>
               <div class="fieldset" style="margin:0"><label class="field-label">Emphasis <button type="button" class="ob-help-btn" aria-expanded="false" aria-label="What does this mean?" onclick="toggleTip(this)">?</button></label><div class="ob-help-text" hidden>What each section leans on. <b>Need &amp; equity</b> stresses the problem and who is underserved. <b>Outcomes</b> stresses measurable results. <b>Capacity</b> stresses your track record and ability to deliver.</div>
@@ -5154,7 +5163,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
           </div>
 
           <div class="pbox" id="gen-pbox" style="margin-top:4px">
-            <textarea id="gen-prompt-text" aria-label="Anything else Grange should know" class="pbox-ta" rows="1" placeholder="Anything else Grange should know or emphasize? Optional, the details above are enough to generate." oninput="pboxAutosize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();genPromptSend();}"></textarea>
+            <textarea id="gen-prompt-text" aria-label="Anything else Grange should know" class="pbox-ta" rows="1" placeholder="Anything else to emphasize? (optional)" oninput="pboxAutosize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();genPromptSend();}"></textarea>
             <div class="pbox-bar">
               <div class="pbox-hint">✦ Fill in the details above, add anything extra here, then generate. Tap the mic to dictate.</div>
               <div class="pbox-acts">
@@ -5293,6 +5302,9 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
           .rag-del:hover{ background:var(--line-soft); color:var(--accent); }
         </style>
         <div class="divider">Your voice &amp; past proposals</div>
+        <div class="fieldset full" id="rag-locked" style="display:none">
+          <div class="rag-lead">On the Pro plan, Grange studies your past proposals so drafts come out in <b>your real voice</b>, not generic AI. <a href="#" style="color:var(--accent-ink);font-weight:600" onclick="go('plan');return false;">See plans →</a></div>
+        </div>
         <div class="fieldset full" id="rag-form-section">
           <div class="rag-lead">Add a past proposal, letter, or any writing that sounds like your organization. Grange studies it so your drafts come out in <b>your real voice</b>, not generic AI. Private to you, and never used to train AI.</div>
           <textarea id="rag-paste" aria-label="Past proposal or About-us text" class="rag-ta" placeholder="Paste a past proposal, letter of inquiry, or your About-us text here…"></textarea>
@@ -5359,6 +5371,11 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   .rdy-elig .lbl{ font-size:14px; color:var(--ink); flex:1; }
   .rdy-elig .lbl small{ display:block; font-size:12px; color:var(--muted); font-weight:400; margin-top:1px; }
   .rdy-elig .act{ font-size:12px; color:var(--accent); cursor:pointer; white-space:nowrap; }
+  @media (max-width: 400px){   /* phones: the status goes under the text instead of squeezing it */
+    .rdy-elig{ flex-wrap:wrap; align-items:flex-start; row-gap:4px; }
+    .rdy-elig .lbl{ flex:1 1 calc(100% - 31px); }
+    .rdy-elig > :last-child:not(.lbl){ margin-left:31px; }
+  }
   /* small controls get a bigger invisible tap area (WCAG 2.5.8 target size); they look the same */
   .tg button, .ob-help-btn, .pa-cmp .ic, .rdy-how-t, .rdy-elig .act { position: relative; }
   .tg button::after, .ob-help-btn::after, .pa-cmp .ic::after { content: ''; position: absolute; inset: -8px; }
@@ -5990,6 +6007,8 @@ function applyRagGate() {
   const form = document.getElementById('rag-form-section');
   if (paywall) paywall.style.display = isPro ? 'none' : 'flex';
   if (form) form.style.display = isPro ? '' : 'none';
+  const locked = document.getElementById('rag-locked');   // the profile's section would otherwise be an empty heading
+  if (locked) locked.style.display = isPro ? 'none' : '';
 }
 
 /* initial screen state for the mobile hamburger nav */
@@ -6154,7 +6173,7 @@ function go(id, opts) {
   if (id === 'discovery') requestAnimationFrame(() => { loadDiscoveryGrants(); renderDiscOrgInfoBanner(); });
   if (id === 'dashboard') requestAnimationFrame(() => updateDashboard());
   if (id === 'generator') requestAnimationFrame(() => { populateGeneratorGrant(); applyRagGate(); });
-  if (id === 'profile')   requestAnimationFrame(() => populateProfile());
+  if (id === 'profile')   requestAnimationFrame(() => { populateProfile(); applyRagGate(); });   // past proposals are a Pro feature here too
   if (id === 'readiness') requestAnimationFrame(() => loadReadiness());
   if (id === 'nonprofit-setup') requestAnimationFrame(() => loadNonprofitSetup());
   if (id === 'manage')    requestAnimationFrame(() => loadPostAward());
@@ -7140,8 +7159,8 @@ PROGRAM BEING FUNDED:
 - Program name: ${fields.program}
 - Population served: ${fields.population}
 - What this grant funds: ${fields.description}
-- Requested amount: ${grantAmount}
-- Project period: ${fields.period}
+- Requested amount: ${grantAmount || 'not provided: write [VERIFY: amount requested] instead of a figure'}
+- Project period: ${fields.period || 'not provided: write [VERIFY: project period] instead of dates'}
 
 GRANT:
 - Funder: ${funderLine}
@@ -7390,7 +7409,7 @@ async function renderGrantPicker() {
     ? drafts.map((d, i) => {
         const g = d.grant || {}; const title = g.title || g.funder || 'Untitled draft';
         const sub = (g.funder && g.funder !== title ? esc(g.funder) + ' · ' : '') + (d.doc ? 'Draft started' : 'In progress');
-        return '<div class="gsel-row" role="button" tabindex="0" onclick="pickDraft(' + i + ')"><span class="gsel-ic">' + fileIc + '</span><div class="gsel-main"><div class="gsel-t">' + esc(title) + '</div><div class="gsel-m">' + sub + '</div></div><span class="gsel-badge">Draft</span></div>';
+        return '<div class="gsel-row" role="button" tabindex="0" onclick="pickDraft(' + i + ')"><span class="gsel-ic">' + fileIc + '</span><div class="gsel-main"><div class="gsel-t" title="' + escHtml(title) + '">' + esc(title) + '</div><div class="gsel-m">' + sub + '</div></div><span class="gsel-badge">Draft</span></div>';
       }).join('')
     : '<div class="gsel-empty">No drafts yet. Pick a saved grant below to start one.</div>');
 
@@ -7407,7 +7426,7 @@ async function renderGrantPicker() {
   window._genPipeline = pipeline;
   const sEl = document.getElementById('gsel-saved');
   sEl.innerHTML = '<div class="gsel-h">Saved grants</div>' + (pipeline.length
-    ? pipeline.map(p => '<div class="gsel-row" role="button" tabindex="0" onclick="pickSaved(this.dataset.id)" data-id="' + escHtml(p.id) + '"><span class="gsel-ic">' + fileIc + '</span><div class="gsel-main"><div class="gsel-t">' + esc(p.title) + '</div><div class="gsel-m">' + (p.funder ? esc(p.funder) : 'Saved grant') + '</div></div><span class="gsel-badge alt">Start</span></div>').join('')
+    ? pipeline.map(p => '<div class="gsel-row" role="button" tabindex="0" onclick="pickSaved(this.dataset.id)" data-id="' + escHtml(p.id) + '"><span class="gsel-ic">' + fileIc + '</span><div class="gsel-main"><div class="gsel-t" title="' + escHtml(p.title) + '">' + esc(p.title) + '</div><div class="gsel-m">' + (p.funder ? esc(p.funder) : 'Saved grant') + '</div></div><span class="gsel-badge alt">Start</span></div>').join('')
     : '<div class="gsel-empty">No saved grants yet. Save grants from discovery and they show up here.</div>');
 }
 function loadGrantIntoGenerator(g) {
@@ -7443,12 +7462,32 @@ function setGrantCard(g, restored) {
   if (titleEl) titleEl.textContent = g.title || g.funder || 'Selected grant';
   const parts = [];
   if (g.type)          parts.push(g.type);
-  if (g.amount)        parts.push(g.amount);
+  if (g.amount)        parts.push(/^\d+(\.\d+)?$/.test(String(g.amount).trim()) ? '$' + Number(g.amount).toLocaleString() : g.amount);   // saved grants store a plain number
   const dueLbl = g.deadlineLabel || (/^\d{4}-\d{2}-\d{2}/.test(String(g.deadline || '')) ? fmtDeadlineDate(g.deadline) : '');   // saved grants carry only the date
   if (dueLbl) parts.push('Due ' + dueLbl);
   if (g.matchScore)    parts.push(g.matchScore + '% match');
   if (metaEl) metaEl.textContent = parts.join(' · ') || (g.funder || '');
-  if (!restored && amtEl && g.amountMax) amtEl.value = '$' + Number(g.amountMax).toLocaleString();
+  if (!restored && amtEl) {   // a new grant: request what this one offers (its top amount), never the last grant's figure
+    const top = g.amountMax || _amountTop(g.amount);
+    amtEl.value = top ? '$' + Math.round(top).toLocaleString() : '';
+  }
+  if (!restored) genPrefillFromProfile();
+}
+/* The largest amount in a grant's amount text ("$10K–$50K" → 50000). */
+function _amountTop(s) {
+  const all = [...String(s == null ? '' : s).matchAll(/\d[\d,]*(?:\.\d+)?\s*(?:k|m|b|thousand|million|billion)?\b/gi)].map((m) => _amountNum(m[0])).filter((n) => n > 0);
+  return all.length ? Math.max(...all) : null;
+}
+/* Program and population come from the user's own profile, not sample text. */
+function genPrefillFromProfile() {
+  const a = (window._grange && window._grange._cachedAnswers) || {};
+  const progs = (Array.isArray(a.primary_programs) ? a.primary_programs : (a.primary_programs ? [a.primary_programs] : [])).map(String).filter(Boolean);
+  const dl = document.getElementById('gen-program-list');
+  if (dl) dl.innerHTML = progs.map((x) => '<option value="' + escHtml(x) + '"></option>').join('');
+  const prog = document.getElementById('gen-program');
+  if (prog && !prog.value.trim() && progs.length) prog.value = progs[0];
+  const pop = document.getElementById('gen-population');
+  if (pop && !pop.value.trim() && a.beneficiaries) pop.value = String(a.beneficiaries).slice(0, 200);
 }
 
 /* ── Draft autosave: your config + draft persist per user so leaving and
@@ -8076,6 +8115,19 @@ async function generate() {
     go('signin');
     return;
   }
+  // The pre-export checklist requires these three, and the form is hidden once a draft is
+  // written, so ask for them now rather than after a draft (and a draft credit) is spent.
+  const _need = [['gen-population', 'who the program serves'], ['gen-description', 'what this grant would fund'], ['gen-period', 'the project period']]
+    .filter(([id]) => { const el = document.getElementById(id); return el && !el.value.trim(); });
+  if (_need.length) {
+    genShowConfig();
+    const first = document.getElementById(_need[0][0]);
+    _need.forEach(([id]) => { const el = document.getElementById(id); el.style.borderColor = 'var(--accent)'; el.addEventListener('input', () => { el.style.borderColor = ''; }, { once: true }); });
+    if (first) { first.scrollIntoView({ block: 'center' }); first.focus(); }
+    toast('Before drafting, add ' + _need.map((n) => n[1]).join(', ').replace(/, ([^,]*)$/, ' and $1') + '.');
+    return;
+  }
+
   // Remind (or, in 'require' mode, require) the org to finish its info first.
   if (!(await orgInfoReminder('apply'))) return;
 
@@ -8126,9 +8178,9 @@ async function generate() {
   // Collect form values
   const fields = {
     proposalType: getVal('gen-proposal-type', 'Full grant narrative'),
-    amount:       getVal('gen-amount',        '$175,000'),
-    period:       getVal('gen-period',        'Jan-Dec 2027'),
-    program:      getVal('gen-program',       'After-school tutoring'),
+    amount:       getVal('gen-amount',        ''),
+    period:       getVal('gen-period',        ''),
+    program:      getVal('gen-program',       ''),
     population:   getVal('gen-population',    ''),
     description:  getVal('gen-description',   ''),
     voice:        getVal('gen-voice',         'Community-centered'),
@@ -10735,12 +10787,12 @@ const TUT_STEPS = [
         <div class="tut-bay">
           <div class="tut-dossier glass-bright rev" data-delay="180">
             <div class="tut-id-top">
-              <div><div class="tut-id-name">Eastside Youth Foundation</div><div class="tut-id-sub">501(c)(3) · Alameda County, CA</div></div>
+              <div><div class="tut-id-name">Eastside Youth Foundation</div><div class="tut-id-sub">501(c)(3) · Los Angeles County, CA</div></div>
               <div class="tut-ring" id="tut-pr"><i><span id="tut-prn">0</span>%</i></div>
             </div>
             <div class="tut-id-rows" id="tut-prows">
               <div class="tut-id-row"><span class="d"></span><span><b>Programs</b> · after-school tutoring + mentorship</span></div>
-              <div class="tut-id-row"><span class="d"></span><span><b>Geography</b> · Alameda County, CA</span></div>
+              <div class="tut-id-row"><span class="d"></span><span><b>Geography</b> · Los Angeles County, CA</span></div>
               <div class="tut-id-row"><span class="d"></span><span><b>NTEE</b> · B · Education</span></div>
               <div class="tut-id-row"><span class="d"></span><span><b>Annual budget</b> · $1.2M</span></div>
               <div class="tut-id-row"><span class="d"></span><span><b>Staff</b> · 6 across 3 programs</span></div>
@@ -12458,7 +12510,7 @@ async function loadDashboardDeadlines() {
   const uid = window._grange?.user?.id;
   if (!uid) return;
   const today = localToday();
-  let rows;
+  let rows, overdue = [];
   try {
     const { data, error } = await window.sb.from('deadlines')
       .select('id,title,due_date,kind,status')
@@ -12466,10 +12518,17 @@ async function loadDashboardDeadlines() {
       .order('due_date', { ascending: true }).limit(6);
     if (error) return;          // keep the in-memory fallback already painted
     rows = data || [];
+    // Past-due items that were never marked done: the most urgent of all, so say so here too.
+    const late = await window.sb.from('deadlines').select('id').eq('user_id', uid).eq('status', 'upcoming').lt('due_date', today).limit(50);
+    if (!late.error) overdue = late.data || [];
   } catch (_) { return; }
-  if (!rows.length) return;     // nothing persisted yet — keep the in-memory matched deadlines
+  if (!rows.length && !overdue.length) return;     // nothing persisted yet — keep the in-memory matched deadlines
   const todayMs = Date.parse(today + 'T00:00:00Z');
-  el.innerHTML = rows.map(d => {
+  const lateRow = overdue.length
+    ? '<div class="dl dl-late"><div><div class="dn" style="color:var(--accent-ink)">' + overdue.length + ' overdue</div><div class="dt">Past the due date and not marked done</div></div>'
+      + '<div style="display:flex;align-items:center;gap:10px"><button class="btn btn-ghost btn-sm" onclick="go(\'deadlines\')">Review</button></div></div>'
+    : '';
+  el.innerHTML = lateRow + rows.map(d => {
     const daysLeft = Math.round((Date.parse(String(d.due_date).slice(0, 10) + 'T00:00:00Z') - todayMs) / 86400000);
     const cls = daysLeft <= 14 ? 'red' : daysLeft <= 45 ? 'amber' : 'green';
     const sub = [dlKindLabel(d.kind), nextReminderLabel(daysLeft)].filter(Boolean).join(' · ');
@@ -14057,10 +14116,10 @@ function applyDiscFilters(query, type) {
     const over = hasBudget && spent > awarded;
     const catLabel = k => { const c = (_paCats || []).find(x => x.key === k); return c ? c.label : k; };
     return '<div class="pa-card"><div class="pa-head">' +
-      '<div><div class="pa-t">' + escHtml((a.grants && a.grants.title) || 'Awarded grant') + '</div><div class="pa-f">' + escHtml((a.grants && a.grants.funder) || '') + (a.period_start ? ' · ' + a.period_start + ' → ' + (a.period_end || 'ongoing') : '') + '</div></div>' +
+      '<div><div class="pa-t">' + escHtml((a.grants && a.grants.title) || 'Awarded grant') + '</div><div class="pa-f">' + escHtml((a.grants && a.grants.funder) || '') + (a.period_start ? ' · ' + escHtml(fmtDeadlineDate(a.period_start)) + ' → ' + (a.period_end ? escHtml(fmtDeadlineDate(a.period_end)) : 'ongoing') : '') + '</div></div>' +
       '<div class="pa-money"><div class="v">' + _paFmt(awarded) + '</div><div class="l">awarded</div></div></div>' +
       '<div class="pa-body"><div class="pa-sub">Compliance — keep the money</div>' +
-        (reqs || []).map(r => '<div class="pa-cmp ' + (r.status === 'satisfied' ? 'done' : '') + '" id="pacmp-' + r.id + '"><span class="ic" role="checkbox" tabindex="0" aria-checked="' + (r.status === 'satisfied') + '" aria-label="' + escHtml(r.label) + '" onclick="toggleCompliance(\'' + jsAttr(r.id) + '\')">' + _paIcon(r.status === 'satisfied') + '</span><div class="bd"><b>' + escHtml(r.label) + '</b><p>' + escHtml(r.detail || '') + '</p></div></div>').join('') +
+        (reqs || []).map(r => '<div class="pa-cmp ' + (r.status === 'satisfied' ? 'done' : '') + '" id="pacmp-' + escHtml(r.id) + '"><span class="ic" role="checkbox" tabindex="0" aria-checked="' + (r.status === 'satisfied') + '" aria-label="' + escHtml(r.label) + '" onclick="toggleCompliance(\'' + jsAttr(r.id) + '\')">' + _paIcon(r.status === 'satisfied') + '</span><div class="bd"><b>' + escHtml(r.label) + '</b><p>' + escHtml(r.detail || '') + '</p></div></div>').join('') +
         '<div class="pa-spend"><div class="pa-sub">Spending vs budget — the clawback guardrail</div>' +
           '<div class="pa-bars"><div class="pa-stat"><div class="l">Spent</div><div class="v">' + _paFmt(spent) + '</div></div>' +
             (hasBudget
@@ -14071,8 +14130,8 @@ function applyDiscFilters(query, type) {
           (over ? '<p style="font-size:12.5px;color:var(--accent-ink);margin:-4px 0 12px">⚠ You\'ve spent more than the award — exactly what triggers a clawback. Move costs to another funder or cut spend.</p>' : '') +
           (!hasBudget ? '<p style="font-size:12.5px;color:var(--muted);margin:-4px 0 12px">No award amount on file, so spend can\'t be tracked against a budget yet.</p>' : '') +
           (exps || []).map(e => '<div class="pa-exp-row"><span class="cat">' + escHtml(catLabel(e.category_key)) + '</span>' + escHtml(e.description || '') + '<span class="amt">' + _paFmt(Number(e.amount || 0)) + '</span></div>').join('') +
-          '<div class="pa-addform"><select id="paexp-cat-' + a.id + '" aria-label="Spending category">' + (_paCats || []).map(c => '<option value="' + escHtml(c.key) + '">' + escHtml(c.label) + '</option>').join('') + '</select>' +
-            '<input class="desc" id="paexp-desc-' + a.id + '" type="text" aria-label="What the spending was for" placeholder="What was it for?"><input class="num" id="paexp-amt-' + a.id + '" type="text" inputmode="decimal" aria-label="Amount spent" placeholder="$ amount"><button class="btn btn-outline btn-sm" onclick="addExpense(\'' + jsAttr(a.id) + '\')">Add</button></div>' +
+          '<div class="pa-addform"><select id="paexp-cat-' + escHtml(a.id) + '" aria-label="Spending category">' + (_paCats || []).map(c => '<option value="' + escHtml(c.key) + '">' + escHtml(c.label) + '</option>').join('') + '</select>' +
+            '<input class="desc" id="paexp-desc-' + escHtml(a.id) + '" type="text" aria-label="What the spending was for" placeholder="What was it for?"><input class="num" id="paexp-amt-' + escHtml(a.id) + '" type="text" inputmode="decimal" aria-label="Amount spent" placeholder="$ amount"><button class="btn btn-outline btn-sm" onclick="addExpense(\'' + jsAttr(a.id) + '\')">Add</button></div>' +
         '</div></div></div>';
   }
 
