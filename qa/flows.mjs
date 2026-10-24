@@ -699,6 +699,20 @@ flow('profile-photo-logo', async (browser, check) => {
   return t;
 });
 
+flow('signed-out-in-another-tab', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const a = t.page;
+  await a.evaluate(() => go('generator')); await a.waitForTimeout(800);
+  const b = await t.ctx.newPage();
+  await b.goto(a.url()); await b.waitForTimeout(2500);
+  await Promise.all([a.waitForNavigation({ waitUntil: 'load', timeout: 15000 }).catch(() => null), b.evaluate(() => signOut())]);
+  await a.waitForTimeout(1800);
+  check('the other tab leaves the app for the landing page', (await screen(a)) === 'landing');
+  check('and says why', /signed out/i.test(await a.textContent('#toast-text')));
+  await b.close();
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;

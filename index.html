@@ -9877,6 +9877,7 @@ function tutorialDone(ctx) {
 }
 
 async function signOut() {
+  window._signingOut = true;
   try { if (window.sb) await sb.auth.signOut(); } catch (_) {}
   window._grange = null;
   window._manualAuthFlow = false;
@@ -9885,7 +9886,10 @@ async function signOut() {
   try { sessionStorage.setItem('grange_signed_out', '1'); } catch (_) {}
   location.replace(location.pathname);
 }
-try { if (sessionStorage.getItem('grange_signed_out')) { sessionStorage.removeItem('grange_signed_out'); setTimeout(() => toast('Signed out.'), 500); } } catch (_) {}
+try {
+  const why = sessionStorage.getItem('grange_signed_out');
+  if (why) { sessionStorage.removeItem('grange_signed_out'); setTimeout(() => toast(why === 'elsewhere' ? 'You were signed out. Sign in again to continue.' : 'Signed out.'), 500); }
+} catch (_) {}
 
 function applyOrgIdentity(ctx) {
   rebuildSidebars();
@@ -9902,6 +9906,11 @@ if (window.sb) {
     // refresh completes.
     if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
       if (PUBLIC_SCREENS.includes(window._currentScreen || 'landing')) routeAfterAuth();
+    } else if (event === 'SIGNED_OUT' && !window._signingOut && window._grange && !PUBLIC_SCREENS.includes(window._currentScreen || 'landing')) {
+      // Signed out somewhere else (another tab, or the session ended) while using the app:
+      // start clean rather than leave this account's work on screen with every action failing.
+      try { sessionStorage.setItem('grange_signed_out', 'elsewhere'); } catch (_) {}
+      location.replace(location.pathname);
     } else if ((event === 'INITIAL_SESSION' && !session) || event === 'SIGNED_OUT') {
       // A saved token that no longer works (signed out on another device, revoked):
       // the page was hidden while we checked, so show the visitor site.
