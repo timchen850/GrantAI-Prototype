@@ -858,6 +858,17 @@ flow('unsaved-profile-edits', async (browser, check) => {
   return t;
 });
 
+flow('long-call-text-note', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('readiness')); await p.waitForTimeout(1500);
+  await p.fill('#rdy-req-ta', 'Eligibility: 501(c)(3) organizations. '.repeat(600)); await p.click('#rdy-req-btn'); await p.waitForTimeout(2500);
+  check('a call longer than Grange reads says so', /read the first 16,000 characters/.test(await p.textContent('#readiness')));
+  await p.fill('#rdy-req-ta', 'The Ahmanson Foundation invites proposals from 501(c)(3) organizations in Los Angeles County. Deadline December 1.'); await p.click('#rdy-req-btn'); await p.waitForTimeout(2500);
+  check('a short call does not', !/read the first 16,000 characters/.test(await p.textContent('#readiness')));
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;

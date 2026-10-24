@@ -6749,6 +6749,14 @@ function reqLoadSample() {
   analyzeRfp();
 }
 
+/* Grange reads the first 16,000 characters of a pasted call; say so when there was more,
+   since eligibility and review criteria are often further down a long notice. */
+const REQ_MAX_CHARS = 16000;
+function reqTruncNote(el, len) {
+  if (!el || len <= REQ_MAX_CHARS) return;
+  el.insertAdjacentHTML('afterbegin', '<div class="req-trunc" role="note" style="margin:0 0 10px;padding:9px 12px;border-radius:10px;background:var(--warn-tint);color:var(--warn-ink);font-size:12.5px;line-height:1.45">'
+    + 'Grange read the first ' + REQ_MAX_CHARS.toLocaleString() + ' characters (about 6 pages) of the ' + len.toLocaleString() + ' you pasted. For a long call, paste just the eligibility, requirements and review sections.</div>');
+}
 async function analyzeRfp() {
   const ta = document.getElementById('gen-rfp-text');
   const raw = ta?.value || '';
@@ -6768,6 +6776,7 @@ async function analyzeRfp() {
       window._parsedReq = r.output; window._reqIsSample = false;
       window._parsedReqText = raw; reqSetStale(false);   // remember what was analyzed → stale detection
       renderReqResult(r.output, false);
+      reqTruncNote(rr, txt.length);
       saveGenDraft();
     } else { throw new Error('nokey'); }
   } catch (e) {
@@ -6869,6 +6878,7 @@ async function runReqAnalysis(text, target, cacheKey, btn) {
     if (r && r.ok && r.output && ((r.output.sections || []).length || (r.output.eligibility || []).length || r.output.verdict)) {
       if (cacheKey) { try { localStorage.setItem(cacheKey, JSON.stringify(r.output)); } catch (_) {} }
       renderReqResult(r.output, false, target);
+      reqTruncNote(target, txt.length);
       return r.output;
     }
     throw new Error('nokey');
