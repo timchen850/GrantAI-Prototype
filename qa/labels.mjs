@@ -13,11 +13,12 @@ for (const persona of personas) {
   const screens = await p.evaluate(() => SCREENS.filter((s) => !['tutorial', 'onboarding', 'demo'].includes(s)));
   for (const s of screens) {
     await p.evaluate((id) => go(id), s); await p.waitForTimeout(900);
+    if (s === 'generator') { await p.evaluate(() => { const g = (window._genPipeline || [])[0]; if (g) pickSaved(g.id); }); await p.waitForTimeout(700); }   // check the form, not just the grant picker
     const bad = await p.evaluate((id) => {
       const root = document.getElementById(id); if (!root) return [];
       const shown = (e) => !!(e.offsetParent || e.getClientRects().length) && getComputedStyle(e).visibility !== 'hidden';
       const out = [];
-      root.querySelectorAll('label').forEach((l) => { if (l.closest('.fds-field')) return; /* landing mock-up, not a form */ if (shown(l) && !l.control) out.push('label not tied to a field: "' + l.textContent.trim().slice(0, 40) + '"'); });
+      root.querySelectorAll('label').forEach((l) => { if (l.closest('.fds-field')) return; /* landing mock-up, not a form */ if (shown(l) && (!l.control || l.control.tagName === 'BUTTON')) out.push('label not tied to a field: "' + l.textContent.trim().slice(0, 40) + '"'); });
       root.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea').forEach((f) => {
         if (!shown(f)) return;
         const named = (f.labels && f.labels.length) || f.getAttribute('aria-label') || f.getAttribute('aria-labelledby') || f.title;

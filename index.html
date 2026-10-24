@@ -6034,7 +6034,7 @@ document.addEventListener('keydown', (e) => {
    label did nothing. Link each one to the first field that follows it. */
 function linkFormLabels() {
   document.querySelectorAll('label:not([for])').forEach((l) => {
-    if (l.control) return;
+    if (l.control && l.control.tagName !== 'BUTTON') return;   // a "?" help button inside the label isn't its field
     let f = null;
     for (let n = l.nextElementSibling; n && !f; n = n.nextElementSibling) {
       if (n.tagName === 'LABEL') break;
