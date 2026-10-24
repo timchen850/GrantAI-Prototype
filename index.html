@@ -5964,6 +5964,14 @@ window._currentScreen = 'landing';
 document.body.dataset.screen = 'landing';
 
 /* ─── navigation ────────────────────────────────────────── */
+const SCREEN_TITLES = {
+  landing: 'Grange AI - The grants you need, written for you', login: 'Create your account · Grange AI', signin: 'Sign in · Grange AI',
+  tutorial: 'Guided tour · Grange AI', onboarding: 'Set up your organization · Grange AI', demo: 'Walkthrough · Grange AI',
+  dashboard: 'Dashboard · Grange AI', discovery: 'Grant discovery · Grange AI', readiness: 'Grant readiness · Grange AI',
+  'nonprofit-setup': 'Become a nonprofit · Grange AI', generator: 'Proposal generator · Grange AI', manage: 'Grant management · Grange AI',
+  deadlines: 'Deadlines · Grange AI', profile: 'Organization profile · Grange AI', plan: 'Pricing · Grange AI',
+  privacy: 'Privacy Policy · Grange AI', terms: 'Terms of Service · Grange AI', security: 'Security · Grange AI', contact: 'Contact · Grange AI',
+};
 const SCREENS = ['landing','login','signin','tutorial','onboarding','demo','dashboard','discovery','readiness','nonprofit-setup','generator','manage','deadlines','profile','plan','privacy','terms','security','contact'];
 
 /* ─── mobile hamburger drawer (phones only) ─────────────── */
@@ -6067,6 +6075,7 @@ function go(id, opts) {
   // track active screen (drives the mobile hamburger nav visibility)
   window._currentScreen = id;
   linkFormLabels();
+  if (SCREEN_TITLES[id]) document.title = SCREEN_TITLES[id];   // tab and Back/Forward history show where you are
   document.body.dataset.screen = id;
   // close the mobile drawer whenever we navigate
   document.getElementById('m-nav')?.classList.remove('open');

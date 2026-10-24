@@ -429,6 +429,7 @@ flow('browser-back-forward', async (browser, check) => {
   await p.evaluate(() => go('readiness')); await p.waitForTimeout(800);
   await p.goBack(); await p.waitForTimeout(800);
   check('Back returns to the previous screen', (await screen(p)) === 'discovery');
+  check('the tab title names the screen', (await p.title()) === 'Grant discovery · Grange AI');
   await p.goBack(); await p.waitForTimeout(800);
   check('Back again reaches the dashboard', (await screen(p)) === 'dashboard');
   await p.goForward(); await p.waitForTimeout(800);

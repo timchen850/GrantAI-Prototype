@@ -96,6 +96,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 68 | Dashboard greeting | With no name on the account, the greeting used the email's first part, so shared nonprofit inboxes read "Good morning, Info" or "Good morning, Grants". | Common role words (info, grants, director, office, admin…) are skipped and the greeting is just "Good morning"; real names still show ("maria.reyes@" → "Good morning, Maria"). |
 | 69 | Dashboard subtitle | A new account read "2 deadlines in the next 30 days" while Deadlines said "No deadlines yet": the count was matched grants closing soon, not the user's deadlines. | Now "14 grants matched · 2 close in the next 30 days." |
 | 70 | Pricing | On the live database (no `tier` column yet) "Start Free Trial" could only fail, with "Couldn't change your plan right now. Please try again." | When the database reports the missing column, it says "Paid plans aren't open yet. You're on the Free plan for now." Other errors still say try again. Covered by `plan-change-before-billing`. |
+| 71 | Tab title | Every screen had the same tab title, so the tab and the Back/Forward history list couldn't tell screens apart. | Each screen sets its own title ("Grant discovery · Grange AI"). Covered by `browser-back-forward`. |
 
 ## Needs Tim's decision
 
