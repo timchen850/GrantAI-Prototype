@@ -16,6 +16,7 @@ node labels.mjs [accounts] [width]    # labels not tied to a field, fields with 
 node clipped.mjs [accounts] [widths]  # text cut off inside a card or box that hides overflow
 node clipped-states.mjs               # the same for a finished draft, plan, export menu, open assessment
 node headings.mjs                     # one main heading per screen
+QA_TZ=America/Los_Angeles node flows.mjs   # any script in a US time zone (dates are calendar days)
 ```
 
 The harness (`harness.mjs`, `fixtures.mjs`) runs `index.html` in Chromium with a fake
