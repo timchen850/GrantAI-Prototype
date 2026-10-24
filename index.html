@@ -1140,6 +1140,7 @@ label.field-label {
 /* clear the Ask Grange button on the screens that show it */
 body[data-screen="dashboard"] .toast, body[data-screen="discovery"] .toast, body[data-screen="generator"] .toast,
 body[data-screen="readiness"] .toast, body[data-screen="manage"] .toast, body[data-screen="profile"] .toast { bottom: 92px; }
+body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit above the assistant's tip bubble, not behind it */
 @media (max-width: 560px) { .toast { left: 16px; right: 16px; justify-content: center; text-align: center; } }
 .toast svg { color: #6fe39a; }
 
@@ -12447,7 +12448,7 @@ function applyDiscFilters(query, type) {
   #ai-chat-fab{position:fixed;right:22px;bottom:22px;z-index:9000;height:56px;border-radius:30px;background:var(--surface);color:var(--ink);border:1px solid var(--line);cursor:pointer;display:none;align-items:center;gap:10px;box-shadow:0 12px 32px rgba(26,25,22,.18);transition:transform .2s var(--ease-expo,cubic-bezier(.16,1,.3,1)),box-shadow .18s,opacity .22s;padding:0 18px 0 6px;overflow:visible}
   #ai-chat-fab:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(26,25,22,.24)}
   #ai-chat-fab.acp-hide{opacity:0;transform:scale(.7);pointer-events:none}
-  body:has(.overlay.open) #ai-chat-fab, body:has(.overlay.open) #acp-nudge{display:none !important}   /* never float over a dialog */
+  body:has(.overlay.open) #ai-chat-fab, body:has(.overlay.open) #acp-nudge, body:has(#m-nav.open) #ai-chat-fab, body:has(#m-nav.open) #acp-nudge{display:none !important}   /* never float over a dialog */
   @media(max-width:640px){#ai-chat-fab{right:14px;bottom:14px;padding:0 6px;height:56px}#ai-chat-fab .acp-fab-label{display:none}}
   #ai-chat-fab .acp-fab-orb{position:relative;width:44px;height:44px;flex-shrink:0}
   #ai-chat-fab .acp-fab-label{font-family:var(--display);font-size:14.5px;font-weight:600;white-space:nowrap}
