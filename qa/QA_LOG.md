@@ -16,6 +16,7 @@ node labels.mjs [accounts] [width]    # labels not tied to a field, fields with 
 node clipped.mjs [accounts] [widths]  # text cut off inside a card or box that hides overflow
 node clipped-states.mjs               # the same for a finished draft, plan, export menu, open assessment
 node headings.mjs                     # one main heading per screen
+node fieldsize.mjs                    # phone fields under 16px (iPhone zooms into them)
 QA_TZ=America/Los_Angeles node flows.mjs   # any script in a US time zone (dates are calendar days)
 ```
 
@@ -107,6 +108,7 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 77 | Due dates (US time zones) | Dates like "2026-12-01" were read as midnight UTC (4 p.m. the day before in California), and "today" came from UTC (tomorrow's date every US evening). So Grants.gov close dates showed a day early ("Nov 30" for Dec 1), a grant due tomorrow read "Due in 0d" in the evening, deadlines due today could read as overdue, and the SAM.gov countdown was off by one. Tests run in UTC, so they never showed it. | Due dates are counted on the user's own calendar (`localToday`, `daysUntilDate`), Grants.gov dates are formatted as the calendar date given, and pills say "Due today" / "Due tomorrow". The harness takes a time zone; `due-dates-in-us-time-zones` runs at 6 p.m. Pacific (fails on the old code). |
 | 78 | Install prompt (manifest) | The installed-app description said Grange "scans millions of grants daily". It searches Grants.gov plus a curated foundation list. | Same wording as the site's own description: finds the grants you qualify for, checks you're ready, drafts in your voice. |
 | 79 | Safari before 18 (iPhones on iOS 17) | Six frosted-glass effects (the site header, the phone app bar, dialog backdrops, the tour button and others) had no `-webkit-backdrop-filter`, which Safari before 18 needs; there they render see-through. Only Chromium is available here, so this came from a code review: no regex lookbehind or other newer JavaScript that older Safari can't parse. | Added the prefixed rule next to each. |
+| 80 | Every form (iPhone) | 42 fields were 13–15px, and iPhone Safari zooms the page into any field under 16px when you tap it (and stays zoomed), including sign-in, sign-up, the survey, profile, generator and the assistant. | Form fields are 16px on phone widths. Sweep and clipped-text checks clean at 320 and 390. `fieldsize.mjs` reports 0. |
 
 ## Needs Tim's decision
 

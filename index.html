@@ -4168,7 +4168,9 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   .ob-help-text { margin: 8px 0 0; padding: 11px 13px; background: var(--accent-tint, #fbe9e2); border-radius: 10px;
     font-size: 13px; line-height: 1.55; color: var(--accent-ink, #8a2c16); }
   .ob-help-text[hidden] { display: none; }
-  h1[tabindex="-1"]:focus, [role="heading"][tabindex="-1"]:focus { outline: none; }   /* focused on screen change for screen readers; no ring needed */
+  h1[tabindex="-1"]:focus, [role="heading"][tabindex="-1"]:focus { outline: none; }
+  /* iPhone Safari zooms the page when you tap a field under 16px (and stays zoomed): 16px on phones */
+  @media (max-width: 600px) { input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]), select, textarea { font-size: 16px !important; } }   /* focused on screen change for screen readers; no ring needed */
   #disc-filters .chip[hidden] { display: none; }
   /* 990 autofill (reduce data-entry pain) */
   .ob-990 { border: 1px dashed var(--line, rgba(26,25,22,0.12)); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; background: var(--surface-2, #faf9f7); }
