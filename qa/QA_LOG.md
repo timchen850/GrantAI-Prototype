@@ -223,6 +223,8 @@ targets.mjs lists 22 small controls, all spaced text links or controls with an e
 
 ## Next up
 
+- Merged into `main` on 2026-10-24 at 20:57 UTC (eee4bf7) with Tim's OK; the Cloudflare deploy and the first keep-alive run on main both succeeded. Later fixes go to the branch; ask Tim before merging again.
+
 - Server-side (needs Supabase connector): apply `profiles.tier` migration, count one credit per draft in `generate-proposal`, revoke `match_exemplar_chunks` from anon, fix `stripe-webhook`.
 - Pricing: done (row 147). When payments open, deploy `create-checkout` and `generate-proposal`, apply the `profiles.tier` migration, then switch on the export (Starter+) and grant-management (Pro) gates, which the plan cards describe but the app doesn't enforce yet.
 - For the next QA pass (each check-in): run the whole suite (flows, smoke, audit, a11y at 1440 and 390, labels and
