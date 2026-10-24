@@ -224,13 +224,13 @@ draft. Static audit: all inline-handler functions
 exist, no duplicate ids. Sweep: 0 console errors, no sideways scroll on any screen at 13 widths
 (320–1440). Monkey test: 130 buttons clicked across all accounts, 0 JS errors. Accessibility: 0 axe violations
 (390 and 1440). labels.mjs and labels-states.mjs: 0 unlinked labels or unnamed fields. clipped.mjs / clipped-states.mjs: 0 clipped text.
-junktext.mjs: no "undefined"/"null"/"NaN" on any screen. 70 flows, all passing (last full run 2026-10-24 ~21:30 UTC, on the code committed
-with rows 136–153; sweep 175/175 at 320/390/768/1024/1440, longtext 0; flows also pass in Pacific time; fieldsize, headings and xss sweeps clean;
+junktext.mjs: no "undefined"/"null"/"NaN" on any screen. 71 flows, all passing (last full run 2026-10-24 ~21:50 UTC, on the code committed
+with rows 154–158, where `manage-save-failures` failed on the old message wording and passed after its fix (row 158); emdash 0, junktext 0, smoke clean, xss: nothing ran, a11y 0 violations at 1440 (visitor, np, newuser) and 390, sweep 70/70 at 1440 and 390, longtext 0. From the 21:30 run: sweep 175/175 at 320/390/768/1024/1440, flows also pass in Pacific time; fieldsize and headings clean;
 targets.mjs lists 22 small controls, all spaced text links or controls with an enlarged invisible tap area, which it measures by their visible box).
 
 ## Next up
 
-- Merged into `main` on 2026-10-24 at 20:57 UTC (eee4bf7) with Tim's OK; the Cloudflare deploy and the first keep-alive run on main both succeeded. Later fixes go to the branch; ask Tim before merging again.
+- Merged into `main` on 2026-10-24 at 20:57 UTC (eee4bf7) with Tim's OK, again for rows 153 (b4cde2f) and 154–158 (Tim's OK, ~21:50 UTC). Later fixes go to the branch; ask Tim before merging again.
 
 - Server-side (needs Supabase connector): apply `profiles.tier` migration, count one credit per draft in `generate-proposal`, revoke `match_exemplar_chunks` from anon, fix `stripe-webhook`.
 - Free trial (Tim): the Plans screen says "All paid plans include a 14-day free trial" and its buttons read "Start Free Trial", but `create-checkout` sets up no trial. Add `trial_period_days: 14` to the checkout session or cut the line before payments open.
