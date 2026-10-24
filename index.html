@@ -6481,6 +6481,7 @@ async function saveProfile() {
   const orgName = get('pf-legal-name'), mission = get('pf-mission'), ein = get('pf-ein');
   const ntee = document.getElementById('pf-ntee')?.value || null;
   const budget = get('pf-budget');
+  if (ein && ein.replace(/\D/g, '').length !== 9) { toast('An EIN has 9 digits, like 47-1234567.'); document.getElementById('pf-ein')?.focus(); return; }
   try {
     const { error: pErr } = await sb.from('profiles').update({
       org_name: orgName || null, mission: mission || null, ein: ein || null, ntee_code: ntee,
@@ -10436,16 +10437,19 @@ function obValidateStep() {
   const step = OB_STEPS[obState.idx];
   const vis = obVisibleFields(step);
   const missing = vis.filter(f => obFieldRequired(f) && !obFieldFilled(f));
+  // a typed EIN must have 9 digits (otherwise the IRS check and funders can't use it)
+  const badEin = vis.find(f => f.key === 'ein' && obState.answers.ein && String(obState.answers.ein).replace(/\D/g, '').length !== 9);
+  const flagged = missing.concat(badEin && !missing.includes(badEin) ? [badEin] : []);
   // reset prior flags on this step
   vis.forEach(f => { const w = document.getElementById('ob-wrap-' + f.key); if (w) w.classList.remove('ob-invalid'); });
   const errEl = document.getElementById('ob-error');
-  if (!missing.length) { if (errEl) errEl.textContent = ''; return true; }
-  missing.forEach(f => { const w = document.getElementById('ob-wrap-' + f.key); if (w) w.classList.add('ob-invalid'); });
-  if (errEl) errEl.textContent = missing.length === 1
-    ? 'Please complete the highlighted field to continue.'
-    : `Please complete the ${missing.length} highlighted fields to continue.`;
+  if (!flagged.length) { if (errEl) errEl.textContent = ''; return true; }
+  flagged.forEach(f => { const w = document.getElementById('ob-wrap-' + f.key); if (w) w.classList.add('ob-invalid'); });
+  const einMsg = 'An EIN has 9 digits, like 47-1234567.';
+  if (errEl) errEl.textContent = !missing.length ? einMsg
+    : `Please ${badEin ? 'fix' : 'complete'} the ${flagged.length === 1 ? 'highlighted field' : flagged.length + ' highlighted fields'} to continue.` + (badEin ? ' ' + einMsg : '');
   // focus the first offending input
-  const first = document.getElementById('ob-wrap-' + missing[0].key);
+  const first = document.getElementById('ob-wrap-' + flagged[0].key);
   if (first) { first.scrollIntoView({ block: 'center', behavior: 'smooth' }); const inp = first.querySelector('input,textarea,select,.ob-chip'); inp && inp.focus(); }
   return false;
 }

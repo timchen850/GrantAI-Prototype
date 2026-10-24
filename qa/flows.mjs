@@ -784,6 +784,29 @@ flow('screen-change-moves-focus', async (browser, check) => {
   return t;
 });
 
+flow('ein-must-have-9-digits', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page; const toasts = await toastSpy(p);
+  await p.evaluate(() => go('profile')); await p.waitForTimeout(1200);
+  const before = t.db.profiles.find((r) => r.user_id === UID.np)?.ein;
+  await p.fill('#pf-ein', '12-34567'); await p.click('#profile button:has-text("Save changes") >> nth=0'); await p.waitForTimeout(800);
+  check('profile: an 8-digit EIN is not saved and the user is told why', toasts.some((m) => /9 digits/.test(m)) && t.db.profiles.find((r) => r.user_id === UID.np)?.ein === before);
+  await p.fill('#pf-ein', '12-3456789'); await p.click('#profile button:has-text("Save changes") >> nth=0'); await p.waitForTimeout(1200);
+  check('profile: a 9-digit EIN saves', t.db.profiles.find((r) => r.user_id === UID.np)?.ein === '12-3456789');
+  const o = await openApp(browser, { persona: 'onboarding' });
+  const q = o.page;
+  await q.evaluate(() => { obState.idx = 0; obState.answers.entity_type = '501(c)(3) nonprofit'; obRender(); }); await q.waitForTimeout(300);
+  const has = await q.$('#ob-ein');
+  if (has) {
+    await q.fill('#ob-ein', '12-345'); await q.click('#ob-next'); await q.waitForTimeout(500);
+    check('survey: a short EIN stops the step with a clear message', (await q.evaluate(() => obState.idx)) === 0 && /9 digits/.test(await q.textContent('#ob-error')) && await q.evaluate(() => document.getElementById('ob-wrap-ein').classList.contains('ob-invalid')));
+    await q.fill('#ob-ein', '12-3456789'); await q.waitForTimeout(200);
+    check('survey: a 9-digit EIN is no longer flagged', !/9 digits/.test(await q.evaluate(() => { obValidateStep(); return document.getElementById('ob-error').textContent; })));
+  } else check('survey shows an EIN field for a nonprofit', false);
+  t.errors.push(...o.errors); await o.ctx.close();
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;
