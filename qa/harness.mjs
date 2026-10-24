@@ -226,9 +226,9 @@ function fnHandler(fnLog, opts) {
 }
 
 /* ───────── page factory ───────── */
-export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], fnOverride = {}, draftText = null, signedOut = false, revokedSession = false, backendDown = false, reducedMotion = false, base = 'http://127.0.0.1:' + (+process.env.QA_PORT || 3456) + '/' } = {}) {
+export async function openApp(browser, { persona = 'np', width = 1440, height = 900, screen = null, failFunctions = false, failTables = [], fnOverride = {}, draftText = null, timezoneId = undefined, signedOut = false, revokedSession = false, backendDown = false, reducedMotion = false, base = 'http://127.0.0.1:' + (+process.env.QA_PORT || 3456) + '/' } = {}) {
   const P = PERSONAS[persona];
-  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, isMobile: width < 600, hasTouch: width < 600, reducedMotion: reducedMotion ? 'reduce' : 'no-preference' });
+  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, isMobile: width < 600, hasTouch: width < 600, reducedMotion: reducedMotion ? 'reduce' : 'no-preference', timezoneId });
   const db = buildDb(persona);
   const restLog = [], fnLog = [], errors = [], external = [];
   let authUser = signedOut ? null : P.user;   // who the fake auth server thinks is signed in

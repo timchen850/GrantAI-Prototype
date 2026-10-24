@@ -807,6 +807,22 @@ flow('ein-must-have-9-digits', async (browser, check) => {
   return t;
 });
 
+// Due dates are calendar days. At 6 p.m. Pacific on Nov 30 it is already Dec 1 in UTC.
+flow('due-dates-in-us-time-zones', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np', timezoneId: 'America/Los_Angeles' });
+  const p = t.page;
+  await p.clock.setFixedTime(new Date('2026-12-01T02:00:00Z'));   // Nov 30, 6:00 p.m. PST
+  const r = await p.evaluate(() => ({
+    today: localToday(), tomorrow: daysUntilDate('2026-12-01'), label: dueInLabel(daysUntilDate('2026-12-01')), todayDue: dueInLabel(daysUntilDate('2026-11-30')),
+    gov: parseGovHit({ id: 1, title: 'X', agency: 'ED', closeDate: '12/01/2026', oppStatus: 'posted' }).deadlineLabel,
+  }));
+  check("'today' is the user's date, not UTC's", r.today === '2026-11-30');
+  check('a grant due Dec 1 is due tomorrow on the evening of Nov 30', r.tomorrow === 1 && r.label === 'Due tomorrow');
+  check('a deadline today says "Due today"', r.todayDue === 'Due today');
+  check('a Grants.gov close date of 12/01/2026 shows as Dec 1, not Nov 30', r.gov === 'Dec 1, 2026');
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;

@@ -11139,8 +11139,8 @@ async function updateDashboard() {
   if (subtitleEl) {
     const deadlineSoon = discGrants.filter(g => {
       if (!g.deadline) return false;
-      const days = (new Date(g.deadline) - Date.now()) / 86400000;
-      return days >= 0 && days <= 30;
+      const days = daysUntilDate(g.deadline);
+      return days !== null && days >= 0 && days <= 30;
     }).length;
     if (discovered > 0) {
       subtitleEl.textContent = deadlineSoon > 0
@@ -11175,8 +11175,8 @@ async function updateDashboard() {
       .slice(0, 5);
     if (top5.length === 0 && tracked.length) {
       pipelineEl.innerHTML = tracked.map(g => {
-        const days = g.deadline ? Math.ceil((new Date(g.deadline) - Date.now()) / 86400000) : null;
-        const due = days !== null && days >= 0 ? `<span class="pill ${days <= 30 ? 'pill-acc' : 'pill-ok'}">Due in ${days}d</span>` : '';
+        const days = g.deadline ? daysUntilDate(g.deadline) : null;
+        const due = days !== null && days >= 0 ? `<span class="pill ${days <= 30 ? 'pill-acc' : 'pill-ok'}">${dueInLabel(days)}</span>` : '';
         const amt = Number(g.amount) > 0 ? '$' + fmtK(Number(g.amount)) : (g.amount ? escHtml(String(g.amount)) : '');
         const [lbl, cls] = STATUS_LBL[g.status];
         const meta = [escHtml(g.funder || ''), amt].filter(Boolean).join(' · ');
@@ -11203,11 +11203,11 @@ async function updateDashboard() {
       pipelineEl.innerHTML = top5.map(g => {
         const score = g.matchScore || 0;
         const ringCls = score >= 80 ? 'hi' : score >= 60 ? 'mid' : 'lo';
-        const days = g.deadline ? Math.ceil((new Date(g.deadline) - Date.now()) / 86400000) : null;
+        const days = g.deadline ? daysUntilDate(g.deadline) : null;
         let pillHtml = '';
         if (days !== null && days >= 0) {
           const pillCls = days <= 30 ? 'pill-acc' : days <= 75 ? 'pill-warn' : 'pill-ok';
-          pillHtml = `<span class="pill ${pillCls}">Due in ${days}d</span>`;
+          pillHtml = `<span class="pill ${pillCls}">${dueInLabel(days)}</span>`;
         } else if (g.deadlineLabel) {
           pillHtml = `<span class="pill pill-ok">${g.deadlineLabel}</span>`;
         }
@@ -11229,8 +11229,8 @@ async function updateDashboard() {
   if (deadlinesEl) {
     const upcoming = discGrants
       .filter(g => g.deadline)
-      .map(g => ({ ...g, daysLeft: Math.ceil((new Date(g.deadline) - Date.now()) / 86400000) }))
-      .filter(g => g.daysLeft >= 0)
+      .map(g => ({ ...g, daysLeft: daysUntilDate(g.deadline) }))
+      .filter(g => g.daysLeft !== null && g.daysLeft >= 0)
       .sort((a, b) => a.daysLeft - b.daysLeft)
       .slice(0, 5);
 
@@ -11600,7 +11600,7 @@ function parseGovHit(hit) {
       const d = new Date(`${parts[2]}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`);
       if (!isNaN(d)) {
         deadline = d.toISOString().slice(0,10);
-        deadlineLabel = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        deadlineLabel = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});   // a calendar date: don't shift it a day in US zones
       }
     }
   }
@@ -12268,9 +12268,18 @@ function assessHTML(o) {
     '</div></div>');
 }
 
+/* Due dates are calendar days ("due Dec 1" means by the end of Dec 1 where the user is).
+   new Date('2026-12-01') is midnight UTC, which is 4 p.m. on Nov 30 in California, and
+   toISOString() gives tomorrow's date every US evening, so count days on the local calendar. */
+function localToday() { const n = new Date(); return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate()).padStart(2, '0'); }
+function daysUntilDate(dateStr) {
+  const t = Date.parse(String(dateStr || '').slice(0, 10) + 'T00:00:00Z');
+  return isNaN(t) ? null : Math.round((t - Date.parse(localToday() + 'T00:00:00Z')) / 86400000);
+}
+function dueInLabel(days) { return days === 0 ? 'Due today' : days === 1 ? 'Due tomorrow' : `Due in ${days}d`; }
 function dueUrgency(deadline) {
   if (!deadline) return 'pill-ink';
-  const days = (new Date(deadline) - Date.now()) / 86400000;
+  const days = daysUntilDate(deadline) ?? 999;
   if (days < 30) return 'pill-acc';
   if (days < 75) return 'pill-warn';
   return 'pill-ok';
@@ -12328,7 +12337,7 @@ async function seedReminders(deadlineId, dueDate, uid) {
   if (!window.sb || !deadlineId || !dueDate) return;
   const dueMs = Date.parse(String(dueDate).slice(0, 10) + 'T00:00:00Z');
   if (isNaN(dueMs)) return;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localToday();
   const rows = [30, 14, 7, 1].map(off => ({
     deadline_id: deadlineId, user_id: uid, offset_days: off,
     scheduled_for: new Date(dueMs - off * 86400000).toISOString().slice(0, 10), channel: 'email',
@@ -12359,7 +12368,7 @@ async function loadDashboardDeadlines() {
   if (!el || !window.sb) return;
   const uid = window._grange?.user?.id;
   if (!uid) return;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localToday();
   let rows;
   try {
     const { data, error } = await window.sb.from('deadlines')
@@ -12452,7 +12461,7 @@ async function loadDeadlinesScreen() {
   const uid = window._grange?.user?.id;
   if (!window.sb || !uid) { el.innerHTML = emptyDeadlinesHTML('Sign in to track your deadlines.'); return; }
   el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading your deadlines…</div>';
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localToday();
   let rows;
   try {
     const { data, error } = await window.sb.from('deadlines')
@@ -13533,7 +13542,7 @@ function applyDiscFilters(query, type) {
      a 365-day renewal tracker. State lives in localStorage + the registrations table. */
   function samPA() { const c = window._grange || {}; return { p: c.profile || {}, a: c._cachedAnswers || {} }; }
   function samExpiry(d) { if (!d) return null; const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d); if (!m) return null; const dt = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])); if (isNaN(dt.getTime())) return null; dt.setUTCDate(dt.getUTCDate() + 365); return dt.toISOString().slice(0, 10); }
-  function samDaysLeft(d) { const ex = samExpiry(d); if (!ex) return null; const exd = new Date(ex + 'T00:00:00Z').getTime(); const n = new Date(); const today = Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()); return Math.round((exd - today) / (24 * 3600 * 1000)); }
+  function samDaysLeft(d) { const ex = samExpiry(d); if (!ex) return null; const exd = new Date(ex + 'T00:00:00Z').getTime(); const n = new Date(); const today = Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()); return Math.round((exd - today) / (24 * 3600 * 1000)); }   // the user's calendar day, not UTC's
 
   async function samInit(p, a, uid) {
     let st = { need: null, path: null, uei: '', activated_at: '', reg_id: null, pf: null };
