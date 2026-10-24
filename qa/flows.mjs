@@ -644,6 +644,19 @@ flow('draft-export', async (browser, check) => {
   return t;
 });
 
+flow('demo-keyboard', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'visitor' });
+  const p = t.page;
+  await p.click('#landing button:has-text("demo"), #landing a:has-text("demo"), #landing [onclick*="go(\'demo\')"] >> visible=true').catch(async () => { await p.evaluate(() => go('demo')); });
+  await p.waitForTimeout(800);
+  const cur = () => p.evaluate(() => [...document.querySelectorAll('#demo .dp-screen-current')].map((e) => [...e.parentNode.children].indexOf(e)).join());
+  const start = await cur();
+  let moved = false;
+  for (let i = 0; i < 12 && !moved; i++) { await p.keyboard.press('ArrowDown'); await p.waitForTimeout(700); moved = (await cur()) !== start; }
+  check('arrow keys advance the demo without clicking into it first', moved);
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;

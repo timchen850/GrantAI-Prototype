@@ -3835,6 +3835,7 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
 </div>
 
 <!-- ════════════════════════ DEMO PAGE ════════════════════════ -->
+<style>#demo:focus { outline: none; }</style>
 <div id="demo" class="screen">
 
   <nav class="dp-nav">
@@ -9472,6 +9473,8 @@ function authErrorText(error, fallback) {
     if (lockBar) lockBar.classList.remove('vis');
     if (contHint) contHint.classList.remove('vis');
     startUnlock(0);
+    // take keyboard focus so the arrow / Page Down keys work right away (focus was on the hidden landing button)
+    if (window._currentScreen === 'demo') { demoEl.tabIndex = -1; setTimeout(() => demoEl.focus({ preventScroll: true }), 50); }
   };
 
   // init

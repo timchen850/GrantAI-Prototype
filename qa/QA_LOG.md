@@ -81,6 +81,8 @@ Supabase backend in the browser: no network, no real user data. Test accounts: `
 | 55 | Offline / installed app | The service worker served every same-site file cache-first forever, `config.js` included, and cached error responses. A changed Supabase key or URL would never reach returning visitors. | Scripts and the manifest are network-first (cache only when offline), only successful responses are cached, and the cache version is bumped to clear old entries. Checked online and offline. |
 | 56 | Org-info dialog, phone menu | The "Finish your organization info" dialog didn't take keyboard focus, Tab wandered to the page behind it, and closing it left focus nowhere. Tab also escaped the open phone menu. | Focus moves into the dialog, Tab and Shift+Tab stay inside it and the menu, and closing returns focus to the button that opened it. Covered by `dialog-focus`. |
 | 57 | Phone menu, toasts | The "Ask Grange" button floated on top of the open phone menu, and on desktop the assistant's tip bubble covered confirmation toasts ("Added to your pipeline"). | The button hides while the menu is open; toasts move above the tip while it shows. |
+| 58 | Demo | The arrow and Page Down keys did nothing in the walkthrough until you clicked or tabbed into it (focus stayed on the hidden landing-page button). | The demo takes focus when it opens. Covered by `demo-keyboard` (fails on the old code). |
+| 59 | Generator (test gap) | Export to Word, plain text, PDF and Copy had no test. | `draft-export` checks each one: file name, sections present, no highlight or script markup, clean text. All passed; no bug found. |
 
 ## Needs Tim's decision
 
