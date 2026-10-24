@@ -249,9 +249,29 @@ flow('signin-and-signout', async (browser, check) => {
   await p.click('#si-cont-btn'); await p.waitForTimeout(4500);
   check('returning user lands on the dashboard', (await screen(p)) === 'dashboard');
   check('greeting uses their org', /Director|Eastside/.test(await p.textContent('#dash-greeting') + (await p.textContent('#sidebar, .side').catch(() => ''))));
-  await p.click('#dashboard .side a:has-text("Sign out"), #dashboard .side button:has-text("Sign out"), .side-foot :text("Sign out")'); await p.waitForTimeout(1200);
+  await Promise.all([p.waitForNavigation({ waitUntil: 'load' }), p.click('#dashboard .side a:has-text("Sign out"), #dashboard .side button:has-text("Sign out"), .side-foot :text("Sign out")')]); await p.waitForTimeout(1200);
   check('sign out returns to the landing page', (await screen(p)) === 'landing');
   check('session removed from storage', await p.evaluate(() => !localStorage.getItem('sb-xewrvmqyzeiziimcmenj-auth-token')));
+  check('says "Signed out"', /Signed out/.test(await p.textContent('#toast-text')));
+  return t;
+});
+
+// On a shared computer the next person must not see the last account's work.
+flow('signout-clears-the-page', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.evaluate(() => go('generator')); await p.waitForTimeout(800);
+  await p.evaluate(() => { const s = (window._genPipeline || [])[0]; if (s) pickSaved(s.id); }); await p.waitForTimeout(800);
+  await p.click('#gen-btn'); await approvePlanIfShown(p); await p.waitForTimeout(7000);
+  await p.click('#ai-chat-fab'); await p.waitForTimeout(500);
+  await p.fill('#acp-text', 'Our budget is $410,000'); await p.press('#acp-text', 'Enter'); await p.waitForTimeout(1500);
+  check('setup: a draft and a chat are on the page', /Statement of Need/.test(await p.textContent('#doc-content')) && /410,000/.test(await p.textContent('#acp-log')));
+  await Promise.all([p.waitForNavigation({ waitUntil: 'load' }), p.evaluate(() => { signOut(); })]); await p.waitForTimeout(1500);
+  const left = await p.evaluate(() => ({ doc: document.getElementById('doc-content')?.textContent || '', chat: document.getElementById('acp-log')?.textContent || '', grant: !!window._selectedGrant, org: document.body.innerText.includes('Eastside Youth Collective') }));
+  check('after sign-out the draft is gone from the page', !/Statement of Need/.test(left.doc));
+  check('after sign-out the assistant chat is gone', !/410,000/.test(left.chat));
+  check('after sign-out no grant or org name is left in memory or on screen', !left.grant && !left.org);
+  check('lands on the landing page, signed out', (await screen(p)) === 'landing' && !(await p.evaluate(() => localStorage.getItem('sb-xewrvmqyzeiziimcmenj-auth-token'))));
   return t;
 });
 

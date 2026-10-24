@@ -247,7 +247,7 @@ export async function openApp(browser, { persona = 'np', width = 1440, height = 
   if (P.user && !signedOut) {
     const sess = makeSession(P.user); if (revokedSession) { sess.expires_at = Math.floor(Date.now() / 1000) - 3600; authUser = null; }
     const s = JSON.stringify(sess);
-    await ctx.addInitScript(([k, v, tut]) => { try { localStorage.setItem(k, v); if (tut) localStorage.setItem('grange_tut_' + tut, '1'); } catch (_) {} }, [STORAGE_KEY, s, P.tutorialDone ? P.user.id : '']);
+    await ctx.addInitScript(([k, v, tut]) => { try { if (sessionStorage.getItem('qa_seeded')) return; sessionStorage.setItem('qa_seeded', '1'); localStorage.setItem(k, v); if (tut) localStorage.setItem('grange_tut_' + tut, '1'); } catch (_) {} }, [STORAGE_KEY, s, P.tutorialDone ? P.user.id : '']);   // once per tab, so a reload after sign-out stays signed out
   }
   const page = await ctx.newPage();
   page.on('pageerror', (e) => errors.push('pageerror: ' + (e.stack || e.message).split('\n').slice(0, 3).join(' | ')));

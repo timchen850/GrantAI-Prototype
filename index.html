@@ -9877,12 +9877,15 @@ function tutorialDone(ctx) {
 }
 
 async function signOut() {
-  if (window.sb) await sb.auth.signOut();
+  try { if (window.sb) await sb.auth.signOut(); } catch (_) {}
   window._grange = null;
   window._manualAuthFlow = false;
-  toast('Signed out.');
-  go('landing');
+  // Reload instead of just switching screens: the last account's draft, assistant chat and form
+  // fields would otherwise stay in the page for whoever signs in next on a shared computer.
+  try { sessionStorage.setItem('grange_signed_out', '1'); } catch (_) {}
+  location.replace(location.pathname);
 }
+try { if (sessionStorage.getItem('grange_signed_out')) { sessionStorage.removeItem('grange_signed_out'); setTimeout(() => toast('Signed out.'), 500); } } catch (_) {}
 
 function applyOrgIdentity(ctx) {
   rebuildSidebars();
