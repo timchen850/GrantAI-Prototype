@@ -751,6 +751,21 @@ flow('discovery-search-and-filters', async (browser, check) => {
   return t;
 });
 
+// The live profiles table has no tier column yet (see QA_LOG "Draft credits"): PostgREST answers PGRST204.
+flow('plan-change-before-billing', async (browser, check) => {
+  const t = await openApp(browser, { persona: 'np' });
+  const p = t.page;
+  await p.route(/\/rest\/v1\/profiles/, (r) => r.request().method() === 'PATCH'
+    ? r.fulfill({ status: 400, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ code: 'PGRST204', message: "Could not find the 'tier' column of 'profiles' in the schema cache", details: null, hint: null }) })
+    : r.fallback());
+  await p.evaluate(() => go('plan')); await p.waitForTimeout(900);
+  await p.click('#plan button:has-text("Start Free Trial") >> nth=0'); await p.waitForTimeout(900);
+  const msg = await p.textContent('#toast-text');
+  check('says paid plans are not open yet (not "try again")', /aren.t open yet/.test(msg) && !/try again/i.test(msg));
+  t.errors = t.errors.filter((e) => !/400|Bad Request/.test(e));
+  return t;
+});
+
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(FLOWS);
 const srv = await startServer(); const browser = await launch();
 let fails = 0;

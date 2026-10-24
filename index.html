@@ -5728,7 +5728,13 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
       rebuildSidebars();
       renderPlanScreen();
       toast('Plan updated to ' + tierId.charAt(0).toUpperCase() + tierId.slice(1) + '!');
-    } catch(e) { console.warn('plan change', e); toast('Couldn’t change your plan right now. Please try again.'); }
+    } catch(e) {
+      console.warn('plan change', e);
+      // The plan column isn't in the live database yet (paid plans aren't switched on): say so plainly
+      // instead of "try again", which could never work.
+      const notReady = e && (e.code === 'PGRST204' || e.code === '42703' || /column .*tier|tier.*column/i.test(e.message || ''));
+      toast(notReady ? 'Paid plans aren’t open yet. You’re on the Free plan for now.' : 'Couldn’t change your plan right now. Please try again.');
+    }
   };
 
   window.setBilling = function(b){
