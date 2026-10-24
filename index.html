@@ -5869,8 +5869,8 @@ body:has(#acp-nudge.show) .toast { bottom: 268px; z-index: 9001; }   /* sit abov
   </div>
 </div>
 
-<div class="toast" id="toast">
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
+  <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 6"/></svg>
   <span id="toast-text"></span>
 </div>
 
@@ -12685,7 +12685,7 @@ function applyDiscFilters(query, type) {
       <button class="x" onclick="acpToggle()" aria-label="Close">&times;</button>
     </div>
   </div>
-  <div class="acp-log" id="acp-log"></div>
+  <div class="acp-log" id="acp-log" role="log" aria-live="polite" aria-label="Conversation with Grange"></div>
   <div class="acp-chips" id="acp-chips"></div>
   <div class="acp-input">
     <textarea id="acp-text" rows="1" placeholder="Ask anything about grants…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();acpSend();}"></textarea>
