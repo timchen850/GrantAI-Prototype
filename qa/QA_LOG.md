@@ -136,8 +136,8 @@ the phone menu and assistant; sign-in and Privacy/Terms contents links; labels a
 checklists and toggles; failed Grant management saves are reported. Static audit: all 96 inline-handler functions
 exist, no duplicate ids. Sweep: 0 console errors, no sideways scroll on any screen at 13 widths
 (320–1440). Monkey test: 130 buttons clicked across all accounts, 0 JS errors. Accessibility: 0 axe violations
-(390 and 1440). labels.mjs: 0 unlinked labels. clipped.mjs / clipped-states.mjs: 0 clipped text. 37 flows, all passing
-(last full run 2026-10-24 02:30 UTC on commit 4d507ed).
+(390 and 1440). labels.mjs: 0 unlinked labels. clipped.mjs / clipped-states.mjs: 0 clipped text. 40 flows, all passing
+(last full run 2026-10-24 05:05 UTC on commit 1eedb51; flows also pass in Pacific and Eastern time; fieldsize.mjs and headings.mjs clean).
 
 ## Next up
 
